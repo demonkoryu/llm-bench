@@ -244,22 +244,18 @@ models:
 
    # ── NEW: Qwen3.6 35B MoE ────────────────────────────────────────────────────
 
-   - tag: "qwen3.6:35b-a3b"     # VERIFY: confirm exact Ollama tag before first run
-     label: "Qwen3.6 35B MoE (Q4)"
+   - tag: "qwen3.6:35b"
+     label: "Qwen3.6 35B MoE (Q4_K_M)"
      family: qwen3.6
-     params: 3   # active (a3b); ~3B active out of 35B total
+     params: 3   # active; 3B active out of 35B total
      type: moe
      think: optional
      tools: true
-     vram_q4_gb: 21.0   # Q4 weights ~21 GB → partial CPU offload on 20 GiB card
-     fit_rose: spills    # spills by ~1-2 GB; MoE keeps it usable (only 3B active)
+     vram_q4_gb: 24.0   # Q4_K_M = 24 GB → spills ~4 GB to CPU on 20 GiB card
+     fit_rose: spills    # MoE keeps decode usable despite spill (only 3B active)
      benches: [triage, reasoning, toolcalling, speed, maxctx]
      weight_quants: [f16]
-     notes: >
-        TAG UNVERIFIED — confirm `ollama show qwen3.6:35b-a3b` on rose before running.
-        Q4 only; no Q8 (too large). Weights spill ~1-2 GB to CPU but MoE active count
-        keeps decode fast (~30-45 tok/s est.). Primary result is maxctx binary search.
-        Qwen3.6 was released 2026-06 — may require Ollama >= 0.25.
+     notes: "Ollama native tag confirmed. 24 GB Q4_K_M spills ~4 GB on 7900 XT; MoE active-param count keeps tok/s viable (~30-45 est.)."
 
 
 # ── Sampling profiles per family ────────────────────────────────────────────────
