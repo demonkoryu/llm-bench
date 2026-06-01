@@ -8,6 +8,10 @@ rose:
    ssh_host: "${SSH_HOST:-llm2}"
    vram_cmd: "rocm-smi --showmemuse --json"
    ollama_service: "ollama"          # systemd unit name
+   # llama.cpp binary: ROCm build at ~/llama.cpp/build-rocm/bin/llama-server (June 2026)
+   # Has DeltaNet HIP GPU kernel + ctk/ctv support. Supersedes old Vulkan b9444 prebuilt.
+   # Note: Ollama 0.24.0 lacks gated_delta_net kernel — Qwen3.6 DeltaNet layers CPU-fallback
+   # in the Ollama phase. Local ROCm build has full DeltaNet GPU support for llama.cpp phase.
 
 m1:
    label: "M1 Mac (32 GB unified)"

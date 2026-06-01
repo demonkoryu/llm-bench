@@ -26,7 +26,10 @@ async function ssh(host, cmd, opts = {}) {
    return { stdout: stdout.trim(), stderr: stderr.trim() };
 }
 
-export function llamacppServer({ sshHost, llamaUrl = 'http://127.0.0.1:8090', llamaBin = '~/llamacpp-vk/llama-server' }) {
+// Local ROCm build (June 2026, has DeltaNet HIP GPU accel + ctk/ctv support).
+// Preferred over the old Vulkan prebuilt (~/llamacpp-vk/llama-b9444/llama-server)
+// which predates the DeltaNet PR and lacks gated_delta_net kernel.
+export function llamacppServer({ sshHost, llamaUrl = 'http://127.0.0.1:8090', llamaBin = '~/llama.cpp/build-rocm/bin/llama-server' }) {
    let _pid = null;
 
    /**
