@@ -1,11 +1,6 @@
 /**
  * promptfoo grader for the summarization/categorization benchmark.
- *
- * Checks:
- *   - JSON parseable
- *   - summary: 1-2 sentences, mentions required keywords (must_mention)
- *   - area: matches expected_area
- *   - tags: array of strings with expected_tags_prefix prefix
+ * Case metadata (expected_area, tags_prefix, must_mention) in summcases.mjs.
  *
  * Score breakdown (0-1):
  *   0.40  keyword coverage (must_mention / total)
@@ -14,11 +9,12 @@
  *   0.15  summary length ok (10-100 words)
  */
 
+import { CASES } from './summcases.mjs';
+
 export default function(output, context) {
    const caseId = context?.vars?.case_id ?? '?';
-   const expectedArea = context?.vars?.expected_area ?? null;
-   const expectedTagsPrefix = context?.vars?.expected_tags_prefix ?? null;
-   const mustMention = context?.vars?.must_mention ?? [];
+   const c = CASES[caseId];
+   if (!c) return { pass: false, score: 0, reason: `Unknown case_id: ${caseId}` };
 
    let parsed = null;
    try {
@@ -31,32 +27,25 @@ export default function(output, context) {
    const area = parsed.area ?? null;
    const tags = Array.isArray(parsed.tags) ? parsed.tags : [];
 
-   // Keyword coverage
    const summaryLower = summary.toLowerCase();
-   const mentioned = mustMention.filter((kw) => summaryLower.includes(kw.toLowerCase()));
-   const kwScore = mustMention.length ? mentioned.length / mustMention.length : 1;
+   const mentioned = c.must_mention.filter((kw) => summaryLower.includes(kw.toLowerCase()));
+   const kwScore = c.must_mention.length ? mentioned.length / c.must_mention.length : 1;
 
-   // Area correctness
-   const areaOk = area === expectedArea;
-
-   // Tag prefix discipline
-   const tagsOk = tags.length > 0 && tags.every((t) => typeof t === 'string' && t.startsWith(`${expectedTagsPrefix}/`));
-
-   // Summary length (10-100 words)
+   const areaOk = area === c.expected_area;
+   const tagsOk = tags.length > 0 && tags.every((t) => typeof t === 'string' && t.startsWith(`${c.tags_prefix}/`));
    const wordCount = summary.trim().split(/\s+/).length;
    const lengthOk = wordCount >= 10 && wordCount <= 100;
 
    const score = kwScore * 0.40 + (areaOk ? 0.25 : 0) + (tagsOk ? 0.20 : 0) + (lengthOk ? 0.15 : 0);
-   const pass = score >= 0.75;
+   const missing = c.must_mention.filter((kw) => !summaryLower.includes(kw.toLowerCase()));
 
-   const missing = mustMention.filter((kw) => !summaryLower.includes(kw.toLowerCase()));
    const reason = [
       `score=${(score * 100).toFixed(0)}/100`,
-      `kw=${mentioned.length}/${mustMention.length}${missing.length ? `(missing:${missing.join(',')})` : ''}`,
-      `area=${area}${areaOk ? '' : `≠${expectedArea}`}`,
-      `tags=${tagsOk ? 'ok' : `bad(${tags.slice(0, 3).join(',')})`}`,
+      `kw=${mentioned.length}/${c.must_mention.length}${missing.length ? `(missing:${missing.join(',')})` : ''}`,
+      `area=${area}${areaOk ? '' : `≠${c.expected_area}`}`,
+      `tags=${tagsOk ? 'ok' : `bad`}`,
       `words=${wordCount}`,
    ].join(' | ');
 
-   return { pass, score, reason };
+   return { pass: score >= 0.75, score, reason };
 }

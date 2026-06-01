@@ -1,5 +1,5 @@
 # Summarization / categorization benchmark.
-# Provider injected via BENCH_MODEL / BENCH_THINK / BENCH_OPTS_JSON env vars.
+# expected_area, tags_prefix, must_mention live in summcases.mjs (avoids array expansion).
 
 description: "Summarization and categorization quality"
 
@@ -28,9 +28,6 @@ tests:
            Covers multi-step reasoning with retrieval, tool use, and LLM orchestration.
            Describes how agents decompose queries into sub-tasks, retrieve relevant
            context at each step, and synthesize answers using chained tool calls.
-        expected_area: craft
-        expected_tags_prefix: craft
-        must_mention: ["retrieval", "agent", "reasoning"]
    - vars:
         case_id: trance-compression
         title: Sidechain compression for trance pumping
@@ -38,9 +35,6 @@ tests:
            Classic trance pumping effect: sidechain a compressor on bass and pads
            keyed to the kick drum. Attack 0.1ms, release 80-150ms for the pump feel.
            Ghost kick sidechain keeps it in time without audible kick bleed.
-        expected_area: music
-        expected_tags_prefix: music
-        must_mention: ["sidechain", "compressor", "kick"]
    - vars:
         case_id: trading-0dte
         title: 0DTE options theta decay
@@ -48,9 +42,6 @@ tests:
            Zero-days-to-expiry SPX options accelerate theta decay after 2pm.
            Selling premium after 2pm captures the steepest part of the intraday
            theta curve but gamma risk is highest in the last 30 minutes.
-        expected_area: finance
-        expected_tags_prefix: finance
-        must_mention: ["theta", "options", "gamma"]
    - vars:
         case_id: qmk-debounce
         title: Keyboard debouncing in QMK firmware
@@ -58,9 +49,6 @@ tests:
            QMK supports eager, defer-until-idle, and sym_eager_pk debounce algorithms.
            Eager fires immediately on press and delays release; sym_eager_pk is best
            for per-key debounce on split keyboards with noisy switches.
-        expected_area: craft
-        expected_tags_prefix: craft
-        must_mention: ["debounce", "QMK", "keyboard"]
    - vars:
         case_id: zettelkasten
         title: Zettelkasten vs folder hierarchies for PKM
@@ -68,9 +56,6 @@ tests:
            Dense bidirectional links between atomic notes outperform deep folder
            hierarchies for knowledge retrieval. Each note has exactly one idea;
            links surface unexpected connections better than any taxonomy.
-        expected_area: craft
-        expected_tags_prefix: craft
-        must_mention: ["links", "atomic", "hierarchy"]
    - vars:
         case_id: salary-negotiation
         title: Negotiating a senior engineer offer
@@ -78,6 +63,3 @@ tests:
            Anchor high on total compensation including equity refresh. Use competing
            offers as leverage. Recruiter call script: confirm base, then move to
            signing bonus and RSU refresh before benefits.
-        expected_area: work
-        expected_tags_prefix: work
-        must_mention: ["compensation", "offer", "equity"]

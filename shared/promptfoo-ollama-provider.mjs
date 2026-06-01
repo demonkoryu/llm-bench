@@ -133,8 +133,20 @@ async function callApi(prompt, context) {
    if (bench === 'triage') {
       body.format = TRIAGE_SCHEMA;
    } else if (bench === 'toolcalling') {
-      const toolsSubset = context?.vars?.tools_subset;
-      const toolNames = Array.isArray(toolsSubset) ? toolsSubset : (toolsSubset ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+      // Look up tools by case_id to avoid YAML array expansion (same pattern as reasoning/cases.mjs)
+      const caseId = context?.vars?.case_id;
+      let toolNames = [];
+      if (caseId) {
+         try {
+            const { CASES } = await import('../benchmarks/toolcalling/toolcases.mjs');
+            toolNames = CASES[caseId]?.tools ?? [];
+         } catch {}
+      }
+      // Fallback: tools_subset as comma-separated string (not array)
+      if (!toolNames.length) {
+         const ts = context?.vars?.tools_subset;
+         toolNames = (typeof ts === 'string' ? ts : '').split(',').map((s) => s.trim()).filter(Boolean);
+      }
       body.tools = toolNames.map((n) => TOOLS_POOL[n]).filter(Boolean);
    }
 
