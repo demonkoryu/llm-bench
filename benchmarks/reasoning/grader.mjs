@@ -1,7 +1,10 @@
 /**
  * promptfoo grader for the reasoning benchmark.
- * Normalizes answer and checks against accepted forms + trap detection.
+ * Accepted answers and traps are looked up from cases.mjs by case_id
+ * to avoid promptfoo's array-expansion behavior on YAML vars.
  */
+
+import { CASES } from './cases.mjs';
 
 function norm(s) {
    return String(s ?? '').toLowerCase().trim()
@@ -15,23 +18,23 @@ function stripThink(c) {
 }
 
 export default function(output, context) {
-   const accepted = context?.vars?.accepted ?? [];
-   const trap = context?.vars?.trap ?? '';
    const caseId = context?.vars?.case_id ?? '?';
+   const c = CASES[caseId];
+   if (!c) return { pass: false, score: 0, reason: `Unknown case_id: ${caseId}` };
 
    let answer = null;
    try {
       answer = JSON.parse(stripThink(output)).answer;
    } catch {
-      return { pass: false, score: 0, reason: `JSON parse failed for case ${caseId}` };
+      return { pass: false, score: 0, reason: `JSON parse failed for case ${caseId}: ${String(output).slice(0, 60)}` };
    }
 
    const a = norm(answer);
-   const correct = accepted.some((acc) => {
+   const correct = c.accepted.some((acc) => {
       const n = norm(acc);
       return a === n || a.includes(n) || n.includes(a);
    });
-   const hitTrap = !correct && a === norm(trap);
+   const hitTrap = !correct && a === norm(c.trap);
 
    return {
       pass: correct,
@@ -39,7 +42,7 @@ export default function(output, context) {
       reason: correct
          ? `correct: "${answer}"`
          : hitTrap
-            ? `trap: got "${answer}" (trap=${trap})`
-            : `wrong: got "${answer}", expected one of [${accepted.join(', ')}]`,
+            ? `trap: got "${answer}" (trap=${c.trap})`
+            : `wrong: got "${answer}", expected one of [${c.accepted.join(', ')}]`,
    };
 }

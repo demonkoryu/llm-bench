@@ -1,98 +1,85 @@
 # Tool-calling benchmark — 10 cases using Ollama native tools API.
-# Grader checks: tool selected, args valid JSON, arg values correct.
-# Two trap cases (expect: null) where the model must NOT call any tool.
+# Provider injected via BENCH_MODEL / BENCH_THINK / BENCH_OPTS_JSON env vars.
+# tools_subset var is read by the provider to select which tools to expose.
+# output from provider is JSON-serialized tool_calls array.
 
 description: "Tool-calling — 10 cases incl. 2 no-call traps"
 
+providers:
+   - id: "file://../../shared/promptfoo-ollama-provider.mjs"
+     label: "ollama-toolcalling"
+
 defaultTest:
-   options:
-      provider:
-         id: "ollama:qwen3.5:4b"
-         config:
-            temperature: 0.4
-            top_p: 0.9
-            num_ctx: 8192
+   assert:
+      - type: javascript
+        value: "file://grader.mjs"
 
-prompt:
-   - role: system
-     content: |
-        You are a helpful assistant with access to tools.
-        Call a tool ONLY when it is needed to fulfill the user's request.
-        If no available tool fits, or no tool is needed, respond in plain text WITHOUT calling any tool.
-   - role: user
-     content: "{{user_request}}"
-
-assert:
-   - type: javascript
-     value: "file://grader.mjs"
+prompts:
+   - id: toolcalling-prompt
+     raw: |
+        [
+          {"role":"system","content":"You are a helpful assistant with access to tools. Call a tool ONLY when it is needed to fulfill the user's request. If no available tool fits, or no tool is needed, respond in plain text WITHOUT calling any tool."},
+          {"role":"user","content":"{{user_request}}"}
+        ]
 
 tests:
    - vars:
         case_id: weather-basic
         user_request: "What is the weather in Tokyo right now?"
         tools_subset: ["get_weather"]
-        expect_tool: "get_weather"
+        expect_tool: get_weather
         validate_args: "city_contains=tokyo"
-
    - vars:
         case_id: weather-unit
         user_request: "What is the temperature in Berlin in Fahrenheit?"
         tools_subset: ["get_weather"]
-        expect_tool: "get_weather"
+        expect_tool: get_weather
         validate_args: "city_contains=berlin,unit_eq=fahrenheit"
-
    - vars:
         case_id: add-list
         user_request: "Add up these numbers for me: 12, 30, and 8."
         tools_subset: ["add_numbers", "get_weather"]
-        expect_tool: "add_numbers"
+        expect_tool: add_numbers
         validate_args: "numbers_sorted_eq=8,12,30"
-
    - vars:
         case_id: currency
         user_request: "Convert 250 US dollars to euros."
         tools_subset: ["convert_currency", "add_numbers"]
-        expect_tool: "convert_currency"
+        expect_tool: convert_currency
         validate_args: "amount_eq=250,from_contains=usd,to_contains=eur"
-
    - vars:
         case_id: email-fields
         user_request: "Email alice@example.com with the subject \"Lunch\" and tell her I will be 10 minutes late."
         tools_subset: ["send_email"]
-        expect_tool: "send_email"
+        expect_tool: send_email
         validate_args: "to_contains=alice@example.com,subject_contains=lunch,body_contains=late"
-
    - vars:
         case_id: pick-right-tool
         user_request: "Find wireless headphones in the catalog, show me 5."
         tools_subset: ["get_weather", "add_numbers", "send_email", "convert_currency", "search_db"]
-        expect_tool: "search_db"
+        expect_tool: search_db
         validate_args: "query_contains=headphone"
-
    - vars:
         case_id: distractor-tools
         user_request: "How much is 1000 Japanese yen in British pounds?"
         tools_subset: ["get_weather", "add_numbers", "send_email", "convert_currency", "search_db"]
-        expect_tool: "convert_currency"
+        expect_tool: convert_currency
         validate_args: "amount_eq=1000,from_contains=jpy,to_contains=gbp"
-
    - vars:
         case_id: no-tool-needed
         user_request: "Thanks, that is all I needed. Have a good day!"
         tools_subset: ["get_weather", "add_numbers", "send_email"]
         expect_tool: null
         validate_args: ""
-
    - vars:
         case_id: missing-tool
         user_request: "Please book me a flight from London to New York tomorrow."
         tools_subset: ["get_weather", "add_numbers"]
         expect_tool: null
         validate_args: ""
-
    - vars:
         case_id: numbers-from-prose
         user_request: "I bought three items costing seven dollars, fifteen dollars, and twenty-two dollars. What is the total?"
         tools_subset: ["add_numbers"]
-        expect_tool: "add_numbers"
+        expect_tool: add_numbers
         validate_args: "numbers_sorted_eq=7,15,22"

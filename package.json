@@ -3,13 +3,15 @@
    "version": "0.1.0",
    "type": "module",
    "description": "Local LLM benchmark suite: triage, reasoning, tool-calling, long-context KV, summarization",
-   "engines": { "node": ">=22" },
+   "engines": {
+      "node": ">=22"
+   },
    "scripts": {
       "dry-run": "node runners/run-suite.mjs --dry-run",
       "bench": "node runners/run-suite.mjs",
       "results": "node runners/results-to-md.mjs"
    },
    "devDependencies": {
-      "promptfoo": "^0.105.0"
+      "promptfoo": "^0.121.13"
    }
 }
