@@ -1,0 +1,6 @@
+node_modules/
+results/*.tsv
+results/*.md
+results/*.json
+*.out
+nohup.log
