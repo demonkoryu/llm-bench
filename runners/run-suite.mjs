@@ -92,6 +92,8 @@ const { CASES: TOOL_CASES, TOOLS_POOL } = await import('../benchmarks/toolcallin
 const toolGrader                        = (await import('../benchmarks/toolcalling/grader.mjs')).default;
 const summGrader                        = (await import('../benchmarks/summarization/grader.mjs')).default;
 const { SUMM_ITEMS }                    = await import('../benchmarks/summarization/summcases.mjs');
+const { gradeAll: docqaGradeAll }       = await import('../benchmarks/docqa/grader.mjs');
+const docqaCases                        = JSON.parse(readFileSync(join(ROOT, 'benchmarks/docqa/cases.json'), 'utf8'));
 
 // ── Model helpers ──────────────────────────────────────────────────────────────
 const allModels = modelsConfig.models ?? [];
@@ -382,6 +384,38 @@ async function runSummarization(client, model, thinkState) {
    return { score: count ? (totalScore / count * 100).toFixed(1) : '?', halls: '-', json_fail: '-', tok_s: '-', wall_s: (totalMs / 1000).toFixed(0) };
 }
 
+async function runDocqa(client, model, thinkState) {
+   const effectiveThink = thinkState === true ? false : thinkState;
+   const sampling = sampleOpts(model, effectiveThink, 'docqa');
+   const { docs, questions } = docqaCases;
+   const docMap = Object.fromEntries((docs ?? []).map((d) => [d.id, d.source]));
+   const answers = {};
+
+   for (const q of (questions ?? [])) {
+      const context = (q.doc_ids ?? []).map((id) => docMap[id] ?? '').filter(Boolean).join('\n\n');
+      const messages = [
+         { role: 'system', content: 'Answer the question using ONLY the provided documents. Be precise and concise. Show your numerical work if needed.' },
+         { role: 'user',   content: `Documents:\n${context}\n\nQuestion: ${q.question}` },
+      ];
+      let completion;
+      try {
+         const res = await client.chat(messages, {
+            think: effectiveThink,
+            max_tokens: MAX_TOKENS.docqa,
+            ...sampling,
+         });
+         completion = res.completion;
+      } catch { answers[q.id] = ''; continue; }
+      const raw = stripThink(completion.choices?.[0]?.message?.content ?? '');
+      warnRunaway('docqa', q.id, completion);
+      answers[q.id] = raw;
+   }
+
+   const { mean_score, per_question } = docqaGradeAll(questions ?? [], answers);
+   const trapHits = per_question.filter((r) => r.trap_hits?.length > 0).length;
+   return { score: mean_score.toFixed(2), halls: trapHits, json_fail: '-', tok_s: '-', wall_s: '-' };
+}
+
 async function runSpeed(client) {
    const SHORT_PROMPT = 'Tell me a single short sentence about the sky.';
    const LONG_PROMPT  = 'Tell me about the history of computing. Be as comprehensive as possible and write at least 2000 words covering all major developments from ancient times to today.';
@@ -659,6 +693,15 @@ for (const model of models) {
          if (res) {
             console.log(`accuracy=${res.r.score}%`);
             appendTsv({ target: TARGET, backend: BACKEND, model: mid, think: tl, bench: 'toolcalling', score: res.r.score, halls: '-', json_fail: '-', tok_s: '-', prefill_tps: '-', vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded ?? '?', oom_ceiling: oomCeiling ?? '?', coherence_ceiling: coherenceCeiling ?? '?', status: 'ok', wall_s: res.r.wall_s, notes: '' });
+         }
+      }
+
+      // docqa — skip in pure-think mode
+      if (thinkState !== true) {
+         const res = await skipOrRun('docqa', () => runDocqa(client, model, thinkState));
+         if (res) {
+            console.log(`mean=${res.r.score}/10  trap_hits=${res.r.halls}`);
+            appendTsv({ target: TARGET, backend: BACKEND, model: mid, think: tl, bench: 'docqa', score: res.r.score, halls: res.r.halls, json_fail: '-', tok_s: '-', prefill_tps: '-', vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded ?? '?', oom_ceiling: oomCeiling ?? '?', coherence_ceiling: coherenceCeiling ?? '?', status: 'ok', wall_s: res.wallS, notes: '' });
          }
       }
 

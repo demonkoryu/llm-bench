@@ -1,0 +1,79 @@
+{
+  "_meta": "Hardened doc-QA: denser docs with exact numbers + planted misconceptions (traps). Questions require multi-hop / arithmetic reasoning with deterministic answers, so the axis separates models. Graded by grade_docqa.py (no self-judge).",
+  "docs": [
+    {
+      "id": "moe-scaling",
+      "source": "The Qwen3-30B-A3B model uses a Mixture-of-Experts (MoE) design. It has 30.5 billion total parameters but activates only 3.3 billion per token. The network has 48 transformer layers; each MoE layer holds 128 experts, of which exactly 8 are routed (activated) per token. Each expert contributes roughly 0.21 billion parameters to the active set, so the per-token active parameter count scales linearly with the number of routed experts: routing more experts raises both the active-parameter count and the per-token compute cost, which LOWERS decode throughput. Routing fewer experts raises throughput but degrades quality.\n\nImportant: decode speed tracks ACTIVE parameters, not total parameters. That is why the 30B-A3B decodes at roughly the speed of a 6-billion-parameter dense model. A frequent misconception is that an MoE model needs less VRAM than a dense model of the same total size. This is false: every one of the 30.5 billion parameters must be resident in VRAM regardless of how many experts are activated; sparsity saves compute, not memory. Quantized to UD-Q4_K_XL the resident weights occupy 17.7 GB."
+    },
+    {
+      "id": "kv-budget",
+      "source": "The key-value (KV) attention cache grows linearly with context length. For the Qwen3-30B-A3B GQA configuration, a full-precision f16 KV cache consumes 6.0 GiB at 64K tokens. Symmetric Q8_0 quantization halves this to 3.0 GiB at 64K, with near-lossless quality (perplexity delta < 0.1). Q4_0 quantization halves it again to 1.5 GiB at 64K, but the llama.cpp documentation warns of measurable quality loss on tool-calling tasks. All KV sizes scale linearly with context: doubling the context doubles the cache.\n\nThe target GPU is a Radeon RX 7900 XT with a 20.0 GB VRAM budget. The UD-Q4_K_XL weights occupy 17.7 GB of that budget; the remainder is available for the KV cache and compute buffers (treat compute-buffer overhead as negligible for these estimates). On AMD HIP, only the symmetric Q8_0/Q8_0 KV configuration keeps the fused FlashAttention kernel path; asymmetric setups fall off it."
+    },
+    {
+      "id": "agentic-latency",
+      "source": "A single retrieval round in this RAG stack adds 40 ms of latency (embedding + nearest-neighbor search). Optional cross-encoder reranking adds a further 25 ms per round when enabled. Agentic RAG performs multiple sequential retrieval rounds (hops); each hop is a full retrieval round, and hops run sequentially so their latencies add. Agentic RAG can improve answers on multi-hop questions, but it does NOT guarantee higher accuracy: errors from an early hop propagate into later hops, and on simple single-fact queries the extra hops add latency with no benefit. Reranking is independent of the model and can be toggled off."
+    }
+  ],
+  "questions": [
+    {
+      "id": "moe-route-16",
+      "doc_ids": ["moe-scaling"],
+      "question": "If a deployment routed 16 experts per token instead of the default 8, would decode throughput go up or down, and approximately what would the active-parameter count become?",
+      "required_facts": ["down", "6.6"],
+      "forbidden_claims": ["throughput would increase", "speed would increase", "faster", "less vram"],
+      "numeric_answer": {"value": 6.6, "tolerance": 0.5, "unit": "B active params"},
+      "expected_conclusion": "down",
+      "rationale": "More routed experts => more active params (8->16 doubles 3.3B to ~6.6B) => more compute => LOWER throughput. Trap: 'MoE = fast' tempts 'up'."
+    },
+    {
+      "id": "moe-vram-myth",
+      "doc_ids": ["moe-scaling"],
+      "question": "Does the MoE design let the model occupy less VRAM than a dense model of the same 30.5B total size? Answer yes or no and explain.",
+      "required_facts": ["no", "resident"],
+      "forbidden_claims": ["yes", "uses less vram", "less memory", "lower vram"],
+      "numeric_answer": null,
+      "expected_conclusion": "no",
+      "rationale": "Direct trap: all 30.5B params resident; sparsity saves compute not memory."
+    },
+    {
+      "id": "kv-128k-fit",
+      "doc_ids": ["kv-budget"],
+      "question": "At 128K context with symmetric Q8_0 KV, compute the KV cache size in GiB and state whether the model fits in the 20.0 GB budget alongside the 17.7 GB weights.",
+      "required_facts": ["6.0", "does not fit"],
+      "forbidden_claims": ["it fits within", "does fit", "will fit", "fits comfortably", "yes it fits"],
+      "numeric_answer": {"value": 6.0, "tolerance": 0.3, "unit": "GiB"},
+      "expected_conclusion": "does not fit",
+      "rationale": "Q8_0 = 3.0 GiB/64K, so 128K = 6.0 GiB. 17.7 + 6.0 = 23.7 > 20 => does not fit. Two-step arithmetic."
+    },
+    {
+      "id": "kv-max-ctx",
+      "doc_ids": ["kv-budget"],
+      "question": "What is the largest context length (in thousands of tokens) at which the symmetric Q8_0 KV cache still fits within the 20.0 GB budget given 17.7 GB of weights? Show the headroom you used.",
+      "required_facts": ["2.3", "49"],
+      "forbidden_claims": ["64k fits", "128k fits"],
+      "numeric_answer": {"value": 49, "tolerance": 4, "unit": "K tokens"},
+      "expected_conclusion": "49",
+      "rationale": "Headroom 20.0-17.7=2.3 GiB; at 3.0 GiB/64K => 2.3/3.0*64K ~= 49K tokens."
+    },
+    {
+      "id": "kv-q4-128k",
+      "doc_ids": ["kv-budget"],
+      "question": "Would switching to Q4_0 KV make a 128K context fit in the 20.0 GB budget with the 17.7 GB weights? Give the Q4_0 cache size at 128K and a yes/no.",
+      "required_facts": ["3.0", "no"],
+      "forbidden_claims": ["yes it fits", "yes, it fits", "would fit"],
+      "numeric_answer": {"value": 3.0, "tolerance": 0.3, "unit": "GiB"},
+      "expected_conclusion": "no",
+      "rationale": "Q4_0 = 1.5 GiB/64K => 3.0 GiB at 128K. 17.7+3.0 = 20.7 > 20 => still does NOT fit. Trap: 'Q4_0 is smaller so it fits'."
+    },
+    {
+      "id": "agentic-3hop",
+      "doc_ids": ["agentic-latency"],
+      "question": "With reranking DISABLED, what is the total added retrieval latency for an agentic query that performs 3 sequential hops? And does performing 3 hops guarantee a more accurate answer than a single retrieval?",
+      "required_facts": ["120", "no"],
+      "forbidden_claims": ["195", "guarantees", "always more accurate", "65 ms per hop"],
+      "numeric_answer": {"value": 120, "tolerance": 1, "unit": "ms"},
+      "expected_conclusion": "no",
+      "rationale": "Reranking off => 40 ms/hop * 3 = 120 ms (trap: adding the 25ms rerank => 195). And hops do NOT guarantee accuracy (error propagation)."
+    }
+  ]
+}
