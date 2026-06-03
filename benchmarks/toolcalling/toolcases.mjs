@@ -6,6 +6,85 @@
 
 export const TOOL_NAMES = ['get_weather', 'add_numbers', 'send_email', 'convert_currency', 'search_db'];
 
+export const TOOLS_POOL = {
+   get_weather: {
+      type: 'function',
+      function: {
+         name: 'get_weather',
+         description: 'Get the current weather for a city.',
+         parameters: {
+            type: 'object',
+            properties: {
+               city:  { type: 'string', description: 'City name' },
+               unit:  { type: 'string', enum: ['celsius', 'fahrenheit'], description: 'Temperature unit' },
+            },
+            required: ['city'],
+         },
+      },
+   },
+   add_numbers: {
+      type: 'function',
+      function: {
+         name: 'add_numbers',
+         description: 'Add a list of numbers together.',
+         parameters: {
+            type: 'object',
+            properties: {
+               numbers: { type: 'array', items: { type: 'number' }, description: 'Numbers to add' },
+            },
+            required: ['numbers'],
+         },
+      },
+   },
+   send_email: {
+      type: 'function',
+      function: {
+         name: 'send_email',
+         description: 'Send an email.',
+         parameters: {
+            type: 'object',
+            properties: {
+               to:      { type: 'string', description: 'Recipient email address' },
+               subject: { type: 'string', description: 'Email subject' },
+               body:    { type: 'string', description: 'Email body' },
+            },
+            required: ['to', 'subject', 'body'],
+         },
+      },
+   },
+   convert_currency: {
+      type: 'function',
+      function: {
+         name: 'convert_currency',
+         description: 'Convert an amount from one currency to another.',
+         parameters: {
+            type: 'object',
+            properties: {
+               amount: { type: 'number', description: 'Amount to convert' },
+               from:   { type: 'string', description: 'Source currency code (e.g. USD)' },
+               to:     { type: 'string', description: 'Target currency code (e.g. EUR)' },
+            },
+            required: ['amount', 'from', 'to'],
+         },
+      },
+   },
+   search_db: {
+      type: 'function',
+      function: {
+         name: 'search_db',
+         description: 'Search a product database.',
+         parameters: {
+            type: 'object',
+            properties: {
+               query: { type: 'string', description: 'Search query' },
+               limit: { type: 'number', description: 'Max results to return' },
+            },
+            required: ['query'],
+         },
+      },
+   },
+};
+
 export const CASES = {
    'weather-basic': {
       tools: ['get_weather'],

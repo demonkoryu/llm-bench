@@ -80,7 +80,19 @@ export function gradeOne(item, rawContent, _thinkChars, opts = {}) {
       parsed = JSON.parse(clean);
       parsedOk = true;
    } catch {
-      return { scores: sc, parsedOk, anchorHallucination, detail: 'JSON parse failed' };
+      // Tolerant fallback: extract the first {...} span in case the model emitted a
+      // trailing token, a preamble, or a code-fence wrapper after the JSON object.
+      // A harness must not over-fail the model for minor formatting artifacts.
+      const m = clean.match(/\{[\s\S]*\}/);
+      if (m) {
+         try {
+            parsed = JSON.parse(m[0]);
+            parsedOk = true;
+         } catch { /* fall through to hard fail below */ }
+      }
+      if (!parsedOk) {
+         return { scores: sc, parsedOk, anchorHallucination, detail: 'JSON parse failed' };
+      }
    }
 
    if (opts.acceptance) {

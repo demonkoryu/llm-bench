@@ -1,20 +1,18 @@
 #!/usr/bin/env node
 /**
- * Serial benchmark orchestrator — restart-minimizing loop order.
+ * Serial benchmark orchestrator — everything via llama.cpp directly.
  *
- * Execution: direct Ollama/llama.cpp calls + grader function imports.
- * No eval framework in the hot path.
+ * Models downloaded from HuggingFace via --hf-repo/--hf-file on first use,
+ * cached in ~/.cache/llama.cpp/ on the remote host. No Ollama required.
  *
- * Visualization: writes results/run-TIMESTAMP.json in promptfoo output
- * schema → open with: npx promptfoo view results/run-TIMESTAMP.json
+ * Loop: for model × kv_config — start llama-server, run all benches, stop.
+ *   - toolcalling_decay and maxctx: first KV pass per model only (KV-independent)
+ *   - longctx passkey + multifact: all KV passes (this is the KV sweep point)
  *
- * Ollama phase (3 service restarts total):
- *   for kv in [f16, q8_0, q4_0]:       ← OUTER: 1 systemd restart per KV type
- *     for model in fitting:             ← INNER: hot-swap, no restart
- *       run: triage, reasoning, toolcalling, toolcalling_decay, summarization, speed, maxctx
- *
- * llama.cpp phase (1 server start per model × kv combo):
- *   for model × kv: start server → longctx passkey + multifact → stop
+ * Think toggle: chat_template_kwargs.enable_thinking (per-request, llama.cpp native)
+ * Structured output: response_format.json_schema (triage)
+ * Tools: standard OpenAI tools spec
+ * KV quant: -ctk / -ctv server launch flags (f16 | q8_0 | q4_0 | k8v4)
  *
  * Options:
  *   --target rose|m1       Host target (default: rose)
@@ -22,9 +20,7 @@
  *   --benches <name,...>   Restrict bench names
  *   --kv <type,...>        KV types to sweep
  *   --dry-run              Print matrix and exit
- *   --no-llamacpp          Skip llama.cpp phase
- *   --no-ollama            Skip Ollama phase
- *   --resume               Skip combos already present in results/results.tsv
+ *   --resume               Skip combos already in results/results.tsv
  */
 
 import { readFileSync, existsSync, appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
@@ -41,14 +37,12 @@ const execP = promisify(execFile);
 // ── CLI ────────────────────────────────────────────────────────────────────────
 const { values: flags } = parseArgs({
    options: {
-      target:        { type: 'string',  default: 'rose' },
-      models:        { type: 'string',  default: '' },
-      benches:       { type: 'string',  default: '' },
-      kv:            { type: 'string',  default: '' },
-      'dry-run':     { type: 'boolean', default: false },
-      'no-llamacpp': { type: 'boolean', default: false },
-      'no-ollama':   { type: 'boolean', default: false },
-      resume:        { type: 'boolean', default: false },
+      target:    { type: 'string',  default: 'rose' },
+      models:    { type: 'string',  default: '' },
+      benches:   { type: 'string',  default: '' },
+      kv:        { type: 'string',  default: '' },
+      'dry-run': { type: 'boolean', default: false },
+      resume:    { type: 'boolean', default: false },
    },
 });
 
@@ -64,10 +58,9 @@ try { yaml = (await import('js-yaml')).default; }
 catch { yaml = { load: () => { throw new Error('js-yaml not available; run npm install'); } }; }
 
 const modelsConfig = yaml.load(readFileSync(join(ROOT, 'config/models.yaml'), 'utf8'));
-const hostsConfig  = yaml.load(readFileSync(join(ROOT, 'config/hosts.yaml'),  'utf8'));
-
-const host = hostsConfig[TARGET];
-if (!host) throw new Error(`Unknown target: ${TARGET}`);
+const hostsConfig  = yaml.load(readFileSync(join(ROOT, 'config/hosts.yaml'), 'utf8'));
+const hostCfg      = hostsConfig[TARGET];
+if (!hostCfg) throw new Error(`Unknown target: ${TARGET}`);
 
 function resolveEnv(s) {
    return String(s ?? '').replace(/\$\{([^}]+)\}/g, (_, e) => {
@@ -76,332 +69,140 @@ function resolveEnv(s) {
    });
 }
 
-const OLLAMA_HOST = resolveEnv(host.ollama);
-const LLAMA_URL   = host.llamacpp ? resolveEnv(host.llamacpp) : null;
-const SSH_HOST    = resolveEnv(host.ssh_host);
+const LLAMA_URL = resolveEnv(hostCfg.llamacpp);
+const SSH_HOST  = resolveEnv(hostCfg.ssh_host);
 
 // ── Grader imports ─────────────────────────────────────────────────────────────
 const { gradeOne: triageGradeOne, computeScore: triageComputeScore } =
    await import('../shared/triage-rubric.mjs');
-const { GOLDEN }          = await import('../shared/triage-golden.mjs');
+const { GOLDEN }                        = await import('../shared/triage-golden.mjs');
 const { TRIAGE_SCHEMA, TRIAGE_STATIC_PROMPT } = await import('../shared/triage-prompt.mjs');
-const triageGrader        = (await import('../benchmarks/triage/grader.mjs')).default;
-
-const { CASES: REASON_CASES } = await import('../benchmarks/reasoning/cases.mjs');
-const reasoningGrader         = (await import('../benchmarks/reasoning/grader.mjs')).default;
-
-const { CASES: TOOL_CASES }   = await import('../benchmarks/toolcalling/toolcases.mjs');
-const { TOOLS_POOL }          = await import('../benchmarks/toolcalling/toolcases.mjs');
-const toolGrader              = (await import('../benchmarks/toolcalling/grader.mjs')).default;
-
-await import('../benchmarks/summarization/summcases.mjs');
-const summGrader              = (await import('../benchmarks/summarization/grader.mjs')).default;
+const triageGrader                      = (await import('../benchmarks/triage/grader.mjs')).default;
+const { CASES: REASON_CASES }           = await import('../benchmarks/reasoning/cases.mjs');
+const reasoningGrader                   = (await import('../benchmarks/reasoning/grader.mjs')).default;
+const { CASES: TOOL_CASES, TOOLS_POOL } = await import('../benchmarks/toolcalling/toolcases.mjs');
+const toolGrader                        = (await import('../benchmarks/toolcalling/grader.mjs')).default;
+const summGrader                        = (await import('../benchmarks/summarization/grader.mjs')).default;
 
 // ── Model helpers ──────────────────────────────────────────────────────────────
 const allModels = modelsConfig.models ?? [];
 
-function filterModels(models) {
-   return models.filter((m) => {
+/** Stable ID derived from the GGUF filename (no extension). Used as TSV key. */
+function modelId(m) { return m.hf_file.replace(/\.gguf$/i, ''); }
+
+function filterModels() {
+   return allModels.filter((m) => {
       if (m.fit_rose === 'oom') return false;
-      if (FILTER_MODELS.length && !FILTER_MODELS.some((f) => m.tag.includes(f))) return false;
+      if (FILTER_MODELS.length && !FILTER_MODELS.some((f) => modelId(m).includes(f) || m.label.includes(f))) return false;
       return true;
    });
 }
 
+// ── Token budgets — keyed by mode, same across all models (fairness) ─────────
+// Qwen and DeepSeek-R1 both officially recommend 32768 for thinking.
+// no_think/instruct: 1024 is well above any structured JSON answer.
+// speed bench overrides to 150 at call site (not a scored bench).
+const MAX_TOKENS = {
+   no_think: 1024,   // structured JSON answer, no think block
+   think:    32768,  // think block + answer; Qwen + DeepSeek-R1 official recommendation
+   tool:     512,    // single tool call response
+   instruct: 1024,   // non-thinking model
+};
+
 function samplingOpts(model, think, bench) {
-   if (bench === 'reasoning') return { temperature: 0.6, top_p: 0.95, top_k: 20, num_ctx: 8192 };
-   if (bench === 'toolcalling' || bench === 'toolcalling_decay') return { temperature: 0.4, top_p: 0.9, num_ctx: 8192 };
-   const f = model.family ?? '';
-   if (f.startsWith('qwen3.5') || f.startsWith('qwen3.6')) {
-      return think
-         ? { temperature: 0.6, top_p: 0.95, top_k: 20, presence_penalty: 0.0 }
-         : { temperature: 0.7, top_p: 0.8,  top_k: 20, presence_penalty: 1.5 };
-   }
-   if (f.startsWith('deepseek')) {
-      return model.tag.includes('0528')
-         ? { temperature: 0.6, top_p: 0.95, min_p: 0.01 }
-         : { temperature: 0.6, top_p: 0.95, min_p: 0.05 };
-   }
-   if (f === 'gpt-oss') return { temperature: 0.6 };
-   return { temperature: 0.1 };
-}
-
-// ── Ollama transport ───────────────────────────────────────────────────────────
-async function ollamaChat({ model, messages, think = null, format = null, tools = null, options = {} }) {
-   const body = { model, messages, stream: false, options };
-   if (think !== null) body.think = think;
-   if (format)        body.format = format;
-   if (tools)         body.tools  = tools;
-   const res = await fetch(`${OLLAMA_HOST}/api/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      signal: AbortSignal.timeout(600_000),
-      body: JSON.stringify(body),
-   });
-   return res.json();
-}
-
-async function unloadAll() {
-   try {
-      const res = await fetch(`${OLLAMA_HOST}/api/ps`, { signal: AbortSignal.timeout(5000) });
-      for (const m of (await res.json()).models ?? []) {
-         await fetch(`${OLLAMA_HOST}/api/generate`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ model: m.name, keep_alive: 0 }),
-            signal: AbortSignal.timeout(15_000),
-         }).catch(() => {});
+   const base = (() => {
+      // Reasoning bench: fix sampling so think vs no_think is the only variable.
+      // min_p 0 per Qwen spec (llama.cpp default is 0.1 which prunes unexpectedly).
+      if (bench === 'reasoning') return { temperature: 0.6, top_p: 0.95, top_k: 20, min_p: 0 };
+      // Toolcalling: top_k + min_p per Qwen spec.
+      if (bench === 'toolcalling') return { temperature: 0.4, top_p: 0.9, top_k: 20, min_p: 0 };
+      const f = model.family ?? '';
+      if (f.startsWith('qwen3.5') || f.startsWith('qwen3.6')) {
+         // Official Qwen3/3.5 guidance: both modes set min_p 0. No greedy decoding in think mode.
+         return think
+            ? { temperature: 0.6, top_p: 0.95, top_k: 20, min_p: 0 }
+            : { temperature: 0.7, top_p: 0.8,  top_k: 20, min_p: 0, presence_penalty: 1.5 };
       }
-   } catch {}
+      if (f.startsWith('qwen3')) {
+         return think
+            ? { temperature: 0.6, top_p: 0.95, top_k: 20, min_p: 0 }
+            : { temperature: 0.7, top_p: 0.8,  top_k: 20, min_p: 0 };
+      }
+      if (f.startsWith('deepseek')) {
+         // DeepSeek guidance intentionally differs: min_p 0.01/0.05 (not 0).
+         return modelId(model).includes('0528')
+            ? { temperature: 0.6, top_p: 0.95, min_p: 0.01 }
+            : { temperature: 0.6, top_p: 0.95, min_p: 0.05 };
+      }
+      // Non-thinking instruct models (llama, mistral, phi, gemma, qwen2.5, granite).
+      return { temperature: 0.1 };
+   })();
+   return base;
 }
 
-async function warmup(tag, supportsThink) {
-   try {
-      await ollamaChat({ model: tag, messages: [{ role: 'user', content: supportsThink ? 'hi /no_think' : 'hi' }], think: supportsThink ? false : null, options: { num_predict: 1 } });
-   } catch {}
+/**
+ * Warn and record when a model hit max_tokens instead of its natural stop token.
+ * This is a model failure (failed to converge within a generous budget), not a
+ * harness failure — but we must surface it immediately, not silently.
+ */
+function warnRunaway(bench, id, reason) {
+   if (reason === 'length') {
+      console.warn(`    [RUNAWAY] ${bench}/${id}: hit max_tokens ceiling — model did not converge`);
+   }
 }
 
-function tokPerSec(resp) {
-   return resp.eval_count && resp.eval_duration
-      ? (resp.eval_count / (resp.eval_duration / 1e9))
-      : null;
-}
-
-function stripThink(s) { return s.replace(/<think>[\s\S]*?<\/think>/g, '').trim(); }
-
-// ── promptfoo-compatible result builder ────────────────────────────────────────
-// run-suite writes this JSON for `npx promptfoo view results/run-TIMESTAMP.json`
-function makePfResult({ bench, model, think, kv, vars, promptRaw, output, gradingResult, tokenUsage, latencyMs, metadata }) {
-   const thinkLabel = think === null ? 'n/a' : think ? 'think' : 'no_think';
-   return {
-      provider:  { id: `ollama:${model.tag}`, label: `${model.label} [${thinkLabel}] KV=${kv}` },
-      prompt:    { raw: promptRaw, label: bench },
-      vars,
-      response:  { output, tokenUsage: tokenUsage ?? {}, metadata: metadata ?? {} },
-      gradingResult,
-      success:   gradingResult?.pass ?? false,
-      score:     gradingResult?.score ?? 0,
-      latencyMs: latencyMs ?? 0,
-   };
-}
-
-// ── Results storage ────────────────────────────────────────────────────────────
+// ── Results ────────────────────────────────────────────────────────────────────
 const RESULTS_DIR = join(ROOT, 'results');
 const RESULTS_TSV = join(RESULTS_DIR, 'results.tsv');
 mkdirSync(RESULTS_DIR, { recursive: true });
 
-const TSV_HEADER = 'target\tkv\tmodel\tthink\tbench\tscore\thalls\tjson_fail\ttok_s\tvram_mib\tstatus\twall_s\tnotes\n';
+const TSV_HEADER = 'target\tkv\tmodel\tthink\tbench\tscore\thalls\tjson_fail\ttok_s\tvram_mib\tctx_loaded\tstatus\twall_s\tnotes\n';
 if (!existsSync(RESULTS_TSV)) appendFileSync(RESULTS_TSV, TSV_HEADER);
 
-function tsvKey(target, kv, model, think, bench) { return `${target}\t${kv}\t${model}\t${think}\t${bench}`; }
+function tsvKey(kv, model, think, bench) { return `${TARGET}\t${kv}\t${model}\t${think}\t${bench}`; }
 
 function loadDoneKeys() {
    if (!existsSync(RESULTS_TSV)) return new Set();
-   return new Set(readFileSync(RESULTS_TSV, 'utf8').split('\n').slice(1).filter(Boolean).map((l) => l.split('\t').slice(0, 5).join('\t')));
+   return new Set(
+      readFileSync(RESULTS_TSV, 'utf8').split('\n').slice(1).filter(Boolean)
+         .map((l) => l.split('\t').slice(0, 5).join('\t'))
+   );
 }
 
 function appendTsv(row) { appendFileSync(RESULTS_TSV, Object.values(row).join('\t') + '\n'); }
 
-// Accumulate promptfoo JSON across entire run; flushed at end
+// promptfoo JSON accumulator for visualization
 const pfResults = [];
+
+function recordPf({ bench, model, think, kv, vars, promptRaw, output, gradingResult, latencyMs, tokS }) {
+   const tl = think === null ? 'n/a' : think ? 'think' : 'no_think';
+   pfResults.push({
+      provider:  { id: `llamacpp:${modelId(model)}`, label: `${model.label} [${tl}] KV=${kv}` },
+      prompt:    { raw: promptRaw, label: bench },
+      vars,
+      response:  { output, metadata: { tok_per_sec: tokS } },
+      gradingResult,
+      success:   gradingResult?.pass ?? false,
+      score:     gradingResult?.score ?? 0,
+      latencyMs: latencyMs ?? 0,
+   });
+}
 
 function flushPfJson() {
    if (!pfResults.length) return;
    const ts = new Date().toISOString().replace(/[:.]/g, '-');
-   const outPath = join(RESULTS_DIR, `run-${ts}.json`);
-   const successes = pfResults.filter((r) => r.success).length;
-   const failures  = pfResults.filter((r) => !r.success).length;
-   const payload = {
-      results: {
-         version: 3,
-         timestamp: new Date().toISOString(),
-         results: pfResults,
-         stats: { successes, failures, errors: 0 },
-      },
-      config: { description: `llm-bench — target=${TARGET}` },
-   };
-   writeFileSync(outPath, JSON.stringify(payload, null, 2));
-   console.log(`\n[run-suite] promptfoo JSON → ${outPath}`);
-   console.log(`[run-suite] View: npx promptfoo view ${outPath}`);
+   const out = join(RESULTS_DIR, `run-${ts}.json`);
+   const s = pfResults.filter((r) => r.success).length;
+   const f = pfResults.filter((r) => !r.success).length;
+   writeFileSync(out, JSON.stringify({
+      results: { version: 3, timestamp: new Date().toISOString(), results: pfResults, stats: { successes: s, failures: f, errors: 0 } },
+      config: { description: `llm-bench target=${TARGET}` },
+   }, null, 2));
+   console.log(`\n[run-suite] promptfoo JSON → ${out}`);
+   console.log(`[run-suite] View: npx promptfoo view ${out}`);
 }
 
-// ── Bench runners ──────────────────────────────────────────────────────────────
-
-async function runTriage(model, think, kv) {
-   const opts = samplingOpts(model, think, 'triage');
-   const itemResults = [];
-   let totalMs = 0, totalToks = 0, halls = 0, jsonFail = 0;
-
-   for (const item of GOLDEN) {
-      const messages = [
-         { role: 'system', content: TRIAGE_STATIC_PROMPT },
-         { role: 'user', content: `Title: ${item.title}\nContent preview:\n${item.content_preview}` },
-      ];
-      const t0 = Date.now();
-      let resp;
-      try {
-         resp = await ollamaChat({ model: model.tag, messages, think, format: TRIAGE_SCHEMA, options: opts });
-      } catch (e) {
-         itemResults.push({ item, grade: { scores: {}, parsedOk: false, anchorHallucination: false }, tokPerSec: null });
-         continue;
-      }
-      const latencyMs = Date.now() - t0;
-      totalMs += latencyMs;
-      const tps = tokPerSec(resp);
-      if (tps) totalToks += tps;
-      const raw = resp.message?.content ?? '';
-      const grade = triageGradeOne(item, raw);
-      if (grade.anchorHallucination) halls++;
-      if (!grade.parsedOk) jsonFail++;
-      itemResults.push({ item, grade, tps, latencyMs });
-
-      // promptfoo result per item
-      const gradingResult = triageGrader(raw, { vars: { item_id: item.id } });
-      pfResults.push(makePfResult({
-         bench: 'triage', model, think, kv,
-         vars: { item_id: item.id, item_title: item.title },
-         promptRaw: messages[1].content,
-         output: raw,
-         gradingResult,
-         tokenUsage: { total: (resp.prompt_eval_count ?? 0) + (resp.eval_count ?? 0), prompt: resp.prompt_eval_count ?? 0, completion: resp.eval_count ?? 0 },
-         latencyMs,
-         metadata: { tok_per_sec: tps?.toFixed(1) },
-      }));
-   }
-
-   const { total: score } = triageComputeScore(itemResults);
-   const avgTps = totalToks / itemResults.filter((r) => r.tps).length || 0;
-   return { score: score.toFixed(1), halls, json_fail: jsonFail, tok_s: avgTps.toFixed(1), wall_s: (totalMs / 1000).toFixed(0) };
-}
-
-async function runReasoning(model, think, kv) {
-   const opts = samplingOpts(model, think, 'reasoning');
-   const ANSWER_SCHEMA = { type: 'object', properties: { answer: { type: 'string' } }, required: ['answer'] };
-   const SYSTEM = 'You are solving short reasoning problems. Work out the correct answer.\nRespond ONLY with JSON: {"answer": "<your final answer, as short as possible>"}.\nPut just the final value in "answer" — a number or single word where possible, no explanation.';
-
-   let correct = 0, errors = 0, totalMs = 0;
-   const tokList = [];
-
-   for (const [caseId] of Object.entries(REASON_CASES)) {
-      const q = REASON_QUESTIONS[caseId];
-      if (!q) continue;
-      const msgs = [{ role: 'system', content: SYSTEM }, { role: 'user', content: q }];
-      const t0 = Date.now();
-      let resp;
-      try { resp = await ollamaChat({ model: model.tag, messages: msgs, think, format: ANSWER_SCHEMA, options: opts }); }
-      catch { errors++; continue; }
-      const latencyMs = Date.now() - t0;
-      totalMs += latencyMs;
-      const tps = tokPerSec(resp);
-      if (tps) tokList.push(tps);
-      const raw = resp.message?.content ?? '';
-      const gradingResult = reasoningGrader(raw, { vars: { case_id: caseId } });
-      if (gradingResult.pass) correct++;
-      pfResults.push(makePfResult({
-         bench: 'reasoning', model, think, kv,
-         vars: { case_id: caseId, question: q },
-         promptRaw: q,
-         output: raw,
-         gradingResult,
-         tokenUsage: { total: (resp.prompt_eval_count ?? 0) + (resp.eval_count ?? 0), prompt: resp.prompt_eval_count ?? 0, completion: resp.eval_count ?? 0 },
-         latencyMs,
-         metadata: { tok_per_sec: tps?.toFixed(1) },
-      }));
-   }
-
-   const avgTps = tokList.length ? tokList.reduce((a, b) => a + b) / tokList.length : 0;
-   const acc = (correct / Object.keys(REASON_CASES).length * 100).toFixed(1);
-   return { score: acc, halls: '-', json_fail: errors, tok_s: avgTps.toFixed(1), wall_s: (totalMs / 1000).toFixed(0) };
-}
-
-async function runToolcalling(model, kv) {
-   const opts = samplingOpts(model, false, 'toolcalling');
-   const SYSTEM = 'You are a helpful assistant with access to tools. Call a tool ONLY when it is needed to fulfill the user\'s request. If no available tool fits, or no tool is needed, respond in plain text WITHOUT calling any tool.';
-
-   let pass = 0, totalMs = 0;
-   const USER_REQUESTS = {
-      'weather-basic':    'What is the weather in Tokyo right now?',
-      'weather-unit':     'What is the temperature in Berlin in Fahrenheit?',
-      'add-list':         'Add up these numbers for me: 12, 30, and 8.',
-      'currency':         'Convert 250 US dollars to euros.',
-      'email-fields':     'Email alice@example.com with the subject "Lunch" and tell her I will be 10 minutes late.',
-      'pick-right-tool':  'Find wireless headphones in the catalog, show me 5.',
-      'distractor-tools': 'How much is 1000 Japanese yen in British pounds?',
-      'no-tool-needed':   'Thanks, that is all I needed. Have a good day!',
-      'missing-tool':     'Please book me a flight from London to New York tomorrow.',
-      'numbers-from-prose': 'I bought three items costing seven dollars, fifteen dollars, and twenty-two dollars. What is the total?',
-   };
-
-   for (const [caseId] of Object.entries(TOOL_CASES)) {
-      const userMsg = USER_REQUESTS[caseId] ?? caseId;
-      const tools = TOOL_CASES[caseId].tools.map((n) => TOOLS_POOL[n]).filter(Boolean);
-      const messages = [{ role: 'system', content: SYSTEM }, { role: 'user', content: userMsg }];
-      const t0 = Date.now();
-      let resp;
-      try { resp = await ollamaChat({ model: model.tag, messages, think: false, tools, options: opts }); }
-      catch { continue; }
-      const latencyMs = Date.now() - t0;
-      totalMs += latencyMs;
-      const toolCalls = resp.message?.tool_calls ?? [];
-      const output = JSON.stringify(toolCalls);
-      const gradingResult = toolGrader(output, { vars: { case_id: caseId } });
-      if (gradingResult.pass) pass++;
-      pfResults.push(makePfResult({
-         bench: 'toolcalling', model, think: false, kv,
-         vars: { case_id: caseId, user_request: userMsg },
-         promptRaw: userMsg,
-         output,
-         gradingResult,
-         latencyMs,
-         metadata: { tok_per_sec: tokPerSec(resp)?.toFixed(1) },
-      }));
-   }
-
-   const acc = (pass / Object.keys(TOOL_CASES).length * 100).toFixed(1);
-   return { score: acc, halls: '-', json_fail: '-', tok_s: '-', wall_s: (totalMs / 1000).toFixed(0) };
-}
-
-async function runSummarization(model, think, kv) {
-   const opts = samplingOpts(model, think, 'summarization');
-   const SYSTEM = 'You are summarizing and categorizing content for a personal knowledge vault.\nThe vault has 4 areas: craft (software, AI, hardware, PKM), finance (trading, markets), music (DJing, production), work (career, employer).\n\nRespond with JSON only:\n{\n  "summary": "<1-2 sentence factual summary>",\n  "area": "<craft|finance|music|work>",\n  "tags": ["<area/subtag>", ...]\n}';
-
-   const ITEMS = {
-      'rag-paper':          { title: 'Agentic RAG whitepaper', content: 'Covers multi-step reasoning with retrieval, tool use, and LLM orchestration. Describes how agents decompose queries into sub-tasks, retrieve relevant context at each step, and synthesize answers using chained tool calls.' },
-      'trance-compression': { title: 'Sidechain compression for trance pumping', content: 'Classic trance pumping effect: sidechain a compressor on bass and pads keyed to the kick drum. Attack 0.1ms, release 80-150ms for the pump feel. Ghost kick sidechain keeps it in time without audible kick bleed.' },
-      'trading-0dte':       { title: '0DTE options theta decay', content: 'Zero-days-to-expiry SPX options accelerate theta decay after 2pm. Selling premium after 2pm captures the steepest part of the intraday theta curve but gamma risk is highest in the last 30 minutes.' },
-      'qmk-debounce':       { title: 'Keyboard debouncing in QMK firmware', content: 'QMK supports eager, defer-until-idle, and sym_eager_pk debounce algorithms. Eager fires immediately on press and delays release; sym_eager_pk is best for per-key debounce on split keyboards with noisy switches.' },
-      'zettelkasten':       { title: 'Zettelkasten vs folder hierarchies for PKM', content: 'Dense bidirectional links between atomic notes outperform deep folder hierarchies for knowledge retrieval. Each note has exactly one idea; links surface unexpected connections better than any taxonomy.' },
-      'salary-negotiation': { title: 'Negotiating a senior engineer offer', content: 'Anchor high on total compensation including equity refresh. Use competing offers as leverage. Recruiter call script: confirm base, then move to signing bonus and RSU refresh before benefits.' },
-   };
-
-   let totalScore = 0, totalMs = 0, count = 0;
-   for (const [caseId, item] of Object.entries(ITEMS)) {
-      const messages = [{ role: 'system', content: SYSTEM }, { role: 'user', content: `Title: ${item.title}\n\n${item.content}` }];
-      const t0 = Date.now();
-      let resp;
-      try { resp = await ollamaChat({ model: model.tag, messages, think: think ?? null, options: opts }); }
-      catch { continue; }
-      const latencyMs = Date.now() - t0;
-      totalMs += latencyMs;
-      const raw = stripThink(resp.message?.content ?? '');
-      const gradingResult = summGrader(raw, { vars: { case_id: caseId } });
-      totalScore += gradingResult.score ?? 0;
-      count++;
-      pfResults.push(makePfResult({
-         bench: 'summarization', model, think, kv,
-         vars: { case_id: caseId, title: item.title },
-         promptRaw: messages[1].content,
-         output: raw,
-         gradingResult,
-         latencyMs,
-         metadata: { tok_per_sec: tokPerSec(resp)?.toFixed(1) },
-      }));
-   }
-
-   const avgScore = count ? (totalScore / count * 100).toFixed(1) : '?';
-   return { score: avgScore, halls: '-', json_fail: '-', tok_s: '-', wall_s: (totalMs / 1000).toFixed(0) };
-}
-
-// Reasoning questions — inline to avoid a config file import
+// ── Reasoning questions (inline — avoids a config file import) ─────────────────
 const REASON_QUESTIONS = {
    'bat-and-ball':     'A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How many cents does the ball cost?',
    'widgets':          'If 5 machines take 5 minutes to make 5 widgets, how many minutes do 100 machines take to make 100 widgets?',
@@ -417,243 +218,385 @@ const REASON_QUESTIONS = {
    'overtaking':       'In a race, you overtake the runner in second place. What position are you in now? Give the ordinal (e.g. first, second).',
 };
 
-// ── Speed + max-ctx ────────────────────────────────────────────────────────────
-async function measureSpeed(tag, think, numCtx = 4096) {
-   const body = { model: tag, stream: false, options: { temperature: 0.7, num_ctx: numCtx, num_predict: 150 }, messages: [{ role: 'user', content: 'Describe the water cycle in detail.' }] };
-   if (think !== null) body.think = think;
-   try {
-      const res = await fetch(`${OLLAMA_HOST}/api/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(120_000), body: JSON.stringify(body) });
-      const r = await res.json();
-      return tokPerSec(r)?.toFixed(1) ?? null;
-   } catch { return null; }
-}
+const SUMM_ITEMS = {
+   'rag-paper':          { title: 'Agentic RAG whitepaper', content: 'Covers multi-step reasoning with retrieval, tool use, and LLM orchestration. Describes how agents decompose queries into sub-tasks, retrieve relevant context at each step, and synthesize answers using chained tool calls.' },
+   'trance-compression': { title: 'Sidechain compression for trance pumping', content: 'Classic trance pumping effect: sidechain a compressor on bass and pads keyed to the kick drum. Attack 0.1ms, release 80-150ms for the pump feel. Ghost kick sidechain keeps it in time without audible kick bleed.' },
+   'trading-0dte':       { title: '0DTE options theta decay', content: 'Zero-days-to-expiry SPX options accelerate theta decay after 2pm. Selling premium after 2pm captures the steepest part of the intraday theta curve but gamma risk is highest in the last 30 minutes.' },
+   'qmk-debounce':       { title: 'Keyboard debouncing in QMK firmware', content: 'QMK supports eager, defer-until-idle, and sym_eager_pk debounce algorithms. Eager fires immediately on press and delays release; sym_eager_pk is best for per-key debounce on split keyboards with noisy switches.' },
+   'zettelkasten':       { title: 'Zettelkasten vs folder hierarchies for PKM', content: 'Dense bidirectional links between atomic notes outperform deep folder hierarchies for knowledge retrieval. Each note has exactly one idea; links surface unexpected connections better than any taxonomy.' },
+   'salary-negotiation': { title: 'Negotiating a senior engineer offer', content: 'Anchor high on total compensation including equity refresh. Use competing offers as leverage. Recruiter call script: confirm base, then move to signing bonus and RSU refresh before benefits.' },
+};
 
-async function probeMaxCtx(tag) {
-   const pts = modelsConfig.ctx_probe_points ?? [4096, 16384, 32768, 65536];
-   let lo = 0, hi = pts.length - 1, best = pts[0];
-   while (lo <= hi) {
-      const mid = (lo + hi) >> 1;
-      const ok = await canLoadCtx(tag, pts[mid]);
-      if (ok) { best = pts[mid]; lo = mid + 1; } else { hi = mid - 1; }
+const TOOL_USER_REQUESTS = {
+   'weather-basic':      'What is the weather in Tokyo right now?',
+   'weather-unit':       'What is the temperature in Berlin in Fahrenheit?',
+   'add-list':           'Add up these numbers for me: 12, 30, and 8.',
+   'currency':           'Convert 250 US dollars to euros.',
+   'email-fields':       'Email alice@example.com with the subject "Lunch" and tell her I will be 10 minutes late.',
+   'pick-right-tool':    'Find wireless headphones in the catalog, show me 5.',
+   'distractor-tools':   'How much is 1000 Japanese yen in British pounds?',
+   'no-tool-needed':     'Thanks, that is all I needed. Have a good day!',
+   'missing-tool':       'Please book me a flight from London to New York tomorrow.',
+   'numbers-from-prose': 'I bought three items costing seven dollars, fifteen dollars, and twenty-two dollars. What is the total?',
+};
+
+// ── Bench runners ──────────────────────────────────────────────────────────────
+
+async function runTriage(client, model, think, kv) {
+   const opts = samplingOpts(model, think, 'triage');
+   // In think mode, never force a JSON grammar — the grammar blocks <think> tokens
+   // and prevents the model from emitting its natural EOS. Graders already strip think.
+   const maxTok = think ? MAX_TOKENS.think : MAX_TOKENS.no_think;
+   const itemResults = [];
+   let totalMs = 0, halls = 0, jsonFail = 0;
+   const tokList = [];
+
+   for (const item of GOLDEN) {
+      const messages = [
+         { role: 'system', content: TRIAGE_STATIC_PROMPT },
+         { role: 'user',   content: `Title: ${item.title}\nContent preview:\n${item.content_preview}` },
+      ];
+      const t0 = Date.now();
+      let resp;
+      try {
+         resp = await client.chat(messages, {
+            think,
+            responseFormat: think ? null : TRIAGE_SCHEMA,
+            max_tokens: maxTok,
+            ...opts,
+         });
+      } catch (e) {
+         console.error(`    triage error on ${item.id}: ${e.message.slice(0, 80)}`);
+         itemResults.push({ item, grade: { scores: {}, parsedOk: false, anchorHallucination: false } });
+         continue;
+      }
+      const latencyMs = Date.now() - t0;
+      totalMs += latencyMs;
+      const raw = client.content(resp);
+      const tps = client.tokPerSec(resp);
+      if (tps) tokList.push(tps);
+      warnRunaway('triage', item.id, client.finishReason(resp));
+      const grade = triageGradeOne(item, raw);
+      if (grade.anchorHallucination) halls++;
+      if (!grade.parsedOk) jsonFail++;
+      itemResults.push({ item, grade, tps, latencyMs });
+      recordPf({ bench: 'triage', model, think, kv, vars: { item_id: item.id }, promptRaw: messages[1].content, output: raw, gradingResult: triageGrader(raw, { vars: { item_id: item.id } }), latencyMs, tokS: tps?.toFixed(1) });
    }
-   return best;
+
+   const { total: score } = triageComputeScore(itemResults);
+   const avgTps = tokList.length ? (tokList.reduce((a, b) => a + b) / tokList.length) : 0;
+   return { score: score.toFixed(1), halls, json_fail: jsonFail, tok_s: avgTps.toFixed(1), wall_s: (totalMs / 1000).toFixed(0) };
 }
 
-async function canLoadCtx(tag, numCtx) {
-   try {
-      const res = await fetch(`${OLLAMA_HOST}/api/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(60_000), body: JSON.stringify({ model: tag, stream: false, options: { num_ctx: numCtx, num_predict: 1 }, messages: [{ role: 'user', content: 'hi' }] }) });
-      return !(await res.json()).error;
-   } catch { return false; }
+async function runReasoning(client, model, think, kv) {
+   const opts = samplingOpts(model, think, 'reasoning');
+   const ANSWER_SCHEMA = { type: 'object', properties: { answer: { type: 'string' } }, required: ['answer'] };
+   const SYSTEM = 'You are solving short reasoning problems. Work out the correct answer.\nRespond ONLY with JSON: {"answer": "<your final answer, as short as possible>"}.\nPut just the final value in "answer" — a number or single word where possible, no explanation.';
+
+   let correct = 0, errors = 0, totalMs = 0;
+   const tokList = [];
+
+   for (const [caseId] of Object.entries(REASON_CASES)) {
+      const q = REASON_QUESTIONS[caseId];
+      if (!q) continue;
+      const messages = [{ role: 'system', content: SYSTEM }, { role: 'user', content: q }];
+      const t0 = Date.now();
+      let resp;
+      const maxTok = think ? MAX_TOKENS.think : MAX_TOKENS.no_think;
+      // In think mode, omit the JSON grammar so the model can emit its think block
+      // then the answer, stopped by its native EOS — grader strips think before parsing.
+      try { resp = await client.chat(messages, { think, responseFormat: think ? null : ANSWER_SCHEMA, max_tokens: maxTok, ...opts }); }
+      catch { errors++; continue; }
+      const latencyMs = Date.now() - t0;
+      totalMs += latencyMs;
+      const tps = client.tokPerSec(resp);
+      if (tps) tokList.push(tps);
+      const raw = client.content(resp);
+      warnRunaway('reasoning', caseId, client.finishReason(resp));
+      const gradingResult = reasoningGrader(client.stripThink(raw), { vars: { case_id: caseId } });
+      if (gradingResult.pass) correct++;
+      recordPf({ bench: 'reasoning', model, think, kv, vars: { case_id: caseId, question: q }, promptRaw: q, output: raw, gradingResult, latencyMs, tokS: tps?.toFixed(1) });
+   }
+
+   const total = Object.keys(REASON_CASES).length;
+   const avgTps = tokList.length ? (tokList.reduce((a, b) => a + b) / tokList.length) : 0;
+   return { score: (correct / total * 100).toFixed(1), halls: '-', json_fail: errors, tok_s: avgTps.toFixed(1), wall_s: (totalMs / 1000).toFixed(0) };
 }
 
-// ── VRAM ──────────────────────────────────────────────────────────────────────
-async function snapshotVram() {
-   try {
-      const { stdout } = await execP('ssh', [SSH_HOST, 'rocm-smi --showmemuse --json'], { timeout: 10_000 });
-      const card = Object.values(JSON.parse(stdout.trim()))[0] ?? {};
-      return Math.round(parseInt(card['VRAM Total Used Memory (B)'] ?? '0', 10) / (1024 * 1024));
-   } catch { return null; }
+async function runToolcalling(client, model, kv) {
+   const opts = samplingOpts(model, false, 'toolcalling');
+   const SYSTEM = 'You are a helpful assistant with access to tools. Call a tool ONLY when it is needed. If no available tool fits, or no tool is needed, respond in plain text WITHOUT calling any tool.';
+
+   let pass = 0, totalMs = 0;
+
+   for (const [caseId] of Object.entries(TOOL_CASES)) {
+      const userMsg = TOOL_USER_REQUESTS[caseId] ?? caseId;
+      const tools = TOOL_CASES[caseId].tools.map((n) => TOOLS_POOL[n]).filter(Boolean);
+      const messages = [{ role: 'system', content: SYSTEM }, { role: 'user', content: userMsg }];
+      const t0 = Date.now();
+      let resp;
+      try { resp = await client.chat(messages, { think: false, tools, max_tokens: MAX_TOKENS.tool, ...opts }); }
+      catch { continue; }
+      const latencyMs = Date.now() - t0;
+      totalMs += latencyMs;
+      const calls = client.toolCalls(resp);
+      const output = JSON.stringify(calls);
+      const gradingResult = toolGrader(output, { vars: { case_id: caseId } });
+      if (gradingResult.pass) pass++;
+      recordPf({ bench: 'toolcalling', model, think: false, kv, vars: { case_id: caseId }, promptRaw: userMsg, output, gradingResult, latencyMs, tokS: null });
+   }
+
+   const total = Object.keys(TOOL_CASES).length;
+   return { score: (pass / total * 100).toFixed(1), halls: '-', json_fail: '-', tok_s: '-', wall_s: (totalMs / 1000).toFixed(0) };
 }
+
+async function runSummarization(client, model, think, kv) {
+   const opts = samplingOpts(model, think, 'summarization');
+   const SYSTEM = 'You are summarizing and categorizing content for a personal knowledge vault.\nThe vault has 4 areas: craft (software, AI, hardware, PKM), finance (trading, markets), music (DJing, production), work (career, employer).\n\nRespond with JSON only:\n{\n  "summary": "<1-2 sentence factual summary>",\n  "area": "<craft|finance|music|work>",\n  "tags": ["<area/subtag>", ...]\n}';
+
+   let totalScore = 0, totalMs = 0, count = 0;
+
+   for (const [caseId, item] of Object.entries(SUMM_ITEMS)) {
+      const messages = [{ role: 'system', content: SYSTEM }, { role: 'user', content: `Title: ${item.title}\n\n${item.content}` }];
+      const t0 = Date.now();
+      let resp;
+      const summMaxTok = think ? MAX_TOKENS.think : MAX_TOKENS.no_think;
+      try { resp = await client.chat(messages, { think: think ?? null, max_tokens: summMaxTok, ...opts }); }
+      catch { continue; }
+      const latencyMs = Date.now() - t0;
+      totalMs += latencyMs;
+      const raw = client.stripThink(client.content(resp));
+      const gradingResult = summGrader(raw, { vars: { case_id: caseId } });
+      totalScore += gradingResult.score ?? 0;
+      count++;
+      recordPf({ bench: 'summarization', model, think, kv, vars: { case_id: caseId }, promptRaw: messages[1].content, output: raw, gradingResult, latencyMs, tokS: null });
+   }
+
+   return { score: count ? (totalScore / count * 100).toFixed(1) : '?', halls: '-', json_fail: '-', tok_s: '-', wall_s: (totalMs / 1000).toFixed(0) };
+}
+
+// runSpeed removed — replaced by llama-bench (runners/llama-bench.mjs).
 
 // ── Dry-run ────────────────────────────────────────────────────────────────────
 function dryRun() {
-   const ollamaModels = filterModels(allModels).filter((m) => m.benches?.some((b) => b !== 'longctx'));
-   const llamaModels  = filterModels(allModels).filter((m) => m.benches?.includes('longctx'));
-   const kvOllama = FILTER_KV.length ? FILTER_KV : (modelsConfig.kv_configs?.ollama   ?? ['f16','q8_0','q4_0']);
-   const kvLlama  = FILTER_KV.length ? FILTER_KV : (modelsConfig.kv_configs?.llamacpp ?? ['f16','q8_0','q4_0','k8v4']);
+   const models  = filterModels();
+   const kvTypes = FILTER_KV.length ? FILTER_KV : (modelsConfig.kv_configs?.llamacpp ?? ['f16','q8_0','q4_0','k8v4']);
+   const starts  = models.length * kvTypes.length;
 
-   console.log(`\nDry-run — target=${TARGET}  OLLAMA_HOST=${OLLAMA_HOST}\n`);
-   console.log(`── Ollama phase ──  (${kvOllama.length} KV types × ${ollamaModels.length} models = ${kvOllama.length} restarts)`);
-   for (const kv of kvOllama) {
-      console.log(`  KV=${kv}:`);
-      for (const m of ollamaModels) {
-         const b = (m.benches ?? []).filter((x) => x !== 'longctx' && (!FILTER_BENCHES.length || FILTER_BENCHES.includes(x)));
-         console.log(`    ${m.tag.padEnd(52)} benches=[${b.join(',')}]`);
+   console.log(`\nDry-run — target=${TARGET}  LLAMA_URL=${LLAMA_URL}\n`);
+   console.log(`${models.length} models × ${kvTypes.length} KV configs = ${starts} server starts\n`);
+
+   for (const m of models) {
+      const b = (m.benches ?? []).filter((x) => !FILTER_BENCHES.length || FILTER_BENCHES.includes(x));
+      console.log(`  ${modelId(m).padEnd(55)} benches=[${b.join(',')}]`);
+      for (const kv of kvTypes) {
+         const [ctk, ctv] = kv === 'k8v4' ? ['q8_0', 'q4_0'] : [kv, kv];
+         console.log(`    KV=${kv.padEnd(5)} ctk=${ctk} ctv=${ctv}`);
       }
    }
-   if (!flags['no-llamacpp'] && LLAMA_URL) {
-      console.log(`\n── llama.cpp phase ──  (${llamaModels.length} models × ${kvLlama.length} KV = ${llamaModels.length * kvLlama.length} server starts)`);
-      for (const m of llamaModels) for (const kv of kvLlama) console.log(`  ${m.tag.padEnd(52)} KV=${kv}`);
-   }
-   console.log(`\nTotal Ollama restarts: ${kvOllama.length}`);
-   console.log(`Total llama.cpp server starts: ${flags['no-llamacpp'] ? 0 : llamaModels.length * kvLlama.length}`);
+   console.log(`\nTotal server starts: ${starts}`);
 }
 
 if (DRY_RUN) { dryRun(); process.exit(0); }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
+const { llamacppServer } = await import('./llamacpp-server.mjs');
+const { runLlamaBench }  = await import('./llama-bench.mjs');
+const srv      = llamacppServer({ sshHost: SSH_HOST, llamaUrl: LLAMA_URL });
+const models   = filterModels();
+const kvTypes  = FILTER_KV.length ? FILTER_KV : (modelsConfig.kv_configs?.llamacpp ?? ['f16','q8_0','q4_0','k8v4']);
 const doneKeys = flags.resume ? loadDoneKeys() : new Set();
 
-// ══════════════════════════════════════════════════════════════════════════════
-// OLLAMA PHASE
-// ══════════════════════════════════════════════════════════════════════════════
-if (!flags['no-ollama']) {
-   const kvTypes  = FILTER_KV.length ? FILTER_KV : (modelsConfig.kv_configs?.ollama ?? ['f16','q8_0','q4_0']);
-   const models   = filterModels(allModels).filter((m) => m.benches?.some((b) => b !== 'longctx'));
+// Kill any orphaned llama-server on the remote host before starting.
+console.log('[run-suite] sweeping remote for orphaned llama-server processes...');
+await srv.stop();
 
-   let kvMgr = null;
-   if (host.ollama_service) {
-      const { ollamaKvManager } = await import('./ollama-kv.mjs');
-      kvMgr = ollamaKvManager({ sshHost: SSH_HOST, service: host.ollama_service, ollamaHost: OLLAMA_HOST });
-   }
+// On SIGINT / SIGTERM: stop the remote server before exiting so nothing is left dangling.
+async function shutdown(sig) {
+   console.log(`\n[run-suite] ${sig} received — stopping remote server...`);
+   await srv.stop();
+   process.exit(1);
+}
+process.on('SIGINT',  () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));
 
-   for (const kv of kvTypes) {
-      console.log(`\n${'═'.repeat(70)}\n  OLLAMA PHASE — KV=${kv}${kvMgr ? '  (restarting)' : ''}\n${'═'.repeat(70)}`);
-      if (kvMgr) await kvMgr.setKvType(kv);
+console.log(`\n[run-suite] ${models.length} models × ${kvTypes.length} KV = ${models.length * kvTypes.length} server starts`);
+console.log(`[run-suite] LLAMA_URL=${LLAMA_URL}  SSH=${SSH_HOST}\n`);
 
-      for (const model of models) {
-         const supportsThink = model.think === 'optional' || model.think === 'required';
-         const thinkModes    = supportsThink ? [false, true] : [null];
+for (const model of models) {
+   // required: template enforces thinking — only run think:true (false would be misrepresented).
+   // optional: run both modes — the think vs no_think comparison is the data point.
+   // none:     no thinking mode at all — pass think:null (no chat_template_kwargs sent).
+   const thinkModes = model.think === 'required' ? [true]
+                    : model.think === 'optional' ? [false, true]
+                    : [null];
+   const benches       = (model.benches ?? []).filter((b) => !FILTER_BENCHES.length || FILTER_BENCHES.includes(b));
+   const mid           = modelId(model);
 
-         await unloadAll();
-         await warmup(model.tag, supportsThink);
-         console.log(`\n  ── ${model.label} (${model.tag})`);
+   for (const [kvIdx, kv] of kvTypes.entries()) {
+      const [ctk, ctv] = kv === 'k8v4' ? ['q8_0', 'q4_0'] : [kv, kv];
+      const isFirstKv  = kvIdx === 0;
 
-         const benches = (model.benches ?? []).filter((b) => b !== 'longctx' && (!FILTER_BENCHES.length || FILTER_BENCHES.includes(b)));
+      console.log(`\n${'═'.repeat(70)}`);
+      console.log(`  ${model.label}  KV=${kv}  (ctk=${ctk} ctv=${ctv})`);
+      console.log('═'.repeat(70));
 
-         for (const think of thinkModes) {
-            const tl = think === null ? 'n/a' : think ? 'think' : 'no_think';
+      // Start server — downloads model on first use, auto-probes largest fitting context
+      let ctxLoaded, vramMib;    // mutable: ensureAlive() may update on restart
+      try {
+         ({ ctxLoaded, vramMib } = await srv.start({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctk, ctv }));
+      } catch (e) {
+         console.error(`  [error] ${e.message}`);
+         appendTsv({ target: TARGET, kv, model: mid, think: '-', bench: 'load', score: '?', halls: '-', json_fail: '-', tok_s: '-', vram_mib: '-', ctx_loaded: '-', status: `error:${e.message.slice(0, 60)}`, wall_s: '-', notes: '' });
+         continue;
+      }
 
-            if (benches.includes('triage')) {
-               const key = tsvKey(TARGET, kv, model.tag, tl, 'triage');
-               if (flags.resume && doneKeys.has(key)) { console.log(`    [triage ${tl}] skip`); }
-               else {
-                  process.stdout.write(`    [triage ${tl}] `);
-                  const r = await runTriage(model, think, kv);
-                  const vram = await snapshotVram();
-                  console.log(`score=${r.score}  halls=${r.halls}  json_fail=${r.json_fail}  tok/s=${r.tok_s}  vram=${vram ?? '?'}MiB`);
-                  appendTsv({ target: TARGET, kv, model: model.tag, think: tl, bench: 'triage', score: r.score, halls: r.halls, json_fail: r.json_fail, tok_s: r.tok_s, vram_mib: vram ?? '?', status: 'ok', wall_s: r.wall_s, notes: '' });
-               }
-            }
+      const client = srv.client;
+      const startOpts = { hf_repo: model.hf_repo, hf_file: model.hf_file, ctk, ctv };
 
-            if (benches.includes('reasoning')) {
-               const key = tsvKey(TARGET, kv, model.tag, tl, 'reasoning');
-               if (flags.resume && doneKeys.has(key)) { console.log(`    [reasoning ${tl}] skip`); }
-               else {
-                  process.stdout.write(`    [reasoning ${tl}] `);
-                  const r = await runReasoning(model, think, kv);
-                  const vram = await snapshotVram();
-                  console.log(`accuracy=${r.score}%  tok/s=${r.tok_s}`);
-                  appendTsv({ target: TARGET, kv, model: model.tag, think: tl, bench: 'reasoning', score: r.score, halls: '-', json_fail: r.json_fail, tok_s: r.tok_s, vram_mib: vram ?? '?', status: 'ok', wall_s: r.wall_s, notes: '' });
-               }
-            }
+      /** Restart the server if it has crashed. Returns false if restart fails. */
+      async function ensureAlive() {
+         const alive = await client.waitHealthy(5_000).then(() => true).catch(() => false);
+         if (alive) return true;
+         console.warn('  [warn] server died, restarting...');
+         try {
+            const r = await srv.start(startOpts);
+            ctxLoaded = r.ctxLoaded;
+            vramMib   = r.vramMib;
+            return true;
+         } catch (e) {
+            console.error(`  [error] restart failed: ${e.message}`);
+            return false;
+         }
+      }
 
-            if (benches.includes('toolcalling') && model.tools && think !== true) {
-               const key = tsvKey(TARGET, kv, model.tag, tl, 'toolcalling');
-               if (flags.resume && doneKeys.has(key)) { console.log(`    [toolcalling] skip`); }
-               else {
-                  process.stdout.write(`    [toolcalling] `);
-                  const r = await runToolcalling(model, kv);
-                  const vram = await snapshotVram();
-                  console.log(`accuracy=${r.score}%`);
-                  appendTsv({ target: TARGET, kv, model: model.tag, think: tl, bench: 'toolcalling', score: r.score, halls: '-', json_fail: '-', tok_s: '-', vram_mib: vram ?? '?', status: 'ok', wall_s: r.wall_s, notes: '' });
-               }
-            }
+      for (const think of thinkModes) {
+         const tl = think === null ? 'n/a' : think ? 'think' : 'no_think';
 
-            if (benches.includes('toolcalling_decay') && model.tools && think !== true && kv === kvTypes[0]) {
-               const key = tsvKey(TARGET, kvTypes[0], model.tag, tl, 'toolcalling_decay');
-               if (flags.resume && doneKeys.has(key)) { console.log(`    [toolcalling_decay] skip`); }
-               else {
-                  process.stdout.write(`    [toolcalling_decay] `);
-                  const t0 = Date.now();
-                  const { stdout } = await execP('node', [join(ROOT, 'benchmarks/toolcalling/decay-bench.mjs'), model.tag], { env: { ...process.env, OLLAMA_HOST }, timeout: 3_600_000 }).catch((e) => ({ stdout: '', stderr: e.message }));
-                  const decayRows = [...stdout.matchAll(/^\s+(\d+)\s+\d+\s+([\d.]+)%/gm)].map((m) => `r${m[1]}=${m[2]}%`);
-                  const wall = ((Date.now() - t0) / 1000).toFixed(0);
-                  console.log(decayRows.join(' ') || 'done');
-                  appendTsv({ target: TARGET, kv: kvTypes[0], model: model.tag, think: tl, bench: 'toolcalling_decay', score: '-', halls: '-', json_fail: '-', tok_s: '-', vram_mib: '?', status: 'ok', wall_s: wall, notes: decayRows.join(' ') });
-               }
-            }
-
-            if (benches.includes('summarization') && think !== true) {
-               const key = tsvKey(TARGET, kv, model.tag, tl, 'summarization');
-               if (flags.resume && doneKeys.has(key)) { console.log(`    [summarization] skip`); }
-               else {
-                  process.stdout.write(`    [summarization] `);
-                  const r = await runSummarization(model, think === null ? null : false, kv);
-                  const vram = await snapshotVram();
-                  console.log(`score=${r.score}`);
-                  appendTsv({ target: TARGET, kv, model: model.tag, think: tl, bench: 'summarization', score: r.score, halls: '-', json_fail: '-', tok_s: '-', vram_mib: vram ?? '?', status: 'ok', wall_s: r.wall_s, notes: '' });
-               }
+         if (benches.includes('triage')) {
+            const key = tsvKey(kv, mid, tl, 'triage');
+            if (flags.resume && doneKeys.has(key)) { console.log(`  [triage ${tl}] skip`); }
+            else if (await ensureAlive()) {
+               process.stdout.write(`  [triage ${tl}] `);
+               const r = await runTriage(client, model, think, kv);
+               const vram = await srv.snapshotVram();
+               console.log(`score=${r.score}  halls=${r.halls}  json_fail=${r.json_fail}  tok/s=${r.tok_s}  vram=${vram ?? '?'}MiB`);
+               appendTsv({ target: TARGET, kv, model: mid, think: tl, bench: 'triage', score: r.score, halls: r.halls, json_fail: r.json_fail, tok_s: r.tok_s, vram_mib: vram ?? '?', ctx_loaded: ctxLoaded, status: 'ok', wall_s: r.wall_s, notes: '' });
             }
          }
 
-         // speed (all KV passes)
-         if (benches.includes('speed')) {
-            const key = tsvKey(TARGET, kv, model.tag, 'no_think', 'speed');
-            if (flags.resume && doneKeys.has(key)) { console.log(`    [speed] skip`); }
-            else {
-               process.stdout.write(`    [speed] `);
-               const tps = await measureSpeed(model.tag, supportsThink ? false : null, 4096);
-               const vram = await snapshotVram();
-               console.log(`${tps ?? '?'} tok/s  vram=${vram ?? '?'}MiB`);
-               appendTsv({ target: TARGET, kv, model: model.tag, think: 'no_think', bench: 'speed', score: tps ?? '?', halls: '-', json_fail: '-', tok_s: tps ?? '?', vram_mib: vram ?? '?', status: tps ? 'ok' : 'error', wall_s: '-', notes: '' });
+         if (benches.includes('reasoning')) {
+            const key = tsvKey(kv, mid, tl, 'reasoning');
+            if (flags.resume && doneKeys.has(key)) { console.log(`  [reasoning ${tl}] skip`); }
+            else if (await ensureAlive()) {
+               process.stdout.write(`  [reasoning ${tl}] `);
+               const r = await runReasoning(client, model, think, kv);
+               console.log(`accuracy=${r.score}%  tok/s=${r.tok_s}`);
+               appendTsv({ target: TARGET, kv, model: mid, think: tl, bench: 'reasoning', score: r.score, halls: '-', json_fail: r.json_fail, tok_s: r.tok_s, vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded, status: 'ok', wall_s: r.wall_s, notes: '' });
             }
          }
 
-         // maxctx (first KV pass only)
-         if (benches.includes('maxctx') && kv === kvTypes[0]) {
-            const key = tsvKey(TARGET, kv, model.tag, '-', 'maxctx');
-            if (flags.resume && doneKeys.has(key)) { console.log(`    [maxctx] skip`); }
-            else {
-               process.stdout.write(`    [maxctx] `);
-               const maxCtx = await probeMaxCtx(model.tag);
-               const vram   = await snapshotVram();
-               console.log(`${maxCtx.toLocaleString()} tokens (${(maxCtx * 4).toLocaleString()} chars)  vram=${vram ?? '?'}MiB`);
-               appendTsv({ target: TARGET, kv, model: model.tag, think: '-', bench: 'maxctx', score: maxCtx, halls: '-', json_fail: '-', tok_s: '-', vram_mib: vram ?? '?', status: 'ok', wall_s: '-', notes: '' });
+         if (benches.includes('toolcalling') && model.tools && think !== true) {
+            const key = tsvKey(kv, mid, tl, 'toolcalling');
+            if (flags.resume && doneKeys.has(key)) { console.log(`  [toolcalling] skip`); }
+            else if (await ensureAlive()) {
+               process.stdout.write(`  [toolcalling] `);
+               const r = await runToolcalling(client, model, kv);
+               console.log(`accuracy=${r.score}%`);
+               appendTsv({ target: TARGET, kv, model: mid, think: tl, bench: 'toolcalling', score: r.score, halls: '-', json_fail: '-', tok_s: '-', vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded, status: 'ok', wall_s: r.wall_s, notes: '' });
+            }
+         }
+
+         if (benches.includes('summarization') && think !== true) {
+            const key = tsvKey(kv, mid, tl, 'summarization');
+            if (flags.resume && doneKeys.has(key)) { console.log(`  [summarization] skip`); }
+            else if (await ensureAlive()) {
+               process.stdout.write(`  [summarization] `);
+               const r = await runSummarization(client, model, think === null ? null : false, kv);
+               console.log(`score=${r.score}`);
+               appendTsv({ target: TARGET, kv, model: mid, think: tl, bench: 'summarization', score: r.score, halls: '-', json_fail: '-', tok_s: '-', vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded, status: 'ok', wall_s: r.wall_s, notes: '' });
             }
          }
       }
-   }
 
-   if (kvMgr) await kvMgr.restore();
-   console.log('\n[run-suite] Ollama phase complete.');
-}
+      // speed — now handled by llama-bench (per-model, after server loop); skipped here.
 
-// ══════════════════════════════════════════════════════════════════════════════
-// LLAMA.CPP PHASE
-// ══════════════════════════════════════════════════════════════════════════════
-if (!flags['no-llamacpp'] && LLAMA_URL) {
-   const { llamacppServer } = await import('./llamacpp-server.mjs');
-   const srv      = llamacppServer({ sshHost: SSH_HOST, llamaUrl: LLAMA_URL });
-   const kvTypes  = FILTER_KV.length ? FILTER_KV : (modelsConfig.kv_configs?.llamacpp ?? ['f16','q8_0','q4_0','k8v4']);
-   const models   = filterModels(allModels).filter((m) => m.benches?.includes('longctx'));
+      // maxctx + toolcalling_decay — first KV pass only (KV-type-independent results)
+      if (isFirstKv) {
+         // maxctx: ctxLoaded from auto-probe above IS the result
+         if (benches.includes('maxctx')) {
+            const key = tsvKey(kv, mid, '-', 'maxctx');
+            if (!(flags.resume && doneKeys.has(key))) {
+               console.log(`  [maxctx] ${ctxLoaded.toLocaleString()} tokens (${(ctxLoaded * 4).toLocaleString()} chars)  vram=${vramMib ?? '?'}MiB`);
+               appendTsv({ target: TARGET, kv, model: mid, think: '-', bench: 'maxctx', score: ctxLoaded, halls: '-', json_fail: '-', tok_s: '-', vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded, status: 'ok', wall_s: '-', notes: '' });
+            }
+         }
 
-   console.log(`\n${'═'.repeat(70)}\n  LLAMA.CPP PHASE — ${models.length} models × ${kvTypes.length} KV configs\n${'═'.repeat(70)}`);
+         if (benches.includes('toolcalling_decay') && model.tools) {
+            const key = tsvKey(kv, mid, 'no_think', 'toolcalling_decay');
+            if (flags.resume && doneKeys.has(key)) { console.log(`  [toolcalling_decay] skip`); }
+            else if (await ensureAlive()) {
+               process.stdout.write(`  [toolcalling_decay] `);
+               const t0 = Date.now();
+               const { stdout } = await execP(
+                  'node', [join(ROOT, 'benchmarks/toolcalling/decay-bench.mjs'), mid],
+                  { env: { ...process.env, LLAMA_URL }, timeout: 3_600_000 }
+               ).catch((e) => ({ stdout: '', stderr: e.message }));
+               const decayRows = [...stdout.matchAll(/^\s+(\d+)\s+\d+\s+([\d.]+)%/gm)].map((m) => `r${m[1]}=${m[2]}%`);
+               const wall = ((Date.now() - t0) / 1000).toFixed(0);
+               console.log(decayRows.join(' ') || 'done');
+               appendTsv({ target: TARGET, kv, model: mid, think: 'no_think', bench: 'toolcalling_decay', score: '-', halls: '-', json_fail: '-', tok_s: '-', vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded, status: 'ok', wall_s: wall, notes: decayRows.join(' ') });
+            }
+         }
+      }
 
-   for (const model of models) {
-      for (const kv of kvTypes) {
-         const [ctk, ctv] = kv === 'k8v4' ? ['q8_0', 'q4_0'] : [kv, kv];
-         const key = tsvKey(TARGET, kv, model.tag, '-', 'longctx');
-         if (flags.resume && doneKeys.has(key)) { console.log(`  [${model.tag} KV=${kv}] skip`); continue; }
-
-         console.log(`\n  ── ${model.label} KV=${kv} (ctk=${ctk} ctv=${ctv})`);
-         const modelPath = `$(ollama show '${model.tag}' --modelfile 2>/dev/null | awk '/^FROM/{print $2}')`;
-         let vramMib = null;
-         try {
-            ({ vramMib } = await srv.start({ modelPath, ctxSize: 65536, ctk, ctv, ngl: 99 }));
+      // longctx — passkey + multifact (all KV passes; this IS the KV sweep)
+      if (benches.includes('longctx')) {
+         const key = tsvKey(kv, model.tag, '-', 'longctx');
+         if (flags.resume && doneKeys.has(key)) { console.log(`  [longctx] skip`); }
+         else if (await ensureAlive()) {
+            process.stdout.write(`  [longctx] `);
             const t0 = Date.now();
             const llamaEnv = { ...process.env, LLAMA_URL };
             const [pkOut, mfOut] = await Promise.all([
-               execP('node', [join(ROOT, 'benchmarks/longctx/passkey-bench.mjs'), '24000', kv, model.tag], { env: llamaEnv, timeout: 600_000 }).catch((e) => ({ stdout: '' })),
-               execP('node', [join(ROOT, 'benchmarks/longctx/multifact-bench.mjs'), '24000', kv, model.tag], { env: llamaEnv, timeout: 600_000 }).catch(() => ({ stdout: '' })),
+               execP('node', [join(ROOT, 'benchmarks/longctx/passkey-bench.mjs'), '24000', kv, mid], { env: llamaEnv, timeout: 600_000 }).catch(() => ({ stdout: '' })),
+               execP('node', [join(ROOT, 'benchmarks/longctx/multifact-bench.mjs'), '24000', kv, mid], { env: llamaEnv, timeout: 600_000 }).catch(() => ({ stdout: '' })),
             ]);
             const pkScore = pkOut.stdout.split('\n').find((l) => l.startsWith('RESULT\t'))?.split('\t')[4] ?? '?';
             const mfScore = mfOut.stdout.split('\n').find((l) => l.startsWith('RESULT_MULTIFACT\t'))?.split('\t')[4] ?? '?';
             const wall = ((Date.now() - t0) / 1000).toFixed(0);
-            console.log(`    passkey=${pkScore}  multifact=${mfScore}  vram=${vramMib ?? '?'}MiB`);
-            appendTsv({ target: TARGET, kv, model: model.tag, think: '-', bench: 'longctx', score: pkScore, halls: '-', json_fail: '-', tok_s: '-', vram_mib: vramMib ?? '?', status: 'ok', wall_s: wall, notes: `multifact=${mfScore}` });
+            console.log(`passkey=${pkScore}  multifact=${mfScore}`);
+            appendTsv({ target: TARGET, kv, model: mid, think: '-', bench: 'longctx', score: pkScore, halls: '-', json_fail: '-', tok_s: '-', vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded, status: 'ok', wall_s: wall, notes: `multifact=${mfScore}` });
+         }
+      }
+
+      await srv.stop();
+   }
+
+   // ── llama-bench perf pass (runs after server loop, no server needed) ──────
+   // Only for models that have 'speed' in their bench list.
+   if ((model.benches ?? []).includes('speed') && (!FILTER_BENCHES.length || FILTER_BENCHES.includes('speed'))) {
+      const perfKey = tsvKey('all', mid, '-', 'speed_pp');
+      if (flags.resume && doneKeys.has(perfKey)) {
+         console.log(`  [llama-bench] skip (already in results)`);
+      } else {
+         try {
+            const perfRows = await runLlamaBench({ sshHost: SSH_HOST, hf_file: model.hf_file });
+            for (const r of perfRows) {
+               appendTsv({
+                  target: TARGET, kv: r.kv, model: mid, think: '-', bench: r.bench,
+                  score: r.avg_ts.toFixed(1), halls: '-', json_fail: '-',
+                  tok_s: r.avg_ts.toFixed(1), vram_mib: '-', ctx_loaded: '-',
+                  status: 'ok', wall_s: '-',
+                  notes: `stddev=${r.stddev_ts.toFixed(1)}`,
+               });
+            }
          } catch (e) {
-            console.error(`  ERROR: ${e.message}`);
-            appendTsv({ target: TARGET, kv, model: model.tag, think: '-', bench: 'longctx', score: '?', halls: '-', json_fail: '-', tok_s: '-', vram_mib: vramMib ?? '?', status: `error:${e.message.slice(0, 60)}`, wall_s: '-', notes: '' });
-         } finally {
-            await srv.stop().catch(() => {});
+            console.error(`  [llama-bench] error: ${e.message}`);
          }
       }
    }
-   console.log('\n[run-suite] llama.cpp phase complete.');
 }
 
-// ── Flush promptfoo JSON for visualization ────────────────────────────────────
 flushPfJson();
-
 console.log(`\n[run-suite] Done. Results: ${RESULTS_TSV}`);

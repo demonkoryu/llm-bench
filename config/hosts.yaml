@@ -1,22 +1,17 @@
 # Endpoint config per target host.
-# Override any value via env: OLLAMA_HOST, LLAMA_URL, SSH_HOST, ROCM_SMI_SSH_CMD
+# Override via env: LLAMA_URL, SSH_HOST
 
 rose:
    label: "rose / RX 7900 XT (20 GiB)"
-   ollama: "${OLLAMA_HOST:-http://192.168.1.120:11434}"
    llamacpp: "${LLAMA_URL:-http://192.168.1.120:8090}"
    ssh_host: "${SSH_HOST:-llm2}"
    vram_cmd: "rocm-smi --showmemuse --json"
-   ollama_service: "ollama"          # systemd unit name
-   # llama.cpp binary: ROCm build at ~/llama.cpp/build-rocm/bin/llama-server (June 2026)
-   # Has DeltaNet HIP GPU kernel + ctk/ctv support. Supersedes old Vulkan b9444 prebuilt.
-   # Note: Ollama 0.24.0 lacks gated_delta_net kernel — Qwen3.6 DeltaNet layers CPU-fallback
-   # in the Ollama phase. Local ROCm build has full DeltaNet GPU support for llama.cpp phase.
+   # llama.cpp binary: ROCm build ~/llama.cpp/build-rocm/bin/llama-server (June 2026)
+   # DeltaNet HIP GPU kernel + ctk/ctv support.
+   # Model cache: ~/.cache/llama.cpp/ (downloaded via --hf-repo/--hf-file on first run)
 
 m1:
    label: "M1 Mac (32 GB unified)"
-   ollama: "${OLLAMA_HOST_M1:-http://192.168.1.150:11434}"
    llamacpp: null                    # no llama.cpp on M1; MLX runner only
    ssh_host: "${SSH_HOST_M1:-m1}"
    vram_cmd: "sudo powermetrics --samplers gpu_power -n 1 2>/dev/null | grep 'GPU HW'"
-   ollama_service: null              # managed via launchd, not systemd

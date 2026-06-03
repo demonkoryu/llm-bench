@@ -23,10 +23,21 @@ export default function(output, context) {
    if (!c) return { pass: false, score: 0, reason: `Unknown case_id: ${caseId}` };
 
    let answer = null;
+   const stripped = stripThink(output);
+   // Primary: model followed the JSON instruction.
    try {
-      answer = JSON.parse(stripThink(output)).answer;
+      answer = JSON.parse(stripped).answer;
    } catch {
-      return { pass: false, score: 0, reason: `JSON parse failed for case ${caseId}: ${String(output).slice(0, 60)}` };
+      // Tolerant fallback 1: extract first {...} span (trailing token / preamble).
+      const m = stripped.match(/\{[\s\S]*\}/);
+      if (m) {
+         try { answer = JSON.parse(m[0]).answer; } catch { /* continue */ }
+      }
+      // Tolerant fallback 2: think mode without grammar often emits plain text.
+      // Use the whole stripped output as the answer — grader normalises anyway.
+      if (answer == null) {
+         answer = stripped;
+      }
    }
 
    const a = norm(answer);

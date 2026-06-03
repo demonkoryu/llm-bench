@@ -1,7 +1,8 @@
 # Model matrix for llm-bench.
 #
 # Fields per model:
-#   tag          Ollama model tag
+#   hf_repo      HuggingFace repo (passed to llama-server --hf-repo)
+#   hf_file      GGUF filename inside the repo (--hf-file)
 #   label        Human-readable label for results tables
 #   family       Model family (used for sampling defaults)
 #   params       Approx active parameter count (B); for MoE = active experts
@@ -9,25 +10,24 @@
 #   think        none | optional | required
 #                  none     = no thinking mode (llama, gemma, etc.)
 #                  optional = supports think:true/false (qwen3, deepseek-r1, etc.)
-#                  required = always reasons (gpt-oss, DeepSeek-R1-0528)
-#   tools        true | false — supports Ollama tools API
+#                  required = always reasons
+#   tools        true | false
 #   vram_q4_gb   Approx VRAM at Q4 weight quant (weights only; add KV separately)
 #   fit_rose     fits | spills | oom  (approximate, at 4k ctx + f16 KV)
 #   benches      list of applicable benchmark suites
 #                  triage | reasoning | toolcalling | toolcalling_decay | longctx | summarization | speed | maxctx
-#   weight_quants list of weight quants to test (f16 = native Ollama default unless tagged)
 #   notes        any caveats
 #
-# KV quant variants (applied by the runner against each model):
-#   Ollama:    f16, q8_0, q4_0  (symmetric only; set via OLLAMA_KV_CACHE_TYPE)
-#   llama.cpp: f16, q8_0, q4_0, k8v4  (k8v4 = q8_0/q4_0 asymmetric, llama.cpp only)
+# KV quant variants (applied by the runner, llama.cpp only):
+#   f16, q8_0, q4_0, k8v4  (k8v4 = q8_0/q4_0 asymmetric, ctk q8_0 / ctv q4_0)
 
 models:
 
    # ── qwen3.5 family (0-hallucination triage club) ────────────────────────────
 
-   - tag: qwen3.5:4b
-     label: "qwen3.5 4B"
+   - hf_repo: unsloth/Qwen3.5-4B-GGUF
+     hf_file: Qwen3.5-4B-Q4_K_M.gguf
+     label: "qwen3.5 4B Q4"
      family: qwen3.5
      params: 4
      type: dense
@@ -36,9 +36,9 @@ models:
      vram_q4_gb: 5.9
      fit_rose: fits
      benches: [triage, reasoning, toolcalling, toolcalling_decay, summarization, speed, maxctx]
-     weight_quants: [f16]
 
-   - tag: qwen3.5:4b-q8_0
+   - hf_repo: unsloth/Qwen3.5-4B-GGUF
+     hf_file: Qwen3.5-4B-Q8_0.gguf
      label: "qwen3.5 4B Q8"
      family: qwen3.5
      params: 4
@@ -48,10 +48,10 @@ models:
      vram_q4_gb: 8.0
      fit_rose: fits
      benches: [triage, speed, maxctx]
-     weight_quants: [q8_0]
 
-   - tag: qwen3.5:9b
-     label: "qwen3.5 9B"
+   - hf_repo: unsloth/Qwen3.5-9B-GGUF
+     hf_file: Qwen3.5-9B-Q4_K_M.gguf
+     label: "qwen3.5 9B Q4"
      family: qwen3.5
      params: 9
      type: dense
@@ -60,9 +60,9 @@ models:
      vram_q4_gb: 8.7
      fit_rose: fits
      benches: [triage, reasoning, toolcalling, toolcalling_decay, summarization, speed, maxctx]
-     weight_quants: [f16]
 
-   - tag: qwen3.5:9b-q8_0
+   - hf_repo: unsloth/Qwen3.5-9B-GGUF
+     hf_file: Qwen3.5-9B-Q8_0.gguf
      label: "qwen3.5 9B Q8"
      family: qwen3.5
      params: 9
@@ -72,10 +72,10 @@ models:
      vram_q4_gb: 13.0
      fit_rose: fits
      benches: [triage, speed, maxctx]
-     weight_quants: [q8_0]
 
-   - tag: qwen3.5:27b
-     label: "qwen3.5 27B"
+   - hf_repo: unsloth/Qwen3.5-27B-GGUF
+     hf_file: Qwen3.5-27B-Q4_K_M.gguf
+     label: "qwen3.5 27B Q4"
      family: qwen3.5
      params: 27
      type: dense
@@ -84,13 +84,13 @@ models:
      vram_q4_gb: 22.0
      fit_rose: spills      # ~22 GB → partial CPU offload
      benches: [triage, speed, maxctx]
-     weight_quants: [f16]
      notes: "Spills VRAM (~22 GB); ~15 tok/s. q4_0 KV crashed at VRAM edge — do not use."
 
    # ── qwen3 family ────────────────────────────────────────────────────────────
 
-   - tag: qwen3:4b
-     label: "qwen3 4B"
+   - hf_repo: unsloth/Qwen3-4B-GGUF
+     hf_file: Qwen3-4B-Q4_K_M.gguf
+     label: "qwen3 4B Q4"
      family: qwen3
      params: 4
      type: dense
@@ -99,10 +99,10 @@ models:
      vram_q4_gb: 3.5
      fit_rose: fits
      benches: [triage, reasoning, toolcalling, speed, maxctx]
-     weight_quants: [f16]
 
-   - tag: qwen3:30b-a3b
-     label: "qwen3 30B-A3B (MoE)"
+   - hf_repo: unsloth/Qwen3-30B-A3B-GGUF
+     hf_file: Qwen3-30B-A3B-Q4_K_M.gguf
+     label: "qwen3 30B-A3B (MoE) Q4"
      family: qwen3
      params: 3   # active
      type: moe
@@ -111,12 +111,12 @@ models:
      vram_q4_gb: 18.0
      fit_rose: fits
      benches: [triage, reasoning, toolcalling, speed, maxctx]
-     weight_quants: [f16]
 
    # ── qwen2.5 family ──────────────────────────────────────────────────────────
 
-   - tag: qwen2.5:7b
-     label: "qwen2.5 7B"
+   - hf_repo: unsloth/Qwen2.5-7B-Instruct-GGUF
+     hf_file: Qwen2.5-7B-Instruct-Q4_K_M.gguf
+     label: "qwen2.5 7B Q4"
      family: qwen2.5
      params: 7
      type: dense
@@ -125,10 +125,10 @@ models:
      vram_q4_gb: 4.9
      fit_rose: fits
      benches: [triage, toolcalling, summarization, speed, maxctx]
-     weight_quants: [f16]
 
-   - tag: qwen2.5:14b
-     label: "qwen2.5 14B"
+   - hf_repo: unsloth/Qwen2.5-14B-Instruct-GGUF
+     hf_file: Qwen2.5-14B-Instruct-Q4_K_M.gguf
+     label: "qwen2.5 14B Q4"
      family: qwen2.5
      params: 14
      type: dense
@@ -137,12 +137,12 @@ models:
      vram_q4_gb: 9.7
      fit_rose: fits
      benches: [triage, toolcalling, summarization, speed, maxctx]
-     weight_quants: [f16]
 
    # ── DeepSeek family ─────────────────────────────────────────────────────────
 
-   - tag: "hf.co/unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF:Q4_K_XL"
-     label: "DeepSeek-R1-0528 8B"
+   - hf_repo: unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF
+     hf_file: DeepSeek-R1-0528-Qwen3-8B-Q4_K_XL.gguf
+     label: "DeepSeek-R1-0528 8B Q4"
      family: deepseek-r1
      params: 8
      type: dense
@@ -151,37 +151,40 @@ models:
      vram_q4_gb: 5.9
      fit_rose: fits
      benches: [triage, reasoning, summarization, speed, maxctx]
-     weight_quants: [f16]
 
-   - tag: deepseek-r1:14b
-     label: "deepseek-r1 14B"
+   - hf_repo: bartowski/DeepSeek-R1-Distill-Qwen-14B-GGUF
+     hf_file: DeepSeek-R1-Distill-Qwen-14B-Q4_K_M.gguf
+     label: "deepseek-r1 14B Q4"
      family: deepseek-r1
      params: 14
      type: dense
      think: optional
-     tools: false    # Ollama refuses — no tool support in template
+     tools: false
      vram_q4_gb: 9.7
      fit_rose: fits
      benches: [reasoning, speed, maxctx]
-     weight_quants: [f16]
-     notes: "Ollama rejects tool calls for this template. Reasoning specialist only."
+     notes: "No tool support in chat template. Reasoning specialist only."
 
-   # ── Other providers ─────────────────────────────────────────────────────────
+   # ── OpenAI gpt-oss ───────────────────────────────────────────────────────────
 
-   - tag: gpt-oss:20b
-     label: "gpt-oss 20B (MXFP4)"
+   - hf_repo: unsloth/gpt-oss-20b-GGUF
+     hf_file: gpt-oss-20b-Q4_K_M.gguf
+     label: "gpt-oss 20B Q4"
      family: gpt-oss
      params: 20
      type: dense
      think: required   # always reasons internally
      tools: true
-     vram_q4_gb: 14.0
+     vram_q4_gb: 11.6
      fit_rose: fits
      benches: [triage, reasoning, toolcalling, summarization, speed, maxctx]
-     weight_quants: [f16]
+     notes: "MXFP4 native weights; Unsloth GGUF conversion. 11.6 GB Q4_K_M."
 
-   - tag: mistral-small:24b
-     label: "mistral-small 24B"
+   # ── Other models ─────────────────────────────────────────────────────────────
+
+   - hf_repo: unsloth/Mistral-Small-24B-Instruct-2501-GGUF
+     hf_file: Mistral-Small-24B-Instruct-2501-Q4_K_M.gguf
+     label: "mistral-small 24B Q4"
      family: mistral
      params: 24
      type: dense
@@ -190,10 +193,10 @@ models:
      vram_q4_gb: 14.0
      fit_rose: fits
      benches: [triage, toolcalling, toolcalling_decay, summarization, speed, maxctx]
-     weight_quants: [f16]
 
-   - tag: phi4:14b
-     label: "phi4 14B"
+   - hf_repo: unsloth/phi-4-GGUF
+     hf_file: phi-4-Q4_K_M.gguf
+     label: "phi4 14B Q4"
      family: phi4
      params: 14
      type: dense
@@ -202,10 +205,10 @@ models:
      vram_q4_gb: 10.0
      fit_rose: fits
      benches: [triage, summarization, speed, maxctx]
-     weight_quants: [f16]
 
-   - tag: granite3.3:8b
-     label: "granite3.3 8B"
+   - hf_repo: ibm-granite/granite-3.3-8b-instruct-GGUF
+     hf_file: granite-3.3-8b-instruct-Q4_K_M.gguf
+     label: "granite3.3 8B Q4"
      family: granite
      params: 8
      type: dense
@@ -214,10 +217,10 @@ models:
      vram_q4_gb: 6.1
      fit_rose: fits
      benches: [triage, summarization, speed, maxctx]
-     weight_quants: [f16]
 
-   - tag: llama3.1:8b
-     label: "llama3.1 8B"
+   - hf_repo: bartowski/Meta-Llama-3.1-8B-Instruct-GGUF
+     hf_file: Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf
+     label: "llama3.1 8B Q4"
      family: llama
      params: 8
      type: dense
@@ -226,41 +229,38 @@ models:
      vram_q4_gb: 5.5
      fit_rose: fits
      benches: [triage, toolcalling, longctx, summarization, speed, maxctx]
-     weight_quants: [f16]
-     notes: "Primary llama.cpp long-context reference model (used in KV sweep)."
+     notes: "Primary long-context reference model for KV sweep."
 
-   - tag: gemma4:26b
-     label: "gemma4 26B"
+   - hf_repo: mradermacher/gemma-4-26B-A4B-GGUF
+     hf_file: gemma-4-26B-A4B.Q4_K_M.gguf
+     label: "gemma4 26B A4B MoE Q4"
      family: gemma4
-     params: 26
-     type: dense
+     params: 4   # active; 4B active out of 26B total
+     type: moe
      think: none
      tools: false
-     vram_q4_gb: 19.0
-     fit_rose: spills   # borderline; sliding-window helps at long ctx
+     vram_q4_gb: 16.9
+     fit_rose: fits
      benches: [triage, speed, maxctx]
-     weight_quants: [f16]
-     notes: "Borderline 19 GB; sliding-window attention reduces KV cost at long context."
+     notes: "MoE (4B active). 16.9 GB Q4_K_M fits on 20 GiB. Sliding-window attention helps at long ctx."
 
-   # ── NEW: Qwen3.6 35B MoE ────────────────────────────────────────────────────
+   # ── Qwen3.6 35B MoE ─────────────────────────────────────────────────────────
 
-   - tag: "qwen3.6:35b"
-     label: "Qwen3.6 35B MoE (Q4_K_M)"
+   - hf_repo: unsloth/Qwen3.6-35B-A3B-GGUF
+     hf_file: UD-Q4_K_S/Qwen3.6-35B-A3B-UD-Q4_K_S.gguf
+     label: "Qwen3.6 35B MoE UD-Q4_K_S"
      family: qwen3.6
      params: 3   # active; 3B active out of 35B total
      type: moe
      think: optional
      tools: true
-     vram_q4_gb: 24.0   # Q4_K_M = 24 GB → spills ~4 GB to CPU on 20 GiB card
-     fit_rose: spills    # MoE keeps decode usable despite spill (only 3B active)
+     vram_q4_gb: 20.9
+     fit_rose: spills    # 20.9 GB → minimal spill; MoE active-param count keeps tok/s viable
      benches: [triage, reasoning, toolcalling, speed, maxctx]
-     weight_quants: [f16]
-     notes: "Ollama native tag confirmed. 24 GB Q4_K_M spills ~4 GB on 7900 XT; MoE active-param count keeps tok/s viable (~30-45 est.)."
+     notes: "UD-Q4_K_S = 20.9 GB; minimal spill on 20 GiB card. Q4_K_M (22.1 GB) skipped — too much spill."
 
 
 # ── Sampling profiles per family ────────────────────────────────────────────────
-# Used by the runner to build per-request options. think_mode overrides are per-bench.
-
 sampling:
    qwen3.5_nothink:
       temperature: 0.7
@@ -284,9 +284,6 @@ sampling:
       top_p: 0.95
       min_p: 0.01
 
-   gpt_oss:
-      temperature: 0.6
-
    default:
       temperature: 0.1
 
@@ -303,10 +300,8 @@ sampling:
 
 
 # ── KV quant configs ────────────────────────────────────────────────────────────
-
 kv_configs:
-   ollama:     [f16, q8_0, q4_0]
-   llamacpp:   [f16, q8_0, q4_0, k8v4]   # k8v4 = q8_0/q4_0 asymmetric
+   llamacpp: [f16, q8_0, q4_0, k8v4]   # k8v4 = ctk q8_0 / ctv q4_0 asymmetric
 
 # Context probe points for speed + maxctx bench
 ctx_probe_points: [4096, 16384, 32768, 65536]
