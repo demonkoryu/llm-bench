@@ -153,12 +153,13 @@ models:
      benches: [triage, reasoning, summarization, docqa, speed, maxctx]
 
    # ── Nemotron Nano 12B v2 — DISABLED (upstream llama.cpp bug) ──────────────────
-   # json_schema response_format → HTTP 500 "Failed to parse input at pos N:
-   # <SPECIAL_12>". The peg-native chat parser can't place Nemotron's <SPECIAL_NN>
-   # structural tokens when a response-format grammar is active (plain generation
-   # works; independent of --reasoning-format). Reproduced on b9490 (3571fa543),
-   # which is at upstream tip. Same parser-robustness class as ggml-org/llama.cpp
-   # issues #20260 / #20650 / #20281. Tracking: <ISSUE_URL_TBD>
+   # json_schema response_format + greedy decoding (temperature 0, which NVIDIA's
+   # card recommends and our triage/reasoning benches use) → deterministic HTTP 500
+   # "Failed to parse input at pos N: <SPECIAL_12>". The peg-native parser's grammar
+   # root has no slot for Nemotron's trailing <SPECIAL_12> turn token, so the greedy
+   # output fails to parse; temperature>0 usually slips through. Independent of
+   # --reasoning-format; the Nemotron autoparser patch is active but doesn't help.
+   # Reported (with minimal repro): https://github.com/ggml-org/llama.cpp/issues/24081
    # Re-enable by uncommenting once a fix lands upstream and we rebuild.
    #
    # - hf_repo: bartowski/nvidia_NVIDIA-Nemotron-Nano-12B-v2-GGUF
