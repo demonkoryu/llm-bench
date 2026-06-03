@@ -164,13 +164,11 @@ export function llamacppServer({
    /** Stop the tracked server and clean up. */
    async function stopServer() {
       await runScript('stop-server.sh', `--port ${port}`, { tolerant: true, timeout: 15_000 });
-      _lastPid = null;
    }
 
    /** Aggressive kill — use on SIGINT/SIGTERM and before each probe. */
    async function killAll() {
       await runScript('kill-all.sh', `--port ${port}`, { tolerant: true, timeout: 10_000 });
-      _lastPid = null;
    }
 
    /** VRAM used in MiB (reads rocm-smi on llm2). */
@@ -220,6 +218,12 @@ export function llamacppServer({
       const { hf_repo, hf_file, native_max_ctx, ctx_cap, kv_bytes_per_token = 32768 } = modelCfg;
       const extra_flags = extraFlagsToString(modelCfg.extra_flags);
 
+      // Probe think state: disable thinking on hybrid models so the needle answer
+      // lands directly in `content` within a short budget. Always-thinking models
+      // (required/reasoning) keep null and rely on the post-trace answer.
+      const probeThink = modelCfg.think === 'optional' ? false : null;
+      const thinkControl = modelCfg.think_control ?? 'enable_thinking';
+
       // Estimate hi from VRAM — seed only, not authoritative
       const vramFree = await snapshotVram().then((mib) => (mib !== null ? 20480 - mib : 16384));
       const vramEstimate = Math.floor((vramFree * 1024 * 1024) / kv_bytes_per_token);
@@ -267,7 +271,7 @@ export function llamacppServer({
          let coherent = true;
          if (makeFillPrompt) {
             try {
-               coherent = await checkCoherence(mid, makeFillPrompt);
+               coherent = await checkCoherence(mid, makeFillPrompt, probeThink, thinkControl);
             } catch (e) {
                console.warn(`  [maxctx] coherence check error: ${e.message}`);
                coherent = false;
@@ -299,26 +303,48 @@ export function llamacppServer({
     * Coherence check: feed a large synthetic codebase prompt, ask for needle near the end.
     * Returns true if the model answers correctly.
     */
-   async function checkCoherence(ctxSize, makeFillPrompt) {
-      const { messages, expectedAnswer, fillRate } = makeFillPrompt(ctxSize);
-
-      if (fillRate < 0.8) {
-         console.warn(`  [maxctx] fill_rate=${fillRate.toFixed(2)} < 0.80 — skipping coherence (stale context size or unexpected ctx)`);
-         return false;
-      }
-
+   async function checkCoherence(ctxSize, makeFillPrompt, think = null, thinkControl = 'enable_thinking') {
+      // Reserve room for the answer tokens; the char→token estimate in
+      // makeFillPrompt is approximate, so retry smaller if the server rejects
+      // the prompt for exceeding the window (tokenizer-density mismatch).
+      const ANSWER_BUDGET = 384;
+      let fillTarget = ctxSize - ANSWER_BUDGET;
       let resp;
-      try {
-         resp = await client.chat(
-            messages,
-            {
-               think: null,
-               temperature: 0.0,
-               max_tokens: 64,
-            },
-            120_000,
-         );
-      } catch {
+      let expectedAnswer;
+
+      for (let attempt = 0; attempt < 3; attempt++) {
+         const built = makeFillPrompt(fillTarget);
+         expectedAnswer = built.expectedAnswer;
+
+         if (built.fillRate < 0.6) {
+            console.warn(`  [maxctx] fill_rate=${built.fillRate.toFixed(2)} < 0.60 — skipping coherence (unexpected ctx)`);
+            return false;
+         }
+
+         try {
+            resp = await client.chat(built.messages, { think, thinkControl, temperature: 0.0, max_tokens: 256 }, 120_000);
+            break;
+         } catch (e) {
+            // Parse "request (N tokens) exceeds the available context size (M tokens)"
+            const m = /request \((\d+) tokens\) exceeds.*?\((\d+) tokens\)/.exec(e.message);
+            if (m && attempt < 2) {
+               const actual = Number(m[1]);
+               const avail = Number(m[2]);
+               const scale = ((avail - ANSWER_BUDGET) / actual) * 0.97;
+               const next = Math.floor(fillTarget * scale);
+               if (process.env.BENCH_DEBUG) {
+                  console.error(`  [coherence] overflow ${actual}>${avail}, rescaling fill ${fillTarget}→${next}`);
+               }
+               fillTarget = next;
+               continue;
+            }
+            if (process.env.BENCH_DEBUG) {
+               console.error(`  [coherence] chat error: ${e.message}`);
+            }
+            return false;
+         }
+      }
+      if (!resp) {
          return false;
       }
 

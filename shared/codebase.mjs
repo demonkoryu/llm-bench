@@ -27,8 +27,12 @@ const LCG_MUL = 6364136223846793005n;
 const LCG_ADD = 1442695040888963407n;
 const MOD = 2n ** 64n;
 
-// Approx chars per token (Python source is ASCII-heavy)
-const CHARS_PER_TOKEN = 3.8;
+// Approx chars per token for the synthetic codebase. The generated source is
+// punctuation- and digit-dense, so real tokenizers (Qwen3, Gemma, Llama) land
+// around 2.6–2.9 chars/token — far below generic prose (~3.8). Underestimating
+// here makes the fill prompt overshoot the context window, so we keep it
+// conservative; checkCoherence() additionally retries on a context-overflow 400.
+const CHARS_PER_TOKEN = 2.8;
 
 function rng(seed) {
    const hex = createHash('md5').update(seed).digest('hex');
@@ -217,10 +221,12 @@ export function makeFillPrompt(ctxSizeTokens) {
    const targetChars = Math.floor(ctxSizeTokens * CHARS_PER_TOKEN * 0.9); // leave 10% for question + answer
    const [codeText, probes] = buildCodebase(targetChars);
 
-   // Use only the deepest probe (90%) for the coherence check
-   const deepest = probes[probes.length - 1];
-   const question = deepest.question;
-   const expectedAnswer = deepest.answer;
+   // Coherence is an attention test, not an arithmetic test: pick the deepest
+   // `const` probe (unique-named constant retrieval) rather than a `chain`
+   // probe, which conflates locating the module with multi-step computation.
+   const needle = [...probes].reverse().find((p) => p.kind === 'const') ?? probes[probes.length - 1];
+   const question = needle.question;
+   const expectedAnswer = needle.answer;
 
    // Estimate fill rate (code + question as fraction of total ctx)
    const totalChars = codeText.length + question.length + 100; // ~100 for system + format

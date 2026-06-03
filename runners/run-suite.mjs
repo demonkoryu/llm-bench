@@ -614,14 +614,19 @@ async function smokePasses(client, model) {
       return { ok: false, failStep: 'health' };
    }
 
-   // 2. Short generation (confirms decode)
+   // 2. Short generation (confirms decode). Disable thinking on hybrid models so the
+   //    answer lands in `content`; always-thinking models emit reasoning_content, which
+   //    we also accept as proof of decode.
    try {
+      const thinkState = model.think === 'optional' ? false : null;
+      const thinkControl = model.think_control ?? 'enable_thinking';
       const { completion } = await client.chat(
          [{ role: 'user', content: 'Say "ready" and nothing else.' }],
-         { max_tokens: 10, temperature: 0.0 },
+         { think: thinkState, thinkControl, max_tokens: 64, temperature: 0.0 },
          15_000,
       );
-      const text = completion.choices?.[0]?.message?.content ?? '';
+      const msg = completion.choices?.[0]?.message ?? {};
+      const text = `${msg.content ?? ''}${msg.reasoning_content ?? ''}`;
       if (!text.trim()) {
          return { ok: false, failStep: 'short-gen:empty' };
       }
@@ -632,7 +637,9 @@ async function smokePasses(client, model) {
    // 3. Triage JSON (1 item, confirms response_format + JSON parsing)
    if ((model.benches ?? []).includes('triage')) {
       const item = GOLDEN[0];
-      const thinkState = model.think === 'required' ? true : null;
+      // Mirror the bench's first think pass: hybrid → false (schema needs thinking
+      // off), required → true, others → null. A live JSON grammar blocks think tokens.
+      const thinkState = thinkStates(capabilityClass(model))[0];
       const thinkControl = model.think_control ?? 'enable_thinking';
       try {
          const { completion } = await client.chat(
@@ -645,7 +652,7 @@ async function smokePasses(client, model) {
          );
          const raw = completion.choices?.[0]?.message?.content ?? '';
          const parsed = extractJson(stripThink(raw));
-         if (!parsed?.action) {
+         if (!parsed?.proposed_action) {
             return { ok: false, failStep: 'triage-json:no-action' };
          }
       } catch (e) {
