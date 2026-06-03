@@ -293,7 +293,7 @@ async function runTriage(client, model, thinkState) {
             think: thinkState,
             thinkControl,
             // JSON grammar blocks <think> tokens — omit in think mode; grader strips think first
-            responseFormat: thinkState === true ? null : TRIAGE_SCHEMA,
+            responseFormat: thinkState === true || model.no_schema ? null : TRIAGE_SCHEMA,
             max_tokens: maxTok,
             ...sampling,
          });
@@ -363,7 +363,7 @@ async function runReasoning(client, model, thinkState) {
          const res = await client.chat(messages, {
             think: thinkState,
             thinkControl,
-            responseFormat: thinkState === true ? null : ANSWER_SCHEMA,
+            responseFormat: thinkState === true || model.no_schema ? null : ANSWER_SCHEMA,
             max_tokens: maxTok,
             ...sampling,
          });
@@ -647,7 +647,7 @@ async function smokePasses(client, model) {
                   { role: 'system', content: TRIAGE_STATIC_PROMPT },
                   { role: 'user', content: `Title: ${item.title}\nContent preview:\n${item.content_preview}` },
                ],
-               { think: thinkState, thinkControl, responseFormat: thinkState ? null : TRIAGE_SCHEMA, max_tokens: 256 },
+               { think: thinkState, thinkControl, responseFormat: thinkState || model.no_schema ? null : TRIAGE_SCHEMA, max_tokens: 256 },
                30_000,
             );
             const raw = completion.choices?.[0]?.message?.content ?? '';

@@ -19,7 +19,7 @@ import { existsSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { aggregateModels, latestResultsFile, readTable } from '../shared/results-csv.mjs';
+import { aggregateModels, latestResultsFile, loadCapabilities, readTable } from '../shared/results-csv.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dir, '..');
@@ -39,6 +39,7 @@ if (!existsSync(inputPath)) {
    process.exit(1);
 }
 const { models, ranking, maxCtx, maxSpeed } = aggregateModels(readTable(inputPath));
+const CAPS = loadCapabilities(join(ROOT, 'config/models.yaml'));
 
 if (!models.length) {
    console.error('No completed model results found. Run the benchmark first.');
@@ -263,7 +264,12 @@ ranked.forEach((m, rank) => {
       { col: COLS[0], v: String(rank + 1), fill: '#777' },
       { col: COLS[2], v: num(m.reasoning), fill: TEXT },
       { col: COLS[3], v: num(m.triage), fill: TEXT },
-      { col: COLS[4], v: m.toolcall != null ? num(m.toolcall, '%') : 'n/a', fill: TEXT },
+      {
+         col: COLS[4],
+         // n/a = capability not supported; – = capable but not measured
+         v: m.toolcall != null ? num(m.toolcall, '%') : (CAPS.get(m.base_model)?.tools ?? true) ? '–' : 'n/a',
+         fill: m.toolcall != null ? TEXT : DIM,
+      },
       { col: COLS[5], v: num(m.docqa, '', 1), fill: TEXT },
       { col: COLS[6], v: num(m.summ), fill: TEXT },
       { col: COLS[7], v: ctxStr, fill: m.maxctx && m.maxctx >= maxCtx * 0.9 ? ACCENT : TEXT },

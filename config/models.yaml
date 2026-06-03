@@ -117,11 +117,11 @@ models:
      type: moe
      think: optional
      think_control: enable_thinking
-     tools: false
+     tools: true   # native function-calling (Google docs list gemma-4-E4B-it)
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
      extra_flags: {}
-     benches: [triage, reasoning, summarization, docqa, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
    - hf_repo: unsloth/gemma-4-E4B-it-GGUF
      hf_file: gemma-4-E4B-it-Q5_K_M.gguf
@@ -130,11 +130,11 @@ models:
      type: moe
      think: optional
      think_control: enable_thinking
-     tools: false
+     tools: true
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
      extra_flags: {}
-     benches: [triage, reasoning, summarization, docqa, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
    # ── Gemma4-26B-A4B ───────────────────────────────────────────────────────────
    # Hybrid: runs both nothi and think passes. ~16.9 GB weights.
@@ -146,11 +146,11 @@ models:
      type: moe
      think: optional
      think_control: enable_thinking
-     tools: false
+     tools: true
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
      extra_flags: {}
-     benches: [triage, reasoning, summarization, docqa, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
    # ── Nemotron Nano 12B v2 ──────────────────────────────────────────────────────
    # Hybrid: runs both nothi and think passes. Think toggle via /think /no_think.
@@ -164,7 +164,9 @@ models:
      type: dense
      think: optional
      think_control: system_keyword
-     tools: false
+     tools: false   # tool-capable, but tool-call grammar hits the same llama.cpp#24081 500
+     capability_note: "tool-calling blocked by llama.cpp#24081 (peg-native grammar 500)"
+     no_schema: true   # skip json_schema response_format → avoids the #24081 500 reliably
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
      extra_flags: {}
@@ -177,7 +179,9 @@ models:
      type: dense
      think: optional
      think_control: system_keyword
-     tools: false
+     tools: false   # tool-capable, but tool-call grammar hits the same llama.cpp#24081 500
+     capability_note: "tool-calling blocked by llama.cpp#24081 (peg-native grammar 500)"
+     no_schema: true   # skip json_schema response_format → avoids the #24081 500 reliably
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
      extra_flags: {}
@@ -192,13 +196,74 @@ models:
      family: lfm2.5
      type: dense
      think: reasoning
-     tools: false
+     tools: true   # native tool-calling; emits Pythonic calls by default (may grade low vs JSON grader)
      native_max_ctx: 128000
      ctx_cap: 131072
      kv_bytes_per_token: 8192
      extra_flags: {}
-     benches: [reasoning, summarization, docqa, speed, maxctx]
+     benches: [reasoning, toolcalling, summarization, docqa, speed, maxctx]
      notes: "reasoning_content merged by llm client. repeat_penalty in sampling_matrix."
+
+   # ── GLM-4.7-Flash (MoE 30B-A3B, 200K ctx) ─────────────────────────────────────
+   # Hybrid think; native function-calling; non-mamba (no #24081 risk). IQ4_XS ≈16.3GB.
+   - hf_repo: unsloth/GLM-4.7-Flash-GGUF
+     hf_file: GLM-4.7-Flash-IQ4_XS.gguf
+     label: "GLM-4.7-Flash IQ4_XS"
+     family: glm
+     type: moe
+     think: optional
+     think_control: enable_thinking
+     tools: true
+     native_max_ctx: 200000
+     kv_bytes_per_token: 16384
+     extra_flags: {}
+     benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
+
+   # ── Granite-4.0-H-Tiny (MoE 7B-A1B, mamba-hybrid) ─────────────────────────────
+   # IBM: strong function-calling; no native think toggle. ≈5GB → big KV headroom.
+   - hf_repo: unsloth/granite-4.0-h-tiny-GGUF
+     hf_file: granite-4.0-h-tiny-Q5_K_M.gguf
+     label: "Granite-4-H-Tiny Q5_K_M"
+     family: granite
+     type: moe
+     think: none
+     tools: true
+     native_max_ctx: 128000
+     kv_bytes_per_token: 8192
+     extra_flags: {}
+     benches: [triage, toolcalling, summarization, docqa, speed, maxctx]
+
+   # ── Nemotron-3-Nano-30B-A3B (MoE mamba-hybrid, 1M ctx) ────────────────────────
+   # Successor to Nemotron-Nano-12B-v2. HIGH llama.cpp risk: same json_schema 500
+   # class (no_schema set) AND a mamba-base.cpp assert (#20570) may crash on load.
+   - hf_repo: bartowski/nvidia_Nemotron-3-Nano-30B-A3B-GGUF
+     hf_file: nvidia_Nemotron-3-Nano-30B-A3B-IQ4_XS.gguf
+     label: "Nemotron-3-Nano-30B IQ4_XS"
+     family: nemotron3
+     type: moe
+     think: optional
+     think_control: system_keyword
+     tools: false
+     capability_note: "tool-calling + json_schema blocked by llama.cpp#24081 class; mamba assert risk #20570"
+     no_schema: true
+     native_max_ctx: 1000000
+     kv_bytes_per_token: 16384
+     extra_flags: {}
+     benches: [triage, reasoning, summarization, docqa, speed, maxctx]
+
+   # ── GLM-4.1V-9B-Thinking (vision-LM, run text-only) ───────────────────────────
+   # Always-thinking; native FC. No mmproj → vision tower unused, text-only benchmark.
+   - hf_repo: unsloth/GLM-4.1V-9B-Thinking-GGUF
+     hf_file: GLM-4.1V-9B-Thinking-Q5_K_M.gguf
+     label: "GLM-4.1V-9B-Thinking Q5_K_M"
+     family: glm
+     type: dense
+     think: required
+     tools: true
+     native_max_ctx: 65536
+     kv_bytes_per_token: 16384
+     extra_flags: {}
+     benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
 
 # ── Sampling matrix ───────────────────────────────────────────────────────────────
@@ -305,6 +370,31 @@ sampling_matrix:
          temperature: 0.2
          top_k: 80
          repeat_penalty: 1.05
+
+   # ── GLM-4.x (Flash + 4.1V): chat-template thinking; standard sampling. ──────
+   glm:
+      default:
+         temperature: 0.6
+         top_p: 0.95
+         top_k: 40
+      think:
+         temperature: 0.6
+         top_p: 0.95
+
+   # ── Granite 4.0 (IBM recommends near-greedy for instruction following) ──────
+   granite:
+      default:
+         temperature: 0.0
+         top_p: 1.0
+
+   # ── Nemotron 3 Nano (mamba-hybrid; no_schema set, but keep temp>0 defensively)
+   nemotron3:
+      think:
+         temperature: 0.6
+         top_p: 0.95
+      no_think:
+         temperature: 0.3
+         top_p: 0.95
 
 
 # ── Host configuration ───────────────────────────────────────────────────────────

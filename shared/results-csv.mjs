@@ -14,6 +14,7 @@
 
 import { appendFileSync, existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import yaml from 'js-yaml';
 
 /** Canonical column order. Header-driven readers tolerate extra columns (e.g. judge_score). */
 export const COLUMNS = [
@@ -180,6 +181,28 @@ export function appendRow(path, rowObj, columns = COLUMNS) {
 /** Strip the hybrid think suffix to the canonical model id. */
 export function baseModel(m) {
    return String(m).replace(/--(?:nothi|think)$/, '');
+}
+
+/**
+ * Load declared model capabilities from config/models.yaml, keyed by base id
+ * (hf_file minus .gguf — matches aggregateModels' base_model). Lets the report
+ * distinguish "n/a (capability not supported)" from "– (capable but unmeasured)".
+ * Returns Map<baseId, { tools: boolean, note: string|null }>.
+ */
+export function loadCapabilities(modelsYamlPath) {
+   const caps = new Map();
+   try {
+      const cfg = yaml.load(readFileSync(modelsYamlPath, 'utf8'));
+      for (const m of cfg.models ?? []) {
+         const base = String(m.hf_file ?? '').replace(/\.gguf$/i, '');
+         if (base) {
+            caps.set(base, { tools: m.tools === true, note: m.capability_note ?? null });
+         }
+      }
+   } catch {
+      /* no capabilities available */
+   }
+   return caps;
 }
 
 /**

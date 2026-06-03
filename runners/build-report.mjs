@@ -24,7 +24,7 @@ import { existsSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { aggregateModels, DEFAULT_WEIGHTS, latestResultsFile, readTable } from '../shared/results-csv.mjs';
+import { aggregateModels, DEFAULT_WEIGHTS, latestResultsFile, loadCapabilities, readTable } from '../shared/results-csv.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dir, '..');
@@ -73,6 +73,8 @@ const environment = {
    ...(sample.backend ? { backend: sample.backend } : {}),
 };
 
+const caps = loadCapabilities(join(ROOT, 'config/models.yaml'));
+
 const report = {
    generated: new Date().toISOString(),
    sources: inputs.map((p) => basename(p)),
@@ -92,6 +94,9 @@ const report = {
          docqa: m.docqa,
          summarization: m.summ,
       },
+      // capabilities: distinguishes "unsupported" from "not measured" downstream
+      capabilities: { tools: caps.get(m.base_model)?.tools ?? null },
+      capability_note: caps.get(m.base_model)?.note ?? null,
       speed_tok_s: m.speedTg,
       weighted_score: m.score,
    })),
