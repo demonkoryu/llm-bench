@@ -99,6 +99,15 @@ else
    exit 1
 fi
 
+# Default reasoning-format is 'auto' (parses <think>, Gemma channel markers, [THINK]),
+# but a model may override it via extra_flags (e.g. Nemotron Nano v2 needs 'none' —
+# 'auto' can't parse its <SPECIAL_NN> delimiters and 500s). Only inject the default
+# when the model hasn't supplied its own, since llama.cpp honors the first occurrence.
+rf_flag="--reasoning-format auto"
+if [[ "$extra_flags" == *"--reasoning-format"* ]]; then
+   rf_flag=""
+fi
+
 # Launch llama-server
 cmd="nohup $BIN $model_args \
    -c $ctx \
@@ -108,7 +117,7 @@ cmd="nohup $BIN $model_args \
    -np 1 \
    -b 2048 -ub 512 \
    --jinja \
-   --reasoning-format auto \
+   $rf_flag \
    --host 0.0.0.0 --port $port \
    $extra_flags \
    > $LOG 2>&1 & echo \$!"
