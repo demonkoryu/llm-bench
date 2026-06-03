@@ -152,41 +152,6 @@ models:
      extra_flags: {}
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
-   # ── Nemotron Nano 12B v2 ──────────────────────────────────────────────────────
-   # Hybrid: runs both nothi and think passes. Think toggle via /think /no_think.
-   # NOTE: temp 0 (greedy) deterministically triggers a llama.cpp peg-native 500 on
-   # schema-constrained benches (llama.cpp#24081) — its no_think sampling uses a small
-   # non-zero temperature as a workaround (see sampling_matrix.nemotron).
-   - hf_repo: bartowski/nvidia_NVIDIA-Nemotron-Nano-12B-v2-GGUF
-     hf_file: nvidia_NVIDIA-Nemotron-Nano-12B-v2-Q4_K_M.gguf
-     label: "Nemotron-12B Q4_K_M"
-     family: nemotron
-     type: dense
-     think: optional
-     think_control: system_keyword
-     tools: false   # tool-capable, but tool-call grammar hits the same llama.cpp#24081 500
-     capability_note: "tool-calling blocked by llama.cpp#24081 (peg-native grammar 500)"
-     no_schema: true   # skip json_schema response_format → avoids the #24081 500 reliably
-     native_max_ctx: 128000
-     kv_bytes_per_token: 16384
-     extra_flags: {}
-     benches: [triage, reasoning, summarization, docqa, speed, maxctx]
-
-   - hf_repo: bartowski/nvidia_NVIDIA-Nemotron-Nano-12B-v2-GGUF
-     hf_file: nvidia_NVIDIA-Nemotron-Nano-12B-v2-Q8_0.gguf
-     label: "Nemotron-12B Q8_0"
-     family: nemotron
-     type: dense
-     think: optional
-     think_control: system_keyword
-     tools: false   # tool-capable, but tool-call grammar hits the same llama.cpp#24081 500
-     capability_note: "tool-calling blocked by llama.cpp#24081 (peg-native grammar 500)"
-     no_schema: true   # skip json_schema response_format → avoids the #24081 500 reliably
-     native_max_ctx: 128000
-     kv_bytes_per_token: 16384
-     extra_flags: {}
-     benches: [triage, reasoning, summarization, docqa, speed, maxctx]
-
    # ── LFM2.5-8B-A1B ────────────────────────────────────────────────────────────
    # Always-reasoning: outputs to reasoning_content field, not content.
    # Only 6 of 24 layers are attention → tiny KV footprint.
@@ -233,20 +198,21 @@ models:
      extra_flags: {}
      benches: [triage, toolcalling, summarization, docqa, speed, maxctx]
 
-   # ── Nemotron-3-Nano-30B-A3B (MoE mamba-hybrid, 1M ctx) ────────────────────────
-   # Successor to Nemotron-Nano-12B-v2. HIGH llama.cpp risk: same json_schema 500
-   # class (no_schema set) AND a mamba-base.cpp assert (#20570) may crash on load.
-   - hf_repo: bartowski/nvidia_Nemotron-3-Nano-30B-A3B-GGUF
-     hf_file: nvidia_Nemotron-3-Nano-30B-A3B-IQ4_XS.gguf
-     label: "Nemotron-3-Nano-30B IQ4_XS"
+   # ── Nemotron-3-Nano-4B (mamba-hybrid) ─────────────────────────────────────────
+   # Small v3 Nemotron; Q8_0 ≈4.3GB → big KV headroom for long context. Same bug
+   # class as the family: no_schema set; tool-calling blocked (llama.cpp#24081);
+   # mamba-base.cpp assert (#20570) may crash on load.
+   - hf_repo: bartowski/nvidia_Nemotron-3-Nano-4B-GGUF
+     hf_file: nvidia_Nemotron-3-Nano-4B-Q8_0.gguf
+     label: "Nemotron-3-Nano-4B Q8_0"
      family: nemotron3
-     type: moe
+     type: dense
      think: optional
      think_control: system_keyword
      tools: false
      capability_note: "tool-calling + json_schema blocked by llama.cpp#24081 class; mamba assert risk #20570"
      no_schema: true
-     native_max_ctx: 1000000
+     native_max_ctx: 128000
      kv_bytes_per_token: 16384
      extra_flags: {}
      benches: [triage, reasoning, summarization, docqa, speed, maxctx]
