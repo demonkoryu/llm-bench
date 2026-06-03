@@ -1,17 +1,13 @@
 /**
  * Config-driven sampling parameter resolver.
  *
- * Sampling params are a function of three axes:
- *   capabilityClass  non_thinking | hybrid | thinking | reasoning_only
- *   useCase          triage | reasoning | toolcalling | summarization | docqa | longctx | speed
- *   thinkState       true | false | null
+ * Sampling params are keyed by model family × think state × use-case:
+ *   family      qwen3 | qwen3.6 | qwen3-coder | gemma4 | nemotron | lfm2.5 | …
+ *   thinkState  true (think) | false (no_think) | null (no toggle)
+ *   useCase     triage | reasoning | toolcalling | summarization | docqa | longctx | speed
  *
- * Values are sourced from models.yaml `sampling_matrix:` so they can be tuned
- * without touching code. Falls back to hardcoded vendor recommendations when a
- * key is missing.
- *
- * Hybrid models have separate rows for think=true vs think=false; non_thinking
- * and reasoning_only models use thinkState=null rows.
+ * Values come from models.yaml `sampling_matrix:` (authoritative). Falls back to
+ * hardcoded vendor recommendations only when a family key is absent.
  */
 
 import { CAPABILITY } from './think.mjs';
@@ -73,42 +69,37 @@ const FALLBACKS = {
  * Resolve sampling parameters.
  *
  * Lookup order (first match wins):
- *  1. model.family exact key in matrix (e.g. "qwen3.6", "gemma4", "qwen3_coder")
- *  2. capability class key ("hybrid", "non_thinking", "reasoning_only")
- *  3. hardcoded FALLBACKS
+ *  1. model.family as a matrix key — exact match (e.g. "qwen3", "qwen3.6", "qwen3-coder")
+ *  2. hardcoded FALLBACKS keyed by capability class
  *
- * @param {object}  model      model config entry from models.yaml
- * @param {string}  cap        capability class (from capabilityClass(model))
- * @param {boolean|null} think think state for this run pass
- * @param {string}  useCase    bench name
- * @param {object}  matrix     the sampling_matrix from models.yaml (may be undefined)
+ * @param {object}       model    model config entry from models.yaml
+ * @param {string}       cap      capability class (from capabilityClass(model))
+ * @param {boolean|null} think    think state for this run pass
+ * @param {string}       useCase  bench name
+ * @param {object}       matrix   the sampling_matrix from models.yaml (may be undefined)
  * @returns {object}  sampling params to spread into the request body
  */
 export function resolveSampling(model, cap, think, useCase, matrix) {
-   // 1. Try per-model override first (models.yaml sampling_overrides per model id)
-   const modelOverride = matrix?.model_overrides?.[model.id ?? model.hf_file];
-   if (modelOverride?.[useCase]) {
-      return cleanSampling(modelOverride[useCase]);
-   }
-   if (modelOverride?.default) {
-      return mergeWithUseCase(modelOverride.default, modelOverride[useCase]);
-   }
-
    const thinkKey = think === true ? 'think' : think === false ? 'no_think' : 'null';
+   const family = model.family ?? '';
 
-   // 2. Try model.family as a direct matrix key (e.g. "qwen3.6", "gemma4", "qwen3-coder")
-   const familyKey = (model.family ?? '').replace(/-/g, '_'); // normalize: qwen3-coder → qwen3_coder
-   const familyEntry = matrix?.[familyKey]?.[thinkKey] ?? matrix?.[familyKey]?.null;
+   // 1. Look up by model family name — exact match first, then underscore-normalised
+   //    (YAML keys with dashes are valid; we store the literal family name in the matrix)
+   const familyEntry =
+      matrix?.[family]?.[thinkKey] ??
+      matrix?.[family]?.null ??
+      matrix?.[family.replace(/-/g, '_')]?.[thinkKey] ??
+      matrix?.[family.replace(/-/g, '_')]?.null;
+
    if (familyEntry) {
       const useCaseOverride = familyEntry[useCase];
       return cleanSampling(useCaseOverride ? { ...familyEntry, ...useCaseOverride } : familyEntry);
    }
 
-   // 3. Fall back to capability class key + hardcoded fallbacks
-   const capEntry = matrix?.[cap]?.[thinkKey] ?? FALLBACKS[cap]?.[thinkKey] ?? FALLBACKS[cap]?.null ?? {};
-   const useCaseOverride = capEntry[useCase];
-
-   return cleanSampling(useCaseOverride ? { ...capEntry, ...useCaseOverride } : capEntry);
+   // 2. Hardcoded fallback keyed by capability class (for families not in the matrix)
+   const fallback = FALLBACKS[cap]?.[thinkKey] ?? FALLBACKS[cap]?.null ?? {};
+   const useCaseOverride = fallback[useCase];
+   return cleanSampling(useCaseOverride ? { ...fallback, ...useCaseOverride } : fallback);
 }
 
 /** Strip use-case sub-keys, leaving only actual sampling params. */
@@ -121,8 +112,4 @@ function cleanSampling(obj) {
       }
    }
    return out;
-}
-
-function mergeWithUseCase(base, override) {
-   return cleanSampling(override ? { ...base, ...override } : base);
 }

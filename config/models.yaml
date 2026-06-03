@@ -393,26 +393,34 @@ models:
 
 
 # ── Sampling matrix ───────────────────────────────────────────────────────────────
-# Read by shared/llm/sampling.mjs. Authoritative source for all sampling params.
-# Organized by capability class × think state × use-case.
-# Use-case keys override the parent defaults for that bench type.
+# Read by shared/llm/sampling.mjs. Authoritative source for all per-request sampling.
+# Keyed by model family (matches the `family:` field on each model entry above).
+# Structure per family: think-state key → { base params, optional use-case overrides }
+#
+# Think-state keys:
+#   think    — enable_thinking: true  (or /think keyword for system_keyword models)
+#   no_think — enable_thinking: false (or /no_think)
+#   null     — think toggle not sent (non-thinking or always-reasoning models)
+#
+# Use-case sub-keys (triage, reasoning, toolcalling, summarization, docqa, longctx, speed)
+# override base params for that bench only.
+#
+# IMPORTANT: params in extra_flags (server-side defaults) and params here (per-request)
+# are both applied — the per-request value wins on conflict. Do not duplicate.
 #
 # Sources (verified from primary HuggingFace model cards, June 2025):
-#   Qwen3-30B-A3B, 14B: https://huggingface.co/Qwen/Qwen3-30B-A3B
-#   Qwen3-Coder:        https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct
-#   Qwen3.6-35B-A3B:    https://huggingface.co/Qwen/Qwen3.6-35B-A3B
-#   Gemma4-E4B:         https://ai.google.dev/gemma/docs/core/model_card_4
-#   LFM2.5-8B-A1B:      https://huggingface.co/LiquidAI/LFM2.5-8B-A1B
-#
-# IMPORTANT: sampling params in extra_flags (per model above) are server-side defaults.
-# Params here are sent per-request and OVERRIDE server defaults.
-# Do NOT set the same param in both extra_flags and here (request wins).
+#   qwen3:       https://huggingface.co/Qwen/Qwen3-30B-A3B
+#   qwen3-coder: https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct
+#   qwen3.6:     https://huggingface.co/Qwen/Qwen3.6-35B-A3B
+#   gemma4:      https://ai.google.dev/gemma/docs/core/model_card_4
+#   lfm2.5:      https://huggingface.co/LiquidAI/LFM2.5-8B-A1B
+#   nemotron:    https://huggingface.co/nvidia/NVIDIA-Nemotron-Nano-12B-v2
 
 sampling_matrix:
 
-   # ── Hybrid models (Qwen3 family: optional think) ───────────────────────────
+   # ── Qwen3 (30B-A3B-2507, 14B — hybrid think/no_think) ─────────────────────
    # Source: Qwen3-30B-A3B / Qwen3-14B HF model cards
-   hybrid:
+   qwen3:
       think:     # enable_thinking: true — Qwen3 official guidance
          temperature: 0.6
          top_p: 0.95
@@ -429,7 +437,6 @@ sampling_matrix:
          top_p: 0.8
          top_k: 20
          min_p: 0
-         # presence_penalty 0-2 is optional; set in extra_flags per model
          toolcalling:
             temperature: 0.7
             top_p: 0.8
@@ -446,23 +453,21 @@ sampling_matrix:
             top_k: 20
             min_p: 0
 
-   # ── Hybrid models (Qwen3.6 family — DIFFERENT from Qwen3) ─────────────────
+   # ── Qwen3.6 (35B-A3B MoE — DIFFERENT from Qwen3) ─────────────────────────
    # Source: Qwen3.6-35B-A3B HF model card
-   # Key differences: think mode uses temp=1.0 (not 0.6); presence_penalty=1.5 in no_think
+   # Key differences vs qwen3: think mode uses temp=1.0 (not 0.6); presence_penalty=1.5
    qwen3.6:
       think:     # enable_thinking: true
          temperature: 1.0
          top_p: 0.95
          top_k: 20
          min_p: 0
-         # presence_penalty: 1.5  # optional; already in extra_flags
          reasoning:
             temperature: 1.0
             top_p: 0.95
             top_k: 20
             min_p: 0
-         # coding/precise tasks (e.g. docqa with arithmetic):
-         docqa:
+         docqa:   # precise arithmetic tasks — lower temp
             temperature: 0.6
             top_p: 0.95
             top_k: 20
@@ -472,7 +477,6 @@ sampling_matrix:
          top_p: 0.8
          top_k: 20
          min_p: 0
-         # presence_penalty: 1.5  # in extra_flags
          reasoning:
             temperature: 0.7
             top_p: 0.8
@@ -484,60 +488,47 @@ sampling_matrix:
             top_k: 20
             min_p: 0
 
-   # ── Non-thinking — Qwen3-Coder (repeat_penalty 1.05, unified params) ──────
+   # ── Qwen3-Coder (30B-A3B — no think mode) ────────────────────────────────
    # Source: Qwen3-Coder-30B-A3B-Instruct HF model card
-   qwen3_coder:
+   # repeat_penalty: 1.05 is set in extra_flags (server-side default)
+   qwen3-coder:
       null:
          temperature: 0.7
          top_p: 0.8
          top_k: 20
          min_p: 0
-         # repeat_penalty: 1.05  # set in extra_flags
          longctx:
             temperature: 0.1
             top_p: 0.9
 
-   # ── Non-thinking — Gemma4 family (UNIFIED across all tasks) ──────────────
+   # ── Gemma 4 (E4B and 26B-A4B — unified sampling across ALL tasks) ─────────
    # Source: Google Gemma 4 official model card (ai.google.dev)
-   # Google explicitly recommends the SAME params for ALL tasks — do not differentiate.
+   # Google explicitly recommends the SAME params for ALL tasks and both think states.
    gemma4:
       null:
          temperature: 1.0
          top_p: 0.95
          top_k: 64
 
-   # ── Reasoning-only models (always-reasoning, reasoning_content split) ──────
-   # Source: LiquidAI LFM2.5-8B-A1B HF model card
-   reasoning_only:
-      null:      # no toggle; enable_thinking not sent (model always reasons)
-         temperature: 0.2
-         top_k: 80
-         # repeat_penalty: 1.05  # set in extra_flags
-
-   # ── Nemotron Nano v2 family ────────────────────────────────────────────────
+   # ── Nemotron Nano 12B v2 (hybrid via system keyword) ─────────────────────
    # Source: nvidia/NVIDIA-Nemotron-Nano-12B-v2 HF model card
-   # Toggle: /think or /no_think system keyword (not a Jinja kwarg).
-   # no_think → greedy search (temp=0) per NVIDIA recommendation.
+   # Think toggle: /think or /no_think injected into system message (not Jinja kwarg).
+   # no_think → greedy decoding per NVIDIA recommendation.
    nemotron:
       think:     # /think in system message
          temperature: 0.6
          top_p: 0.95
-      no_think:  # /no_think in system message
-         temperature: 0   # greedy decoding per NVIDIA card
+      no_think:  # /no_think in system message — greedy
+         temperature: 0
 
-   # ── Generic non-thinking instruct models ────────────────────────────────────
-   # Fallback for any model not matched by a more specific class
-   non_thinking:
+   # ── LFM2.5 (8B-A1B — always-reasoning via reasoning_content field) ────────
+   # Source: LiquidAI LFM2.5-8B-A1B HF model card
+   # No think toggle; model always reasons. temp=0.2 per LiquidAI docs.
+   # repeat_penalty: 1.05 set in extra_flags.
+   lfm2.5:
       null:
-         temperature: 0.1
-         toolcalling:
-            temperature: 0.4
-            top_p: 0.9
-         summarization:
-            temperature: 0.3
-         longctx:
-            temperature: 0.1
-            top_p: 0.9
+         temperature: 0.2
+         top_k: 80
 
 
 # ── Host configuration ───────────────────────────────────────────────────────────
