@@ -152,6 +152,22 @@ models:
      extra_flags: {}
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
+   # ── Gemma4-12B (dense "unified" — encoder-free multimodal, run text-only) ──────
+   # Released 2026-06-02. Dense 12B, hybrid think, native FC; ~8.4 GB at Q5_K_M.
+   # No mmproj passed → vision/audio towers unused; text-only benchmark.
+   - hf_repo: unsloth/gemma-4-12b-it-GGUF
+     hf_file: gemma-4-12b-it-Q5_K_M.gguf
+     label: "Gemma4-12B Q5_K_M"
+     family: gemma4
+     type: dense
+     think: optional
+     think_control: enable_thinking
+     tools: true
+     native_max_ctx: 256000
+     kv_bytes_per_token: 16384
+     extra_flags: {}
+     benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
+
    # ── LFM2.5-8B-A1B ────────────────────────────────────────────────────────────
    # Always-reasoning: outputs to reasoning_content field, not content.
    # Only 6 of 24 layers are attention → tiny KV footprint.

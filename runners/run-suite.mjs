@@ -143,8 +143,9 @@ function getThinkModes(model) {
 
 // Think-mode bench gating is inline at each bench dispatch (thinkState !== true
 // checks). For reference, the benches that do NOT run in think mode are:
-// toolcalling + toolcalling_decay (tool use is incompatible with a think pass)
-// and maxctx (think-independent — probed once in the no_think / null pass).
+// toolcalling_decay (run once, KV-independent) and maxctx (think-independent —
+// probed once in the no_think / null pass). toolcalling DOES run in think mode:
+// Qwen3/GLM/Gemma4 support tool use while thinking.
 
 // ── Token budgets ──────────────────────────────────────────────────────────────
 const MAX_TOKENS = {
@@ -407,8 +408,8 @@ async function runReasoning(client, model, thinkState) {
    };
 }
 
-async function runToolcalling(client, model) {
-   const sampling = sampleOpts(model, false, 'toolcalling');
+async function runToolcalling(client, model, thinkState) {
+   const sampling = sampleOpts(model, thinkState, 'toolcalling');
    const thinkControl = model.think_control ?? 'enable_thinking';
    const SYSTEM =
       'You are a helpful assistant with access to tools. Call a tool ONLY when needed. If no tool fits, respond in plain text WITHOUT calling any tool.';
@@ -428,10 +429,11 @@ async function runToolcalling(client, model) {
       let completion;
       try {
          const res = await client.chat(messages, {
-            think: false,
+            think: thinkState,
             thinkControl,
             tools,
-            max_tokens: MAX_TOKENS.tool,
+            // think mode emits a reasoning block before the call → needs the larger budget
+            max_tokens: thinkState === true ? MAX_TOKENS.think : MAX_TOKENS.tool,
             ...sampling,
          });
          completion = res.completion;
@@ -449,7 +451,7 @@ async function runToolcalling(client, model) {
       recordPf({
          bench: 'toolcalling',
          model,
-         think: false,
+         think: thinkState,
          vars: { case_id: caseId },
          promptRaw: userMsg,
          output,
@@ -1021,9 +1023,10 @@ for (const model of models) {
          }
       }
 
-      // toolcalling — only in no-think mode
-      if (model.tools && thinkState !== true) {
-         const res = await skipOrRun('toolcalling', () => runToolcalling(client, model));
+      // toolcalling — runs in every think pass (Qwen3/GLM/Gemma4 support tool use
+      // while thinking; see vendor docs). Capability gate (model.tools) still applies.
+      if (model.tools) {
+         const res = await skipOrRun('toolcalling', () => runToolcalling(client, model, thinkState));
          if (res) {
             console.log(`accuracy=${res.r.score}%`);
             appendTsv({
