@@ -11,7 +11,8 @@
  *   node runners/render-chart.mjs
  *   node runners/render-chart.mjs --input results/my-results.tsv --output results/chart.svg
  *
- * Output: results/chart.svg
+ * Output: results/chart.svg (+ a PNG alongside it, best-effort via sharp, since
+ *         many viewers render PNG inline but not SVG)
  */
 
 import { existsSync, writeFileSync } from 'node:fs';
@@ -256,3 +257,14 @@ svg += '</svg>';
 
 writeFileSync(flags.output, svg, 'utf-8');
 console.log(`Chart written: ${flags.output}  (${(svg.length / 1024).toFixed(1)} KB, ${models.length} models)`);
+
+// Also emit a PNG alongside the SVG — many viewers render PNG inline but not SVG.
+// Best-effort: skip silently if sharp isn't installed (it's not a hard dependency).
+const pngPath = flags.output.endsWith('.svg') ? flags.output.replace(/\.svg$/, '.png') : `${flags.output}.png`;
+try {
+   const sharp = (await import('sharp')).default;
+   await sharp(Buffer.from(svg), { density: 150 }).png().toFile(pngPath);
+   console.log(`Chart PNG:     ${pngPath}`);
+} catch (e) {
+   console.warn(`(PNG export skipped: ${e.message.slice(0, 80)})`);
+}

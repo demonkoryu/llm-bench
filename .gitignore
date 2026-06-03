@@ -4,6 +4,7 @@ results/*.csv
 results/*.md
 results/*.json
 results/*.svg
+results/*.png
 *.out
 nohup.log
 .claude/scheduled_tasks.lock
