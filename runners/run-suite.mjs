@@ -86,9 +86,10 @@ function resolveEnv(s) {
 const LLAMA_URL = resolveEnv(hostCfg.llamacpp);
 const SSH_HOST = resolveEnv(hostCfg.ssh_host);
 const SAMPLING_MATRIX = modelsConfig.sampling_matrix ?? {};
+const SAMPLING_FALLBACKS = modelsConfig.sampling_fallbacks ?? {};
 
 // ── Shared LLM imports ──────────────────────────────────────────────────────────
-const { stripThink, extractJson, capabilityClass, thinkStates, CAPABILITY, resolveSampling } = await import('../shared/llm/index.mjs');
+const { stripThink, extractJson, capabilityClass, thinkStates, resolveSampling } = await import('../shared/llm/index.mjs');
 
 // ── Grader imports ─────────────────────────────────────────────────────────────
 const { gradeOne: triageGradeOne, computeScore: triageComputeScore } = await import('../shared/triage-rubric.mjs');
@@ -107,13 +108,17 @@ const docqaCases = JSON.parse(readFileSync(join(ROOT, 'benchmarks/docqa/cases.js
 // ── Model helpers ──────────────────────────────────────────────────────────────
 const allModels = modelsConfig.models ?? [];
 
-/** Stable ID derived from the GGUF filename + think_state. Used as TSV key. */
-function modelId(m) {
+/**
+ * Stable ID derived from the GGUF filename + think state.
+ * thinkState null → base name (non-hybrid models); true/false → appends --think/--nothi.
+ * Used as TSV row key and judge bundle key.
+ */
+function modelId(m, thinkState) {
    const base = m.hf_file.replace(/\.gguf$/i, '');
-   if (m.think_state === true) {
+   if (thinkState === true) {
       return `${base}--think`;
    }
-   if (m.think_state === false) {
+   if (thinkState === false) {
       return `${base}--nothi`;
    }
    return base;
@@ -121,28 +126,24 @@ function modelId(m) {
 
 function filterModels() {
    return allModels.filter((m) => {
-      if (FILTER_MODELS.length && !FILTER_MODELS.some((f) => modelId(m).includes(f) || (m.label ?? '').includes(f))) {
+      if (FILTER_MODELS.length && !FILTER_MODELS.some((f) => modelId(m, null).includes(f) || (m.label ?? '').includes(f))) {
          return false;
       }
       return true;
    });
 }
 
-/**
- * Get the think states to run for a model.
- * Models with think_state defined (nothi/think alias pairs) have a fixed state.
- * Others use capabilityClass + thinkStates().
- */
+/** Get the think states to run for a model (from capability class). */
 function getThinkModes(model) {
-   if (model.think_state === true) {
-      return [true];
-   }
-   if (model.think_state === false) {
-      return [false];
-   }
-   const cap = capabilityClass(model);
-   return thinkStates(cap);
+   return thinkStates(capabilityClass(model));
 }
+
+/**
+ * Benches to skip when running in think mode.
+ * Tool-calling is incompatible with think mode; maxctx is think-independent
+ * (probed once in the no_think / null pass).
+ */
+const _THINK_SKIP = ['toolcalling', 'toolcalling_decay', 'maxctx'];
 
 // ── Token budgets ──────────────────────────────────────────────────────────────
 const MAX_TOKENS = {
@@ -155,15 +156,9 @@ const MAX_TOKENS = {
    speed: 150, // speed bench — just want tokens generated
 };
 
-/**
- * Resolve sampling params for a given model + bench + think state.
- * Uses the config-driven matrix from models.yaml sampling_matrix.
- */
+/** Resolve sampling params for a given model + bench + think state. */
 function sampleOpts(model, thinkState, bench) {
-   const cap = capabilityClass(model);
-   // think_state overrides the model's capability class for hybrid models with fixed aliases
-   const effectiveCap = model.think_state !== undefined ? (model.think_state ? CAPABILITY.HYBRID : CAPABILITY.HYBRID) : cap;
-   return resolveSampling(model, effectiveCap, thinkState, bench, SAMPLING_MATRIX);
+   return resolveSampling(model, capabilityClass(model), thinkState, bench, SAMPLING_MATRIX, SAMPLING_FALLBACKS);
 }
 
 /**
@@ -638,7 +633,7 @@ async function smokePasses(client, model) {
    // 3. Triage JSON (1 item, confirms response_format + JSON parsing)
    if ((model.benches ?? []).includes('triage')) {
       const item = GOLDEN[0];
-      const thinkState = model.think_state ?? model.think === 'required';
+      const thinkState = model.think === 'required' ? true : null;
       const thinkControl = model.think_control ?? 'enable_thinking';
       try {
          const { completion } = await client.chat(
@@ -697,7 +692,7 @@ function dryRun() {
    for (const m of models) {
       const b = (m.benches ?? []).filter((x) => !FILTER_BENCHES.length || FILTER_BENCHES.includes(x));
       const thinkModes = getThinkModes(m).map((t) => (t === null ? 'n/a' : t ? 'think' : 'no_think'));
-      console.log(`  ${(m.label ?? modelId(m)).padEnd(55)} think=[${thinkModes.join(',')}]  benches=[${b.join(',')}]`);
+      console.log(`  ${(m.label ?? modelId(m, null)).padEnd(55)} think=[${thinkModes.join(',')}]  benches=[${b.join(',')}]`);
    }
    console.log(`\nTotal models: ${models.length}`);
 }
@@ -738,12 +733,12 @@ console.log(`\n[run-suite] ${models.length} models  target=${TARGET}  backend=${
 
 // ─────────────────────────────────────────────────────────────────────────────
 for (const model of models) {
-   const mid = modelId(model);
+   const mid = modelId(model, null); // base ID (used for load/OOM error rows)
    const thinkModes = getThinkModes(model);
    const benches = (model.benches ?? []).filter((b) => !FILTER_BENCHES.length || FILTER_BENCHES.includes(b));
 
    console.log(`\n${'═'.repeat(70)}`);
-   console.log(`  ${model.label ?? mid}`);
+   console.log(`  ${model.label ?? modelId(model, null)}`);
    console.log('═'.repeat(70));
 
    // ── Max-ctx binary search ─────────────────────────────────────────────────
@@ -904,6 +899,8 @@ for (const model of models) {
    // ── Bench passes ──────────────────────────────────────────────────────────
    for (const thinkState of thinkModes) {
       const tl = thinkState === null ? 'n/a' : thinkState ? 'think' : 'no_think';
+      // Per-pass ID: appends --think/--nothi suffix for hybrid models
+      const passId = modelId(model, thinkState);
 
       // Helper: skip if already done, check server alive
       async function skipOrRun(benchName, fn) {
@@ -913,7 +910,7 @@ for (const model of models) {
          if (!benches.includes(benchName)) {
             return;
          }
-         const key = tsvKey(mid, tl, benchName);
+         const key = tsvKey(passId, tl, benchName);
          if (flags.resume && doneKeys.has(key)) {
             console.log(`  [${benchName} ${tl}] skip`);
             return;
@@ -934,7 +931,7 @@ for (const model of models) {
             appendTsv({
                target: TARGET,
                backend: BACKEND,
-               model: mid,
+               model: passId,
                think: tl,
                bench: benchName,
                score: '?',
@@ -966,7 +963,7 @@ for (const model of models) {
             appendTsv({
                target: TARGET,
                backend: BACKEND,
-               model: mid,
+               model: passId,
                think: tl,
                bench: 'triage',
                score: res.r.score,
@@ -993,7 +990,7 @@ for (const model of models) {
             appendTsv({
                target: TARGET,
                backend: BACKEND,
-               model: mid,
+               model: passId,
                think: tl,
                bench: 'reasoning',
                score: res.r.score,
@@ -1020,7 +1017,7 @@ for (const model of models) {
             appendTsv({
                target: TARGET,
                backend: BACKEND,
-               model: mid,
+               model: passId,
                think: tl,
                bench: 'toolcalling',
                score: res.r.score,
@@ -1047,7 +1044,7 @@ for (const model of models) {
             appendTsv({
                target: TARGET,
                backend: BACKEND,
-               model: mid,
+               model: passId,
                think: tl,
                bench: 'docqa',
                score: res.r.score,
@@ -1074,7 +1071,7 @@ for (const model of models) {
             appendTsv({
                target: TARGET,
                backend: BACKEND,
-               model: mid,
+               model: passId,
                think: tl,
                bench: 'summarization',
                score: res.r.score,
@@ -1093,7 +1090,7 @@ for (const model of models) {
          }
       }
       if (benches.includes('speed') && (!FILTER_BENCHES.length || FILTER_BENCHES.includes('speed'))) {
-         const key = tsvKey(mid, tl, 'speed');
+         const key = tsvKey(passId, tl, 'speed');
          if (flags.resume && doneKeys.has(key)) {
             console.log(`  [speed ${tl}] skip`);
          } else {
@@ -1114,7 +1111,7 @@ for (const model of models) {
                   appendTsv({
                      target: TARGET,
                      backend: BACKEND,
-                     model: mid,
+                     model: passId,
                      think: tl,
                      bench: `speed_${sr.label}`,
                      score: decodeTps,
@@ -1138,7 +1135,7 @@ for (const model of models) {
       // toolcalling_decay — no-think mode only, once per model (KV-independent)
       if (model.tools && thinkState !== true && thinkModes.indexOf(thinkState) === 0) {
          if (benches.includes('toolcalling_decay') && (!FILTER_BENCHES.length || FILTER_BENCHES.includes('toolcalling_decay'))) {
-            const key = tsvKey(mid, 'no_think', 'toolcalling_decay');
+            const key = tsvKey(passId, 'no_think', 'toolcalling_decay');
             if (flags.resume && doneKeys.has(key)) {
                console.log(`  [toolcalling_decay] skip`);
             } else {
@@ -1146,7 +1143,7 @@ for (const model of models) {
                if (alive) {
                   process.stdout.write(`  [toolcalling_decay] `);
                   const t0 = Date.now();
-                  const { stdout } = await execP('node', [join(ROOT, 'benchmarks/toolcalling/decay-bench.mjs'), mid], {
+                  const { stdout } = await execP('node', [join(ROOT, 'benchmarks/toolcalling/decay-bench.mjs'), passId], {
                      env: { ...process.env, LLAMA_URL },
                      timeout: 3_600_000,
                   }).catch((e) => ({ stdout: '', stderr: e.message }));
@@ -1156,7 +1153,7 @@ for (const model of models) {
                   appendTsv({
                      target: TARGET,
                      backend: BACKEND,
-                     model: mid,
+                     model: passId,
                      think: 'no_think',
                      bench: 'toolcalling_decay',
                      score: '-',
@@ -1180,7 +1177,7 @@ for (const model of models) {
       // longctx — passkey + multifact
       if (thinkState !== true) {
          if (benches.includes('longctx') && (!FILTER_BENCHES.length || FILTER_BENCHES.includes('longctx'))) {
-            const key = tsvKey(mid, tl, 'longctx');
+            const key = tsvKey(passId, tl, 'longctx');
             if (flags.resume && doneKeys.has(key)) {
                console.log(`  [longctx] skip`);
             } else {
@@ -1214,7 +1211,7 @@ for (const model of models) {
                   appendTsv({
                      target: TARGET,
                      backend: BACKEND,
-                     model: mid,
+                     model: passId,
                      think: tl,
                      bench: 'longctx',
                      score: pkScore,
