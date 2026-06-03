@@ -10,13 +10,13 @@
  *   LLAMA_URL=http://192.168.1.120:8090 node benchmarks/toolcalling/decay-bench.mjs [model_tag] [max_rounds]
  */
 
-import { openaiCompatClient } from '../../shared/openai-compat.mjs';
+import { createClient } from '../../shared/llm/index.mjs';
 
 const LLAMA_URL = process.env.LLAMA_URL ?? 'http://192.168.1.120:8090';
 const MODEL_TAG = process.argv[2] ?? 'qwen3.5:4b';
 const MAX_ROUNDS = parseInt(process.argv[3] ?? '50', 10);
 
-const client = openaiCompatClient(LLAMA_URL);
+const llm = createClient(LLAMA_URL);
 
 const TOOLS = [
    {
@@ -150,8 +150,8 @@ for (const fillerCount of ROUND_BUCKETS) {
    for (const c of PROBE_CASES) {
       const messages = [...history, { role: 'user', content: c.user }];
       try {
-         const resp = await client.chat(messages, { think: false, tools: TOOLS, temperature: 0.4, top_p: 0.9 });
-         const calls = client.toolCalls(resp);
+         const { completion: resp } = await llm.chat(messages, { think: false, tools: TOOLS, temperature: 0.4, top_p: 0.9 });
+         const calls = resp?.choices?.[0]?.message?.tool_calls ?? [];
          const g = gradeCall(c, calls);
          if (g.pass) {
             pass++;

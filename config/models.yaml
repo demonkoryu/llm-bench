@@ -204,15 +204,17 @@ models:
 # Read by shared/llm/sampling.mjs. Authoritative source for ALL per-request sampling.
 # Keyed by model family (matches the `family:` field above).
 #
-# Think-state keys:
-#   think    — enable_thinking: true  (or /think for system_keyword models)
-#   no_think — enable_thinking: false (or /no_think)
-#   default  — think toggle not sent (non-thinking or always-reasoning models)
+# Structure per family:
+#   default:   shared base params applied to all passes (non-thinking models use this alone)
+#   think:     delta merged on top of default for think=true passes
+#   no_think:  delta merged on top of default for think=false passes
 #
-# Use-case sub-keys override base params for that bench only.
+# Use-case sub-keys (triage, reasoning, toolcalling, summarization, docqa, longctx, speed)
+# override base params for that bench only. State block takes precedence over default.
 #
 # extra_flags in model entries above are server-launch flags ONLY (speculative decoding etc.).
 # All sampling params belong here, including presence_penalty and repeat_penalty.
+# There are no fallbacks — every family is explicitly tuned.
 #
 # Sources (verified from primary HuggingFace model cards, June 2026):
 #   qwen3:       https://huggingface.co/Qwen/Qwen3-30B-A3B
@@ -224,72 +226,44 @@ models:
 
 sampling_matrix:
 
-   # ── Qwen3 (30B-2507, 14B — hybrid or non-thinking) ────────────────────────
+   # ── Qwen3 (30B-2507 non-thinking; 14B hybrid) ─────────────────────────────
+   # default = no_think base; think delta overrides temp/top_p only.
+   # reasoning bench: even in no_think, use higher temp for chain-of-thought prompts.
    qwen3:
-      think:
-         temperature: 0.6
-         top_p: 0.95
-         top_k: 20
-         min_p: 0
-      no_think:
+      default:
          temperature: 0.7
          top_p: 0.8
          top_k: 20
          min_p: 0
-         toolcalling:
-            temperature: 0.7
-            top_p: 0.8
-            top_k: 20
-            min_p: 0
          reasoning:
             temperature: 0.6
             top_p: 0.95
-            top_k: 20
-            min_p: 0
          longctx:
             temperature: 0.1
             top_p: 0.9
-            top_k: 20
-            min_p: 0
-      default:    # non-thinking models (think: none) use this key
-         temperature: 0.7
-         top_p: 0.8
+      think:
+         temperature: 0.6
+         top_p: 0.95
+
+   # ── Qwen3.6 (35B-A3B MoE) ─────────────────────────────────────────────────
+   # presence_penalty=1.5 shared; think uses temp=1.0, no_think uses temp=0.7.
+   # docqa in think mode: lower temp for precise arithmetic.
+   qwen3.6:
+      default:
          top_k: 20
          min_p: 0
-         toolcalling:
-            temperature: 0.7
-            top_p: 0.8
-            top_k: 20
-            min_p: 0
-         longctx:
-            temperature: 0.1
-            top_p: 0.9
-            top_k: 20
-            min_p: 0
-
-   # ── Qwen3.6 (35B-A3B MoE — different from Qwen3) ──────────────────────────
-   # think mode uses temp=1.0 (not 0.6); presence_penalty=1.5 both modes
-   qwen3.6:
+         presence_penalty: 1.5
       think:
          temperature: 1.0
          top_p: 0.95
-         top_k: 20
-         min_p: 0
-         presence_penalty: 1.5
          docqa:
             temperature: 0.6
             top_p: 0.95
-            top_k: 20
-            min_p: 0
-            presence_penalty: 1.5
       no_think:
          temperature: 0.7
          top_p: 0.8
-         top_k: 20
-         min_p: 0
-         presence_penalty: 1.5
 
-   # ── Qwen3-Coder (30B-A3B — no think mode) ─────────────────────────────────
+   # ── Qwen3-Coder (30B-A3B — non-thinking) ──────────────────────────────────
    qwen3-coder:
       default:
          temperature: 0.7
@@ -301,16 +275,17 @@ sampling_matrix:
             temperature: 0.1
             top_p: 0.9
 
-   # ── Gemma 4 (E4B and 26B-A4B — unified sampling across ALL tasks) ──────────
-   # Google explicitly recommends the same params for all tasks and both think states.
+   # ── Gemma 4 (E4B and 26B-A4B) ─────────────────────────────────────────────
+   # Google recommends identical params for all tasks and both think states.
    gemma4:
       default:
          temperature: 1.0
          top_p: 0.95
          top_k: 64
 
-   # ── Nemotron Nano 12B v2 ────────────────────────────────────────────────────
-   # no_think → greedy decoding per NVIDIA model card.
+   # ── Nemotron Nano 12B v2 ───────────────────────────────────────────────────
+   # no_think = greedy (temp=0) per NVIDIA model card; think and no_think differ
+   # entirely so no shared default base.
    nemotron:
       think:
          temperature: 0.6
@@ -318,79 +293,13 @@ sampling_matrix:
       no_think:
          temperature: 0
 
-   # ── LFM2.5 (always-reasoning via reasoning_content field) ──────────────────
+   # ── LFM2.5 (always-reasoning, null think state) ────────────────────────────
+   # Reasoning trace extracted server-side via --reasoning-format auto.
    lfm2.5:
       default:
          temperature: 0.2
          top_k: 80
          repeat_penalty: 1.05
-
-
-# ── Sampling fallbacks ────────────────────────────────────────────────────────────
-# Used by shared/llm/sampling.mjs when a model's family is absent from sampling_matrix.
-# Keyed by capability class: non_thinking | hybrid | thinking | reasoning_only
-# Sourced from Qwen3 / DeepSeek-R1-0528 official guidance.
-
-sampling_fallbacks:
-
-   hybrid:
-      think:
-         temperature: 0.6
-         top_p: 0.95
-         top_k: 20
-         min_p: 0
-         reasoning:
-            temperature: 0.6
-            top_p: 0.95
-            top_k: 20
-            min_p: 0
-         toolcalling:
-            temperature: 0.4
-            top_p: 0.9
-            top_k: 20
-            min_p: 0
-      no_think:
-         temperature: 0.7
-         top_p: 0.8
-         top_k: 20
-         min_p: 0
-         presence_penalty: 1.5
-         reasoning:
-            temperature: 0.6
-            top_p: 0.95
-            top_k: 20
-            min_p: 0
-         toolcalling:
-            temperature: 0.4
-            top_p: 0.9
-            top_k: 20
-            min_p: 0
-
-   thinking:
-      think:
-         temperature: 0.6
-         top_p: 0.95
-         min_p: 0.05
-         reasoning:
-            temperature: 0.6
-            top_p: 0.95
-            min_p: 0.01
-
-   reasoning_only:
-      default:
-         temperature: 0.2
-         top_k: 80
-         min_p: 0
-         presence_penalty: 1.05
-
-   non_thinking:
-      default:
-         temperature: 0.1
-         toolcalling:
-            temperature: 0.4
-            top_p: 0.9
-         summarization:
-            temperature: 0.3
 
 
 # ── Host configuration ───────────────────────────────────────────────────────────

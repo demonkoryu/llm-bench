@@ -1,21 +1,19 @@
 /**
  * Think-mode utilities for llama.cpp models.
  *
- * Covers the two mechanisms llama.cpp uses for reasoning/thinking:
- *
- *  1. Tag-based: model outputs <think>...</think> inline in content (Qwen3, DeepSeek-R1).
- *     Controlled per-request via chat_template_kwargs.enable_thinking.
- *
- *  2. Split-field: model puts reasoning in `reasoning_content` and leaves `content`
- *     empty or null (LFM2.5 and other always-reasoning models). The openai SDK strips
- *     non-standard response fields, so we must intercept and merge before SDK parsing
- *     (see client.mjs customFetch).
- *
  * Capability classes:
- *   non_thinking   — no thinking mode at all (Gemma4, older Qwen2.5, phi, granite, llama)
- *   hybrid         — supports both think=true and think=false (Qwen3, Qwen3.6, 14B)
- *   thinking       — always outputs think tags, think toggle a no-op (DeepSeek-R1 distill)
- *   reasoning_only — always reasons, reasoning in `reasoning_content` field (LFM2.5)
+ *   non_thinking   — no thinking mode (Qwen3-2507, Qwen3-Coder)
+ *   hybrid         — supports both think=true and think=false (Qwen3, Qwen3.6, Gemma4, Nemotron)
+ *   thinking       — always outputs think tags, no toggle (DeepSeek-R1 distill)
+ *   reasoning_only — always reasons, no toggle (LFM2.5)
+ *
+ * Think toggle mechanisms (see applyThinkControl):
+ *   enable_thinking — chat_template_kwargs.enable_thinking=true/false (Qwen3, Gemma4)
+ *   system_keyword  — /think or /no_think prepended to system message (Nemotron)
+ *
+ * Reasoning traces are extracted server-side via --reasoning-format auto.
+ * The server delivers clean `content`; no client-side stripping is needed, though
+ * stripThink() in repair.mjs is kept as a defensive no-op.
  */
 
 export const CAPABILITY = {
@@ -67,17 +65,6 @@ export function thinkStates(cap) {
 }
 
 /**
- * Build the chat_template_kwargs to inject into the request body.
- * Returns null if think state is null (don't send the field at all).
- */
-export function thinkKwargs(thinkState) {
-   if (thinkState === null) {
-      return null;
-   }
-   return { enable_thinking: thinkState };
-}
-
-/**
  * Apply the model's think-control mechanism to produce a final messages array
  * and extra request body fields.
  *
@@ -122,22 +109,4 @@ export function applyThinkControl(messages, think, control = 'enable_thinking') 
       messages,
       extraBody: { chat_template_kwargs: { enable_thinking: think } },
    };
-}
-
-/**
- * Merge reasoning_content into content for models that split them.
- * Mutates the parsed response object in place; returns it.
- * Used by customFetch in client.mjs.
- */
-export function mergeReasoningContent(data) {
-   if (!data?.choices) {
-      return data;
-   }
-   for (const choice of data.choices) {
-      const msg = choice.message;
-      if (msg && (msg.content === '' || msg.content == null) && msg.reasoning_content) {
-         msg.content = `<think>${msg.reasoning_content}</think>`;
-      }
-   }
-   return data;
 }

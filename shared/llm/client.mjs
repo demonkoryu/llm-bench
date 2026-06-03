@@ -6,8 +6,11 @@
  * parses the response:
  *
  *   1. Saves `timings` (non-standard llama.cpp field stripped by the SDK).
- *   2. Merges `reasoning_content` → `content` for always-reasoning models (LFM2.5).
- *   3. Handles the 503 "model loading" race in waitHealthy().
+ *   2. Handles the 503 "model loading" race in waitHealthy().
+ *
+ * Reasoning traces are extracted server-side via --reasoning-format auto.
+ * The server populates `reasoning_content` and delivers clean `content` for
+ * all think-capable models (Qwen3, Qwen3.6, Gemma4, Nemotron, LFM2.5).
  *
  * llama.cpp extensions are forwarded as extra body fields by the SDK unchanged:
  *   chat_template_kwargs.enable_thinking  — per-request think toggle
@@ -20,7 +23,7 @@
 
 import OpenAI from 'openai';
 import { parseToolArgs } from './repair.mjs';
-import { applyThinkControl, mergeReasoningContent } from './think.mjs';
+import { applyThinkControl } from './think.mjs';
 
 const DEFAULT_URL = process.env.LLAMA_URL ?? 'http://192.168.1.120:8090';
 const DEFAULT_TIMEOUT_MS = 600_000;
@@ -40,7 +43,7 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
    let _lastTimings = null;
 
    /**
-    * Custom fetch interceptor: saves timings, merges reasoning_content.
+    * Custom fetch interceptor: saves timings.
     * Returns a re-serialized Response so the SDK parses our modified body.
     */
    async function customFetch(url, init) {
@@ -50,10 +53,8 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
          try {
             const text = await resp.text();
             const data = JSON.parse(text);
-            // 1. Save timings before they're stripped
+            // Save timings before they're stripped by the SDK
             _lastTimings = data.timings ?? null;
-            // 2. Merge reasoning_content for always-reasoning models (LFM2.5 etc.)
-            mergeReasoningContent(data);
             return new Response(JSON.stringify(data), {
                status: resp.status,
                statusText: resp.statusText,

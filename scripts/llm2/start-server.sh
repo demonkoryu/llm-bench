@@ -108,6 +108,7 @@ cmd="nohup $BIN $model_args \
    -np 1 \
    -b 2048 -ub 512 \
    --jinja \
+   --reasoning-format auto \
    --host 0.0.0.0 --port $port \
    $extra_flags \
    > $LOG 2>&1 & echo \$!"

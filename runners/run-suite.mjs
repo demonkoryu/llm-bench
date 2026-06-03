@@ -86,7 +86,6 @@ function resolveEnv(s) {
 const LLAMA_URL = resolveEnv(hostCfg.llamacpp);
 const SSH_HOST = resolveEnv(hostCfg.ssh_host);
 const SAMPLING_MATRIX = modelsConfig.sampling_matrix ?? {};
-const SAMPLING_FALLBACKS = modelsConfig.sampling_fallbacks ?? {};
 
 // ── Shared LLM imports ──────────────────────────────────────────────────────────
 const { stripThink, extractJson, capabilityClass, thinkStates, resolveSampling } = await import('../shared/llm/index.mjs');
@@ -158,7 +157,7 @@ const MAX_TOKENS = {
 
 /** Resolve sampling params for a given model + bench + think state. */
 function sampleOpts(model, thinkState, bench) {
-   return resolveSampling(model, capabilityClass(model), thinkState, bench, SAMPLING_MATRIX, SAMPLING_FALLBACKS);
+   return resolveSampling(model, thinkState, bench, SAMPLING_MATRIX);
 }
 
 /**

@@ -13,7 +13,7 @@
  *   LLAMA_URL=http://host:8090 node benchmarks/longctx/multifact-bench.mjs <ctxTokens> <kvLabel> [modelTag]
  */
 
-import { openaiCompatClient } from '../../shared/openai-compat.mjs';
+import { createClient } from '../../shared/llm/index.mjs';
 
 const LLAMA_URL = process.env.LLAMA_URL ?? 'http://127.0.0.1:8090';
 const CTX = parseInt(process.argv[2] ?? '24000', 10);
@@ -21,7 +21,7 @@ const LABEL = process.argv[3] ?? 'unknown';
 const MODEL_TAG = process.argv[4] ?? 'unknown';
 const TIMEOUT = 600_000;
 
-const client = openaiCompatClient(LLAMA_URL);
+const llm = createClient(LLAMA_URL);
 const FILLER = 'The grass is green and the sky is blue. The river flows quietly to the sea. ';
 
 // Facts hidden at different depths; some questions require combining multiple facts.
@@ -93,7 +93,7 @@ for (const q of QUESTIONS) {
    const prompt = `${haystack}\n\nQuestion: ${q.q}\nAnswer concisely. Do NOT explain.`;
    process.stdout.write(`  ${q.id.padEnd(18)} `);
    try {
-      const body = await client.chat([{ role: 'user', content: prompt }], { temperature: 0.0, max_tokens: 30 }, TIMEOUT);
+      const { completion: body } = await llm.chat([{ role: 'user', content: prompt }], { temperature: 0.0, max_tokens: 30 }, TIMEOUT);
       promptTokens = body.usage?.prompt_tokens ?? promptTokens;
       const txt = (body.choices?.[0]?.message?.content ?? '').trim();
       const got = norm(txt);

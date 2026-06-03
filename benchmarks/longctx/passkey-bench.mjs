@@ -14,7 +14,7 @@
  *   RESULT\t<kvLabel>\t<model>\t<ctxTokens>\t<correct>/5\t<promptTokens>
  */
 
-import { openaiCompatClient } from '../../shared/openai-compat.mjs';
+import { createClient } from '../../shared/llm/index.mjs';
 
 const LLAMA_URL = process.env.LLAMA_URL ?? 'http://127.0.0.1:8090';
 const CTX = parseInt(process.argv[2] ?? '24000', 10);
@@ -22,7 +22,7 @@ const LABEL = process.argv[3] ?? 'unknown';
 const MODEL_TAG = process.argv[4] ?? 'unknown';
 const TIMEOUT = 600_000;
 
-const client = openaiCompatClient(LLAMA_URL);
+const llm = createClient(LLAMA_URL);
 
 const FILLER = 'The grass is green and the sky is blue. The river flows quietly to the sea. ';
 
@@ -60,7 +60,7 @@ for (const n of NEEDLES) {
    process.stdout.write(`  ${n.tag.padEnd(8)} depth=${(n.depth * 100).toFixed(0).padStart(3)}%  `);
    try {
       const t0 = Date.now();
-      const body = await client.chat([{ role: 'user', content: prompt }], { temperature: 0.0, max_tokens: 20 }, TIMEOUT);
+      const { completion: body } = await llm.chat([{ role: 'user', content: prompt }], { temperature: 0.0, max_tokens: 20 }, TIMEOUT);
       const wallMs = Date.now() - t0;
       promptTokens = body.usage?.prompt_tokens ?? promptTokens;
       if (body.error) {
