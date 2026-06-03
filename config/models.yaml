@@ -166,9 +166,10 @@ models:
      tools: false
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
-     # Nemotron Nano v2 emits <SPECIAL_NN> reasoning delimiters that --reasoning-format
-     # auto can't parse (→ 500). Disable server-side reasoning extraction for this family.
-     extra_flags: "--reasoning-format none"
+     # NOTE: json_schema response_format 500s on this build — llama.cpp's chat parser
+     # chokes on Nemotron's <SPECIAL_NN> tokens (independent of --reasoning-format).
+     # Currently unusable for triage/reasoning (grammar-constrained) benches.
+     extra_flags: {}
      benches: [triage, reasoning, summarization, docqa, speed, maxctx]
 
    - hf_repo: bartowski/nvidia_NVIDIA-Nemotron-Nano-12B-v2-GGUF
