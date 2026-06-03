@@ -36,21 +36,20 @@ export const COLUMNS = [
    'notes',
 ];
 
-// Per-metric weights (sum = 1.0). Task quality dominates (0.75 across the five
-// capability benches) since a fast model with a huge context window but weak
-// answers isn't useful; context capacity and decode speed are secondary. The
-// weighted score uses a FIXED denominator (see finalScore): a metric a model
+// Per-metric weights (sum = 1.0). Context capacity is weighted heavily (0.30) —
+// long usable windows are a top priority for this PKM/docQA use case — with task
+// quality at 0.55 across the five capability benches and decode speed at 0.15.
+// The weighted score uses a FIXED denominator (see finalScore): a metric a model
 // didn't run contributes 0, so breadth of capability counts and a narrow model
 // can't top the ranking by being scored on fewer axes.
-//   reasoning 20 · triage 15 · toolcalling 15 · docqa 15 · summarization 10  (quality = 75)
-//   maxctx 10 · speed 15
+//   maxctx 30 · reasoning 15 · docqa 12 · triage 10 · toolcalling 10 · summarization 8  · speed 15
 export const DEFAULT_WEIGHTS = {
-   reasoning: 0.2,
-   triage: 0.15,
-   toolcalling: 0.15,
-   docqa: 0.15,
-   summarization: 0.1,
-   maxctx: 0.1,
+   maxctx: 0.3,
+   reasoning: 0.15,
+   docqa: 0.12,
+   triage: 0.1,
+   toolcalling: 0.1,
+   summarization: 0.08,
    speed: 0.15,
 };
 

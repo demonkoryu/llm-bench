@@ -152,41 +152,36 @@ models:
      extra_flags: {}
      benches: [triage, reasoning, summarization, docqa, speed, maxctx]
 
-   # ── Nemotron Nano 12B v2 — DISABLED (upstream llama.cpp bug) ──────────────────
-   # json_schema response_format + greedy decoding (temperature 0, which NVIDIA's
-   # card recommends and our triage/reasoning benches use) → deterministic HTTP 500
-   # "Failed to parse input at pos N: <SPECIAL_12>". The peg-native parser's grammar
-   # root has no slot for Nemotron's trailing <SPECIAL_12> turn token, so the greedy
-   # output fails to parse; temperature>0 usually slips through. Independent of
-   # --reasoning-format; the Nemotron autoparser patch is active but doesn't help.
-   # Reported (with minimal repro): https://github.com/ggml-org/llama.cpp/issues/24081
-   # Re-enable by uncommenting once a fix lands upstream and we rebuild.
-   #
-   # - hf_repo: bartowski/nvidia_NVIDIA-Nemotron-Nano-12B-v2-GGUF
-   #   hf_file: nvidia_NVIDIA-Nemotron-Nano-12B-v2-Q4_K_M.gguf
-   #   label: "Nemotron-12B Q4_K_M"
-   #   family: nemotron
-   #   type: dense
-   #   think: optional
-   #   think_control: system_keyword
-   #   tools: false
-   #   native_max_ctx: 128000
-   #   kv_bytes_per_token: 16384
-   #   extra_flags: {}
-   #   benches: [triage, reasoning, summarization, docqa, speed, maxctx]
-   #
-   # - hf_repo: bartowski/nvidia_NVIDIA-Nemotron-Nano-12B-v2-GGUF
-   #   hf_file: nvidia_NVIDIA-Nemotron-Nano-12B-v2-Q8_0.gguf
-   #   label: "Nemotron-12B Q8_0"
-   #   family: nemotron
-   #   type: dense
-   #   think: optional
-   #   think_control: system_keyword
-   #   tools: false
-   #   native_max_ctx: 128000
-   #   kv_bytes_per_token: 16384
-   #   extra_flags: {}
-   #   benches: [triage, reasoning, summarization, docqa, speed, maxctx]
+   # ── Nemotron Nano 12B v2 ──────────────────────────────────────────────────────
+   # Hybrid: runs both nothi and think passes. Think toggle via /think /no_think.
+   # NOTE: temp 0 (greedy) deterministically triggers a llama.cpp peg-native 500 on
+   # schema-constrained benches (llama.cpp#24081) — its no_think sampling uses a small
+   # non-zero temperature as a workaround (see sampling_matrix.nemotron).
+   - hf_repo: bartowski/nvidia_NVIDIA-Nemotron-Nano-12B-v2-GGUF
+     hf_file: nvidia_NVIDIA-Nemotron-Nano-12B-v2-Q4_K_M.gguf
+     label: "Nemotron-12B Q4_K_M"
+     family: nemotron
+     type: dense
+     think: optional
+     think_control: system_keyword
+     tools: false
+     native_max_ctx: 128000
+     kv_bytes_per_token: 16384
+     extra_flags: {}
+     benches: [triage, reasoning, summarization, docqa, speed, maxctx]
+
+   - hf_repo: bartowski/nvidia_NVIDIA-Nemotron-Nano-12B-v2-GGUF
+     hf_file: nvidia_NVIDIA-Nemotron-Nano-12B-v2-Q8_0.gguf
+     label: "Nemotron-12B Q8_0"
+     family: nemotron
+     type: dense
+     think: optional
+     think_control: system_keyword
+     tools: false
+     native_max_ctx: 128000
+     kv_bytes_per_token: 16384
+     extra_flags: {}
+     benches: [triage, reasoning, summarization, docqa, speed, maxctx]
 
    # ── LFM2.5-8B-A1B ────────────────────────────────────────────────────────────
    # Always-reasoning: outputs to reasoning_content field, not content.
@@ -296,8 +291,12 @@ sampling_matrix:
       think:
          temperature: 0.6
          top_p: 0.95
+      # NVIDIA recommends greedy (temp 0) for no_think, but temp 0 deterministically
+      # triggers the llama.cpp peg-native 500 on schema-constrained benches
+      # (llama.cpp#24081). A small non-zero temp avoids it at negligible quality cost.
       no_think:
-         temperature: 0
+         temperature: 0.3
+         top_p: 0.95
 
    # ── LFM2.5 (always-reasoning, null think state) ────────────────────────────
    # Reasoning trace extracted server-side via --reasoning-format auto.

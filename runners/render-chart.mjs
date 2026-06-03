@@ -145,7 +145,7 @@ svg += barPanel(
    rankY,
    WIDE_W,
    'Overall Ranking',
-   'reasoning 20% · triage 15% · toolcalling 15% · docqa 15% · summarization 10% · max-ctx 10% · speed 15%',
+   'max-ctx 30% · reasoning 15% · docqa 12% · triage 10% · toolcalling 10% · summarization 8% · speed 15%',
    rankItems,
 );
 
@@ -153,42 +153,42 @@ svg += barPanel(
 const METRIC_PANELS = [
    {
       title: 'Reasoning accuracy',
-      weight: '20%',
+      weight: '15%',
       getValue: (m) => m.reasoning,
       formatVal: (v) => (v != null ? `${v.toFixed(0)}%` : '–'),
       getMax: () => 100,
    },
    {
       title: 'Triage score (/100)',
-      weight: '15%',
+      weight: '10%',
       getValue: (m) => m.triage,
       formatVal: (v) => (v != null ? v.toFixed(0) : '–'),
       getMax: () => 100,
    },
    {
       title: 'Tool-call accuracy',
-      weight: '15%',
+      weight: '10%',
       getValue: (m) => m.toolcall,
       formatVal: (v) => (v != null ? `${v.toFixed(0)}%` : 'n/a'),
       getMax: () => 100,
    },
    {
       title: 'DocQA comprehension (/10)',
-      weight: '15%',
+      weight: '12%',
       getValue: (m) => m.docqa,
       formatVal: (v) => (v != null ? v.toFixed(1) : '–'),
       getMax: () => 10,
    },
    {
       title: 'Summarization score (/100)',
-      weight: '10%',
+      weight: '8%',
       getValue: (m) => m.summ,
       formatVal: (v) => (v != null ? v.toFixed(0) : '–'),
       getMax: () => 100,
    },
    {
       title: 'Max Context (tokens, coherence-verified)',
-      weight: '10%',
+      weight: '30%',
       getValue: (m) => m.maxctx,
       formatVal: (v) => (v != null ? (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)) : '?'),
       getMax: () => maxCtx,
