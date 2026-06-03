@@ -24,7 +24,7 @@
 
 import { execFile } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, isAbsolute, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs, promisify } from 'node:util';
 import { appendRow, csvFilename, ensureHeader, readTable } from '../shared/results-csv.mjs';
@@ -206,9 +206,7 @@ mkdirSync(RESULTS_DIR, { recursive: true });
 // Each run writes to a self-describing CSV (host/gpu/backend/datetime). --out
 // appends to an existing CSV instead — used by resume / follow-up runs.
 const RESULTS_CSV = flags.out
-   ? isAbsolute(flags.out)
-      ? flags.out
-      : join(RESULTS_DIR, flags.out)
+   ? resolve(flags.out) // relative to CWD, like a normal CLI path
    : join(RESULTS_DIR, csvFilename({ host: TARGET, gpu: GPU, backend: BACKEND, date: new Date() }));
 ensureHeader(RESULTS_CSV);
 
