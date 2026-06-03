@@ -60,6 +60,11 @@ const FALLBACKS = {
 /**
  * Resolve sampling parameters.
  *
+ * Lookup order (first match wins):
+ *  1. model.family exact key in matrix (e.g. "qwen3.6", "gemma4", "qwen3_coder")
+ *  2. capability class key ("hybrid", "non_thinking", "reasoning_only")
+ *  3. hardcoded FALLBACKS
+ *
  * @param {object}  model      model config entry from models.yaml
  * @param {string}  cap        capability class (from capabilityClass(model))
  * @param {boolean|null} think think state for this run pass
@@ -73,8 +78,17 @@ export function resolveSampling(model, cap, think, useCase, matrix) {
    if (modelOverride?.[useCase]) return cleanSampling(modelOverride[useCase]);
    if (modelOverride?.default) return mergeWithUseCase(modelOverride.default, modelOverride[useCase]);
 
-   // 2. Look up from matrix by cap class + think state + use-case
    const thinkKey = think === true ? 'think' : think === false ? 'no_think' : 'null';
+
+   // 2. Try model.family as a direct matrix key (e.g. "qwen3.6", "gemma4", "qwen3-coder")
+   const familyKey = (model.family ?? '').replace(/-/g, '_');  // normalize: qwen3-coder → qwen3_coder
+   const familyEntry = matrix?.[familyKey]?.[thinkKey] ?? matrix?.[familyKey]?.null;
+   if (familyEntry) {
+      const useCaseOverride = familyEntry[useCase];
+      return cleanSampling(useCaseOverride ? { ...familyEntry, ...useCaseOverride } : familyEntry);
+   }
+
+   // 3. Fall back to capability class key + hardcoded fallbacks
    const capEntry = matrix?.[cap]?.[thinkKey] ?? FALLBACKS[cap]?.[thinkKey] ?? FALLBACKS[cap]?.null ?? {};
    const useCaseOverride = capEntry[useCase];
 

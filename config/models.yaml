@@ -28,22 +28,25 @@
 models:
 
    # ── Qwen3-Coder 30B ──────────────────────────────────────────────────────────
+   # NO thinking mode (model never generates <think> blocks; research confirmed).
+   # Native ctx: 32,768 tokens; 262,144 with YaRN (per HF model card).
    # NOTE: --chat-template qwen3-coder intentionally NOT set (conflicts with --jinja
    # tool parsing). Standard Qwen3 template handles tool calls correctly.
-   - hf_repo: unsloth/Qwen3-Coder-30B-A3B-GGUF   # TODO: verify — may be a different community upload
+   - hf_repo: unsloth/Qwen3-Coder-30B-A3B-GGUF   # TODO: verify — may be different community upload
      hf_file: Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL.gguf
      label: "Qwen3-Coder 30B UD-Q4_K_XL"
-     family: qwen3
+     family: qwen3-coder
      type: moe
-     think: optional
+     think: none           # NO thinking mode — coding-specialist, think blocks not generated
      tools: true
-     native_max_ctx: 131072
+     native_max_ctx: 32768    # native; YaRN extends to 262144 (not used here)
      kv_bytes_per_token: 49152   # 48 KiB/tok — empirical, 30B-A3B GQA Q8_0
      extra_flags: "--temp 0.7 --top-p 0.8 --top-k 20 --min-p 0 --repeat-penalty 1.05"
-     benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
-     notes: "Coding-specialist variant of Qwen3-30B-A3B."
+     benches: [triage, toolcalling, summarization, docqa, speed, maxctx]
+     notes: "No think mode (architecturally absent). repeat_penalty=1.05 explicitly documented."
 
    # ── Qwen3-30B-A3B-Instruct-2507 UD quant ────────────────────────────────────
+   # Native ctx: 32,768 tokens; 131,072 with YaRN ×4 (per HF model card).
    - hf_repo: unsloth/Qwen3-30B-A3B-GGUF   # TODO: verify 2507 revision availability
      hf_file: Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL.gguf
      label: "Qwen3-30B-A3B-2507 UD-Q4_K_XL"
@@ -51,7 +54,7 @@ models:
      type: moe
      think: optional
      tools: true
-     native_max_ctx: 131072
+     native_max_ctx: 32768    # native; 131072 with YaRN (GGUF may include scaling metadata)
      kv_bytes_per_token: 49152
      extra_flags: "--temp 0.7 --top-p 0.8 --top-k 20 --min-p 0"
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
@@ -64,13 +67,14 @@ models:
      type: moe
      think: optional
      tools: true
-     native_max_ctx: 131072
-     ctx_cap: 81920   # 92k probe-max leaves only 531 MiB; OOMs during 90k prefill inference
+     native_max_ctx: 32768    # native; 131072 with YaRN
+     ctx_cap: 81920   # empirical: 92k probe-max leaves only 531 MiB; OOMs during 90k prefill
      kv_bytes_per_token: 49152
      extra_flags: "--temp 0.7 --top-p 0.8 --top-k 20 --min-p 0"
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
    # ── Qwen3-14B Q5_K_M ────────────────────────────────────────────────────────
+   # Native ctx: 32,768 tokens; 131,072 with YaRN ×4 (per HF model card).
    - hf_repo: bartowski/Qwen3-14B-GGUF   # TODO: verify — or unsloth/Qwen3-14B-GGUF
      hf_file: Qwen3-14B-Q5_K_M.gguf
      label: "Qwen3-14B Q5_K_M"
@@ -78,14 +82,16 @@ models:
      type: dense
      think: optional
      tools: true
-     native_max_ctx: 131072
-     ctx_cap: 40960   # GGUF rejects prompts beyond this; RoPE not extended past 40k
+     native_max_ctx: 32768    # native; 131072 with YaRN
+     ctx_cap: 40960   # empirical: GGUF rejects prompts beyond this; RoPE not extended past 40k
      kv_bytes_per_token: 24576   # 24 KiB/tok — estimated ~half of 30B
      extra_flags: "--temp 0.7 --top-p 0.8 --top-k 20 --min-p 0"
      benches: [triage, reasoning, toolcalling, toolcalling_decay, summarization, docqa, speed, maxctx]
 
    # ── Qwen3.6-35B-A3B IQ4_XS 3.97bpw ─────────────────────────────────────────
+   # Native ctx: 262,144 tokens (genuine, not YaRN-extended — per HF model card).
    # Hybrid model: run as separate aliases for nothi and think modes.
+   # Qwen3.6 think mode recommendation differs from Qwen3: temp=1.0 (vs 0.6) for general tasks.
    # MTP speculative draft: requires Vulkan build with MTP support; smoke test will catch if absent.
    - hf_repo: unsloth/Qwen3.6-35B-A3B-GGUF   # TODO: verify — community quant, may be bartowski
      hf_file: Qwen3.6-35B-A3B-IQ4_XS-3.97bpw.gguf
@@ -95,11 +101,11 @@ models:
      think: optional
      think_state: false   # this entry = non-thinking pass
      tools: true
-     native_max_ctx: 131072
+     native_max_ctx: 262144
      kv_bytes_per_token: 49152
-     extra_flags: "--temp 0.7 --top-p 0.8 --top-k 20 --min-p 0 --spec-type draft-mtp --spec-draft-n-max 4"
+     extra_flags: "--temp 0.7 --top-p 0.8 --top-k 20 --min-p 0 --presence-penalty 1.5 --spec-type draft-mtp --spec-draft-n-max 4"
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
-     notes: "MTP speculative draft; drop --spec-type if Vulkan build lacks support."
+     notes: "MTP speculative draft; drop --spec-type if Vulkan build lacks support. presence_penalty=1.5 per Qwen3.6 guidance."
 
    - hf_repo: unsloth/Qwen3.6-35B-A3B-GGUF   # same file, thinking pass
      hf_file: Qwen3.6-35B-A3B-IQ4_XS-3.97bpw.gguf
@@ -109,11 +115,11 @@ models:
      think: optional
      think_state: true    # this entry = thinking pass
      tools: true
-     native_max_ctx: 131072
+     native_max_ctx: 262144
      kv_bytes_per_token: 49152
-     extra_flags: "--temp 0.6 --top-p 0.95 --top-k 20 --min-p 0 --spec-type draft-mtp --spec-draft-n-max 4"
+     extra_flags: "--temp 1.0 --top-p 0.95 --top-k 20 --min-p 0 --presence-penalty 1.5 --spec-type draft-mtp --spec-draft-n-max 4"
      benches: [triage, reasoning, summarization, docqa, speed]
-     notes: "Thinking pass of qwen36-397 — no toolcalling (think mode incompatible with tool calling in current llama.cpp)."
+     notes: "temp=1.0 in think mode per Qwen3.6 guidance (higher than Qwen3's 0.6). No toolcalling — think mode incompatible with tool calling."
 
    # ── Qwen3.6-35B-A3B IQ4_XS 4.19bpw ─────────────────────────────────────────
    - hf_repo: unsloth/Qwen3.6-35B-A3B-GGUF   # TODO: verify 4.19bpw file in same repo
@@ -124,9 +130,9 @@ models:
      think: optional
      think_state: false
      tools: true
-     native_max_ctx: 131072
+     native_max_ctx: 262144
      kv_bytes_per_token: 49152
-     extra_flags: "--temp 0.7 --top-p 0.8 --top-k 20 --min-p 0 --spec-type draft-mtp --spec-draft-n-max 4"
+     extra_flags: "--temp 0.7 --top-p 0.8 --top-k 20 --min-p 0 --presence-penalty 1.5 --spec-type draft-mtp --spec-draft-n-max 4"
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
    - hf_repo: unsloth/Qwen3.6-35B-A3B-GGUF
@@ -137,26 +143,28 @@ models:
      think: optional
      think_state: true
      tools: true
-     native_max_ctx: 131072
+     native_max_ctx: 262144
      kv_bytes_per_token: 49152
-     extra_flags: "--temp 0.6 --top-p 0.95 --top-k 20 --min-p 0 --spec-type draft-mtp --spec-draft-n-max 4"
+     extra_flags: "--temp 1.0 --top-p 0.95 --top-k 20 --min-p 0 --presence-penalty 1.5 --spec-type draft-mtp --spec-draft-n-max 4"
      benches: [triage, reasoning, summarization, docqa, speed]
 
    # ── Gemma4-E4B (Google Gemma 4, 4B effective MoE) ───────────────────────────
-   # Non-thinking; no tool support in current chat template.
-   # Sliding-window attention helps at long contexts.
+   # Native ctx: 128,000 tokens (Google model card).
+   # Google explicitly recommends temp=1.0, top_p=0.95, top_k=64 for ALL use cases.
+   # Thinking toggleable via <|think|> token in system prompt; --reasoning off in llama.cpp.
+   # KNOWN BUG: F16/BF16 on CUDA causes <unused49> flooding — not an issue here (AMD+GGUF).
    - hf_repo: google/gemma-4-e4b-it-GGUF   # TODO: verify — may be mradermacher/bartowski community
      hf_file: gemma-4-e4b-it-Q8_0.gguf
      label: "Gemma4-E4B Q8_0"
      family: gemma4
      type: moe
-     think: none
+     think: none           # benchmarking without thinking; default = no <|think|> token
      tools: false
-     native_max_ctx: 131072
+     native_max_ctx: 128000
      kv_bytes_per_token: 16384   # estimated; 4B active params, smaller KV footprint
-     extra_flags: "--temp 0.1"
+     extra_flags: "--temp 1.0 --top-p 0.95 --top-k 64"
      benches: [triage, summarization, docqa, speed, maxctx]
-     notes: "Q8_0 for quality comparison vs Q5_K_M variant."
+     notes: "Q8_0 for quality comparison vs Q5_K_M. Google recommends unified sampling across all tasks."
 
    - hf_repo: google/gemma-4-e4b-it-GGUF   # TODO: same uncertainty as Q8_0
      hf_file: gemma-4-e4b-it-Q5_K_M.gguf
@@ -165,28 +173,29 @@ models:
      type: moe
      think: none
      tools: false
-     native_max_ctx: 131072
+     native_max_ctx: 128000
      kv_bytes_per_token: 16384
-     extra_flags: "--temp 0.1"
+     extra_flags: "--temp 1.0 --top-p 0.95 --top-k 64"
      benches: [triage, summarization, docqa, speed, maxctx]
 
    # ── LFM2.5-8B-A1B ────────────────────────────────────────────────────────────
+   # Native ctx: 128,000 tokens (LiquidAI HF model card).
    # Always-reasoning: outputs to reasoning_content field (not content).
-   # The LLM client merges reasoning_content → content before SDK parsing.
+   # The LLM client merges reasoning_content → content before SDK parsing (think.mjs).
    # Only 6 of 24 layers are attention (rest are LIV conv) → tiny KV footprint.
-   - hf_repo: leafsage-ai/LFM2.5-8B-A1B-GGUF   # TODO: verify — community repo TBD
+   - hf_repo: LiquidAI/LFM2.5-8B-A1B-GGUF   # TODO: verify exact GGUF repo from LiquidAI
      hf_file: LFM2.5-8B-A1B-Q5_K_M.gguf
      label: "LFM2.5-8B-A1B Q5_K_M"
      family: lfm2.5
      type: dense
-     think: reasoning      # always-reasoning: outputs reasoning_content; no toggle
+     think: reasoning      # always-reasoning: reasoning_content field; no toggle
      tools: false          # reasoning-only specialization — no tool calls
-     native_max_ctx: 131072
+     native_max_ctx: 128000
      ctx_cap: 131072
      kv_bytes_per_token: 8192    # 8 KiB/tok — 6 attention layers only
      extra_flags: "--temp 0.2 --top-k 80 --min-p 0 --repeat-penalty 1.05"
      benches: [reasoning, summarization, docqa, speed, maxctx]
-     notes: "reasoning_content field merged into content by llm client (think.mjs)."
+     notes: "temp=0.2 intentional (low for reasoning coherence per LiquidAI docs). reasoning_content merged by llm client."
 
 
 # ── Sampling matrix ───────────────────────────────────────────────────────────────
@@ -194,37 +203,42 @@ models:
 # Organized by capability class × think state × use-case.
 # Use-case keys override the parent defaults for that bench type.
 #
-# Sourced from vendor documentation:
-#   Qwen3: https://huggingface.co/Qwen/Qwen3-30B-A3B (June 2025)
-#   Qwen3.6: https://huggingface.co/Qwen/Qwen3.6-30B-A3B (2025)
-#   LFM2.5: https://huggingface.co/leafsage-ai/LFM2.5-8B-A1B (TODO: verify)
-#   Gemma4: https://huggingface.co/google/gemma-4-e4b-it (TODO: verify)
+# Sources (verified from primary HuggingFace model cards, June 2025):
+#   Qwen3-30B-A3B, 14B: https://huggingface.co/Qwen/Qwen3-30B-A3B
+#   Qwen3-Coder:        https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct
+#   Qwen3.6-35B-A3B:    https://huggingface.co/Qwen/Qwen3.6-35B-A3B
+#   Gemma4-E4B:         https://ai.google.dev/gemma/docs/core/model_card_4
+#   LFM2.5-8B-A1B:      https://huggingface.co/LiquidAI/LFM2.5-8B-A1B
+#
+# IMPORTANT: sampling params in extra_flags (per model above) are server-side defaults.
+# Params here are sent per-request and OVERRIDE server defaults.
+# Do NOT set the same param in both extra_flags and here (request wins).
 
 sampling_matrix:
 
-   # ── Hybrid models (optional think) ─────────────────────────────────────────
+   # ── Hybrid models (Qwen3 family: optional think) ───────────────────────────
+   # Source: Qwen3-30B-A3B / Qwen3-14B HF model cards
    hybrid:
-      think:     # enable_thinking: true
+      think:     # enable_thinking: true — Qwen3 official guidance
          temperature: 0.6
          top_p: 0.95
          top_k: 20
          min_p: 0
-         # Use-case overrides for thinking mode:
+         # DO NOT use greedy decoding (temp=0) in think mode — causes degradation
          reasoning:
             temperature: 0.6
             top_p: 0.95
             top_k: 20
             min_p: 0
-      no_think:  # enable_thinking: false
+      no_think:  # enable_thinking: false — Qwen3 official guidance
          temperature: 0.7
          top_p: 0.8
          top_k: 20
          min_p: 0
-         presence_penalty: 1.5
-         # Use-case overrides for non-thinking mode:
+         # presence_penalty 0-2 is optional; set in extra_flags per model
          toolcalling:
-            temperature: 0.4
-            top_p: 0.9
+            temperature: 0.7
+            top_p: 0.8
             top_k: 20
             min_p: 0
          reasoning:
@@ -238,15 +252,76 @@ sampling_matrix:
             top_k: 20
             min_p: 0
 
+   # ── Hybrid models (Qwen3.6 family — DIFFERENT from Qwen3) ─────────────────
+   # Source: Qwen3.6-35B-A3B HF model card
+   # Key differences: think mode uses temp=1.0 (not 0.6); presence_penalty=1.5 in no_think
+   qwen3.6:
+      think:     # enable_thinking: true
+         temperature: 1.0
+         top_p: 0.95
+         top_k: 20
+         min_p: 0
+         # presence_penalty: 1.5  # optional; already in extra_flags
+         reasoning:
+            temperature: 1.0
+            top_p: 0.95
+            top_k: 20
+            min_p: 0
+         # coding/precise tasks (e.g. docqa with arithmetic):
+         docqa:
+            temperature: 0.6
+            top_p: 0.95
+            top_k: 20
+            min_p: 0
+      no_think:  # enable_thinking: false
+         temperature: 0.7
+         top_p: 0.8
+         top_k: 20
+         min_p: 0
+         # presence_penalty: 1.5  # in extra_flags
+         reasoning:
+            temperature: 0.7
+            top_p: 0.8
+            top_k: 20
+            min_p: 0
+         toolcalling:
+            temperature: 0.7
+            top_p: 0.8
+            top_k: 20
+            min_p: 0
+
+   # ── Non-thinking — Qwen3-Coder (repeat_penalty 1.05, unified params) ──────
+   # Source: Qwen3-Coder-30B-A3B-Instruct HF model card
+   qwen3_coder:
+      null:
+         temperature: 0.7
+         top_p: 0.8
+         top_k: 20
+         min_p: 0
+         # repeat_penalty: 1.05  # set in extra_flags
+         longctx:
+            temperature: 0.1
+            top_p: 0.9
+
+   # ── Non-thinking — Gemma4 family (UNIFIED across all tasks) ──────────────
+   # Source: Google Gemma 4 official model card (ai.google.dev)
+   # Google explicitly recommends the SAME params for ALL tasks — do not differentiate.
+   gemma4:
+      null:
+         temperature: 1.0
+         top_p: 0.95
+         top_k: 64
+
    # ── Reasoning-only models (always-reasoning, reasoning_content split) ──────
+   # Source: LiquidAI LFM2.5-8B-A1B HF model card
    reasoning_only:
-      null:      # no toggle; enable_thinking not sent
+      null:      # no toggle; enable_thinking not sent (model always reasons)
          temperature: 0.2
          top_k: 80
-         min_p: 0
-         presence_penalty: 1.05
+         # repeat_penalty: 1.05  # set in extra_flags
 
-   # ── Non-thinking instruct models ────────────────────────────────────────────
+   # ── Generic non-thinking instruct models ────────────────────────────────────
+   # Fallback for any model not matched by a more specific class
    non_thinking:
       null:
          temperature: 0.1
