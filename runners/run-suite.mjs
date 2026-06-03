@@ -1244,4 +1244,14 @@ for (const model of models) {
 } // end model loop
 
 flushPfJson();
+
+// Render the results SVG directly from the TSV (no external viewer needed).
+const CHART_SVG = join(RESULTS_DIR, 'chart.svg');
+try {
+   await execP('node', [join(ROOT, 'runners/render-chart.mjs'), '--input', RESULTS_TSV, '--output', CHART_SVG]);
+   console.log(`[run-suite] chart → ${CHART_SVG}`);
+} catch (e) {
+   console.warn(`[run-suite] chart render failed: ${e.message.slice(0, 120)}`);
+}
+
 console.log(`\n[run-suite] Done. Results: ${RESULTS_TSV}`);

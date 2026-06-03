@@ -111,13 +111,6 @@ function finalScore(m) {
    return 0.25 * qualN + 0.2 * toolN + 0.3 * ctxN + 0.25 * speedN;
 }
 
-models.forEach((m, i) => {
-   m.score = Math.round(finalScore(m) * 1000) / 10;
-   m.color = COLORS[i % COLORS.length];
-});
-
-const ranked = [...models].sort((a, b) => b.score - a.score);
-
 // ── SVG constants ─────────────────────────────────────────────────────────────
 const COLORS = [
    '#5ab4fa',
@@ -133,6 +126,13 @@ const COLORS = [
    '#e06090',
    '#90e060',
 ];
+
+models.forEach((m, i) => {
+   m.score = Math.round(finalScore(m) * 1000) / 10;
+   m.color = COLORS[i % COLORS.length];
+});
+
+const ranked = [...models].sort((a, b) => b.score - a.score);
 
 const BG = '#0f0f13';
 const PANEL = '#18181f';
