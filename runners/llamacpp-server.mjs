@@ -304,62 +304,87 @@ export function llamacppServer({
    }
 
    /**
-    * Coherence check: feed a large synthetic codebase prompt, ask for needle near the end.
-    * Returns true if the model answers correctly.
+    * Scale the per-request timeout with context size. Prompt prefill is ~O(n²)
+    * in the token count, so a fixed timeout silently caps the *measurable* window
+    * at the prefill-time wall rather than the model's real coherence limit (the
+    * old fixed 120s mis-marked ~43k as "incoherent" on a slow 12B that actually
+    * loads and retrieves at 128k). Baseline ~120s at 32k, quadratic growth,
+    * capped at 30 min so a genuine hang still terminates.
+    */
+   function coherenceTimeoutMs(ctxSize) {
+      const est = Math.round((ctxSize / 32_000) ** 2 * 120_000);
+      return Math.min(1_800_000, Math.max(180_000, est));
+   }
+
+   /**
+    * Coherence check: feed a large synthetic codebase prompt, ask for a deep
+    * needle, return true if the model retrieves it. Uses up to 2 independent
+    * needle samples (a perturbed fill size yields a different needle), so one
+    * unlucky single-shot miss doesn't collapse the whole context size — the
+    * binary search then measures context length, not needle luck.
     */
    async function checkCoherence(ctxSize, makeFillPrompt, think = null, thinkControl = 'enable_thinking') {
       // Reserve room for the answer tokens; the char→token estimate in
       // makeFillPrompt is approximate, so retry smaller if the server rejects
       // the prompt for exceeding the window (tokenizer-density mismatch).
       const ANSWER_BUDGET = 384;
-      let fillTarget = ctxSize - ANSWER_BUDGET;
-      let resp;
-      let expectedAnswer;
+      const timeoutMs = coherenceTimeoutMs(ctxSize);
 
-      for (let attempt = 0; attempt < 3; attempt++) {
-         const built = makeFillPrompt(fillTarget);
-         expectedAnswer = built.expectedAnswer;
+      for (let sample = 0; sample < 2; sample++) {
+         // Sample 1 fills to the window; sample 2 backs off 4% → a different
+         // synthetic codebase + needle, an independent retrieval attempt.
+         let fillTarget = Math.floor((ctxSize - ANSWER_BUDGET) * (sample === 0 ? 1 : 0.96));
+         let resp;
+         let expectedAnswer;
 
-         if (built.fillRate < 0.6) {
-            console.warn(`  [maxctx] fill_rate=${built.fillRate.toFixed(2)} < 0.60 — skipping coherence (unexpected ctx)`);
-            return false;
-         }
+         for (let attempt = 0; attempt < 3; attempt++) {
+            const built = makeFillPrompt(fillTarget);
+            expectedAnswer = built.expectedAnswer;
 
-         try {
-            resp = await client.chat(built.messages, { think, thinkControl, temperature: 0.0, max_tokens: 256 }, 120_000);
-            break;
-         } catch (e) {
-            // Parse "request (N tokens) exceeds the available context size (M tokens)"
-            const m = /request \((\d+) tokens\) exceeds.*?\((\d+) tokens\)/.exec(e.message);
-            if (m && attempt < 2) {
-               const actual = Number(m[1]);
-               const avail = Number(m[2]);
-               const scale = ((avail - ANSWER_BUDGET) / actual) * 0.97;
-               const next = Math.floor(fillTarget * scale);
-               if (process.env.BENCH_DEBUG) {
-                  console.error(`  [coherence] overflow ${actual}>${avail}, rescaling fill ${fillTarget}→${next}`);
+            if (built.fillRate < 0.6) {
+               console.warn(`  [maxctx] fill_rate=${built.fillRate.toFixed(2)} < 0.60 — skipping coherence (unexpected ctx)`);
+               return false;
+            }
+
+            try {
+               resp = await client.chat(built.messages, { think, thinkControl, temperature: 0.0, max_tokens: 256 }, timeoutMs);
+               break;
+            } catch (e) {
+               // Parse "request (N tokens) exceeds the available context size (M tokens)"
+               const m = /request \((\d+) tokens\) exceeds.*?\((\d+) tokens\)/.exec(e.message);
+               if (m && attempt < 2) {
+                  const actual = Number(m[1]);
+                  const avail = Number(m[2]);
+                  const scale = ((avail - ANSWER_BUDGET) / actual) * 0.97;
+                  const next = Math.floor(fillTarget * scale);
+                  if (process.env.BENCH_DEBUG) {
+                     console.error(`  [coherence] overflow ${actual}>${avail}, rescaling fill ${fillTarget}→${next}`);
+                  }
+                  fillTarget = next;
+                  continue;
                }
-               fillTarget = next;
-               continue;
+               // A non-overflow error — incl. a timeout past the scaled budget —
+               // means the model can't usefully serve this ctx: genuinely unusable.
+               if (process.env.BENCH_DEBUG) {
+                  console.error(`  [coherence] chat error: ${e.message}`);
+               }
+               return false;
             }
-            if (process.env.BENCH_DEBUG) {
-               console.error(`  [coherence] chat error: ${e.message}`);
-            }
+         }
+         if (!resp) {
             return false;
          }
-      }
-      if (!resp) {
-         return false;
-      }
 
-      const content = (resp.completion?.choices?.[0]?.message?.content ?? '').toLowerCase();
-      const answer = String(expectedAnswer).toLowerCase();
-      const isCorrect = content.includes(answer);
-
-      if (process.env.BENCH_DEBUG) {
-         console.error(`  [coherence] expected="${answer}" got="${content.slice(0, 100)}"`);
+         const content = (resp.completion?.choices?.[0]?.message?.content ?? '').toLowerCase();
+         const answer = String(expectedAnswer).toLowerCase();
+         if (process.env.BENCH_DEBUG) {
+            console.error(`  [coherence sample ${sample}] expected="${answer}" got="${content.slice(0, 80)}"`);
+         }
+         if (content.includes(answer)) {
+            return true; // first correct sample → coherent, no need for the second
+         }
       }
-      return isCorrect;
+      return false; // missed both independent samples → treat as incoherent
    }
 
    function roundTo2k(n) {

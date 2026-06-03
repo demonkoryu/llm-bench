@@ -163,7 +163,10 @@ models:
      think: optional
      think_control: enable_thinking
      tools: true
-     native_max_ctx: 256000
+     # GGUF declares n_ctx_train=131072. Google advertises 256k, but this Q5 GGUF
+     # is a 128k window (256k would need YaRN rope-scaling not baked in here), so
+     # bound the search at the real trained length rather than probing dead range.
+     native_max_ctx: 131072
      kv_bytes_per_token: 16384
      extra_flags: {}
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
