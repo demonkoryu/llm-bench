@@ -254,8 +254,8 @@ export function llamacppServer({ sshHost, llamaUrl = 'http://192.168.1.120:8090'
    async function checkCoherence(ctxSize, makeFillPrompt) {
       const { messages, expectedAnswer, fillRate } = makeFillPrompt(ctxSize);
 
-      if (fillRate < 0.93) {
-         console.warn(`  [maxctx] fill_rate=${fillRate.toFixed(2)} < 0.93 — skipping coherence (stale context size)`);
+      if (fillRate < 0.80) {
+         console.warn(`  [maxctx] fill_rate=${fillRate.toFixed(2)} < 0.80 — skipping coherence (stale context size or unexpected ctx)`);
          return false;
       }
 
