@@ -152,38 +152,40 @@ models:
      extra_flags: {}
      benches: [triage, reasoning, summarization, docqa, speed, maxctx]
 
-   # ── Nemotron Nano 12B v2 ──────────────────────────────────────────────────────
-   # Hybrid: runs both nothi and think passes.
-   # Mamba-Transformer hybrid; think toggle via /think or /no_think system keywords.
-   # no_think → greedy (temperature: 0) per NVIDIA model card.
-   - hf_repo: bartowski/nvidia_NVIDIA-Nemotron-Nano-12B-v2-GGUF
-     hf_file: nvidia_NVIDIA-Nemotron-Nano-12B-v2-Q4_K_M.gguf
-     label: "Nemotron-12B Q4_K_M"
-     family: nemotron
-     type: dense
-     think: optional
-     think_control: system_keyword
-     tools: false
-     native_max_ctx: 128000
-     kv_bytes_per_token: 16384
-     # NOTE: json_schema response_format 500s on this build — llama.cpp's chat parser
-     # chokes on Nemotron's <SPECIAL_NN> tokens (independent of --reasoning-format).
-     # Currently unusable for triage/reasoning (grammar-constrained) benches.
-     extra_flags: {}
-     benches: [triage, reasoning, summarization, docqa, speed, maxctx]
-
-   - hf_repo: bartowski/nvidia_NVIDIA-Nemotron-Nano-12B-v2-GGUF
-     hf_file: nvidia_NVIDIA-Nemotron-Nano-12B-v2-Q8_0.gguf
-     label: "Nemotron-12B Q8_0"
-     family: nemotron
-     type: dense
-     think: optional
-     think_control: system_keyword
-     tools: false
-     native_max_ctx: 128000
-     kv_bytes_per_token: 16384
-     extra_flags: {}
-     benches: [triage, reasoning, summarization, docqa, speed, maxctx]
+   # ── Nemotron Nano 12B v2 — DISABLED (upstream llama.cpp bug) ──────────────────
+   # json_schema response_format → HTTP 500 "Failed to parse input at pos N:
+   # <SPECIAL_12>". The peg-native chat parser can't place Nemotron's <SPECIAL_NN>
+   # structural tokens when a response-format grammar is active (plain generation
+   # works; independent of --reasoning-format). Reproduced on b9490 (3571fa543),
+   # which is at upstream tip. Same parser-robustness class as ggml-org/llama.cpp
+   # issues #20260 / #20650 / #20281. Tracking: <ISSUE_URL_TBD>
+   # Re-enable by uncommenting once a fix lands upstream and we rebuild.
+   #
+   # - hf_repo: bartowski/nvidia_NVIDIA-Nemotron-Nano-12B-v2-GGUF
+   #   hf_file: nvidia_NVIDIA-Nemotron-Nano-12B-v2-Q4_K_M.gguf
+   #   label: "Nemotron-12B Q4_K_M"
+   #   family: nemotron
+   #   type: dense
+   #   think: optional
+   #   think_control: system_keyword
+   #   tools: false
+   #   native_max_ctx: 128000
+   #   kv_bytes_per_token: 16384
+   #   extra_flags: {}
+   #   benches: [triage, reasoning, summarization, docqa, speed, maxctx]
+   #
+   # - hf_repo: bartowski/nvidia_NVIDIA-Nemotron-Nano-12B-v2-GGUF
+   #   hf_file: nvidia_NVIDIA-Nemotron-Nano-12B-v2-Q8_0.gguf
+   #   label: "Nemotron-12B Q8_0"
+   #   family: nemotron
+   #   type: dense
+   #   think: optional
+   #   think_control: system_keyword
+   #   tools: false
+   #   native_max_ctx: 128000
+   #   kv_bytes_per_token: 16384
+   #   extra_flags: {}
+   #   benches: [triage, reasoning, summarization, docqa, speed, maxctx]
 
    # ── LFM2.5-8B-A1B ────────────────────────────────────────────────────────────
    # Always-reasoning: outputs to reasoning_content field, not content.
