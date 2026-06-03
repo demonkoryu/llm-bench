@@ -6,3 +6,5 @@ results/*.json
 results/*.svg
 *.out
 nohup.log
+.claude/scheduled_tasks.lock
+.claude/scheduled_tasks.json
