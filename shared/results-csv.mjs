@@ -239,24 +239,32 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
       modelMap.get(key).rows.push(r);
    }
 
-   const bestScore = (rs, bench) => {
+   // Newest row wins: a re-run supersedes the prior value for the same
+   // model/think/bench, regardless of whether it's higher or lower. `rs` is in
+   // CSV append order (chronological), and error rows were filtered out above,
+   // so the last finite score is the most recent successful measurement. This
+   // matches maxctxByModel's last-write-wins and build-report's merge dedup.
+   const latestScore = (rs, bench) => {
       const m = rs
          .filter((r) => r.bench === bench)
          .map((r) => parseFloat(r.score))
          .filter(Number.isFinite);
-      return m.length ? Math.max(...m) : null;
+      return m.length ? m[m.length - 1] : null;
    };
 
    const models = [...modelMap.values()]
       .map(({ model, think, rows: rs }) => {
          const maxctx = maxctxByModel.get(baseModel(model)) ?? null;
-         const triage = bestScore(rs, 'triage');
-         const reasoning = bestScore(rs, 'reasoning');
-         const toolcall = bestScore(rs, 'toolcalling');
-         const summ = bestScore(rs, 'summarization');
-         const docqa = bestScore(rs, 'docqa');
+         const triage = latestScore(rs, 'triage');
+         const reasoning = latestScore(rs, 'reasoning');
+         const toolcall = latestScore(rs, 'toolcalling');
+         const summ = latestScore(rs, 'summarization');
+         const docqa = latestScore(rs, 'docqa');
+         // max() here combines DISTINCT metrics (short vs long-ctx decode) into a
+         // headline tok/s — not a dedup; each component is already newest-wins.
          const speedTg =
-            Math.max(bestScore(rs, 'speed_short') ?? 0, bestScore(rs, 'speed_long-32k') ?? 0, bestScore(rs, 'speed') ?? 0) || null;
+            Math.max(latestScore(rs, 'speed_short') ?? 0, latestScore(rs, 'speed_long-32k') ?? 0, latestScore(rs, 'speed') ?? 0) ||
+            null;
          return {
             label: `${model}${think !== 'n/a' ? ` [${think}]` : ''}`,
             model,
