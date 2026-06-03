@@ -9,6 +9,7 @@
  *   0.15  summary length ok (10-100 words)
  */
 
+import { extractJson } from '../../shared/llm/index.mjs';
 import { CASES } from './summcases.mjs';
 
 export default function (output, context) {
@@ -18,10 +19,11 @@ export default function (output, context) {
       return { pass: false, score: 0, reason: `Unknown case_id: ${caseId}` };
    }
 
-   let parsed = null;
-   try {
-      parsed = JSON.parse(output.replace(/<think>[\s\S]*?<\/think>/g, '').trim());
-   } catch {
+   // Tolerant extraction: some models (e.g. Gemma4) wrap the JSON in ```json
+   // fences or add prose, which strict JSON.parse rejects. extractJson recovers
+   // the object regardless and returns null only when there's truly no JSON.
+   const parsed = extractJson(output);
+   if (!parsed) {
       return { pass: false, score: 0, reason: `${caseId}: JSON parse failed` };
    }
 
