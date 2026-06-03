@@ -19,7 +19,7 @@
  */
 
 import OpenAI from 'openai';
-import { mergeReasoningContent } from './think.mjs';
+import { mergeReasoningContent, applyThinkControl } from './think.mjs';
 import { parseToolArgs } from './repair.mjs';
 
 const DEFAULT_URL        = process.env.LLAMA_URL ?? 'http://192.168.1.120:8090';
@@ -89,11 +89,11 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
     *   timings     llama.cpp timings object or null
     */
    async function chat(messages, opts = {}, timeoutMs = timeout) {
-      const { think = null, responseFormat = null, tools = null, ...sampling } = opts;
+      const { think = null, thinkControl = 'enable_thinking', responseFormat = null, tools = null, ...sampling } = opts;
 
-      // Extra body fields forwarded to llama.cpp unchanged by the openai SDK
-      const extra = {};
-      if (think !== null) extra.chat_template_kwargs = { enable_thinking: think };
+      // Apply model-family think-control mechanism (enable_thinking kwarg or system keyword)
+      const { messages: resolvedMessages, extraBody } = applyThinkControl(messages, think, thinkControl);
+      const extra = { ...extraBody };
 
       if (debug) {
          process.stderr.write(
@@ -105,7 +105,7 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
 
       const reqParams = {
          model: 'local',     // llama-server ignores model field; alias set at server start
-         messages,
+         messages: resolvedMessages,
          stream: false,
          ...sampling,
          ...extra,

@@ -12,13 +12,24 @@
 import { jsonrepair } from 'jsonrepair';
 
 /**
- * Strip <think>…</think> blocks from a string.
- * Also strips the partial open tag that sometimes appears without a close tag.
+ * Strip reasoning/thinking blocks from a model output string.
+ *
+ * Handles three formats:
+ *   <think>…</think>          Qwen3, Qwen3.6, Nemotron, DeepSeek-R1 — standard tag
+ *   <|channel>thought…<channel|>  Gemma4 (E4B + 26B-A4B) — channel marker format
+ *   <think>… (no close tag)   Truncated/partial think at end of string
+ *   <|channel>thought…        Truncated/partial Gemma4 channel at end of string
  */
 export function stripThink(s) {
    return (s ?? '')
+      // Standard <think> block (closed)
       .replace(/<think>[\s\S]*?<\/think>/g, '')
-      .replace(/<think>[\s\S]*$/, '')      // unclosed tag at end
+      // Gemma4 channel block (closed): <|channel>thought … <channel|>
+      .replace(/<\|channel>thought[\s\S]*?<channel\|>/g, '')
+      // Unclosed <think> at end of string
+      .replace(/<think>[\s\S]*$/, '')
+      // Unclosed Gemma4 channel at end of string
+      .replace(/<\|channel>thought[\s\S]*$/, '')
       .trim();
 }
 

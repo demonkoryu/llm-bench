@@ -150,33 +150,160 @@ models:
 
    # ── Gemma4-E4B (Google Gemma 4, 4B effective MoE) ───────────────────────────
    # Native ctx: 128,000 tokens (Google model card).
-   # Google explicitly recommends temp=1.0, top_p=0.95, top_k=64 for ALL use cases.
-   # Thinking toggleable via <|think|> token in system prompt; --reasoning off in llama.cpp.
+   # Google explicitly recommends temp=1.0, top_p=0.95, top_k=64 for ALL use cases (including thinking).
+   # Thinking toggle: chat_template_kwargs.enable_thinking (same mechanism as Qwen3, per Jinja template).
+   # Reasoning trace format: <|channel>thought … <channel|>  (NOT <think> — handled by stripThink()).
    # KNOWN BUG: F16/BF16 on CUDA causes <unused49> flooding — not an issue here (AMD+GGUF).
    - hf_repo: google/gemma-4-e4b-it-GGUF   # TODO: verify — may be mradermacher/bartowski community
      hf_file: gemma-4-e4b-it-Q8_0.gguf
-     label: "Gemma4-E4B Q8_0"
+     label: "Gemma4-E4B Q8_0 nothi"
      family: gemma4
      type: moe
-     think: none           # benchmarking without thinking; default = no <|think|> token
+     think: optional
+     think_control: enable_thinking   # Jinja kwarg; channel-format trace stripped by repair.mjs
+     think_state: false               # this entry = non-thinking pass
      tools: false
      native_max_ctx: 128000
      kv_bytes_per_token: 16384   # estimated; 4B active params, smaller KV footprint
      extra_flags: "--temp 1.0 --top-p 0.95 --top-k 64"
      benches: [triage, summarization, docqa, speed, maxctx]
-     notes: "Q8_0 for quality comparison vs Q5_K_M. Google recommends unified sampling across all tasks."
+     notes: "Google recommends unified sampling across all tasks and think states."
+
+   - hf_repo: google/gemma-4-e4b-it-GGUF
+     hf_file: gemma-4-e4b-it-Q8_0.gguf
+     label: "Gemma4-E4B Q8_0 think"
+     family: gemma4
+     type: moe
+     think: optional
+     think_control: enable_thinking
+     think_state: true                # this entry = thinking pass
+     tools: false
+     native_max_ctx: 128000
+     kv_bytes_per_token: 16384
+     extra_flags: "--temp 1.0 --top-p 0.95 --top-k 64"
+     benches: [triage, reasoning, summarization, docqa, speed]
 
    - hf_repo: google/gemma-4-e4b-it-GGUF   # TODO: same uncertainty as Q8_0
      hf_file: gemma-4-e4b-it-Q5_K_M.gguf
-     label: "Gemma4-E4B Q5_K_M"
+     label: "Gemma4-E4B Q5_K_M nothi"
      family: gemma4
      type: moe
-     think: none
+     think: optional
+     think_control: enable_thinking
+     think_state: false
      tools: false
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
      extra_flags: "--temp 1.0 --top-p 0.95 --top-k 64"
      benches: [triage, summarization, docqa, speed, maxctx]
+
+   - hf_repo: google/gemma-4-e4b-it-GGUF
+     hf_file: gemma-4-e4b-it-Q5_K_M.gguf
+     label: "Gemma4-E4B Q5_K_M think"
+     family: gemma4
+     type: moe
+     think: optional
+     think_control: enable_thinking
+     think_state: true
+     tools: false
+     native_max_ctx: 128000
+     kv_bytes_per_token: 16384
+     extra_flags: "--temp 1.0 --top-p 0.95 --top-k 64"
+     benches: [triage, reasoning, summarization, docqa, speed]
+
+   # ── Gemma4-26B-A4B (Google Gemma 4, 26B total / 4B active MoE) ──────────────
+   # Native ctx: 128,000 tokens. ~16.9 GB weights (UD-Q4_K_M).
+   # Same sampling + thinking mechanism as E4B; same channel-format reasoning trace.
+   - hf_repo: unsloth/gemma-4-26B-A4B-it-GGUF
+     hf_file: gemma-4-26B-A4B-it-UD-Q4_K_M.gguf
+     label: "Gemma4-26B-A4B UD-Q4_K_M nothi"
+     family: gemma4
+     type: moe
+     think: optional
+     think_control: enable_thinking
+     think_state: false
+     tools: false
+     native_max_ctx: 128000
+     kv_bytes_per_token: 16384   # 4B active params; KV footprint comparable to E4B
+     extra_flags: "--temp 1.0 --top-p 0.95 --top-k 64"
+     benches: [triage, summarization, docqa, speed, maxctx]
+
+   - hf_repo: unsloth/gemma-4-26B-A4B-it-GGUF
+     hf_file: gemma-4-26B-A4B-it-UD-Q4_K_M.gguf
+     label: "Gemma4-26B-A4B UD-Q4_K_M think"
+     family: gemma4
+     type: moe
+     think: optional
+     think_control: enable_thinking
+     think_state: true
+     tools: false
+     native_max_ctx: 128000
+     kv_bytes_per_token: 16384
+     extra_flags: "--temp 1.0 --top-p 0.95 --top-k 64"
+     benches: [triage, reasoning, summarization, docqa, speed]
+
+   # ── Nemotron Nano 12B v2 ─────────────────────────────────────────────────────
+   # Mamba-Transformer hybrid; native ctx 128K.
+   # Think toggle via system-message keywords: /think or /no_think (no Jinja kwarg).
+   # Reasoning trace uses standard <think>…</think> tags (same as Qwen3).
+   # NVIDIA card: think → temp 0.6 / top_p 0.95;  no_think → greedy (temp 0).
+   # Tools: to be verified on first smoke run.
+   - hf_repo: bartowski/nvidia_NVIDIA-Nemotron-Nano-12B-v2-GGUF
+     hf_file: nvidia_NVIDIA-Nemotron-Nano-12B-v2-Q4_K_M.gguf
+     label: "Nemotron-Nano-12B-v2 Q4_K_M nothi"
+     family: nemotron
+     type: dense              # hybrid Mamba-Transformer (not MoE)
+     think: optional
+     think_control: system_keyword   # /think or /no_think in system message
+     think_state: false
+     tools: false             # TODO: verify tool-calling support on first smoke run
+     native_max_ctx: 128000
+     kv_bytes_per_token: 16384   # Mamba KV is small; only attention layers cache
+     extra_flags: ""
+     benches: [triage, reasoning, summarization, docqa, speed, maxctx]
+     notes: "Toggle via system keyword /no_think (not chat_template_kwargs). Mamba layers have no KV cache."
+
+   - hf_repo: bartowski/nvidia_NVIDIA-Nemotron-Nano-12B-v2-GGUF
+     hf_file: nvidia_NVIDIA-Nemotron-Nano-12B-v2-Q4_K_M.gguf
+     label: "Nemotron-Nano-12B-v2 Q4_K_M think"
+     family: nemotron
+     type: dense
+     think: optional
+     think_control: system_keyword
+     think_state: true
+     tools: false
+     native_max_ctx: 128000
+     kv_bytes_per_token: 16384
+     extra_flags: ""
+     benches: [reasoning, summarization, docqa, speed]
+
+   - hf_repo: bartowski/nvidia_NVIDIA-Nemotron-Nano-12B-v2-GGUF
+     hf_file: nvidia_NVIDIA-Nemotron-Nano-12B-v2-Q8_0.gguf   # TODO: verify — may be split (00001-of-00002); use first shard
+     label: "Nemotron-Nano-12B-v2 Q8_0 nothi"
+     family: nemotron
+     type: dense
+     think: optional
+     think_control: system_keyword
+     think_state: false
+     tools: false
+     native_max_ctx: 128000
+     kv_bytes_per_token: 16384
+     extra_flags: ""
+     benches: [triage, reasoning, summarization, docqa, speed, maxctx]
+
+   - hf_repo: bartowski/nvidia_NVIDIA-Nemotron-Nano-12B-v2-GGUF
+     hf_file: nvidia_NVIDIA-Nemotron-Nano-12B-v2-Q8_0.gguf   # TODO: same split caveat
+     label: "Nemotron-Nano-12B-v2 Q8_0 think"
+     family: nemotron
+     type: dense
+     think: optional
+     think_control: system_keyword
+     think_state: true
+     tools: false
+     native_max_ctx: 128000
+     kv_bytes_per_token: 16384
+     extra_flags: ""
+     benches: [reasoning, summarization, docqa, speed]
 
    # ── LFM2.5-8B-A1B ────────────────────────────────────────────────────────────
    # Native ctx: 128,000 tokens (LiquidAI HF model card).
@@ -319,6 +446,17 @@ sampling_matrix:
          temperature: 0.2
          top_k: 80
          # repeat_penalty: 1.05  # set in extra_flags
+
+   # ── Nemotron Nano v2 family ────────────────────────────────────────────────
+   # Source: nvidia/NVIDIA-Nemotron-Nano-12B-v2 HF model card
+   # Toggle: /think or /no_think system keyword (not a Jinja kwarg).
+   # no_think → greedy search (temp=0) per NVIDIA recommendation.
+   nemotron:
+      think:     # /think in system message
+         temperature: 0.6
+         top_p: 0.95
+      no_think:  # /no_think in system message
+         temperature: 0   # greedy decoding per NVIDIA card
 
    # ── Generic non-thinking instruct models ────────────────────────────────────
    # Fallback for any model not matched by a more specific class

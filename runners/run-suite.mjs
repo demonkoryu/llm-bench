@@ -235,8 +235,9 @@ function flushPfJson() {
 // ── Bench runners ──────────────────────────────────────────────────────────────
 
 async function runTriage(client, model, thinkState) {
-   const sampling = sampleOpts(model, thinkState, 'triage');
-   const maxTok   = (thinkState === true) ? MAX_TOKENS.think : MAX_TOKENS.instruct;
+   const sampling    = sampleOpts(model, thinkState, 'triage');
+   const thinkControl = model.think_control ?? 'enable_thinking';
+   const maxTok      = (thinkState === true) ? MAX_TOKENS.think : MAX_TOKENS.instruct;
    const itemResults = [];
    let halls = 0, jsonFail = 0, totalMs = 0;
    const tokList = [];
@@ -251,6 +252,7 @@ async function runTriage(client, model, thinkState) {
       try {
          const res = await client.chat(messages, {
             think: thinkState,
+            thinkControl,
             // JSON grammar blocks <think> tokens — omit in think mode; grader strips think first
             responseFormat: (thinkState === true) ? null : TRIAGE_SCHEMA,
             max_tokens: maxTok,
@@ -282,7 +284,8 @@ async function runTriage(client, model, thinkState) {
 }
 
 async function runReasoning(client, model, thinkState) {
-   const sampling = sampleOpts(model, thinkState, 'reasoning');
+   const sampling     = sampleOpts(model, thinkState, 'reasoning');
+   const thinkControl = model.think_control ?? 'enable_thinking';
    const ANSWER_SCHEMA = { type: 'object', properties: { answer: { type: 'string' } }, required: ['answer'] };
    const SYSTEM = 'Solve the reasoning problem. Think step by step.\nRespond ONLY with JSON: {"answer": "<final answer — a number or single word>"}.';
 
@@ -298,6 +301,7 @@ async function runReasoning(client, model, thinkState) {
       try {
          const res = await client.chat(messages, {
             think: thinkState,
+            thinkControl,
             responseFormat: (thinkState === true) ? null : ANSWER_SCHEMA,
             max_tokens: maxTok,
             ...sampling,
@@ -320,7 +324,8 @@ async function runReasoning(client, model, thinkState) {
 }
 
 async function runToolcalling(client, model) {
-   const sampling = sampleOpts(model, false, 'toolcalling');
+   const sampling     = sampleOpts(model, false, 'toolcalling');
+   const thinkControl = model.think_control ?? 'enable_thinking';
    const SYSTEM = 'You are a helpful assistant with access to tools. Call a tool ONLY when needed. If no tool fits, respond in plain text WITHOUT calling any tool.';
 
    let pass = 0, totalMs = 0;
@@ -335,6 +340,7 @@ async function runToolcalling(client, model) {
       try {
          const res = await client.chat(messages, {
             think: false,
+            thinkControl,
             tools,
             max_tokens: MAX_TOKENS.tool,
             ...sampling,
@@ -356,7 +362,8 @@ async function runToolcalling(client, model) {
 
 async function runSummarization(client, model, thinkState) {
    const effectiveThink = thinkState === true ? false : thinkState;   // summarization: skip think mode
-   const sampling = sampleOpts(model, effectiveThink, 'summarization');
+   const sampling     = sampleOpts(model, effectiveThink, 'summarization');
+   const thinkControl = model.think_control ?? 'enable_thinking';
    const SYSTEM = 'Summarize and categorize content for a personal knowledge vault.\nVault areas: craft (software, AI, hardware, PKM), finance (trading, markets), music (DJing, production), work (career, employer).\n\nRespond with JSON only:\n{"summary": "<1-2 sentence factual summary>", "area": "<craft|finance|music|work>", "tags": ["<area/subtag>", ...]}';
 
    let totalScore = 0, totalMs = 0, count = 0;
@@ -368,6 +375,7 @@ async function runSummarization(client, model, thinkState) {
       try {
          const res = await client.chat(messages, {
             think: effectiveThink,
+            thinkControl,
             max_tokens: MAX_TOKENS.instruct,
             ...sampling,
          });
@@ -386,7 +394,8 @@ async function runSummarization(client, model, thinkState) {
 
 async function runDocqa(client, model, thinkState) {
    const effectiveThink = thinkState === true ? false : thinkState;
-   const sampling = sampleOpts(model, effectiveThink, 'docqa');
+   const sampling     = sampleOpts(model, effectiveThink, 'docqa');
+   const thinkControl = model.think_control ?? 'enable_thinking';
    const { docs, questions } = docqaCases;
    const docMap = Object.fromEntries((docs ?? []).map((d) => [d.id, d.source]));
    const answers = {};
@@ -401,6 +410,7 @@ async function runDocqa(client, model, thinkState) {
       try {
          const res = await client.chat(messages, {
             think: effectiveThink,
+            thinkControl,
             max_tokens: MAX_TOKENS.docqa,
             ...sampling,
          });
@@ -475,14 +485,15 @@ async function smokePasses(client, model) {
    // 3. Triage JSON (1 item, confirms response_format + JSON parsing)
    if ((model.benches ?? []).includes('triage')) {
       const item = GOLDEN[0];
-      const thinkState = model.think_state ?? (model.think === 'required' ? true : false);
+      const thinkState   = model.think_state ?? (model.think === 'required' ? true : false);
+      const thinkControl = model.think_control ?? 'enable_thinking';
       try {
          const { completion } = await client.chat(
             [
                { role: 'system', content: TRIAGE_STATIC_PROMPT },
                { role: 'user',   content: `Title: ${item.title}\nContent preview:\n${item.content_preview}` },
             ],
-            { think: thinkState, responseFormat: thinkState ? null : TRIAGE_SCHEMA, max_tokens: 256 },
+            { think: thinkState, thinkControl, responseFormat: thinkState ? null : TRIAGE_SCHEMA, max_tokens: 256 },
             30_000
          );
          const raw = completion.choices?.[0]?.message?.content ?? '';
@@ -499,13 +510,14 @@ async function smokePasses(client, model) {
       if (firstCase) {
          const [, tc] = firstCase;
          const tools = (tc.tools ?? []).map((n) => TOOLS_POOL[n]).filter(Boolean);
+         const thinkControl = model.think_control ?? 'enable_thinking';
          try {
             const { completion } = await client.chat(
                [
                   { role: 'system', content: 'Call a tool when asked.' },
                   { role: 'user',   content: tc.user ?? 'What is the weather in London?' },
                ],
-               { think: false, tools, max_tokens: MAX_TOKENS.tool },
+               { think: false, thinkControl, tools, max_tokens: MAX_TOKENS.tool },
                30_000
             );
             // Smoke only checks we didn't get an exception — not grading
