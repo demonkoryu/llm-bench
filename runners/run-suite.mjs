@@ -629,29 +629,40 @@ async function smokePasses(client, model) {
       return { ok: false, failStep: `short-gen:${e.message.slice(0, 40)}` };
    }
 
-   // 3. Triage JSON (1 item, confirms response_format + JSON parsing)
+   // 3. Triage JSON (1 item, confirms response_format + JSON parsing). Retry a few
+   //    times: a single item at the model's sampling temperature can probabilistically
+   //    omit a field, and one unlucky generation shouldn't skip the entire model.
    if ((model.benches ?? []).includes('triage')) {
       const item = GOLDEN[0];
       // Mirror the bench's first think pass: hybrid → false (schema needs thinking
       // off), required → true, others → null. A live JSON grammar blocks think tokens.
       const thinkState = thinkStates(capabilityClass(model))[0];
       const thinkControl = model.think_control ?? 'enable_thinking';
-      try {
-         const { completion } = await client.chat(
-            [
-               { role: 'system', content: TRIAGE_STATIC_PROMPT },
-               { role: 'user', content: `Title: ${item.title}\nContent preview:\n${item.content_preview}` },
-            ],
-            { think: thinkState, thinkControl, responseFormat: thinkState ? null : TRIAGE_SCHEMA, max_tokens: 256 },
-            30_000,
-         );
-         const raw = completion.choices?.[0]?.message?.content ?? '';
-         const parsed = extractJson(stripThink(raw));
-         if (!parsed?.proposed_action) {
-            return { ok: false, failStep: 'triage-json:no-action' };
+      let lastFail = 'triage-json:no-action';
+      let ok = false;
+      for (let attempt = 0; attempt < 3 && !ok; attempt++) {
+         try {
+            const { completion } = await client.chat(
+               [
+                  { role: 'system', content: TRIAGE_STATIC_PROMPT },
+                  { role: 'user', content: `Title: ${item.title}\nContent preview:\n${item.content_preview}` },
+               ],
+               { think: thinkState, thinkControl, responseFormat: thinkState ? null : TRIAGE_SCHEMA, max_tokens: 256 },
+               30_000,
+            );
+            const raw = completion.choices?.[0]?.message?.content ?? '';
+            const parsed = extractJson(stripThink(raw));
+            if (parsed?.proposed_action) {
+               ok = true;
+            } else {
+               lastFail = 'triage-json:no-action';
+            }
+         } catch (e) {
+            lastFail = `triage-json:${e.message.slice(0, 40)}`;
          }
-      } catch (e) {
-         return { ok: false, failStep: `triage-json:${e.message.slice(0, 40)}` };
+      }
+      if (!ok) {
+         return { ok: false, failStep: lastFail };
       }
    }
 
