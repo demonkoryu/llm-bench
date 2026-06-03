@@ -4,7 +4,7 @@
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
@@ -18,15 +18,21 @@ const { values: flags } = parseArgs({
 const tsv = readFileSync(join(ROOT, 'results/results.tsv'), 'utf8');
 const lines = tsv.trim().split('\n');
 const headers = lines[0].split('\t');
-const rows = lines.slice(1).filter(Boolean).map((l) => {
-   const cols = l.split('\t');
-   return Object.fromEntries(headers.map((h, i) => [h, cols[i] ?? '']));
-});
+const rows = lines
+   .slice(1)
+   .filter(Boolean)
+   .map((l) => {
+      const cols = l.split('\t');
+      return Object.fromEntries(headers.map((h, i) => [h, cols[i] ?? '']));
+   });
 
 // Group by bench type
 const byBench = {};
 for (const r of rows) {
-   (byBench[r.bench] ??= []).push(r);
+   if (!byBench[r.bench]) {
+      byBench[r.bench] = [];
+   }
+   byBench[r.bench].push(r);
 }
 
 const lines_out = [
@@ -40,7 +46,9 @@ const benchOrder = ['triage', 'reasoning', 'toolcalling', 'toolcalling_decay', '
 
 for (const bench of benchOrder) {
    const bRows = byBench[bench];
-   if (!bRows?.length) continue;
+   if (!bRows?.length) {
+      continue;
+   }
 
    lines_out.push(`## ${bench}`);
    lines_out.push('');
@@ -49,10 +57,10 @@ for (const bench of benchOrder) {
    const kvGroups = [...new Set(bRows.map((r) => r.kv))].sort();
 
    for (const kv of kvGroups) {
-      const kvRows = bRows.filter((r) => r.kv === kv).sort((a, b) =>
-         parseFloat(b.score) - parseFloat(a.score)
-      );
-      if (!kvRows.length) continue;
+      const kvRows = bRows.filter((r) => r.kv === kv).sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
+      if (!kvRows.length) {
+         continue;
+      }
 
       lines_out.push(`### KV=${kv}`);
       lines_out.push('');
@@ -62,7 +70,9 @@ for (const bench of benchOrder) {
          lines_out.push('| Model | Think | Score | Halls | JSON fail | tok/s | VRAM | Status |');
          lines_out.push('|---|---|---|---|---|---|---|---|');
          for (const r of kvRows) {
-            lines_out.push(`| ${r.model} | ${r.think} | ${r.score} | ${r.halls} | ${r.json_fail} | ${r.tok_s} | ${r.vram_mib} MiB | ${r.status} |`);
+            lines_out.push(
+               `| ${r.model} | ${r.think} | ${r.score} | ${r.halls} | ${r.json_fail} | ${r.tok_s} | ${r.vram_mib} MiB | ${r.status} |`,
+            );
          }
       } else if (bench === 'reasoning') {
          lines_out.push('| Model | Think | Accuracy | tok/s | Status |');
@@ -86,7 +96,7 @@ for (const bench of benchOrder) {
          lines_out.push('| Model | Max ctx (tokens) | ≈ chars | VRAM MiB |');
          lines_out.push('|---|---|---|---|');
          for (const r of kvRows) {
-            const chars = isNaN(parseInt(r.score)) ? '?' : (parseInt(r.score) * 4).toLocaleString();
+            const chars = Number.isNaN(parseInt(r.score, 10)) ? '?' : (parseInt(r.score, 10) * 4).toLocaleString();
             lines_out.push(`| ${r.model} | ${r.score} | ${chars} | ${r.vram_mib} |`);
          }
       } else if (bench === 'longctx') {

@@ -28,12 +28,12 @@ const FILLER = 'The grass is green and the sky is blue. The river flows quietly 
 const FACTS = [
    { depth: 0.05, text: 'The capital city of Zorland is Brentara.' },
    { depth: 0.15, text: 'The population of Brentara is exactly 847,200.' },
-   { depth: 0.28, text: 'Zorland\'s national currency is the Draken.' },
+   { depth: 0.28, text: "Zorland's national currency is the Draken." },
    { depth: 0.42, text: 'One Draken is worth exactly 2.35 US dollars.' },
    { depth: 0.55, text: 'The official language of Zorland is Kelvish.' },
    { depth: 0.68, text: 'Zorland was founded in the year 1347.' },
-   { depth: 0.80, text: 'The current president of Zorland is Mira Ostfeld.' },
-   { depth: 0.93, text: 'Mira Ostfeld took office exactly 7 years after Zorland\'s 600th anniversary.' },
+   { depth: 0.8, text: 'The current president of Zorland is Mira Ostfeld.' },
+   { depth: 0.93, text: "Mira Ostfeld took office exactly 7 years after Zorland's 600th anniversary." },
 ];
 
 // Questions requiring fact synthesis; expected = exact answer string (normalized)
@@ -65,7 +65,10 @@ const QUESTIONS = [
 ];
 
 function norm(s) {
-   return String(s ?? '').toLowerCase().replace(/[,\s]/g, '').trim();
+   return String(s ?? '')
+      .toLowerCase()
+      .replace(/[,\s]/g, '')
+      .trim();
 }
 
 function buildHaystack(approxTokens) {
@@ -73,7 +76,7 @@ function buildHaystack(approxTokens) {
    const lineCount = Math.ceil(targetChars / FILLER.length);
    const lines = new Array(lineCount).fill(FILLER);
    for (const f of FACTS) {
-      lines[Math.floor(lineCount * f.depth)] = f.text + ' ';
+      lines[Math.floor(lineCount * f.depth)] = `${f.text} `;
    }
    return lines.join('');
 }
@@ -90,16 +93,14 @@ for (const q of QUESTIONS) {
    const prompt = `${haystack}\n\nQuestion: ${q.q}\nAnswer concisely. Do NOT explain.`;
    process.stdout.write(`  ${q.id.padEnd(18)} `);
    try {
-      const body = await client.chat(
-         [{ role: 'user', content: prompt }],
-         { temperature: 0.0, max_tokens: 30 },
-         TIMEOUT,
-      );
+      const body = await client.chat([{ role: 'user', content: prompt }], { temperature: 0.0, max_tokens: 30 }, TIMEOUT);
       promptTokens = body.usage?.prompt_tokens ?? promptTokens;
       const txt = (body.choices?.[0]?.message?.content ?? '').trim();
       const got = norm(txt);
       const ok = q.expected.some((e) => norm(e) === got || got.includes(norm(e)));
-      if (ok) correct++;
+      if (ok) {
+         correct++;
+      }
       console.log(`${ok ? 'ok' : 'FAIL'}  got="${txt.slice(0, 30)}"  want=[${q.expected.join('/')}]`);
    } catch (e) {
       console.log(`ERROR: ${e.message}`);

@@ -18,7 +18,7 @@
 
 import { createHash } from 'node:crypto';
 
-export const PROBE_DEPTHS = [0.08, 0.27, 0.46, 0.64, 0.83, 0.90];
+export const PROBE_DEPTHS = [0.08, 0.27, 0.46, 0.64, 0.83, 0.9];
 
 const STEMS = ['net', 'geom', 'auth', 'cache', 'flow', 'parse', 'store', 'sched', 'math', 'io'];
 
@@ -32,7 +32,7 @@ const CHARS_PER_TOKEN = 3.8;
 
 function rng(seed) {
    const hex = createHash('md5').update(seed).digest('hex');
-   return BigInt('0x' + hex);
+   return BigInt(`0x${hex}`);
 }
 
 function lcgNext(h) {
@@ -44,7 +44,7 @@ function fillerModule(idx, targetChars) {
    const name = `${stem}_${String(idx).padStart(2, '0')}`;
    let h = rng(`filler-${idx}`);
    const lines = [
-      `# ---- module ${name} ` + '-'.repeat(40),
+      `# ---- module ${name} ${'-'.repeat(40)}`,
       `import os, sys, json  # ${name}`,
       '',
       `_CONFIG_${idx} = {'enabled': ${Boolean(h & 1n)}, 'workers': ${Number(h % 8n) + 1}}`,
@@ -79,7 +79,10 @@ function probeModule(idx, kind, depthPct) {
    if (kind === 'const') {
       const constName = `${stem.toUpperCase()}_RETRY_LIMIT_${idx}`;
       const value = Number(h % 90n) + 10;
-      src = `# ---- module ${name} (config) ` + '-'.repeat(28) + '\n' +
+      src =
+         `# ---- module ${name} (config) ` +
+         '-'.repeat(28) +
+         '\n' +
          `import time\n\n` +
          `${constName} = ${value}\n` +
          `BACKOFF_BASE = 2\n\n` +
@@ -97,7 +100,10 @@ function probeModule(idx, kind, depthPct) {
       const arg = Number((h >> 9n) % 12n) + 3;
       const fn = `${stem}_scale_${idx}`;
       const result = arg * factor + offset;
-      src = `# ---- module ${name} (compute) ` + '-'.repeat(27) + '\n' +
+      src =
+         `# ---- module ${name} (compute) ` +
+         '-'.repeat(27) +
+         '\n' +
          `def ${fn}(x):\n` +
          `   return x * ${factor} + ${offset}\n\n` +
          `DEFAULT_SCALE = ${factor}\n`;
@@ -110,7 +116,10 @@ function probeModule(idx, kind, depthPct) {
       const mul = Number((h >> 4n) % 7n) + 2;
       const arg = Number((h >> 9n) % 10n) + 1;
       const result = (arg + add) * mul;
-      src = `# ---- module ${name} (pipeline) ` + '-'.repeat(26) + '\n' +
+      src =
+         `# ---- module ${name} (pipeline) ` +
+         '-'.repeat(26) +
+         '\n' +
          `def ${stem}_step_a(x):\n` +
          `   return x + ${add}\n\n` +
          `def ${stem}_step_b(x):\n` +
@@ -123,7 +132,7 @@ function probeModule(idx, kind, depthPct) {
    }
 
    const record = { depth: depthPct / 100, kind, module: name, question: q, answer: ans, detail, char_offset: 0 };
-   return [src + '\n', record];
+   return [`${src}\n`, record];
 }
 
 /**
@@ -137,7 +146,8 @@ export function buildCodebase(targetChars) {
    let prev = 0;
    let fillerIdx = 100;
 
-   const header = '# Project: dataflow-engine\n' +
+   const header =
+      '# Project: dataflow-engine\n' +
       '# Auto-generated module index. Each module is self-contained.\n' +
       '# Answer questions strictly from the code below.\n\n';
    segments.push(header);
@@ -151,7 +161,7 @@ export function buildCodebase(targetChars) {
       while (gap > 400) {
          const chunkSize = Math.min(gap, 1800);
          const seg = fillerModule(fillerIdx, chunkSize);
-         segments.push(seg + '\n\n');
+         segments.push(`${seg}\n\n`);
          prev += seg.length + 2;
          fillerIdx++;
          gap = targetOff - prev;
@@ -166,7 +176,7 @@ export function buildCodebase(targetChars) {
    // Tail filler
    while (targetChars - prev > 400) {
       const seg = fillerModule(fillerIdx, Math.min(targetChars - prev, 1800));
-      segments.push(seg + '\n\n');
+      segments.push(`${seg}\n\n`);
       prev += seg.length + 2;
       fillerIdx++;
    }
@@ -180,8 +190,8 @@ export function buildCodebase(targetChars) {
 export function buildQuestionBlock(probes) {
    const lines = [
       'Above is the full source of a project. Answer the following questions ' +
-      'using ONLY the code above. Each answer is a single integer. ' +
-      'Respond in exactly this format, one per line, nothing else:\n',
+         'using ONLY the code above. Each answer is a single integer. ' +
+         'Respond in exactly this format, one per line, nothing else:\n',
    ];
    for (let i = 0; i < probes.length; i++) {
       lines.push(`Q${i + 1}: ${probes[i].question}`);
@@ -204,7 +214,7 @@ export function buildQuestionBlock(probes) {
  *   fillRate        — actual fill ratio (warn < 0.93)
  */
 export function makeFillPrompt(ctxSizeTokens) {
-   const targetChars = Math.floor(ctxSizeTokens * CHARS_PER_TOKEN * 0.90);  // leave 10% for question + answer
+   const targetChars = Math.floor(ctxSizeTokens * CHARS_PER_TOKEN * 0.9); // leave 10% for question + answer
    const [codeText, probes] = buildCodebase(targetChars);
 
    // Use only the deepest probe (90%) for the coherence check
@@ -213,12 +223,12 @@ export function makeFillPrompt(ctxSizeTokens) {
    const expectedAnswer = deepest.answer;
 
    // Estimate fill rate (code + question as fraction of total ctx)
-   const totalChars = codeText.length + question.length + 100;  // ~100 for system + format
-   const fillRate = (totalChars / CHARS_PER_TOKEN) / ctxSizeTokens;
+   const totalChars = codeText.length + question.length + 100; // ~100 for system + format
+   const fillRate = totalChars / CHARS_PER_TOKEN / ctxSizeTokens;
 
    const messages = [
       { role: 'system', content: 'You are a code analyzer. Answer questions about the provided code. Each answer is a single integer.' },
-      { role: 'user',   content: `${codeText}\n\n${question}\n\nAnswer with just the integer:` },
+      { role: 'user', content: `${codeText}\n\n${question}\n\nAnswer with just the integer:` },
    ];
 
    return { messages, expectedAnswer, fillRate };

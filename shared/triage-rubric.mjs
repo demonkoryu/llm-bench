@@ -18,19 +18,28 @@ import { AREA_ANCHORS } from './triage-prompt.mjs';
 // ── Grading rubric ─────────────────────────────────────────────────────────────
 // Weights must sum to 100.
 export const WEIGHTS = {
-   R1: 10,  // valid JSON + required fields
-   R2: 8,   // action enum valid
-   R3: 8,   // area enum valid
-   R4: 20,  // anchor integrity (the key rule)
-   R5: 16,  // no-anchor-area rule (music/work)
-   R6: 8,   // tag prefix discipline
-   R7: 5,   // confidence in [0,1]
-   C1: 15,  // action matches expected
-   C2: 10,  // area matches expected
+   R1: 10, // valid JSON + required fields
+   R2: 8, // action enum valid
+   R3: 8, // area enum valid
+   R4: 20, // anchor integrity (the key rule)
+   R5: 16, // no-anchor-area rule (music/work)
+   R6: 8, // tag prefix discipline
+   R7: 5, // confidence in [0,1]
+   C1: 15, // action matches expected
+   C2: 10, // area matches expected
 };
 
-export const REQUIRED_FIELDS = ['proposed_action', 'suggested_type', 'suggested_title',
-   'suggested_summary', 'suggested_tags', 'target_area', 'target_anchor', 'confidence', 'reasoning'];
+export const REQUIRED_FIELDS = [
+   'proposed_action',
+   'suggested_type',
+   'suggested_title',
+   'suggested_summary',
+   'suggested_tags',
+   'target_area',
+   'target_anchor',
+   'confidence',
+   'reasoning',
+];
 export const VALID_ACTIONS = ['promote_resource', 'promote_project', 'spawn_task', 'dismiss', 'skip'];
 export const VALID_AREAS = ['craft', 'finance', 'music', 'work', null];
 
@@ -88,7 +97,9 @@ export function gradeOne(item, rawContent, _thinkChars, opts = {}) {
          try {
             parsed = JSON.parse(m[0]);
             parsedOk = true;
-         } catch { /* fall through to hard fail below */ }
+         } catch {
+            /* fall through to hard fail below */
+         }
       }
       if (!parsedOk) {
          return { scores: sc, parsedOk, anchorHallucination, detail: 'JSON parse failed' };
@@ -120,7 +131,7 @@ export function gradeOne(item, rawContent, _thinkChars, opts = {}) {
          sc.R4 = 1;
       } else if (knownAnchors.includes(anchor)) {
          sc.R4 = 1;
-      } else if (proposeNew && proposeNew.filename && proposeNew.title && proposeNew.description) {
+      } else if (proposeNew?.filename && proposeNew.title && proposeNew.description) {
          sc.R4 = 1;
       } else {
          sc.R4 = 0;
@@ -139,7 +150,7 @@ export function gradeOne(item, rawContent, _thinkChars, opts = {}) {
          sc.R5 = 1;
       } else if (anchor === null) {
          sc.R5 = 1;
-      } else if (proposeNew && proposeNew.filename && proposeNew.title && proposeNew.description) {
+      } else if (proposeNew?.filename && proposeNew.title && proposeNew.description) {
          sc.R5 = 1;
       } else {
          sc.R5 = 0;
@@ -160,7 +171,7 @@ export function gradeOne(item, rawContent, _thinkChars, opts = {}) {
    // R7: confidence in [0, 1]
    {
       const conf = parsed.confidence;
-      sc.R7 = (typeof conf === 'number' && conf >= 0 && conf <= 1) ? 1 : 0;
+      sc.R7 = typeof conf === 'number' && conf >= 0 && conf <= 1 ? 1 : 0;
    }
 
    // C1: action match (ambiguous item: skip or promote both acceptable)
@@ -168,7 +179,7 @@ export function gradeOne(item, rawContent, _thinkChars, opts = {}) {
       const actual = parsed.proposed_action;
       const exp = item.expected.action;
       if (item.id === 'ambiguous-url') {
-         sc.C1 = (actual === 'skip' || actual === 'promote_resource') ? 1 : 0;
+         sc.C1 = actual === 'skip' || actual === 'promote_resource' ? 1 : 0;
       } else {
          sc.C1 = actual === exp ? 1 : 0;
       }
@@ -200,7 +211,7 @@ export function computeScore(itemResults) {
 }
 
 export function pct(v) {
-   return (v * 100).toFixed(0).padStart(3) + '%';
+   return `${(v * 100).toFixed(0).padStart(3)}%`;
 }
 
 export function printIntermittent(label, itemResults, totalMs) {
@@ -216,7 +227,9 @@ export function printIntermittent(label, itemResults, totalMs) {
    console.log(`  RESULT: ${label}`);
    console.log(`${'─'.repeat(65)}`);
    console.log(`  Score: ${total.toFixed(1)}/100`);
-   console.log(`  Rules:  R1=${pct(perRule.R1)} R2=${pct(perRule.R2)} R3=${pct(perRule.R3)} R4=${pct(perRule.R4)} R5=${pct(perRule.R5)} R6=${pct(perRule.R6)} R7=${pct(perRule.R7)}`);
+   console.log(
+      `  Rules:  R1=${pct(perRule.R1)} R2=${pct(perRule.R2)} R3=${pct(perRule.R3)} R4=${pct(perRule.R4)} R5=${pct(perRule.R5)} R6=${pct(perRule.R6)} R7=${pct(perRule.R7)}`,
+   );
    console.log(`  Correct: C1=${pct(perRule.C1)} C2=${pct(perRule.C2)}`);
    console.log(`  Anchor hallucinations: ${anchorHalls}/${itemResults.length}  |  JSON failures: ${parseFailures}/${itemResults.length}`);
    console.log(`  Avg tok/s: ${avgTokStr}  |  Avg thinking: ${avgThinkStr} chars  |  Total wall: ${(totalMs / 1000).toFixed(1)}s`);
@@ -229,7 +242,9 @@ export function printIntermittent(label, itemResults, totalMs) {
          scores.C1 === 0 && parsedOk && 'bad_action',
          scores.C2 === 0 && parsedOk && 'bad_area',
          scores.R6 === 0 && parsedOk && 'bad_tags',
-      ].filter(Boolean).join(' ');
+      ]
+         .filter(Boolean)
+         .join(' ');
       console.log(`    [${r.item.id.padEnd(22)}] ${flags || 'ok'}`);
    }
 }
@@ -240,7 +255,17 @@ export function printFinalSummary(allResults) {
       const halls = r.itemResults.filter((x) => x.grade.anchorHallucination).length;
       const avgTok = r.itemResults.filter((x) => x.tokPerSec).map((x) => parseFloat(x.tokPerSec));
       const avgTokStr = avgTok.length ? (avgTok.reduce((a, b) => a + b, 0) / avgTok.length).toFixed(1) : '?';
-      return { label: r.label, total, R4: perRule.R4, R5: perRule.R5, C1: perRule.C1, C2: perRule.C2, halls, avgTok: avgTokStr, totalMs: r.totalMs };
+      return {
+         label: r.label,
+         total,
+         R4: perRule.R4,
+         R5: perRule.R5,
+         C1: perRule.C1,
+         C2: perRule.C2,
+         halls,
+         avgTok: avgTokStr,
+         totalMs: r.totalMs,
+      };
    });
 
    rows.sort((a, b) => b.total - a.total);
@@ -281,7 +306,7 @@ export async function promptfooAssert(output, context) {
 
    const { scores, parsedOk, anchorHallucination, detail } = gradeOne(item, output);
    const { total } = computeScore([{ grade: { scores } }]);
-   const pctScore = total / 100;   // promptfoo expects 0-1
+   const pctScore = total / 100; // promptfoo expects 0-1
 
    const ruleDetail = Object.entries(scores)
       .filter(([, v]) => v === 0)
@@ -293,7 +318,9 @@ export async function promptfooAssert(output, context) {
       anchorHallucination ? 'ANCHOR_HALL' : null,
       !parsedOk ? `JSON_FAIL: ${detail}` : null,
       ruleDetail ? `failed_rules=[${ruleDetail}]` : null,
-   ].filter(Boolean).join(' | ');
+   ]
+      .filter(Boolean)
+      .join(' | ');
 
    return {
       pass: parsedOk && !anchorHallucination && total >= 70,

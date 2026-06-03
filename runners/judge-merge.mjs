@@ -30,18 +30,18 @@
  *   node runners/judge-merge.mjs --verdicts results/judge --tsv results/results.tsv
  */
 
-import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
-import { join, dirname, basename } from 'node:path';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
-const ROOT  = join(__dir, '..');
+const ROOT = join(__dir, '..');
 
 const { values: flags } = parseArgs({
    options: {
       verdicts: { type: 'string', default: join(ROOT, 'results/judge') },
-      tsv:      { type: 'string', default: join(ROOT, 'results/results.tsv') },
+      tsv: { type: 'string', default: join(ROOT, 'results/results.tsv') },
    },
 });
 
@@ -51,8 +51,7 @@ if (!existsSync(flags.verdicts)) {
    process.exit(1);
 }
 
-const verdictFiles = readdirSync(flags.verdicts)
-   .filter((f) => f.endsWith('.verdict.json'));
+const verdictFiles = readdirSync(flags.verdicts).filter((f) => f.endsWith('.verdict.json'));
 
 if (!verdictFiles.length) {
    console.error('No *.verdict.json files found. Run judge subagents first.');
@@ -84,10 +83,10 @@ if (!existsSync(flags.tsv)) {
    process.exit(1);
 }
 
-const raw   = readFileSync(flags.tsv, 'utf8');
+const raw = readFileSync(flags.tsv, 'utf8');
 const lines = raw.split('\n');
 const headerLine = lines[0] ?? '';
-const headers    = headerLine.split('\t');
+const headers = headerLine.split('\t');
 
 // Add judge_score column if absent
 let judgeIdx = headers.indexOf('judge_score');
@@ -110,11 +109,15 @@ let updatedCount = 0;
 const outLines = [headers.join('\t')];
 
 for (const line of lines.slice(1)) {
-   if (!line.trim()) continue;
+   if (!line.trim()) {
+      continue;
+   }
    const cells = line.split('\t');
 
    // Extend cells if needed
-   while (cells.length <= judgeIdx) cells.push('');
+   while (cells.length <= judgeIdx) {
+      cells.push('');
+   }
 
    const modelId = cells[modelColIdx] ?? '';
    // Try exact match first, then try stripping 'llamacpp:' prefix from verdict keys
@@ -131,7 +134,7 @@ for (const line of lines.slice(1)) {
 }
 
 // ── Write back ────────────────────────────────────────────────────────────────
-writeFileSync(flags.tsv, outLines.join('\n') + '\n', 'utf-8');
+writeFileSync(flags.tsv, `${outLines.join('\n')}\n`, 'utf-8');
 
 console.log(`\njudge-merge: ${updatedCount} TSV row(s) updated with judge_score → ${basename(flags.tsv)}`);
 console.log('Next: node runners/render-chart.mjs  (picks up judge_score automatically)');

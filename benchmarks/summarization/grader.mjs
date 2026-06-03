@@ -11,10 +11,12 @@
 
 import { CASES } from './summcases.mjs';
 
-export default function(output, context) {
+export default function (output, context) {
    const caseId = context?.vars?.case_id ?? '?';
    const c = CASES[caseId];
-   if (!c) return { pass: false, score: 0, reason: `Unknown case_id: ${caseId}` };
+   if (!c) {
+      return { pass: false, score: 0, reason: `Unknown case_id: ${caseId}` };
+   }
 
    let parsed = null;
    try {
@@ -36,7 +38,7 @@ export default function(output, context) {
    const wordCount = summary.trim().split(/\s+/).length;
    const lengthOk = wordCount >= 10 && wordCount <= 100;
 
-   const score = kwScore * 0.40 + (areaOk ? 0.25 : 0) + (tagsOk ? 0.20 : 0) + (lengthOk ? 0.15 : 0);
+   const score = kwScore * 0.4 + (areaOk ? 0.25 : 0) + (tagsOk ? 0.2 : 0) + (lengthOk ? 0.15 : 0);
    const missing = c.must_mention.filter((kw) => !summaryLower.includes(kw.toLowerCase()));
 
    const reason = [

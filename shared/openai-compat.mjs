@@ -9,8 +9,7 @@
  * New code should import from shared/llm/index.mjs directly.
  */
 
-import { createClient } from './llm/index.mjs';
-import { stripThink } from './llm/index.mjs';
+import { createClient, stripThink } from './llm/index.mjs';
 
 export function openaiCompatClient(baseUrl) {
    const llm = createClient(baseUrl);
@@ -19,15 +18,27 @@ export function openaiCompatClient(baseUrl) {
    async function chat(messages, opts = {}, timeoutMs = 600_000) {
       const { completion, timings } = await llm.chat(messages, opts, timeoutMs);
       // Attach timings to the completion object so tokPerSec() still works
-      if (timings && completion) completion._timings = timings;
+      if (timings && completion) {
+         completion._timings = timings;
+      }
       return completion;
    }
 
-   function tokPerSec(resp) { return resp?._timings?.predicted_per_second ?? null; }
-   function content(resp) { return resp?.choices?.[0]?.message?.content ?? ''; }
-   function toolCalls(resp) { return resp?.choices?.[0]?.message?.tool_calls ?? []; }
-   function finishReason(resp) { return resp?.choices?.[0]?.finish_reason ?? null; }
-   function waitHealthy(timeoutMs) { return llm.waitHealthy(timeoutMs); }
+   function tokPerSec(resp) {
+      return resp?._timings?.predicted_per_second ?? null;
+   }
+   function content(resp) {
+      return resp?.choices?.[0]?.message?.content ?? '';
+   }
+   function toolCalls(resp) {
+      return resp?.choices?.[0]?.message?.tool_calls ?? [];
+   }
+   function finishReason(resp) {
+      return resp?.choices?.[0]?.finish_reason ?? null;
+   }
+   function waitHealthy(timeoutMs) {
+      return llm.waitHealthy(timeoutMs);
+   }
 
    return { chat, tokPerSec, content, toolCalls, finishReason, stripThink, waitHealthy, baseUrl };
 }

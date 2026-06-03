@@ -7,10 +7,10 @@
  * context  = { vars: { item_id, item_title, item_content }, ... }
  */
 
-import { gradeOne, computeScore, WEIGHTS } from '../../shared/triage-rubric.mjs';
 import { GOLDEN } from '../../shared/triage-golden.mjs';
+import { computeScore, gradeOne, WEIGHTS } from '../../shared/triage-rubric.mjs';
 
-export default function(output, context) {
+export default function (output, context) {
    const itemId = context?.vars?.item_id;
    const item = GOLDEN.find((g) => g.id === itemId);
    if (!item) {
@@ -19,7 +19,7 @@ export default function(output, context) {
 
    const { scores, parsedOk, anchorHallucination, detail } = gradeOne(item, output);
    const { total } = computeScore([{ grade: { scores } }]);
-   const normalizedScore = total / 100;   // promptfoo expects 0-1
+   const normalizedScore = total / 100; // promptfoo expects 0-1
 
    const failedRules = Object.entries(scores)
       .filter(([, v]) => v === 0)
@@ -30,7 +30,9 @@ export default function(output, context) {
       anchorHallucination ? 'ANCHOR_HALL' : null,
       !parsedOk ? `JSON_FAIL: ${detail}` : null,
       failedRules.length ? `failed=[${failedRules.join(',')}]` : null,
-   ].filter(Boolean).join(' | ');
+   ]
+      .filter(Boolean)
+      .join(' | ');
 
    // pass = parseable + no anchor hallucination + score >= 70
    return {
@@ -38,8 +40,6 @@ export default function(output, context) {
       score: normalizedScore,
       reason,
       // expose per-rule breakdown as named metrics for promptfoo output
-      namedScores: Object.fromEntries(
-         Object.keys(WEIGHTS).map((k) => [`rule_${k}`, scores[k]])
-      ),
+      namedScores: Object.fromEntries(Object.keys(WEIGHTS).map((k) => [`rule_${k}`, scores[k]])),
    };
 }

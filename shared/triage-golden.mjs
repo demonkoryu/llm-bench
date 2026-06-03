@@ -18,7 +18,8 @@ export const GOLDEN = [
    {
       id: 'craft-ai-rag',
       title: 'Agentic RAG whitepaper',
-      content_preview: 'Whitepaper on Agentic Retrieval-Augmented Generation. Covers multi-step reasoning with retrieval, tool use, and LLM orchestration.',
+      content_preview:
+         'Whitepaper on Agentic Retrieval-Augmented Generation. Covers multi-step reasoning with retrieval, tool use, and LLM orchestration.',
       expected: { action: 'promote_resource', area: 'craft' },
       anchor_rule: 'existing:_AI.md',
    },
@@ -27,7 +28,8 @@ export const GOLDEN = [
    {
       id: 'craft-software-howto',
       title: 'How to profile Python and Rust programs',
-      content_preview: 'A guide to profiling CPU-bound Python code with cProfile and Rust with cargo flamegraph. Includes tips for reading flamegraphs.',
+      content_preview:
+         'A guide to profiling CPU-bound Python code with cProfile and Rust with cargo flamegraph. Includes tips for reading flamegraphs.',
       expected: { action: 'promote_resource', area: 'craft' },
       anchor_rule: 'existing:_Software.md',
    },
@@ -36,7 +38,8 @@ export const GOLDEN = [
    {
       id: 'finance-trading',
       title: 'Analyze premarket direction reversal',
-      content_preview: 'Strategy for identifying when premarket direction is likely to reverse at the open. Uses volume delta and level 2 tape reading.',
+      content_preview:
+         'Strategy for identifying when premarket direction is likely to reverse at the open. Uses volume delta and level 2 tape reading.',
       expected: { action: 'promote_resource', area: 'finance' },
       anchor_rule: 'existing:_Trading.md',
    },
@@ -45,7 +48,8 @@ export const GOLDEN = [
    {
       id: 'music-no-anchor',
       title: 'Access Virus KB Get sound A77',
-      content_preview: 'Reference for getting the A77 patch sound from the Access Virus KB synthesizer. Includes parameter settings and MIDI CC map.',
+      content_preview:
+         'Reference for getting the A77 patch sound from the Access Virus KB synthesizer. Includes parameter settings and MIDI CC map.',
       expected: { action: 'promote_resource', area: 'music' },
       // Music has no anchors → must be null UNLESS propose_new_anchor is properly set
       anchor_rule: 'null',
@@ -55,7 +59,8 @@ export const GOLDEN = [
    {
       id: 'craft-hardware',
       title: 'Keyboard debouncing algorithms for custom firmware',
-      content_preview: 'Overview of keyboard debounce algorithms: eager, defer-until-idle, and Roland eager-pr. Relevant for QMK and ZMK custom keyboard firmware.',
+      content_preview:
+         'Overview of keyboard debounce algorithms: eager, defer-until-idle, and Roland eager-pr. Relevant for QMK and ZMK custom keyboard firmware.',
       expected: { action: 'promote_resource', area: 'craft' },
       anchor_rule: 'existing:_Hardware.md',
    },
@@ -64,7 +69,8 @@ export const GOLDEN = [
    {
       id: 'craft-mind',
       title: 'A Three-Level System for Organizing Information in PKM',
-      content_preview: 'Introduces a three-level hierarchy (Topics, Classes, Tags) for personal knowledge management. Contrasts with flat tag systems and PARA.',
+      content_preview:
+         'Introduces a three-level hierarchy (Topics, Classes, Tags) for personal knowledge management. Contrasts with flat tag systems and PARA.',
       expected: { action: 'promote_resource', area: 'craft' },
       anchor_rule: 'existing:_Mind.md',
    },
@@ -83,7 +89,7 @@ export const GOLDEN = [
       id: 'ambiguous-url',
       title: '2026-05-24',
       content_preview: 'https://example.com/some-article-2024',
-      expected: { action: 'skip', area: null },   // skip or any promote with low confidence
+      expected: { action: 'skip', area: null }, // skip or any promote with low confidence
       anchor_rule: 'any-valid',
    },
 
@@ -91,7 +97,8 @@ export const GOLDEN = [
    {
       id: 'work-no-anchor',
       title: 'Q3 performance review template',
-      content_preview: 'Template for writing the self-assessment section of a Q3 performance review. Covers achievements, growth areas, and OKR alignment.',
+      content_preview:
+         'Template for writing the self-assessment section of a Q3 performance review. Covers achievements, growth areas, and OKR alignment.',
       expected: { action: 'promote_resource', area: 'work' },
       // Work has no anchors → must be null UNLESS propose_new_anchor is properly set
       anchor_rule: 'null',
@@ -103,7 +110,8 @@ export const GOLDEN = [
    {
       id: 'craft-ai-mcp',
       title: 'Model Context Protocol server design patterns',
-      content_preview: 'Patterns for building MCP servers: tool granularity, structured output via JSON schema, OAuth + PKCE auth, and stateless HTTP transport.',
+      content_preview:
+         'Patterns for building MCP servers: tool granularity, structured output via JSON schema, OAuth + PKCE auth, and stateless HTTP transport.',
       expected: { action: 'promote_resource', area: 'craft' },
       anchor_rule: 'existing:_AI.md',
    },
@@ -112,7 +120,8 @@ export const GOLDEN = [
    {
       id: 'finance-options',
       title: '0DTE options theta decay curve',
-      content_preview: 'How theta decay accelerates intraday for zero-days-to-expiry SPX options, and why selling premium after 2pm has a different risk profile.',
+      content_preview:
+         'How theta decay accelerates intraday for zero-days-to-expiry SPX options, and why selling premium after 2pm has a different risk profile.',
       expected: { action: 'promote_resource', area: 'finance' },
       anchor_rule: 'existing:_Trading.md',
    },
@@ -121,7 +130,8 @@ export const GOLDEN = [
    {
       id: 'music-production',
       title: 'Sidechain compression for trance pumping',
-      content_preview: 'Technique for the classic trance pumping effect: sidechain a compressor on the bass and pads keyed to the kick. Covers attack/release tuning.',
+      content_preview:
+         'Technique for the classic trance pumping effect: sidechain a compressor on the bass and pads keyed to the kick. Covers attack/release tuning.',
       expected: { action: 'promote_resource', area: 'music' },
       // Music has no anchors → must be null UNLESS propose_new_anchor is properly set
       anchor_rule: 'null',
@@ -131,7 +141,8 @@ export const GOLDEN = [
    {
       id: 'work-career',
       title: 'Negotiating a senior engineer offer',
-      content_preview: 'Notes on negotiating a senior software engineer offer: anchoring on total comp, equity refresh, competing offers, and the recruiter call script.',
+      content_preview:
+         'Notes on negotiating a senior software engineer offer: anchoring on total comp, equity refresh, competing offers, and the recruiter call script.',
       expected: { action: 'promote_resource', area: 'work' },
       anchor_rule: 'null',
    },
@@ -140,7 +151,8 @@ export const GOLDEN = [
    {
       id: 'craft-hardware-cnc',
       title: 'CNC feeds and speeds for 6061 aluminum',
-      content_preview: 'Calculating feeds and speeds for milling 6061 aluminum: chip load per tooth, surface speed, and avoiding recutting chips with proper coolant.',
+      content_preview:
+         'Calculating feeds and speeds for milling 6061 aluminum: chip load per tooth, surface speed, and avoiding recutting chips with proper coolant.',
       expected: { action: 'promote_resource', area: 'craft' },
       anchor_rule: 'existing:_Hardware.md',
    },
@@ -149,7 +161,8 @@ export const GOLDEN = [
    {
       id: 'craft-mind-zettel',
       title: 'Zettelkasten linking vs folder hierarchies',
-      content_preview: 'Argues that dense bidirectional links between atomic notes outperform deep folder hierarchies for knowledge retrieval and serendipitous connection.',
+      content_preview:
+         'Argues that dense bidirectional links between atomic notes outperform deep folder hierarchies for knowledge retrieval and serendipitous connection.',
       expected: { action: 'promote_resource', area: 'craft' },
       anchor_rule: 'existing:_Mind.md',
    },
@@ -158,7 +171,8 @@ export const GOLDEN = [
    {
       id: 'spawn-task-domain',
       title: 'Renew xor0.de domain before it expires',
-      content_preview: 'Action: renew the xor0.de domain registration and verify the Cloudflare Tunnel cert before the 2026-07-15 expiry, or obsidian-mcp goes down.',
+      content_preview:
+         'Action: renew the xor0.de domain registration and verify the Cloudflare Tunnel cert before the 2026-07-15 expiry, or obsidian-mcp goes down.',
       expected: { action: 'spawn_task', area: 'craft' },
       anchor_rule: 'null',
    },
@@ -167,7 +181,8 @@ export const GOLDEN = [
    {
       id: 'craft-project-rag',
       title: 'Build a local RAG pipeline over the vault',
-      content_preview: 'Plan: index all Obsidian notes with nomic-embed, store vectors locally, and answer questions over the vault via qwen3.5 with retrieval. Multi-week build.',
+      content_preview:
+         'Plan: index all Obsidian notes with nomic-embed, store vectors locally, and answer questions over the vault via qwen3.5 with retrieval. Multi-week build.',
       expected: { action: 'promote_project', area: 'craft' },
       anchor_rule: 'any-valid',
    },

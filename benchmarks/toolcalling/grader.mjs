@@ -6,23 +6,29 @@
 
 import { CASES } from './toolcases.mjs';
 
-export default function(output, context) {
+export default function (output, context) {
    const caseId = context?.vars?.case_id ?? '?';
    const c = CASES[caseId];
-   if (!c) return { pass: false, score: 0, reason: `Unknown case_id: ${caseId}` };
+   if (!c) {
+      return { pass: false, score: 0, reason: `Unknown case_id: ${caseId}` };
+   }
 
    // Parse tool_calls from provider output
    let toolCalls = [];
    try {
       toolCalls = JSON.parse(output ?? '[]');
-      if (!Array.isArray(toolCalls)) toolCalls = [];
+      if (!Array.isArray(toolCalls)) {
+         toolCalls = [];
+      }
    } catch {
       // Empty/non-JSON output = no tool called
    }
 
    // No-call cases
    if (c.expect === null) {
-      if (toolCalls.length === 0) return { pass: true, score: 1, reason: 'correctly no tool called' };
+      if (toolCalls.length === 0) {
+         return { pass: true, score: 1, reason: 'correctly no tool called' };
+      }
       return { pass: false, score: 0, reason: `hallucinated call: ${toolCalls[0]?.function?.name}` };
    }
 
@@ -38,7 +44,9 @@ export default function(output, context) {
 
    let args = call.function?.arguments;
    if (typeof args === 'string') {
-      try { args = JSON.parse(args); } catch {
+      try {
+         args = JSON.parse(args);
+      } catch {
          return { pass: false, score: 0, reason: 'args not valid JSON' };
       }
    }

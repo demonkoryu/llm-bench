@@ -27,34 +27,31 @@ import { promisify } from 'node:util';
 
 const exec = promisify(execFile);
 
-const DEFAULT_BIN   = '~/llama.cpp/build-rocm/bin/llama-bench';
-const DEFAULT_REPS  = 5;
-const PP_TOKENS     = 512;
-const TG_TOKENS     = 128;
+const DEFAULT_BIN = '~/llama.cpp/build-rocm/bin/llama-bench';
+const DEFAULT_REPS = 5;
+const PP_TOKENS = 512;
+const TG_TOKENS = 128;
 
 const KV_PAIRS = [
-   { kv: 'f16',  ctk: 'f16',   ctv: 'f16'   },
-   { kv: 'q8_0', ctk: 'q8_0',  ctv: 'q8_0'  },
-   { kv: 'q4_0', ctk: 'q4_0',  ctv: 'q4_0'  },
-   { kv: 'k8v4', ctk: 'q8_0',  ctv: 'q4_0'  },
+   { kv: 'f16', ctk: 'f16', ctv: 'f16' },
+   { kv: 'q8_0', ctk: 'q8_0', ctv: 'q8_0' },
+   { kv: 'q4_0', ctk: 'q4_0', ctv: 'q4_0' },
+   { kv: 'k8v4', ctk: 'q8_0', ctv: 'q4_0' },
 ];
 
 async function ssh(host, cmd, opts = {}) {
-   const { stdout, stderr } = await exec(
-      'ssh', ['-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', host, cmd],
-      { timeout: opts.timeout ?? 30_000 }
-   );
+   const { stdout, stderr } = await exec('ssh', ['-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', host, cmd], {
+      timeout: opts.timeout ?? 30_000,
+   });
    return { stdout: stdout.trim(), stderr: stderr.trim() };
 }
 
 /** Locate a GGUF file in the HF hub cache on the remote host. */
 async function findGguf(sshHost, hf_file) {
-   const { stdout } = await ssh(
-      sshHost,
-      `find ~/.cache/huggingface/hub -name '${hf_file}' 2>/dev/null | head -1`,
-      { timeout: 15_000 }
-   );
-   if (!stdout) throw new Error(`GGUF not found in HF cache: ${hf_file} — run the server pass first to download it`);
+   const { stdout } = await ssh(sshHost, `find ~/.cache/huggingface/hub -name '${hf_file}' 2>/dev/null | head -1`, { timeout: 15_000 });
+   if (!stdout) {
+      throw new Error(`GGUF not found in HF cache: ${hf_file} — run the server pass first to download it`);
+   }
    return stdout;
 }
 
@@ -66,7 +63,7 @@ async function findGguf(sshHost, hf_file) {
  */
 export async function runLlamaBench({ sshHost, hf_file, llamaBin = DEFAULT_BIN, reps = DEFAULT_REPS }) {
    const ggufPath = await findGguf(sshHost, hf_file);
-   const results  = [];
+   const results = [];
 
    for (const { kv, ctk, ctv } of KV_PAIRS) {
       console.log(`  [llama-bench] ${hf_file}  KV=${kv}  pp=${PP_TOKENS} tg=${TG_TOKENS} reps=${reps}`);
@@ -95,14 +92,16 @@ export async function runLlamaBench({ sshHost, hf_file, llamaBin = DEFAULT_BIN, 
 
       for (const row of rows) {
          const isPp = row.n_prompt > 0 && row.n_gen === 0;
-         const isTg = row.n_gen > 0   && row.n_prompt === 0;
-         if (!isPp && !isTg) continue;
+         const isTg = row.n_gen > 0 && row.n_prompt === 0;
+         if (!isPp && !isTg) {
+            continue;
+         }
          results.push({
             kv,
-            bench:    isPp ? 'speed_pp' : 'speed_tg',
-            avg_ts:   row.avg_ts,
+            bench: isPp ? 'speed_pp' : 'speed_tg',
+            avg_ts: row.avg_ts,
             stddev_ts: row.stddev_ts,
-            samples:  row.samples_ts ?? [],
+            samples: row.samples_ts ?? [],
          });
          const label = isPp ? `pp` : `tg`;
          console.log(`    ${label}=${row.avg_ts.toFixed(1)} ± ${row.stddev_ts.toFixed(1)} t/s`);

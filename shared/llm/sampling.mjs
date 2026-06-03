@@ -23,28 +23,40 @@ const FALLBACKS = {
    // Hybrid / thinking: Qwen3 official
    [CAPABILITY.HYBRID]: {
       think: {
-         temperature: 0.6, top_p: 0.95, top_k: 20, min_p: 0,
+         temperature: 0.6,
+         top_p: 0.95,
+         top_k: 20,
+         min_p: 0,
          // Overrides per use-case for thinking mode:
-         reasoning:   { temperature: 0.6, top_p: 0.95, top_k: 20, min_p: 0 },
-         toolcalling: { temperature: 0.4, top_p: 0.9,  top_k: 20, min_p: 0 },
+         reasoning: { temperature: 0.6, top_p: 0.95, top_k: 20, min_p: 0 },
+         toolcalling: { temperature: 0.4, top_p: 0.9, top_k: 20, min_p: 0 },
       },
       no_think: {
-         temperature: 0.7, top_p: 0.8, top_k: 20, min_p: 0, presence_penalty: 1.5,
-         reasoning:   { temperature: 0.6, top_p: 0.95, top_k: 20, min_p: 0 },
-         toolcalling: { temperature: 0.4, top_p: 0.9,  top_k: 20, min_p: 0 },
+         temperature: 0.7,
+         top_p: 0.8,
+         top_k: 20,
+         min_p: 0,
+         presence_penalty: 1.5,
+         reasoning: { temperature: 0.6, top_p: 0.95, top_k: 20, min_p: 0 },
+         toolcalling: { temperature: 0.4, top_p: 0.9, top_k: 20, min_p: 0 },
       },
    },
    // Always-thinking (DeepSeek-R1 distill etc.)
    [CAPABILITY.THINKING]: {
       think: {
-         temperature: 0.6, top_p: 0.95, min_p: 0.05,
-         reasoning:   { temperature: 0.6, top_p: 0.95, min_p: 0.01 },   // DeepSeek-R1-0528 variant
+         temperature: 0.6,
+         top_p: 0.95,
+         min_p: 0.05,
+         reasoning: { temperature: 0.6, top_p: 0.95, min_p: 0.01 }, // DeepSeek-R1-0528 variant
       },
    },
    // Reasoning-only split field (LFM2.5)
    [CAPABILITY.REASONING_ONLY]: {
       null: {
-         temperature: 0.2, top_k: 80, min_p: 0, presence_penalty: 1.05,
+         temperature: 0.2,
+         top_k: 80,
+         min_p: 0,
+         presence_penalty: 1.05,
       },
    },
    // Standard instruct (no think)
@@ -75,13 +87,17 @@ const FALLBACKS = {
 export function resolveSampling(model, cap, think, useCase, matrix) {
    // 1. Try per-model override first (models.yaml sampling_overrides per model id)
    const modelOverride = matrix?.model_overrides?.[model.id ?? model.hf_file];
-   if (modelOverride?.[useCase]) return cleanSampling(modelOverride[useCase]);
-   if (modelOverride?.default) return mergeWithUseCase(modelOverride.default, modelOverride[useCase]);
+   if (modelOverride?.[useCase]) {
+      return cleanSampling(modelOverride[useCase]);
+   }
+   if (modelOverride?.default) {
+      return mergeWithUseCase(modelOverride.default, modelOverride[useCase]);
+   }
 
    const thinkKey = think === true ? 'think' : think === false ? 'no_think' : 'null';
 
    // 2. Try model.family as a direct matrix key (e.g. "qwen3.6", "gemma4", "qwen3-coder")
-   const familyKey = (model.family ?? '').replace(/-/g, '_');  // normalize: qwen3-coder → qwen3_coder
+   const familyKey = (model.family ?? '').replace(/-/g, '_'); // normalize: qwen3-coder → qwen3_coder
    const familyEntry = matrix?.[familyKey]?.[thinkKey] ?? matrix?.[familyKey]?.null;
    if (familyEntry) {
       const useCaseOverride = familyEntry[useCase];
@@ -97,10 +113,12 @@ export function resolveSampling(model, cap, think, useCase, matrix) {
 
 /** Strip use-case sub-keys, leaving only actual sampling params. */
 function cleanSampling(obj) {
-   const KNOWN_USE_CASES = new Set(['triage','reasoning','toolcalling','summarization','docqa','longctx','speed','default']);
+   const KNOWN_USE_CASES = new Set(['triage', 'reasoning', 'toolcalling', 'summarization', 'docqa', 'longctx', 'speed', 'default']);
    const out = {};
    for (const [k, v] of Object.entries(obj)) {
-      if (!KNOWN_USE_CASES.has(k)) out[k] = v;
+      if (!KNOWN_USE_CASES.has(k)) {
+         out[k] = v;
+      }
    }
    return out;
 }

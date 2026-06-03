@@ -7,16 +7,20 @@
       "node": ">=22"
    },
    "scripts": {
-      "dry-run":      "node runners/run-suite.mjs --dry-run",
-      "bench":        "node runners/run-suite.mjs",
-      "smoke":        "node runners/smoke.mjs",
-      "chart":        "node runners/render-chart.mjs",
-      "results":      "node runners/results-to-md.mjs",
-      "judge-prep":   "node runners/judge-prep.mjs",
-      "judge-merge":  "node runners/judge-merge.mjs",
-      "deploy":       "bash scripts/deploy.sh"
+      "dry-run":     "node runners/run-suite.mjs --dry-run",
+      "bench":       "node runners/run-suite.mjs",
+      "smoke":       "node runners/smoke.mjs",
+      "chart":       "node runners/render-chart.mjs",
+      "results":     "node runners/results-to-md.mjs",
+      "judge-prep":  "node runners/judge-prep.mjs",
+      "judge-merge": "node runners/judge-merge.mjs",
+      "deploy":      "bash scripts/deploy.sh",
+      "lint":        "biome lint shared runners benchmarks",
+      "format":      "biome format --write shared runners benchmarks",
+      "check":       "biome check --write shared runners benchmarks"
    },
    "devDependencies": {
+      "@biomejs/biome": "^2.4.16",
       "promptfoo": "^0.121.13"
    },
    "dependencies": {

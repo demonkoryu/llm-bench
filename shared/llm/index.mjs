@@ -18,6 +18,6 @@
  */
 
 export { createClient, defaultClient } from './client.mjs';
-export { CAPABILITY, capabilityClass, thinkStates, thinkKwargs, mergeReasoningContent, applyThinkControl } from './think.mjs';
+export { extractJson, parseToolArgs, sanitizeJson, stripThink } from './repair.mjs';
 export { resolveSampling } from './sampling.mjs';
-export { stripThink, extractJson, parseToolArgs, sanitizeJson } from './repair.mjs';
+export { applyThinkControl, CAPABILITY, capabilityClass, mergeReasoningContent, thinkKwargs, thinkStates } from './think.mjs';

@@ -41,7 +41,12 @@ models:
      tools: true
      native_max_ctx: 32768    # native; YaRN extends to 262144 (not used here)
      kv_bytes_per_token: 49152   # 48 KiB/tok — empirical, 30B-A3B GQA Q8_0
-     extra_flags: "--temp 0.7 --top-p 0.8 --top-k 20 --min-p 0 --repeat-penalty 1.05"
+     extra_flags:
+        temp: 0.7
+        top-p: 0.8
+        top-k: 20
+        min-p: 0
+        repeat-penalty: 1.05
      benches: [triage, toolcalling, summarization, docqa, speed, maxctx]
      notes: "No think mode (architecturally absent). repeat_penalty=1.05 explicitly documented."
 
@@ -56,7 +61,11 @@ models:
      tools: true
      native_max_ctx: 32768    # native; 131072 with YaRN (GGUF may include scaling metadata)
      kv_bytes_per_token: 49152
-     extra_flags: "--temp 0.7 --top-p 0.8 --top-k 20 --min-p 0"
+     extra_flags:
+        temp: 0.7
+        top-p: 0.8
+        top-k: 20
+        min-p: 0
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
    # ── Qwen3-30B-A3B-Instruct-2507 IQ4_XS ─────────────────────────────────────
@@ -70,7 +79,11 @@ models:
      native_max_ctx: 32768    # native; 131072 with YaRN
      ctx_cap: 81920   # empirical: 92k probe-max leaves only 531 MiB; OOMs during 90k prefill
      kv_bytes_per_token: 49152
-     extra_flags: "--temp 0.7 --top-p 0.8 --top-k 20 --min-p 0"
+     extra_flags:
+        temp: 0.7
+        top-p: 0.8
+        top-k: 20
+        min-p: 0
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
    # ── Qwen3-14B Q5_K_M ────────────────────────────────────────────────────────
@@ -85,7 +98,11 @@ models:
      native_max_ctx: 32768    # native; 131072 with YaRN
      ctx_cap: 40960   # empirical: GGUF rejects prompts beyond this; RoPE not extended past 40k
      kv_bytes_per_token: 24576   # 24 KiB/tok — estimated ~half of 30B
-     extra_flags: "--temp 0.7 --top-p 0.8 --top-k 20 --min-p 0"
+     extra_flags:
+        temp: 0.7
+        top-p: 0.8
+        top-k: 20
+        min-p: 0
      benches: [triage, reasoning, toolcalling, toolcalling_decay, summarization, docqa, speed, maxctx]
 
    # ── Qwen3.6-35B-A3B IQ4_XS 3.97bpw ─────────────────────────────────────────
@@ -103,7 +120,14 @@ models:
      tools: true
      native_max_ctx: 262144
      kv_bytes_per_token: 49152
-     extra_flags: "--temp 0.7 --top-p 0.8 --top-k 20 --min-p 0 --presence-penalty 1.5 --spec-type draft-mtp --spec-draft-n-max 4"
+     extra_flags:
+        temp: 0.7
+        top-p: 0.8
+        top-k: 20
+        min-p: 0
+        presence-penalty: 1.5
+        spec-type: draft-mtp
+        spec-draft-n-max: 4
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
      notes: "MTP speculative draft; drop --spec-type if Vulkan build lacks support. presence_penalty=1.5 per Qwen3.6 guidance."
 
@@ -117,7 +141,14 @@ models:
      tools: true
      native_max_ctx: 262144
      kv_bytes_per_token: 49152
-     extra_flags: "--temp 1.0 --top-p 0.95 --top-k 20 --min-p 0 --presence-penalty 1.5 --spec-type draft-mtp --spec-draft-n-max 4"
+     extra_flags:
+        temp: 1.0
+        top-p: 0.95
+        top-k: 20
+        min-p: 0
+        presence-penalty: 1.5
+        spec-type: draft-mtp
+        spec-draft-n-max: 4
      benches: [triage, reasoning, summarization, docqa, speed]
      notes: "temp=1.0 in think mode per Qwen3.6 guidance (higher than Qwen3's 0.6). No toolcalling — think mode incompatible with tool calling."
 
@@ -132,7 +163,14 @@ models:
      tools: true
      native_max_ctx: 262144
      kv_bytes_per_token: 49152
-     extra_flags: "--temp 0.7 --top-p 0.8 --top-k 20 --min-p 0 --presence-penalty 1.5 --spec-type draft-mtp --spec-draft-n-max 4"
+     extra_flags:
+        temp: 0.7
+        top-p: 0.8
+        top-k: 20
+        min-p: 0
+        presence-penalty: 1.5
+        spec-type: draft-mtp
+        spec-draft-n-max: 4
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
    - hf_repo: unsloth/Qwen3.6-35B-A3B-GGUF
@@ -145,7 +183,14 @@ models:
      tools: true
      native_max_ctx: 262144
      kv_bytes_per_token: 49152
-     extra_flags: "--temp 1.0 --top-p 0.95 --top-k 20 --min-p 0 --presence-penalty 1.5 --spec-type draft-mtp --spec-draft-n-max 4"
+     extra_flags:
+        temp: 1.0
+        top-p: 0.95
+        top-k: 20
+        min-p: 0
+        presence-penalty: 1.5
+        spec-type: draft-mtp
+        spec-draft-n-max: 4
      benches: [triage, reasoning, summarization, docqa, speed]
 
    # ── Gemma4-E4B (Google Gemma 4, 4B effective MoE) ───────────────────────────
@@ -165,7 +210,10 @@ models:
      tools: false
      native_max_ctx: 128000
      kv_bytes_per_token: 16384   # estimated; 4B active params, smaller KV footprint
-     extra_flags: "--temp 1.0 --top-p 0.95 --top-k 64"
+     extra_flags:
+        temp: 1.0
+        top-p: 0.95
+        top-k: 64
      benches: [triage, summarization, docqa, speed, maxctx]
      notes: "Google recommends unified sampling across all tasks and think states."
 
@@ -180,7 +228,10 @@ models:
      tools: false
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
-     extra_flags: "--temp 1.0 --top-p 0.95 --top-k 64"
+     extra_flags:
+        temp: 1.0
+        top-p: 0.95
+        top-k: 64
      benches: [triage, reasoning, summarization, docqa, speed]
 
    - hf_repo: google/gemma-4-e4b-it-GGUF   # TODO: same uncertainty as Q8_0
@@ -194,7 +245,10 @@ models:
      tools: false
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
-     extra_flags: "--temp 1.0 --top-p 0.95 --top-k 64"
+     extra_flags:
+        temp: 1.0
+        top-p: 0.95
+        top-k: 64
      benches: [triage, summarization, docqa, speed, maxctx]
 
    - hf_repo: google/gemma-4-e4b-it-GGUF
@@ -208,7 +262,10 @@ models:
      tools: false
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
-     extra_flags: "--temp 1.0 --top-p 0.95 --top-k 64"
+     extra_flags:
+        temp: 1.0
+        top-p: 0.95
+        top-k: 64
      benches: [triage, reasoning, summarization, docqa, speed]
 
    # ── Gemma4-26B-A4B (Google Gemma 4, 26B total / 4B active MoE) ──────────────
@@ -225,7 +282,10 @@ models:
      tools: false
      native_max_ctx: 128000
      kv_bytes_per_token: 16384   # 4B active params; KV footprint comparable to E4B
-     extra_flags: "--temp 1.0 --top-p 0.95 --top-k 64"
+     extra_flags:
+        temp: 1.0
+        top-p: 0.95
+        top-k: 64
      benches: [triage, summarization, docqa, speed, maxctx]
 
    - hf_repo: unsloth/gemma-4-26B-A4B-it-GGUF
@@ -239,7 +299,10 @@ models:
      tools: false
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
-     extra_flags: "--temp 1.0 --top-p 0.95 --top-k 64"
+     extra_flags:
+        temp: 1.0
+        top-p: 0.95
+        top-k: 64
      benches: [triage, reasoning, summarization, docqa, speed]
 
    # ── Nemotron Nano 12B v2 ─────────────────────────────────────────────────────
@@ -259,7 +322,7 @@ models:
      tools: false             # TODO: verify tool-calling support on first smoke run
      native_max_ctx: 128000
      kv_bytes_per_token: 16384   # Mamba KV is small; only attention layers cache
-     extra_flags: ""
+     extra_flags: {}
      benches: [triage, reasoning, summarization, docqa, speed, maxctx]
      notes: "Toggle via system keyword /no_think (not chat_template_kwargs). Mamba layers have no KV cache."
 
@@ -274,7 +337,7 @@ models:
      tools: false
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
-     extra_flags: ""
+     extra_flags: {}
      benches: [reasoning, summarization, docqa, speed]
 
    - hf_repo: bartowski/nvidia_NVIDIA-Nemotron-Nano-12B-v2-GGUF
@@ -288,7 +351,7 @@ models:
      tools: false
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
-     extra_flags: ""
+     extra_flags: {}
      benches: [triage, reasoning, summarization, docqa, speed, maxctx]
 
    - hf_repo: bartowski/nvidia_NVIDIA-Nemotron-Nano-12B-v2-GGUF
@@ -302,7 +365,7 @@ models:
      tools: false
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
-     extra_flags: ""
+     extra_flags: {}
      benches: [reasoning, summarization, docqa, speed]
 
    # ── LFM2.5-8B-A1B ────────────────────────────────────────────────────────────
@@ -320,7 +383,11 @@ models:
      native_max_ctx: 128000
      ctx_cap: 131072
      kv_bytes_per_token: 8192    # 8 KiB/tok — 6 attention layers only
-     extra_flags: "--temp 0.2 --top-k 80 --min-p 0 --repeat-penalty 1.05"
+     extra_flags:
+        temp: 0.2
+        top-k: 80
+        min-p: 0
+        repeat-penalty: 1.05
      benches: [reasoning, summarization, docqa, speed, maxctx]
      notes: "temp=0.2 intentional (low for reasoning coherence per LiquidAI docs). reasoning_content merged by llm client."
 

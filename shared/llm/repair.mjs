@@ -21,16 +21,18 @@ import { jsonrepair } from 'jsonrepair';
  *   <|channel>thought…        Truncated/partial Gemma4 channel at end of string
  */
 export function stripThink(s) {
-   return (s ?? '')
-      // Standard <think> block (closed)
-      .replace(/<think>[\s\S]*?<\/think>/g, '')
-      // Gemma4 channel block (closed): <|channel>thought … <channel|>
-      .replace(/<\|channel>thought[\s\S]*?<channel\|>/g, '')
-      // Unclosed <think> at end of string
-      .replace(/<think>[\s\S]*$/, '')
-      // Unclosed Gemma4 channel at end of string
-      .replace(/<\|channel>thought[\s\S]*$/, '')
-      .trim();
+   return (
+      (s ?? '')
+         // Standard <think> block (closed)
+         .replace(/<think>[\s\S]*?<\/think>/g, '')
+         // Gemma4 channel block (closed): <|channel>thought … <channel|>
+         .replace(/<\|channel>thought[\s\S]*?<channel\|>/g, '')
+         // Unclosed <think> at end of string
+         .replace(/<think>[\s\S]*$/, '')
+         // Unclosed Gemma4 channel at end of string
+         .replace(/<\|channel>thought[\s\S]*$/, '')
+         .trim()
+   );
 }
 
 /**
@@ -53,21 +55,29 @@ export function sanitizeJson(s) {
  * Returns the parsed value, or null if no valid JSON found.
  */
 export function extractJson(s) {
-   if (!s) return null;
+   if (!s) {
+      return null;
+   }
 
    // 1. Strip think block
-   let cleaned = stripThink(s);
+   const cleaned = stripThink(s);
 
    // 2. Try the whole string first (common case for models that output raw JSON)
-   try { return JSON.parse(cleaned.trim()); } catch {}
+   try {
+      return JSON.parse(cleaned.trim());
+   } catch {}
 
    // 3. Strip markdown code fences
    const fenced = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '');
-   try { return JSON.parse(fenced.trim()); } catch {}
+   try {
+      return JSON.parse(fenced.trim());
+   } catch {}
 
    // 4. Find first { or [ and match its closing bracket
    const start = cleaned.search(/[{[]/);
-   if (start < 0) return null;
+   if (start < 0) {
+      return null;
+   }
    const opener = cleaned[start];
    const closer = opener === '{' ? '}' : ']';
    let depth = 0;
@@ -75,25 +85,45 @@ export function extractJson(s) {
    let escaped = false;
    for (let i = start; i < cleaned.length; i++) {
       const c = cleaned[i];
-      if (escaped) { escaped = false; continue; }
-      if (c === '\\' && inString) { escaped = true; continue; }
-      if (c === '"') { inString = !inString; continue; }
-      if (inString) continue;
-      if (c === opener) depth++;
-      else if (c === closer) {
+      if (escaped) {
+         escaped = false;
+         continue;
+      }
+      if (c === '\\' && inString) {
+         escaped = true;
+         continue;
+      }
+      if (c === '"') {
+         inString = !inString;
+         continue;
+      }
+      if (inString) {
+         continue;
+      }
+      if (c === opener) {
+         depth++;
+      } else if (c === closer) {
          depth--;
          if (depth === 0) {
             const span = cleaned.slice(start, i + 1);
-            try { return JSON.parse(span); } catch {}
-            try { return JSON.parse(sanitizeJson(span)); } catch {}
-            try { return JSON.parse(jsonrepair(span)); } catch {}
+            try {
+               return JSON.parse(span);
+            } catch {}
+            try {
+               return JSON.parse(sanitizeJson(span));
+            } catch {}
+            try {
+               return JSON.parse(jsonrepair(span));
+            } catch {}
             return null;
          }
       }
    }
 
    // 5. jsonrepair on the whole cleaned string as last resort
-   try { return JSON.parse(jsonrepair(cleaned)); } catch {}
+   try {
+      return JSON.parse(jsonrepair(cleaned));
+   } catch {}
    return null;
 }
 
@@ -104,11 +134,19 @@ export function extractJson(s) {
 export function parseToolArgs(raw) {
    if (typeof raw !== 'string') {
       // Already an object (some llama.cpp builds return parsed args)
-      if (raw && typeof raw === 'object') return raw;
+      if (raw && typeof raw === 'object') {
+         return raw;
+      }
       return {};
    }
-   try { return JSON.parse(raw); } catch {}
-   try { return JSON.parse(sanitizeJson(raw)); } catch {}
-   try { return JSON.parse(jsonrepair(raw)); } catch {}
+   try {
+      return JSON.parse(raw);
+   } catch {}
+   try {
+      return JSON.parse(sanitizeJson(raw));
+   } catch {}
+   try {
+      return JSON.parse(jsonrepair(raw));
+   } catch {}
    return {};
 }

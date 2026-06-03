@@ -30,17 +30,17 @@
  *   node runners/judge-prep.mjs --input results/run-2026-06-03T12-00-00.json
  */
 
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from 'node:fs';
-import { join, dirname, basename } from 'node:path';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
-const ROOT  = join(__dir, '..');
+const ROOT = join(__dir, '..');
 
 const { values: flags } = parseArgs({
    options: {
-      input:  { type: 'string', default: '' },    // single file; default = all results/run-*.json
+      input: { type: 'string', default: '' }, // single file; default = all results/run-*.json
       outdir: { type: 'string', default: join(ROOT, 'results/judge') },
    },
 });
@@ -84,16 +84,20 @@ for (const filePath of sourceFiles) {
    const results = runData?.results?.results ?? runData?.results ?? [];
    for (const row of results) {
       const bench = row.prompt?.label ?? '';
-      if (!JUDGE_BENCHES.has(bench)) continue;
+      if (!JUDGE_BENCHES.has(bench)) {
+         continue;
+      }
 
-      const modelId    = row.provider?.id ?? '';
+      const modelId = row.provider?.id ?? '';
       const modelLabel = row.provider?.label ?? modelId;
-      const caseId     = row.vars?.case_id ?? row.vars?.item_id ?? '';
-      const prompt     = row.prompt?.raw ?? '';
-      const output     = row.response?.output ?? '';
-      const score      = row.gradingResult?.score ?? null;
+      const caseId = row.vars?.case_id ?? row.vars?.item_id ?? '';
+      const prompt = row.prompt?.raw ?? '';
+      const output = row.response?.output ?? '';
+      const score = row.gradingResult?.score ?? null;
 
-      if (!modelId || !output) continue;
+      if (!modelId || !output) {
+         continue;
+      }
 
       if (!byModel.has(modelId)) {
          byModel.set(modelId, { model_id: modelId, model_label: modelLabel, entries: [] });
@@ -101,7 +105,7 @@ for (const filePath of sourceFiles) {
       byModel.get(modelId).entries.push({
          bench,
          case_id: caseId,
-         prompt: prompt.slice(0, 800),    // trim to keep bundles compact; judges read key parts
+         prompt: prompt.slice(0, 800), // trim to keep bundles compact; judges read key parts
          output,
          deterministic_score: typeof score === 'number' ? Math.round(score * 100) / 100 : null,
       });
@@ -119,7 +123,7 @@ mkdirSync(flags.outdir, { recursive: true });
 let written = 0;
 for (const [modelId, bundle] of byModel) {
    // Sanitize modelId for use as a filename
-   const safe    = modelId.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/^_+|_+$/g, '');
+   const safe = modelId.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/^_+|_+$/g, '');
    const outFile = join(flags.outdir, `${safe}.input.json`);
    writeFileSync(outFile, JSON.stringify(bundle, null, 2), 'utf-8');
    console.log(`  ${bundle.model_label}  →  ${basename(outFile)}  (${bundle.entries.length} entries)`);

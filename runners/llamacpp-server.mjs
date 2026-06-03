@@ -19,15 +19,45 @@ import { createClient } from '../shared/llm/index.mjs';
 
 const execP = promisify(execFile);
 
-const SCRIPTS_DIR   = '~/llm-bench/scripts/llm2';
-const DEFAULT_PORT  = 8090;
+/**
+ * Convert an extra_flags value from models.yaml to a CLI argument string.
+ *
+ * Accepts either:
+ *   - an object map  { temp: 0.7, 'top-k': 20, 'spec-type': 'draft-mtp' }
+ *     → "--temp 0.7 --top-k 20 --spec-type draft-mtp"
+ *   - a plain string (legacy, pass through unchanged)
+ *   - null / undefined / empty object → empty string
+ *
+ * Boolean values:  true  → "--flag"   false → omit
+ * Numeric/string:  value → "--flag value"
+ */
+export function extraFlagsToString(flags) {
+   if (!flags) {
+      return '';
+   }
+   if (typeof flags === 'string') {
+      return flags;
+   }
+   return Object.entries(flags)
+      .map(([k, v]) => {
+         if (v === false || v === null || v === undefined) {
+            return '';
+         }
+         if (v === true) {
+            return `--${k}`;
+         }
+         return `--${k} ${v}`;
+      })
+      .filter(Boolean)
+      .join(' ');
+}
+
+const SCRIPTS_DIR = '~/llm-bench/scripts/llm2';
+const DEFAULT_PORT = 8090;
 
 async function ssh(host, cmd, { timeout = 30_000 } = {}) {
    try {
-      const { stdout, stderr } = await execP(
-         'ssh', ['-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', host, cmd],
-         { timeout }
-      );
+      const { stdout, stderr } = await execP('ssh', ['-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', host, cmd], { timeout });
       return { stdout: stdout.trim(), stderr: stderr.trim(), ok: true };
    } catch (e) {
       return { stdout: '', stderr: e.message, ok: false, exitCode: e.code };
@@ -44,14 +74,21 @@ async function ssh(host, cmd, { timeout = 30_000 } = {}) {
  *   port      {number}   llama-server port (default: 8090)
  *   debug     {boolean}  verbose logging
  */
-export function llamacppServer({ sshHost, llamaUrl = 'http://192.168.1.120:8090', backend = 'vulkan', port = DEFAULT_PORT, debug = false }) {
-
+export function llamacppServer({
+   sshHost,
+   llamaUrl = 'http://192.168.1.120:8090',
+   backend = 'vulkan',
+   port = DEFAULT_PORT,
+   debug = false,
+}) {
    const client = createClient(llamaUrl, { debug });
 
    /** Run a script on llm2, return stdout. Throws on failure unless tolerant=true. */
    async function runScript(script, args = '', { tolerant = false, timeout = 30_000 } = {}) {
       const cmd = `bash ${SCRIPTS_DIR}/${script} ${args}`;
-      if (debug) console.error(`[ssh] ${cmd}`);
+      if (debug) {
+         console.error(`[ssh] ${cmd}`);
+      }
       const r = await ssh(sshHost, cmd, { timeout });
       if (!r.ok && !tolerant) {
          throw new Error(`${script} failed: ${r.stderr.slice(0, 200)}`);
@@ -65,10 +102,13 @@ export function llamacppServer({ sshHost, llamaUrl = 'http://192.168.1.120:8090'
     */
    async function detectBackends() {
       const out = await runScript('backends.sh', '', { tolerant: true });
-      return out.split('\n').filter(Boolean).map((line) => {
-         const [name, path] = line.trim().split(/\s+/);
-         return { backend: name, path };
-      });
+      return out
+         .split('\n')
+         .filter(Boolean)
+         .map((line) => {
+            const [name, path] = line.trim().split(/\s+/);
+            return { backend: name, path };
+         });
    }
 
    /**
@@ -89,7 +129,9 @@ export function llamacppServer({ sshHost, llamaUrl = 'http://192.168.1.120:8090'
          `--hf-repo '${hf_repo}'`,
          `--hf-file '${hf_file}'`,
          extraFlags,
-      ].filter(Boolean).join(' ');
+      ]
+         .filter(Boolean)
+         .join(' ');
 
       // HF downloads can take a while on first run — give 600s
       const pid = await runScript('start-server.sh', args, { timeout: 600_000 });
@@ -103,15 +145,19 @@ export function llamacppServer({ sshHost, llamaUrl = 'http://192.168.1.120:8090'
     */
    async function waitHealthy(timeoutMs = 300_000) {
       // Try direct HTTP first (faster; works when the dev host can reach llm2 directly)
-      const ready = await client.waitHealthy(timeoutMs).then(() => true).catch(() => false);
-      if (ready) return true;
+      const ready = await client
+         .waitHealthy(timeoutMs)
+         .then(() => true)
+         .catch(() => false);
+      if (ready) {
+         return true;
+      }
       // Fallback: run health.sh on llm2 (handles firewall/NAT cases)
       const timeoutS = Math.floor(timeoutMs / 1000);
-      const r = await runScript('health.sh',
-         `--url ${llamaUrl} --timeout ${timeoutS}`,
-         { tolerant: true, timeout: timeoutMs + 5_000 }
-      );
-      if (r.includes('ready')) return true;
+      const r = await runScript('health.sh', `--url ${llamaUrl} --timeout ${timeoutS}`, { tolerant: true, timeout: timeoutMs + 5_000 });
+      if (r.includes('ready')) {
+         return true;
+      }
       throw new Error(`Server not ready within ${timeoutS}s`);
    }
 
@@ -131,7 +177,7 @@ export function llamacppServer({ sshHost, llamaUrl = 'http://192.168.1.120:8090'
    async function snapshotVram() {
       const out = await runScript('vram.sh', '', { tolerant: true, timeout: 10_000 });
       const n = parseInt(out, 10);
-      return isNaN(n) ? null : n;
+      return Number.isNaN(n) ? null : n;
    }
 
    /** Check for crash patterns in the server log. Returns true if crashed. */
@@ -148,8 +194,12 @@ export function llamacppServer({ sshHost, llamaUrl = 'http://192.168.1.120:8090'
       const deadline = Date.now() + timeoutMs;
       while (Date.now() < deadline) {
          const mib = await snapshotVram();
-         if (mib === null || mib < 512) return;
-         if (debug) console.log(`[llamacpp] waiting VRAM clear — ${mib} MiB...`);
+         if (mib === null || mib < 512) {
+            return;
+         }
+         if (debug) {
+            console.log(`[llamacpp] waiting VRAM clear — ${mib} MiB...`);
+         }
          await new Promise((r) => setTimeout(r, 2_000));
       }
       console.warn('[llamacpp] VRAM did not clear within timeout — proceeding anyway');
@@ -167,19 +217,15 @@ export function llamacppServer({ sshHost, llamaUrl = 'http://192.168.1.120:8090'
     * @returns {{ ctxLoaded, oomCeiling, coherenceCeiling, vramMib }}
     */
    async function binarySearchCtx(modelCfg) {
-      const { hf_repo, hf_file, native_max_ctx, ctx_cap, kv_bytes_per_token = 32768, extra_flags = '' } = modelCfg;
+      const { hf_repo, hf_file, native_max_ctx, ctx_cap, kv_bytes_per_token = 32768 } = modelCfg;
+      const extra_flags = extraFlagsToString(modelCfg.extra_flags);
 
       // Estimate hi from VRAM — seed only, not authoritative
       const vramFree = await snapshotVram().then((mib) => (mib !== null ? 20480 - mib : 16384));
       const vramEstimate = Math.floor((vramFree * 1024 * 1024) / kv_bytes_per_token);
 
       // Cap at documented native window, ctxCap override, VRAM estimate, and absolute max
-      const hi = Math.min(
-         native_max_ctx ?? 131072,
-         ctx_cap        ?? 131072,
-         roundTo2k(vramEstimate),
-         131072
-      );
+      let hi = Math.min(native_max_ctx ?? 131072, ctx_cap ?? 131072, roundTo2k(vramEstimate), 131072);
       let lo = 4096;
 
       if (hi <= lo) {
@@ -189,12 +235,12 @@ export function llamacppServer({ sshHost, llamaUrl = 'http://192.168.1.120:8090'
 
       console.log(`  [maxctx] binary search lo=${lo} hi=${hi} native_max=${native_max_ctx ?? 'unknown'}`);
 
-      let oomCeiling    = lo;
+      let oomCeiling = lo;
       let coherenceCeiling = lo;
       let lastVram = null;
 
       // Lazy-import codebase generator (Node-side, no SSH)
-      const { makeFillPrompt } = await import('../shared/codebase.mjs').catch(() => null) ?? {};
+      const { makeFillPrompt } = (await import('../shared/codebase.mjs').catch(() => null)) ?? {};
 
       while (hi - lo > 2048) {
          const mid = roundTo2k(Math.floor((lo + hi) / 2));
@@ -243,7 +289,9 @@ export function llamacppServer({ sshHost, llamaUrl = 'http://192.168.1.120:8090'
       }
 
       const ctxLoaded = coherenceCeiling > lo ? coherenceCeiling : lo;
-      console.log(`  [maxctx] result: ${ctxLoaded.toLocaleString()} tokens  (oom_ceiling=${oomCeiling}, coherence_ceiling=${coherenceCeiling})`);
+      console.log(
+         `  [maxctx] result: ${ctxLoaded.toLocaleString()} tokens  (oom_ceiling=${oomCeiling}, coherence_ceiling=${coherenceCeiling})`,
+      );
       return { ctxLoaded, oomCeiling, coherenceCeiling, vramMib: lastVram };
    }
 
@@ -254,18 +302,22 @@ export function llamacppServer({ sshHost, llamaUrl = 'http://192.168.1.120:8090'
    async function checkCoherence(ctxSize, makeFillPrompt) {
       const { messages, expectedAnswer, fillRate } = makeFillPrompt(ctxSize);
 
-      if (fillRate < 0.80) {
+      if (fillRate < 0.8) {
          console.warn(`  [maxctx] fill_rate=${fillRate.toFixed(2)} < 0.80 — skipping coherence (stale context size or unexpected ctx)`);
          return false;
       }
 
       let resp;
       try {
-         resp = await client.chat(messages, {
-            think: null,
-            temperature: 0.0,
-            max_tokens: 64,
-         }, 120_000);
+         resp = await client.chat(
+            messages,
+            {
+               think: null,
+               temperature: 0.0,
+               max_tokens: 64,
+            },
+            120_000,
+         );
       } catch {
          return false;
       }
@@ -280,7 +332,9 @@ export function llamacppServer({ sshHost, llamaUrl = 'http://192.168.1.120:8090'
       return isCorrect;
    }
 
-   function roundTo2k(n) { return Math.max(4096, Math.round(n / 2048) * 2048); }
+   function roundTo2k(n) {
+      return Math.max(4096, Math.round(n / 2048) * 2048);
+   }
 
    /**
     * Full start sequence: kill orphans → binary-search max-ctx → start real server.
@@ -301,7 +355,7 @@ export function llamacppServer({ sshHost, llamaUrl = 'http://192.168.1.120:8090'
          hf_repo: modelCfg.hf_repo,
          hf_file: modelCfg.hf_file,
          ctx: ctxResult.ctxLoaded,
-         extraFlags: modelCfg.extra_flags ?? '',
+         extraFlags: extraFlagsToString(modelCfg.extra_flags),
       });
       await waitHealthy(360_000);
 
@@ -315,8 +369,13 @@ export function llamacppServer({ sshHost, llamaUrl = 'http://192.168.1.120:8090'
     * Returns false only if restart also fails.
     */
    async function ensureAlive(modelCfg) {
-      const alive = await client.waitHealthy(5_000).then(() => true).catch(() => false);
-      if (alive) return { alive: true };
+      const alive = await client
+         .waitHealthy(5_000)
+         .then(() => true)
+         .catch(() => false);
+      if (alive) {
+         return { alive: true };
+      }
 
       // Check for crash before restarting
       const crashed = await hasCrashed();
@@ -328,7 +387,7 @@ export function llamacppServer({ sshHost, llamaUrl = 'http://192.168.1.120:8090'
             hf_repo: modelCfg.hf_repo,
             hf_file: modelCfg.hf_file,
             ctx: modelCfg._ctxLoaded ?? 8192,
-            extraFlags: modelCfg.extra_flags ?? '',
+            extraFlags: extraFlagsToString(modelCfg.extra_flags),
          });
          await waitHealthy(120_000);
          return { alive: true, restarted: true };

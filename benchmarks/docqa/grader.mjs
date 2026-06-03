@@ -45,7 +45,7 @@ export function gradeAnswer(q, answer) {
    const ans = (answer ?? '').toLowerCase();
 
    // correctness (max 5)
-   const num  = q.numeric_answer;
+   const num = q.numeric_answer;
    const conc = q.expected_conclusion ?? '';
    const concOk = Boolean(conc) && contains(ans, conc.toLowerCase());
 
@@ -60,7 +60,7 @@ export function gradeAnswer(q, answer) {
    }
 
    // coverage (max 3)
-   const req     = q.required_facts ?? [];
+   const req = q.required_facts ?? [];
    const reqHits = req.filter((f) => contains(ans, f.toLowerCase()));
    const coverage = req.length > 0 ? 3 * (reqHits.length / req.length) : 3;
 
@@ -72,9 +72,7 @@ export function gradeAnswer(q, answer) {
       faithfulness = 2.0;
       forbHits = [];
    } else {
-      faithfulness = !forb.length
-         ? 2.0
-         : Math.max(0, 2.0 - 2.0 * (forbHits.length / forb.length));
+      faithfulness = !forb.length ? 2.0 : Math.max(0, 2.0 - 2.0 * (forbHits.length / forb.length));
    }
 
    const score = Math.round((correctness + coverage + faithfulness) * 100) / 100;
@@ -100,8 +98,6 @@ export function gradeAnswer(q, answer) {
  */
 export function gradeAll(questions, answerById) {
    const perQ = questions.map((q) => gradeAnswer(q, answerById[q.id] ?? ''));
-   const mean = perQ.length > 0
-      ? Math.round((perQ.reduce((s, g) => s + g.score, 0) / perQ.length) * 100) / 100
-      : 0;
+   const mean = perQ.length > 0 ? Math.round((perQ.reduce((s, g) => s + g.score, 0) / perQ.length) * 100) / 100 : 0;
    return { mean_score: mean, n: perQ.length, per_question: perQ };
 }

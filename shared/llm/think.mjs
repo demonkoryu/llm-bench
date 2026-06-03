@@ -19,9 +19,9 @@
  */
 
 export const CAPABILITY = {
-   NON_THINKING:   'non_thinking',
-   HYBRID:         'hybrid',
-   THINKING:       'thinking',
+   NON_THINKING: 'non_thinking',
+   HYBRID: 'hybrid',
+   THINKING: 'thinking',
    REASONING_ONLY: 'reasoning_only',
 };
 
@@ -35,10 +35,14 @@ export const CAPABILITY = {
  */
 export function capabilityClass(model) {
    switch (model.think) {
-      case 'optional':   return CAPABILITY.HYBRID;
-      case 'required':   return CAPABILITY.THINKING;
-      case 'reasoning':  return CAPABILITY.REASONING_ONLY;
-      default:           return CAPABILITY.NON_THINKING;
+      case 'optional':
+         return CAPABILITY.HYBRID;
+      case 'required':
+         return CAPABILITY.THINKING;
+      case 'reasoning':
+         return CAPABILITY.REASONING_ONLY;
+      default:
+         return CAPABILITY.NON_THINKING;
    }
 }
 
@@ -51,10 +55,14 @@ export function capabilityClass(model) {
  */
 export function thinkStates(cap) {
    switch (cap) {
-      case CAPABILITY.HYBRID:         return [false, true];
-      case CAPABILITY.THINKING:       return [true];
-      case CAPABILITY.REASONING_ONLY: return [null];
-      default:                        return [null];   // non_thinking
+      case CAPABILITY.HYBRID:
+         return [false, true];
+      case CAPABILITY.THINKING:
+         return [true];
+      case CAPABILITY.REASONING_ONLY:
+         return [null];
+      default:
+         return [null]; // non_thinking
    }
 }
 
@@ -63,7 +71,9 @@ export function thinkStates(cap) {
  * Returns null if think state is null (don't send the field at all).
  */
 export function thinkKwargs(thinkState) {
-   if (thinkState === null) return null;
+   if (thinkState === null) {
+      return null;
+   }
    return { enable_thinking: thinkState };
 }
 
@@ -89,7 +99,9 @@ export function thinkKwargs(thinkState) {
  * @returns {{ messages: Array, extraBody: object }}
  */
 export function applyThinkControl(messages, think, control = 'enable_thinking') {
-   if (think === null) return { messages, extraBody: {} };
+   if (think === null) {
+      return { messages, extraBody: {} };
+   }
 
    if (control === 'system_keyword') {
       const keyword = think ? '/think' : '/no_think';
@@ -118,7 +130,9 @@ export function applyThinkControl(messages, think, control = 'enable_thinking') 
  * Used by customFetch in client.mjs.
  */
 export function mergeReasoningContent(data) {
-   if (!data?.choices) return data;
+   if (!data?.choices) {
+      return data;
+   }
    for (const choice of data.choices) {
       const msg = choice.message;
       if (msg && (msg.content === '' || msg.content == null) && msg.reasoning_content) {

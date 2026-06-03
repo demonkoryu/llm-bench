@@ -27,11 +27,11 @@ const client = openaiCompatClient(LLAMA_URL);
 const FILLER = 'The grass is green and the sky is blue. The river flows quietly to the sea. ';
 
 const NEEDLES = [
-   { depth: 0.10, key: '481027', tag: 'alpha' },
-   { depth: 0.30, key: '739154', tag: 'bravo' },
-   { depth: 0.50, key: '602938', tag: 'charlie' },
+   { depth: 0.1, key: '481027', tag: 'alpha' },
+   { depth: 0.3, key: '739154', tag: 'bravo' },
+   { depth: 0.5, key: '602938', tag: 'charlie' },
    { depth: 0.72, key: '155847', tag: 'delta' },
-   { depth: 0.90, key: '928461', tag: 'echo' },
+   { depth: 0.9, key: '928461', tag: 'echo' },
 ];
 
 function buildHaystack(approxTokens) {
@@ -60,11 +60,7 @@ for (const n of NEEDLES) {
    process.stdout.write(`  ${n.tag.padEnd(8)} depth=${(n.depth * 100).toFixed(0).padStart(3)}%  `);
    try {
       const t0 = Date.now();
-      const body = await client.chat(
-         [{ role: 'user', content: prompt }],
-         { temperature: 0.0, max_tokens: 20 },
-         TIMEOUT,
-      );
+      const body = await client.chat([{ role: 'user', content: prompt }], { temperature: 0.0, max_tokens: 20 }, TIMEOUT);
       const wallMs = Date.now() - t0;
       promptTokens = body.usage?.prompt_tokens ?? promptTokens;
       if (body.error) {
@@ -76,7 +72,9 @@ for (const n of NEEDLES) {
       const m = txt.match(/\d{6}/);
       const answer = m ? m[0] : txt.trim().slice(0, 20);
       const ok = answer === n.key;
-      if (ok) correct++;
+      if (ok) {
+         correct++;
+      }
       console.log(`${ok ? 'ok' : 'FAIL'}  got=${String(answer).padEnd(8)} want=${n.key}  ${(wallMs / 1000).toFixed(1)}s`);
       results.push({ tag: n.tag, depth: n.depth, ok, got: answer });
    } catch (e) {

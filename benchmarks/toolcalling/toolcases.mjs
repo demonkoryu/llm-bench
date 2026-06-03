@@ -15,8 +15,8 @@ export const TOOLS_POOL = {
          parameters: {
             type: 'object',
             properties: {
-               city:  { type: 'string', description: 'City name' },
-               unit:  { type: 'string', enum: ['celsius', 'fahrenheit'], description: 'Temperature unit' },
+               city: { type: 'string', description: 'City name' },
+               unit: { type: 'string', enum: ['celsius', 'fahrenheit'], description: 'Temperature unit' },
             },
             required: ['city'],
          },
@@ -44,9 +44,9 @@ export const TOOLS_POOL = {
          parameters: {
             type: 'object',
             properties: {
-               to:      { type: 'string', description: 'Recipient email address' },
+               to: { type: 'string', description: 'Recipient email address' },
                subject: { type: 'string', description: 'Email subject' },
-               body:    { type: 'string', description: 'Email body' },
+               body: { type: 'string', description: 'Email body' },
             },
             required: ['to', 'subject', 'body'],
          },
@@ -61,8 +61,8 @@ export const TOOLS_POOL = {
             type: 'object',
             properties: {
                amount: { type: 'number', description: 'Amount to convert' },
-               from:   { type: 'string', description: 'Source currency code (e.g. USD)' },
-               to:     { type: 'string', description: 'Target currency code (e.g. EUR)' },
+               from: { type: 'string', description: 'Source currency code (e.g. USD)' },
+               to: { type: 'string', description: 'Target currency code (e.g. EUR)' },
             },
             required: ['amount', 'from', 'to'],
          },
@@ -104,7 +104,7 @@ export const CASES = {
       expect: 'add_numbers',
       validate: (a) => Array.isArray(a.numbers) && [...a.numbers].sort((x, y) => x - y).join(',') === '8,12,30',
    },
-   'currency': {
+   currency: {
       user: 'Convert 250 US dollars to euros.',
       tools: ['convert_currency', 'add_numbers'],
       expect: 'convert_currency',

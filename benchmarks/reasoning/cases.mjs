@@ -5,13 +5,14 @@ export const CASES = {
       accepted: ['5', '5 cents', '$0.05', '0.05'],
       trap: '10',
    },
-   'widgets': {
+   widgets: {
       question: 'If 5 machines take 5 minutes to make 5 widgets, how many minutes do 100 machines take to make 100 widgets?',
       accepted: ['5', '5 minutes'],
       trap: '100',
    },
    'lily-pad': {
-      question: 'A patch of lily pads doubles in size every day. It takes 48 days to cover the whole lake. On what day number was the lake half covered?',
+      question:
+         'A patch of lily pads doubles in size every day. It takes 48 days to cover the whole lake. On what day number was the lake half covered?',
       accepted: ['47', 'day 47'],
       trap: '24',
    },
@@ -21,12 +22,14 @@ export const CASES = {
       trap: '8',
    },
    'apples-fractions': {
-      question: 'A store starts with 120 apples. It sells one third of them in the morning, then one quarter of the REMAINING apples in the afternoon. How many apples are left at the end of the day?',
+      question:
+         'A store starts with 120 apples. It sells one third of them in the morning, then one quarter of the REMAINING apples in the afternoon. How many apples are left at the end of the day?',
       accepted: ['60', '60 apples'],
       trap: '50',
    },
    'age-order': {
-      question: 'Alice is older than Bob. Carol is younger than Bob. Dave is older than Alice. Among Alice, Bob, Carol, and Dave, who is the oldest? Give the single name.',
+      question:
+         'Alice is older than Bob. Carol is younger than Bob. Dave is older than Alice. Among Alice, Bob, Carol, and Dave, who is the oldest? Give the single name.',
       accepted: ['dave'],
       trap: 'alice',
    },
@@ -36,7 +39,8 @@ export const CASES = {
       trap: 'wednesday',
    },
    'count-sevens': {
-      question: 'Counting through the whole numbers from 1 to 100 inclusive, how many times does the digit 7 appear in total (e.g. 77 contains the digit 7 twice)?',
+      question:
+         'Counting through the whole numbers from 1 to 100 inclusive, how many times does the digit 7 appear in total (e.g. 77 contains the digit 7 twice)?',
       accepted: ['20'],
       trap: '19',
    },
@@ -46,16 +50,18 @@ export const CASES = {
       trap: '40',
    },
    'modus-tollens': {
-      question: 'Rule: If it is raining, then the ground is wet. Observation: the ground is NOT wet. Based only on this, is it raining? Answer yes or no.',
+      question:
+         'Rule: If it is raining, then the ground is wet. Observation: the ground is NOT wet. Based only on this, is it raining? Answer yes or no.',
       accepted: ['no'],
       trap: 'yes',
    },
-   'socks': {
-      question: 'A drawer has 10 red socks and 10 blue socks mixed together in the dark. How many socks must you pull out, at minimum, to be GUARANTEED a matching pair?',
+   socks: {
+      question:
+         'A drawer has 10 red socks and 10 blue socks mixed together in the dark. How many socks must you pull out, at minimum, to be GUARANTEED a matching pair?',
       accepted: ['3', '3 socks'],
       trap: '2',
    },
-   'overtaking': {
+   overtaking: {
       question: 'In a race, you overtake the runner in second place. What position are you in now? Give the ordinal (e.g. first, second).',
       accepted: ['second', '2nd'],
       trap: 'first',

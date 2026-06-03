@@ -7,7 +7,9 @@
 import { CASES } from './cases.mjs';
 
 function norm(s) {
-   return String(s ?? '').toLowerCase().trim()
+   return String(s ?? '')
+      .toLowerCase()
+      .trim()
       .replace(/[.,!?$"']/g, '')
       .replace(/\s+/g, ' ')
       .trim();
@@ -17,10 +19,12 @@ function stripThink(c) {
    return c.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
 }
 
-export default function(output, context) {
+export default function (output, context) {
    const caseId = context?.vars?.case_id ?? '?';
    const c = CASES[caseId];
-   if (!c) return { pass: false, score: 0, reason: `Unknown case_id: ${caseId}` };
+   if (!c) {
+      return { pass: false, score: 0, reason: `Unknown case_id: ${caseId}` };
+   }
 
    let answer = null;
    const stripped = stripThink(output);
@@ -31,7 +35,11 @@ export default function(output, context) {
       // Tolerant fallback 1: extract first {...} span (trailing token / preamble).
       const m = stripped.match(/\{[\s\S]*\}/);
       if (m) {
-         try { answer = JSON.parse(m[0]).answer; } catch { /* continue */ }
+         try {
+            answer = JSON.parse(m[0]).answer;
+         } catch {
+            /* continue */
+         }
       }
       // Tolerant fallback 2: think mode without grammar often emits plain text.
       // Use the whole stripped output as the answer — grader normalises anyway.
@@ -53,7 +61,7 @@ export default function(output, context) {
       reason: correct
          ? `correct: "${answer}"`
          : hitTrap
-            ? `trap: got "${answer}" (trap=${c.trap})`
-            : `wrong: got "${answer}", expected one of [${c.accepted.join(', ')}]`,
+           ? `trap: got "${answer}" (trap=${c.trap})`
+           : `wrong: got "${answer}", expected one of [${c.accepted.join(', ')}]`,
    };
 }

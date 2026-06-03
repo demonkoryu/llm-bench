@@ -19,10 +19,10 @@
  */
 
 import OpenAI from 'openai';
-import { mergeReasoningContent, applyThinkControl } from './think.mjs';
 import { parseToolArgs } from './repair.mjs';
+import { applyThinkControl, mergeReasoningContent } from './think.mjs';
 
-const DEFAULT_URL        = process.env.LLAMA_URL ?? 'http://192.168.1.120:8090';
+const DEFAULT_URL = process.env.LLAMA_URL ?? 'http://192.168.1.120:8090';
 const DEFAULT_TIMEOUT_MS = 600_000;
 
 /**
@@ -34,7 +34,6 @@ const DEFAULT_TIMEOUT_MS = 600_000;
  *   timeout  {number}   default request timeout ms
  */
 export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = DEFAULT_TIMEOUT_MS } = {}) {
-
    // Side-channel for timings from the last intercepted response.
    // The openai SDK parses responses into typed objects and drops unknown fields.
    // We save timings here during the custom fetch interception.
@@ -46,7 +45,7 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
     */
    async function customFetch(url, init) {
       const resp = await globalThis.fetch(url, init);
-      const urlStr = typeof url === 'string' ? url : url?.href ?? '';
+      const urlStr = typeof url === 'string' ? url : (url?.href ?? '');
       if (resp.ok && urlStr.includes('chat/completions')) {
          try {
             const text = await resp.text();
@@ -97,14 +96,14 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
 
       if (debug) {
          process.stderr.write(
-            `[llm:req] think=${think} rf=${!!responseFormat} tools=${tools?.length ?? 0} max_tokens=${opts.max_tokens}\n`
+            `[llm:req] think=${think} rf=${!!responseFormat} tools=${tools?.length ?? 0} max_tokens=${opts.max_tokens}\n`,
          );
       }
 
       _lastTimings = null;
 
       const reqParams = {
-         model: 'local',     // llama-server ignores model field; alias set at server start
+         model: 'local', // llama-server ignores model field; alias set at server start
          messages: resolvedMessages,
          stream: false,
          ...sampling,
@@ -128,7 +127,7 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
          const c = completion.choices?.[0];
          process.stderr.write(
             `[llm:res] finish=${c?.finish_reason} tokens=${completion.usage?.completion_tokens} ` +
-            `tps=${_lastTimings?.predicted_per_second?.toFixed(1) ?? 'n/a'}\n`
+               `tps=${_lastTimings?.predicted_per_second?.toFixed(1) ?? 'n/a'}\n`,
          );
       }
 
@@ -152,7 +151,7 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
     */
    async function toolsLoop(messages, toolsDef, toolExecutor, opts = {}) {
       const { maxSteps = 10, ...callOpts } = opts;
-      let current = [...messages];
+      const current = [...messages];
       let steps = 0;
       let lastCompletion = null;
       let lastTimings = null;
@@ -165,7 +164,9 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
          steps++;
 
          const choice = completion.choices?.[0];
-         if (!choice) break;
+         if (!choice) {
+            break;
+         }
 
          const assistantMsg = choice.message;
 
@@ -242,7 +243,9 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
                signal: AbortSignal.timeout(5_000),
                body: JSON.stringify(probe),
             });
-            if (res.status !== 503) return true;   // 200 = ready; non-503 = ready or real error
+            if (res.status !== 503) {
+               return true; // 200 = ready; non-503 = ready or real error
+            }
          } catch {
             // Connection refused or timeout — server not yet accepting connections
          }
@@ -267,7 +270,9 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
          const res = await globalThis.fetch(`${baseUrl}/props`, {
             signal: AbortSignal.timeout(5_000),
          });
-         if (!res.ok) return {};
+         if (!res.ok) {
+            return {};
+         }
          const raw = await res.json();
          let n_ctx = raw.n_ctx;
          if (!n_ctx) {

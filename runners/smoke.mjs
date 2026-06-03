@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 /**
  * Standalone smoke test — fast single-pass validation of the benchmark stack.
  * Requires a running llama-server. Does NOT start/stop the server.
@@ -16,15 +17,15 @@
  *   6. Reasoning (confirms basic Q&A)
  */
 
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
-const ROOT  = join(__dir, '..');
+const ROOT = join(__dir, '..');
 
 const LLAMA_URL = process.env.LLAMA_URL ?? 'http://192.168.1.120:8090';
-const DEBUG     = !!process.env.BENCH_DEBUG;
+const DEBUG = !!process.env.BENCH_DEBUG;
 
 const { createClient } = await import('../shared/llm/index.mjs');
 const { stripThink, extractJson } = await import('../shared/llm/index.mjs');
@@ -39,8 +40,14 @@ const client = createClient(LLAMA_URL, { debug: DEBUG });
 let passed = 0;
 let failed = 0;
 
-function pass(msg) { console.log(`  PASS  ${msg}`); passed++; }
-function fail(msg) { console.error(`  FAIL  ${msg}`); failed++; }
+function pass(msg) {
+   console.log(`  PASS  ${msg}`);
+   passed++;
+}
+function fail(msg) {
+   console.error(`  FAIL  ${msg}`);
+   failed++;
+}
 
 console.log('=== llm-bench smoke test ===');
 console.log(`  server: ${LLAMA_URL}`);
@@ -50,8 +57,9 @@ console.log('');
 console.log('[1/6] Offline checks...');
 
 const { ok: lcgOk, probe0 } = verifyLcgParity();
-lcgOk ? pass(`codebase LCG parity (probe0.answer=${probe0.answer} kind=${probe0.kind})`)
-      : fail(`codebase LCG broken! probe0.answer=${probe0.answer}`);
+lcgOk
+   ? pass(`codebase LCG parity (probe0.answer=${probe0.answer} kind=${probe0.kind})`)
+   : fail(`codebase LCG broken! probe0.answer=${probe0.answer}`);
 
 const docqaCasesPath = join(ROOT, 'benchmarks/docqa/cases.json');
 try {
@@ -82,13 +90,11 @@ try {
    const { completion } = await client.chat(
       [{ role: 'user', content: 'Reply with exactly one word: "ready"' }],
       { max_tokens: 12, temperature: 0.0 },
-      15_000
+      15_000,
    );
    const text = completion.choices?.[0]?.message?.content ?? '';
    const tps = client.tokPerSec();
-   text.trim()
-      ? pass(`generated "${text.trim()}"  decode_tps=${tps?.toFixed(1) ?? 'n/a'}`)
-      : fail('empty response');
+   text.trim() ? pass(`generated "${text.trim()}"  decode_tps=${tps?.toFixed(1) ?? 'n/a'}`) : fail('empty response');
 } catch (e) {
    fail(`error: ${e.message}`);
 }
@@ -100,10 +106,10 @@ try {
    const { completion } = await client.chat(
       [
          { role: 'system', content: TRIAGE_STATIC_PROMPT },
-         { role: 'user',   content: `Title: ${item.title}\nContent preview:\n${item.content_preview}` },
+         { role: 'user', content: `Title: ${item.title}\nContent preview:\n${item.content_preview}` },
       ],
       { think: false, responseFormat: TRIAGE_SCHEMA, max_tokens: 256 },
-      30_000
+      30_000,
    );
    const raw = completion.choices?.[0]?.message?.content ?? '';
    const parsed = extractJson(stripThink(raw));
@@ -117,15 +123,15 @@ try {
 // ── Step 5: Tool call ─────────────────────────────────────────────────────────
 console.log('\n[5/6] Tool call (1 case, tools array)...');
 const weatherCase = TOOL_CASES['weather-basic'];
-const weatherTool = TOOLS_POOL['get_weather'];
+const weatherTool = TOOLS_POOL.get_weather;
 try {
    const { completion } = await client.chat(
       [
          { role: 'system', content: 'You are a helpful assistant with tools. Use them.' },
-         { role: 'user',   content: weatherCase.user },
+         { role: 'user', content: weatherCase.user },
       ],
       { think: false, tools: [weatherTool], max_tokens: 64 },
-      30_000
+      30_000,
    );
    const calls = completion.choices?.[0]?.message?.tool_calls ?? [];
    calls.length > 0
@@ -142,17 +148,15 @@ try {
    const { completion } = await client.chat(
       [
          { role: 'system', content: 'Answer briefly with just the answer.' },
-         { role: 'user',   content: firstReason[1].question },
+         { role: 'user', content: firstReason[1].question },
       ],
       { max_tokens: 32, temperature: 0.0 },
-      20_000
+      20_000,
    );
    const text = stripThink(completion.choices?.[0]?.message?.content ?? '');
    const accepted = firstReason[1].accepted;
    const correct = accepted.some((a) => text.toLowerCase().includes(a.toLowerCase()));
-   correct
-      ? pass(`"${text.trim()}" ∈ accepted answers`)
-      : fail(`"${text.trim()}" not in accepted (${accepted.join('|')})`);
+   correct ? pass(`"${text.trim()}" ∈ accepted answers`) : fail(`"${text.trim()}" not in accepted (${accepted.join('|')})`);
 } catch (e) {
    fail(`error: ${e.message}`);
 }
