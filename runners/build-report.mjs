@@ -93,7 +93,6 @@ const report = {
          summarization: m.summ,
       },
       speed_tok_s: m.speedTg,
-      quality: m.qual,
       weighted_score: m.score,
    })),
    ranking: ranking.map((m, i) => ({

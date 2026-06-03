@@ -86,7 +86,7 @@ const TITLE_H = 32;
 const N = models.length;
 const PANEL_H = N * ROW_H + 8;
 
-const GRID_PANELS = 4;
+const GRID_PANELS = 7; // one per scored metric (must match METRIC_PANELS.length below)
 const GRID_ROWS = Math.ceil(GRID_PANELS / 2);
 const GRID_H = GRID_ROWS * (TITLE_H + PANEL_H + 28);
 const TABLE_H = (N + 3) * 22 + 20;
@@ -140,41 +140,65 @@ const rankItems = ranked.map((r, i) => ({
    max: 100,
    displayVal: `${r.score.toFixed(1)}%`,
 }));
-svg += barPanel(PAD.left, rankY, WIDE_W, 'Overall Ranking', 'quality 25% · toolcalling 20% · max-ctx 30% · speed 25%', rankItems);
+svg += barPanel(
+   PAD.left,
+   rankY,
+   WIDE_W,
+   'Overall Ranking',
+   'reasoning 20% · triage 15% · toolcalling 15% · docqa 15% · summarization 10% · max-ctx 10% · speed 15%',
+   rankItems,
+);
 
-// ── 4-metric grid (2×2) ────────────────────────────────────────────────────────
+// ── Per-metric grid (one panel per scored metric — no blending) ──────────────────
 const METRIC_PANELS = [
    {
-      key: 'maxctx',
+      title: 'Reasoning accuracy',
+      weight: '20%',
+      getValue: (m) => m.reasoning,
+      formatVal: (v) => (v != null ? `${v.toFixed(0)}%` : '–'),
+      getMax: () => 100,
+   },
+   {
+      title: 'Triage score (/100)',
+      weight: '15%',
+      getValue: (m) => m.triage,
+      formatVal: (v) => (v != null ? v.toFixed(0) : '–'),
+      getMax: () => 100,
+   },
+   {
+      title: 'Tool-call accuracy',
+      weight: '15%',
+      getValue: (m) => m.toolcall,
+      formatVal: (v) => (v != null ? `${v.toFixed(0)}%` : 'n/a'),
+      getMax: () => 100,
+   },
+   {
+      title: 'DocQA comprehension (/10)',
+      weight: '15%',
+      getValue: (m) => m.docqa,
+      formatVal: (v) => (v != null ? v.toFixed(1) : '–'),
+      getMax: () => 10,
+   },
+   {
+      title: 'Summarization score (/100)',
+      weight: '10%',
+      getValue: (m) => m.summ,
+      formatVal: (v) => (v != null ? v.toFixed(0) : '–'),
+      getMax: () => 100,
+   },
+   {
       title: 'Max Context (tokens, coherence-verified)',
-      weight: '30%',
+      weight: '10%',
       getValue: (m) => m.maxctx,
       formatVal: (v) => (v != null ? (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)) : '?'),
       getMax: () => maxCtx,
    },
    {
-      key: 'speed',
       title: 'Decode Speed (tok/s)',
-      weight: '25%',
+      weight: '15%',
       getValue: (m) => m.speedTg,
       formatVal: (v) => (v != null ? `${v.toFixed(0)} t/s` : '?'),
       getMax: () => maxSpeed,
-   },
-   {
-      key: 'quality',
-      title: 'Quality (triage+summ+docqa blend /100)',
-      weight: '25%',
-      getValue: (m) => m.qual,
-      formatVal: (v) => (v != null ? `${v.toFixed(1)}` : '?'),
-      getMax: () => 100,
-   },
-   {
-      key: 'toolcall',
-      title: 'Tool-call Accuracy',
-      weight: '20%',
-      getValue: (m) => m.toolcall,
-      formatVal: (v) => (v != null ? `${v.toFixed(1)}%` : 'n/a'),
-      getMax: () => 100,
    },
 ];
 
@@ -200,14 +224,18 @@ const tableY = gridStartY + GRID_H + 12;
 svg += rect(PAD.left, tableY, WIDE_W, TABLE_H, PANEL, 10);
 svg += svgText(PAD.left + 12, tableY + 20, 'Score Breakdown', { fill: '#a0a0c0', size: 11, weight: '600' });
 
+// Individual metric columns — no blended "quality". Each shows the achieved score.
 const COLS = [
-   { label: '#', x: 0, w: 22 },
-   { label: 'Model', x: 38, w: 190 },
-   { label: 'MaxCtx', x: 234, w: 65 },
-   { label: 'Speed', x: 302, w: 55 },
-   { label: 'Quality', x: 360, w: 55 },
-   { label: 'Tools', x: 418, w: 48 },
-   { label: 'Score', x: 470, w: 55 },
+   { label: '#', x: 0 },
+   { label: 'Model', x: 28 },
+   { label: 'Reason', x: 320 },
+   { label: 'Triage', x: 374 },
+   { label: 'Tools', x: 428 },
+   { label: 'DocQA', x: 482 },
+   { label: 'Summ', x: 536 },
+   { label: 'MaxCtx', x: 590 },
+   { label: 'Speed', x: 650 },
+   { label: 'Score', x: 712 },
 ];
 const tx0 = PAD.left + 12;
 const tRowH = 22;
@@ -228,24 +256,19 @@ ranked.forEach((m, rank) => {
    svg += rect(tx0 + COLS[1].x - 2, ty - 9, 9, 9, m.color, 2);
    svg += svgText(tx0 + COLS[1].x + 12, ty, m.label, { fill: TEXT, size: 10 });
 
-   const ctxNum = m.maxctx != null ? (m.maxctx >= 1000 ? `${Math.round(m.maxctx / 1000)}k` : String(m.maxctx)) : '?';
-   const ctxStr = m.maxctxSharedFrom ? `same as ${m.maxctxSharedFrom}` : ctxNum;
-   const spdStr = m.speedTg != null ? `${m.speedTg.toFixed(0)} t/s` : '?';
-   const qualStr = m.qual != null ? m.qual.toFixed(1) : '?';
-   const toolStr = m.toolcall != null ? `${m.toolcall.toFixed(0)}%` : 'n/a';
+   const num = (v, suffix = '', d = 0) => (v != null ? v.toFixed(d) + suffix : '–');
+   const ctxStr = m.maxctx != null ? (m.maxctx >= 1000 ? `${Math.round(m.maxctx / 1000)}k` : String(m.maxctx)) : '?';
 
    const vals = [
       { col: COLS[0], v: String(rank + 1), fill: '#777' },
-      {
-         col: COLS[2],
-         v: ctxStr,
-         fill: m.maxctxSharedFrom ? DIM : m.maxctx && m.maxctx >= maxCtx * 0.9 ? ACCENT : TEXT,
-         size: m.maxctxSharedFrom ? 8 : 10,
-      },
-      { col: COLS[3], v: spdStr, fill: TEXT },
-      { col: COLS[4], v: qualStr, fill: TEXT },
-      { col: COLS[5], v: toolStr, fill: TEXT },
-      { col: COLS[6], v: `${m.score.toFixed(1)}%`, fill: ACCENT, weight: '700' },
+      { col: COLS[2], v: num(m.reasoning), fill: TEXT },
+      { col: COLS[3], v: num(m.triage), fill: TEXT },
+      { col: COLS[4], v: m.toolcall != null ? num(m.toolcall, '%') : 'n/a', fill: TEXT },
+      { col: COLS[5], v: num(m.docqa, '', 1), fill: TEXT },
+      { col: COLS[6], v: num(m.summ), fill: TEXT },
+      { col: COLS[7], v: ctxStr, fill: m.maxctx && m.maxctx >= maxCtx * 0.9 ? ACCENT : TEXT },
+      { col: COLS[8], v: m.speedTg != null ? `${m.speedTg.toFixed(0)}t/s` : '?', fill: TEXT },
+      { col: COLS[9], v: `${m.score.toFixed(1)}%`, fill: ACCENT, weight: '700' },
    ];
    for (const { col, v, fill, weight, size } of vals) {
       svg += svgText(tx0 + col.x, ty, v, { fill, size: size ?? 10, weight: weight ?? 'normal' });

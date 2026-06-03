@@ -36,7 +36,23 @@ export const COLUMNS = [
    'notes',
 ];
 
-export const DEFAULT_WEIGHTS = { quality: 0.25, tools: 0.2, ctx: 0.3, speed: 0.25 };
+// Per-metric weights (sum = 1.0). Task quality dominates (0.75 across the five
+// capability benches) since a fast model with a huge context window but weak
+// answers isn't useful; context capacity and decode speed are secondary. The
+// weighted score uses a FIXED denominator (see finalScore): a metric a model
+// didn't run contributes 0, so breadth of capability counts and a narrow model
+// can't top the ranking by being scored on fewer axes.
+//   reasoning 20 · triage 15 · toolcalling 15 · docqa 15 · summarization 10  (quality = 75)
+//   maxctx 10 · speed 15
+export const DEFAULT_WEIGHTS = {
+   reasoning: 0.2,
+   triage: 0.15,
+   toolcalling: 0.15,
+   docqa: 0.15,
+   summarization: 0.1,
+   maxctx: 0.1,
+   speed: 0.15,
+};
 
 // ── Filename ─────────────────────────────────────────────────────────────────
 
@@ -219,8 +235,6 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          const docqa = bestScore(rs, 'docqa');
          const speedTg =
             Math.max(bestScore(rs, 'speed_short') ?? 0, bestScore(rs, 'speed_long-32k') ?? 0, bestScore(rs, 'speed') ?? 0) || null;
-         const qualParts = [triage, summ, docqa != null ? docqa * 10 : null].filter((v) => v != null);
-         const qual = qualParts.length ? qualParts.reduce((a, b) => a + b, 0) / qualParts.length : null;
          return {
             label: `${model}${think !== 'n/a' ? ` [${think}]` : ''}`,
             model,
@@ -233,7 +247,6 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
             summ,
             docqa,
             speedTg,
-            qual,
          };
       })
       .filter((m) => m.maxctx || m.triage || m.speedTg);
@@ -256,12 +269,33 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
 
    const maxCtx = Math.max(...models.map((m) => m.maxctx ?? 0)) || 1;
    const maxSpeed = Math.max(...models.map((m) => m.speedTg ?? 0)) || 1;
+
+   // Normalize each weighted metric to 0-1. maxctx/speed are relative to the best
+   // observed; the quality benches are absolute (triage/reasoning/toolcalling/summ
+   // are 0-100, docqa is 0-10). Returns null when the model didn't run that metric.
+   const NORMALIZE = {
+      reasoning: (m) => (m.reasoning != null ? m.reasoning / 100 : null),
+      triage: (m) => (m.triage != null ? m.triage / 100 : null),
+      toolcalling: (m) => (m.toolcall != null ? m.toolcall / 100 : null),
+      docqa: (m) => (m.docqa != null ? m.docqa / 10 : null),
+      summarization: (m) => (m.summ != null ? m.summ / 100 : null),
+      maxctx: (m) => (m.maxctx != null ? m.maxctx / maxCtx : null),
+      speed: (m) => (m.speedTg != null ? m.speedTg / maxSpeed : null),
+   };
+   // Fixed denominator: a model earns a metric's weighted points only if it ran
+   // that metric; a missing/failed metric contributes 0. This rewards breadth —
+   // a model that can't tool-call or wasn't validated on a bench is genuinely a
+   // less complete assistant, so it shouldn't out-rank a complete one by virtue
+   // of being scored on fewer (easier) axes. The per-metric columns show the gaps.
    const finalScore = (m) => {
-      const qualN = m.qual != null ? m.qual / 100 : 0;
-      const toolN = m.toolcall != null ? m.toolcall / 100 : 0;
-      const ctxN = m.maxctx != null ? m.maxctx / maxCtx : 0;
-      const speedN = m.speedTg != null ? m.speedTg / maxSpeed : 0;
-      return weights.quality * qualN + weights.tools * toolN + weights.ctx * ctxN + weights.speed * speedN;
+      let score = 0;
+      for (const [metric, w] of Object.entries(weights)) {
+         const v = NORMALIZE[metric]?.(m);
+         if (v != null && Number.isFinite(v)) {
+            score += w * v;
+         }
+      }
+      return score;
    };
    for (const m of models) {
       m.score = Math.round(finalScore(m) * 1000) / 10;
