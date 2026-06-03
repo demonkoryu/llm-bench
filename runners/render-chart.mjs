@@ -210,13 +210,18 @@ METRIC_PANELS.forEach((panel, pi) => {
    const px = PAD.left + col * (COL_W + COL_GAP + 16);
    const py = gridStartY + row * (TITLE_H + PANEL_H + 28);
    const max = panel.getMax();
-   const items = models.map((m) => ({
-      label: m.label,
-      color: m.color,
-      value: panel.getValue(m) ?? 0,
-      max,
-      displayVal: panel.formatVal(panel.getValue(m)),
-   }));
+   const items = models
+      // Each category panel is its own leaderboard: sort by this metric's score,
+      // descending. Models that didn't run the metric (null) sink to the bottom.
+      .map((m) => ({ m, raw: panel.getValue(m) }))
+      .sort((a, b) => (b.raw ?? -Infinity) - (a.raw ?? -Infinity))
+      .map(({ m, raw }) => ({
+         label: m.label,
+         color: m.color,
+         value: raw ?? 0,
+         max,
+         displayVal: panel.formatVal(raw),
+      }));
    svg += barPanel(px, py, COL_W, panel.title, `weight ${panel.weight}`, items);
 });
 

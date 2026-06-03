@@ -107,6 +107,25 @@ const report = {
       think: m.think,
       weighted_score: m.score,
    })),
+   // Per-category leaderboards: each metric ranked independently by its own score,
+   // descending. Models that didn't run a metric (null) are omitted from that list.
+   category_rankings: Object.fromEntries(
+      [
+         ['reasoning', (m) => m.reasoning],
+         ['triage', (m) => m.triage],
+         ['toolcalling', (m) => m.toolcall],
+         ['docqa', (m) => m.docqa],
+         ['summarization', (m) => m.summ],
+         ['maxctx', (m) => m.maxctx],
+         ['speed_tok_s', (m) => m.speedTg],
+      ].map(([category, get]) => [
+         category,
+         models
+            .filter((m) => get(m) != null)
+            .sort((a, b) => get(b) - get(a))
+            .map((m, i) => ({ rank: i + 1, label: m.label, model: m.model, think: m.think, score: get(m) })),
+      ]),
+   ),
 };
 
 writeFileSync(flags.output, `${JSON.stringify(report, null, 2)}\n`, 'utf-8');
