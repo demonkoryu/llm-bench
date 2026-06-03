@@ -1,26 +1,23 @@
 #!/usr/bin/env node
 /**
- * Serial benchmark orchestrator — everything via llama.cpp directly.
+ * Serial benchmark orchestrator — runs all benchmarks for all models on llm2.
  *
- * Models downloaded from HuggingFace via --hf-repo/--hf-file on first use,
- * cached in ~/.cache/llama.cpp/ on the remote host. No Ollama required.
+ * Architecture:
+ *   - Node (this process, dev host) — orchestrator, benches, graders, client, judge.
+ *   - llm2 shell scripts — system concerns only (start/stop server, VRAM, health).
  *
- * Loop: for model × kv_config — start llama-server, run all benches, stop.
- *   - toolcalling_decay and maxctx: first KV pass per model only (KV-independent)
- *   - longctx passkey + multifact: all KV passes (this is the KV sweep point)
- *
- * Think toggle: chat_template_kwargs.enable_thinking (per-request, llama.cpp native)
- * Structured output: response_format.json_schema (triage)
- * Tools: standard OpenAI tools spec
- * KV quant: -ctk / -ctv server launch flags (f16 | q8_0 | q4_0 | k8v4)
+ * Loop: for model → binary-search max-ctx → start server → smoke gate → run axes → stop.
+ *   Strictly serial: only one llama-server runs at a time (enforced by shell lockfile).
  *
  * Options:
- *   --target rose|m1       Host target (default: rose)
- *   --models <tag,...>     Restrict to these model tags (substring match)
+ *   --target <name>        Host target from config/hosts.yaml (default: rose)
+ *   --backend <vulkan|rocm> Backend to use (default: vulkan)
+ *   --models <tag,...>     Restrict to models (substring match on label/hf_file)
  *   --benches <name,...>   Restrict bench names
- *   --kv <type,...>        KV types to sweep
+ *   --skip-maxctx          Skip binary-search ctx probe (use ctx_cap or 8192)
  *   --dry-run              Print matrix and exit
  *   --resume               Skip combos already in results/results.tsv
+ *   --debug                Enable LLM request/response logging (BENCH_DEBUG=1)
  */
 
 import { readFileSync, existsSync, appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
@@ -37,25 +34,31 @@ const execP = promisify(execFile);
 // ── CLI ────────────────────────────────────────────────────────────────────────
 const { values: flags } = parseArgs({
    options: {
-      target:    { type: 'string',  default: 'rose' },
-      models:    { type: 'string',  default: '' },
-      benches:   { type: 'string',  default: '' },
-      kv:        { type: 'string',  default: '' },
-      'dry-run': { type: 'boolean', default: false },
-      resume:    { type: 'boolean', default: false },
+      target:        { type: 'string',  default: 'rose' },
+      backend:       { type: 'string',  default: 'vulkan' },
+      models:        { type: 'string',  default: '' },
+      benches:       { type: 'string',  default: '' },
+      'skip-maxctx': { type: 'boolean', default: false },
+      'dry-run':     { type: 'boolean', default: false },
+      resume:        { type: 'boolean', default: false },
+      debug:         { type: 'boolean', default: false },
    },
 });
 
 const DRY_RUN        = flags['dry-run'];
 const TARGET         = flags.target;
+const BACKEND        = flags.backend;
 const FILTER_MODELS  = flags.models  ? flags.models.split(',').map((s) => s.trim())  : [];
 const FILTER_BENCHES = flags.benches ? flags.benches.split(',').map((s) => s.trim()) : [];
-const FILTER_KV      = flags.kv      ? flags.kv.split(',').map((s) => s.trim())      : [];
+const SKIP_MAXCTX    = flags['skip-maxctx'];
+const DEBUG          = flags.debug || !!process.env.BENCH_DEBUG;
+
+if (DEBUG) process.env.BENCH_DEBUG = '1';
 
 // ── Config ─────────────────────────────────────────────────────────────────────
 let yaml;
 try { yaml = (await import('js-yaml')).default; }
-catch { yaml = { load: () => { throw new Error('js-yaml not available; run npm install'); } }; }
+catch { yaml = { load: () => { throw new Error('js-yaml not available — run npm install'); } }; }
 
 const modelsConfig = yaml.load(readFileSync(join(ROOT, 'config/models.yaml'), 'utf8'));
 const hostsConfig  = yaml.load(readFileSync(join(ROOT, 'config/hosts.yaml'), 'utf8'));
@@ -71,6 +74,11 @@ function resolveEnv(s) {
 
 const LLAMA_URL = resolveEnv(hostCfg.llamacpp);
 const SSH_HOST  = resolveEnv(hostCfg.ssh_host);
+const SAMPLING_MATRIX = modelsConfig.sampling_matrix ?? {};
+
+// ── Shared LLM imports ──────────────────────────────────────────────────────────
+const { stripThink, extractJson, capabilityClass, thinkStates, CAPABILITY, resolveSampling } =
+   await import('../shared/llm/index.mjs');
 
 // ── Grader imports ─────────────────────────────────────────────────────────────
 const { gradeOne: triageGradeOne, computeScore: triageComputeScore } =
@@ -83,72 +91,94 @@ const reasoningGrader                   = (await import('../benchmarks/reasoning
 const { CASES: TOOL_CASES, TOOLS_POOL } = await import('../benchmarks/toolcalling/toolcases.mjs');
 const toolGrader                        = (await import('../benchmarks/toolcalling/grader.mjs')).default;
 const summGrader                        = (await import('../benchmarks/summarization/grader.mjs')).default;
+const { SUMM_ITEMS }                    = await import('../benchmarks/summarization/summcases.mjs');
 
 // ── Model helpers ──────────────────────────────────────────────────────────────
 const allModels = modelsConfig.models ?? [];
 
-/** Stable ID derived from the GGUF filename (no extension). Used as TSV key. */
-function modelId(m) { return m.hf_file.replace(/\.gguf$/i, ''); }
+/** Stable ID derived from the GGUF filename + think_state. Used as TSV key. */
+function modelId(m) {
+   const base = m.hf_file.replace(/\.gguf$/i, '');
+   if (m.think_state === true)  return `${base}--think`;
+   if (m.think_state === false) return `${base}--nothi`;
+   return base;
+}
 
 function filterModels() {
    return allModels.filter((m) => {
-      if (m.fit_rose === 'oom') return false;
-      if (FILTER_MODELS.length && !FILTER_MODELS.some((f) => modelId(m).includes(f) || m.label.includes(f))) return false;
+      if (FILTER_MODELS.length && !FILTER_MODELS.some((f) =>
+         modelId(m).includes(f) || (m.label ?? '').includes(f))) return false;
       return true;
    });
 }
 
-// ── Token budgets — keyed by mode, same across all models (fairness) ─────────
-// Qwen and DeepSeek-R1 both officially recommend 32768 for thinking.
-// no_think/instruct: 1024 is well above any structured JSON answer.
-// speed bench overrides to 150 at call site (not a scored bench).
+/**
+ * Get the think states to run for a model.
+ * Models with think_state defined (nothi/think alias pairs) have a fixed state.
+ * Others use capabilityClass + thinkStates().
+ */
+function getThinkModes(model) {
+   if (model.think_state === true)  return [true];
+   if (model.think_state === false) return [false];
+   const cap = capabilityClass(model);
+   return thinkStates(cap);
+}
+
+// ── Token budgets ──────────────────────────────────────────────────────────────
 const MAX_TOKENS = {
-   no_think: 1024,   // structured JSON answer, no think block
-   think:    32768,  // think block + answer; Qwen + DeepSeek-R1 official recommendation
-   tool:     512,    // single tool call response
-   instruct: 1024,   // non-thinking model
+   no_think: 1024,    // structured JSON answer
+   think:    32768,   // think block + answer; Qwen3/DeepSeek-R1 official recommendation
+   tool:     512,     // single tool call response
+   instruct: 1024,    // non-thinking instruct models
+   docqa:    1280,    // multi-hop doc-QA with citations
+   longctx:  4096,    // long-context comprehension answer
+   speed:    150,     // speed bench — just want tokens generated
 };
 
-function samplingOpts(model, think, bench) {
-   const base = (() => {
-      // Reasoning bench: fix sampling so think vs no_think is the only variable.
-      // min_p 0 per Qwen spec (llama.cpp default is 0.1 which prunes unexpectedly).
-      if (bench === 'reasoning') return { temperature: 0.6, top_p: 0.95, top_k: 20, min_p: 0 };
-      // Toolcalling: top_k + min_p per Qwen spec.
-      if (bench === 'toolcalling') return { temperature: 0.4, top_p: 0.9, top_k: 20, min_p: 0 };
-      const f = model.family ?? '';
-      if (f.startsWith('qwen3.5') || f.startsWith('qwen3.6')) {
-         // Official Qwen3/3.5 guidance: both modes set min_p 0. No greedy decoding in think mode.
-         return think
-            ? { temperature: 0.6, top_p: 0.95, top_k: 20, min_p: 0 }
-            : { temperature: 0.7, top_p: 0.8,  top_k: 20, min_p: 0, presence_penalty: 1.5 };
-      }
-      if (f.startsWith('qwen3')) {
-         return think
-            ? { temperature: 0.6, top_p: 0.95, top_k: 20, min_p: 0 }
-            : { temperature: 0.7, top_p: 0.8,  top_k: 20, min_p: 0 };
-      }
-      if (f.startsWith('deepseek')) {
-         // DeepSeek guidance intentionally differs: min_p 0.01/0.05 (not 0).
-         return modelId(model).includes('0528')
-            ? { temperature: 0.6, top_p: 0.95, min_p: 0.01 }
-            : { temperature: 0.6, top_p: 0.95, min_p: 0.05 };
-      }
-      // Non-thinking instruct models (llama, mistral, phi, gemma, qwen2.5, granite).
-      return { temperature: 0.1 };
-   })();
-   return base;
+/**
+ * Resolve sampling params for a given model + bench + think state.
+ * Uses the config-driven matrix from models.yaml sampling_matrix.
+ */
+function sampleOpts(model, thinkState, bench) {
+   const cap = capabilityClass(model);
+   // think_state overrides the model's capability class for hybrid models with fixed aliases
+   const effectiveCap = (model.think_state !== undefined)
+      ? (model.think_state ? CAPABILITY.HYBRID : CAPABILITY.HYBRID)
+      : cap;
+   return resolveSampling(model, effectiveCap, thinkState, bench, SAMPLING_MATRIX);
 }
 
 /**
- * Warn and record when a model hit max_tokens instead of its natural stop token.
- * This is a model failure (failed to converge within a generous budget), not a
- * harness failure — but we must surface it immediately, not silently.
+ * Warn when a model hit max_tokens instead of natural stop token.
+ * Returns true if runaway was detected.
  */
-function warnRunaway(bench, id, reason) {
+function warnRunaway(bench, id, completion) {
+   const reason = completion?.choices?.[0]?.finish_reason;
    if (reason === 'length') {
       console.warn(`    [RUNAWAY] ${bench}/${id}: hit max_tokens ceiling — model did not converge`);
+      return true;
    }
+   return false;
+}
+
+/**
+ * Simple repetition/divergence detector.
+ * Used by the watchdog to detect runaway generation; exported for testing.
+ * Returns true if the output looks like runaway repetition.
+ */
+export function isDivergent(text, minReps = 5) {
+   if (!text || text.length < 200) return false;
+   // Check for repeated line (same non-empty line repeated >= minReps times)
+   const lines = text.split('\n').filter(Boolean);
+   if (lines.length >= minReps) {
+      const counts = new Map();
+      for (const l of lines) {
+         const c = (counts.get(l) ?? 0) + 1;
+         counts.set(l, c);
+         if (c >= minReps) return true;
+      }
+   }
+   return false;
 }
 
 // ── Results ────────────────────────────────────────────────────────────────────
@@ -156,10 +186,10 @@ const RESULTS_DIR = join(ROOT, 'results');
 const RESULTS_TSV = join(RESULTS_DIR, 'results.tsv');
 mkdirSync(RESULTS_DIR, { recursive: true });
 
-const TSV_HEADER = 'target\tkv\tmodel\tthink\tbench\tscore\thalls\tjson_fail\ttok_s\tvram_mib\tctx_loaded\tstatus\twall_s\tnotes\n';
+const TSV_HEADER = 'target\tbackend\tmodel\tthink\tbench\tscore\thalls\tjson_fail\ttok_s\tprefill_tps\tvram_mib\tctx_loaded\toom_ceiling\tcoherence_ceiling\tstatus\twall_s\tnotes\n';
 if (!existsSync(RESULTS_TSV)) appendFileSync(RESULTS_TSV, TSV_HEADER);
 
-function tsvKey(kv, model, think, bench) { return `${TARGET}\t${kv}\t${model}\t${think}\t${bench}`; }
+function tsvKey(model, think, bench) { return `${TARGET}\t${BACKEND}\t${model}\t${think}\t${bench}`; }
 
 function loadDoneKeys() {
    if (!existsSync(RESULTS_TSV)) return new Set();
@@ -171,13 +201,12 @@ function loadDoneKeys() {
 
 function appendTsv(row) { appendFileSync(RESULTS_TSV, Object.values(row).join('\t') + '\n'); }
 
-// promptfoo JSON accumulator for visualization
+// promptfoo JSON accumulator (compatible with `npx promptfoo view`)
 const pfResults = [];
-
-function recordPf({ bench, model, think, kv, vars, promptRaw, output, gradingResult, latencyMs, tokS }) {
+function recordPf({ bench, model, think, vars, promptRaw, output, gradingResult, latencyMs, tokS }) {
    const tl = think === null ? 'n/a' : think ? 'think' : 'no_think';
    pfResults.push({
-      provider:  { id: `llamacpp:${modelId(model)}`, label: `${model.label} [${tl}] KV=${kv}` },
+      provider:  { id: `llamacpp:${modelId(model)}`, label: `${model.label} [${tl}]` },
       prompt:    { raw: promptRaw, label: bench },
       vars,
       response:  { output, metadata: { tok_per_sec: tokS } },
@@ -196,59 +225,18 @@ function flushPfJson() {
    const f = pfResults.filter((r) => !r.success).length;
    writeFileSync(out, JSON.stringify({
       results: { version: 3, timestamp: new Date().toISOString(), results: pfResults, stats: { successes: s, failures: f, errors: 0 } },
-      config: { description: `llm-bench target=${TARGET}` },
+      config:  { description: `llm-bench target=${TARGET} backend=${BACKEND}` },
    }, null, 2));
    console.log(`\n[run-suite] promptfoo JSON → ${out}`);
-   console.log(`[run-suite] View: npx promptfoo view ${out}`);
 }
-
-// ── Reasoning questions (inline — avoids a config file import) ─────────────────
-const REASON_QUESTIONS = {
-   'bat-and-ball':     'A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How many cents does the ball cost?',
-   'widgets':          'If 5 machines take 5 minutes to make 5 widgets, how many minutes do 100 machines take to make 100 widgets?',
-   'lily-pad':         'A patch of lily pads doubles in size every day. It takes 48 days to cover the whole lake. On what day number was the lake half covered?',
-   'all-but-9':        'A farmer has 17 sheep. All but 9 die. How many sheep are left alive?',
-   'apples-fractions': 'A store starts with 120 apples. It sells one third of them in the morning, then one quarter of the REMAINING apples in the afternoon. How many apples are left at the end of the day?',
-   'age-order':        'Alice is older than Bob. Carol is younger than Bob. Dave is older than Alice. Among Alice, Bob, Carol, and Dave, who is the oldest? Give the single name.',
-   'days-100':         'Today is Wednesday. What day of the week will it be exactly 100 days from now? Give the weekday name.',
-   'count-sevens':     'Counting through the whole numbers from 1 to 100 inclusive, how many times does the digit 7 appear in total (e.g. 77 contains the digit 7 twice)?',
-   'next-in-sequence': 'What is the next number in this sequence: 2, 6, 12, 20, 30, ? Give just the number.',
-   'modus-tollens':    'Rule: If it is raining, then the ground is wet. Observation: the ground is NOT wet. Based only on this, is it raining? Answer yes or no.',
-   'socks':            'A drawer has 10 red socks and 10 blue socks mixed together in the dark. How many socks must you pull out, at minimum, to be GUARANTEED a matching pair?',
-   'overtaking':       'In a race, you overtake the runner in second place. What position are you in now? Give the ordinal (e.g. first, second).',
-};
-
-const SUMM_ITEMS = {
-   'rag-paper':          { title: 'Agentic RAG whitepaper', content: 'Covers multi-step reasoning with retrieval, tool use, and LLM orchestration. Describes how agents decompose queries into sub-tasks, retrieve relevant context at each step, and synthesize answers using chained tool calls.' },
-   'trance-compression': { title: 'Sidechain compression for trance pumping', content: 'Classic trance pumping effect: sidechain a compressor on bass and pads keyed to the kick drum. Attack 0.1ms, release 80-150ms for the pump feel. Ghost kick sidechain keeps it in time without audible kick bleed.' },
-   'trading-0dte':       { title: '0DTE options theta decay', content: 'Zero-days-to-expiry SPX options accelerate theta decay after 2pm. Selling premium after 2pm captures the steepest part of the intraday theta curve but gamma risk is highest in the last 30 minutes.' },
-   'qmk-debounce':       { title: 'Keyboard debouncing in QMK firmware', content: 'QMK supports eager, defer-until-idle, and sym_eager_pk debounce algorithms. Eager fires immediately on press and delays release; sym_eager_pk is best for per-key debounce on split keyboards with noisy switches.' },
-   'zettelkasten':       { title: 'Zettelkasten vs folder hierarchies for PKM', content: 'Dense bidirectional links between atomic notes outperform deep folder hierarchies for knowledge retrieval. Each note has exactly one idea; links surface unexpected connections better than any taxonomy.' },
-   'salary-negotiation': { title: 'Negotiating a senior engineer offer', content: 'Anchor high on total compensation including equity refresh. Use competing offers as leverage. Recruiter call script: confirm base, then move to signing bonus and RSU refresh before benefits.' },
-};
-
-const TOOL_USER_REQUESTS = {
-   'weather-basic':      'What is the weather in Tokyo right now?',
-   'weather-unit':       'What is the temperature in Berlin in Fahrenheit?',
-   'add-list':           'Add up these numbers for me: 12, 30, and 8.',
-   'currency':           'Convert 250 US dollars to euros.',
-   'email-fields':       'Email alice@example.com with the subject "Lunch" and tell her I will be 10 minutes late.',
-   'pick-right-tool':    'Find wireless headphones in the catalog, show me 5.',
-   'distractor-tools':   'How much is 1000 Japanese yen in British pounds?',
-   'no-tool-needed':     'Thanks, that is all I needed. Have a good day!',
-   'missing-tool':       'Please book me a flight from London to New York tomorrow.',
-   'numbers-from-prose': 'I bought three items costing seven dollars, fifteen dollars, and twenty-two dollars. What is the total?',
-};
 
 // ── Bench runners ──────────────────────────────────────────────────────────────
 
-async function runTriage(client, model, think, kv) {
-   const opts = samplingOpts(model, think, 'triage');
-   // In think mode, never force a JSON grammar — the grammar blocks <think> tokens
-   // and prevents the model from emitting its natural EOS. Graders already strip think.
-   const maxTok = think ? MAX_TOKENS.think : MAX_TOKENS.no_think;
+async function runTriage(client, model, thinkState) {
+   const sampling = sampleOpts(model, thinkState, 'triage');
+   const maxTok   = (thinkState === true) ? MAX_TOKENS.think : MAX_TOKENS.instruct;
    const itemResults = [];
-   let totalMs = 0, halls = 0, jsonFail = 0;
+   let halls = 0, jsonFail = 0, totalMs = 0;
    const tokList = [];
 
    for (const item of GOLDEN) {
@@ -257,346 +245,507 @@ async function runTriage(client, model, think, kv) {
          { role: 'user',   content: `Title: ${item.title}\nContent preview:\n${item.content_preview}` },
       ];
       const t0 = Date.now();
-      let resp;
+      let completion;
       try {
-         resp = await client.chat(messages, {
-            think,
-            responseFormat: think ? null : TRIAGE_SCHEMA,
+         const res = await client.chat(messages, {
+            think: thinkState,
+            // JSON grammar blocks <think> tokens — omit in think mode; grader strips think first
+            responseFormat: (thinkState === true) ? null : TRIAGE_SCHEMA,
             max_tokens: maxTok,
-            ...opts,
+            ...sampling,
          });
+         completion = res.completion;
       } catch (e) {
          console.error(`    triage error on ${item.id}: ${e.message.slice(0, 80)}`);
          itemResults.push({ item, grade: { scores: {}, parsedOk: false, anchorHallucination: false } });
+         jsonFail++;
          continue;
       }
       const latencyMs = Date.now() - t0;
       totalMs += latencyMs;
-      const raw = client.content(resp);
-      const tps = client.tokPerSec(resp);
+      const raw = completion.choices?.[0]?.message?.content ?? '';
+      const tps = client.tokPerSec();
       if (tps) tokList.push(tps);
-      warnRunaway('triage', item.id, client.finishReason(resp));
+      warnRunaway('triage', item.id, completion);
       const grade = triageGradeOne(item, raw);
       if (grade.anchorHallucination) halls++;
       if (!grade.parsedOk) jsonFail++;
       itemResults.push({ item, grade, tps, latencyMs });
-      recordPf({ bench: 'triage', model, think, kv, vars: { item_id: item.id }, promptRaw: messages[1].content, output: raw, gradingResult: triageGrader(raw, { vars: { item_id: item.id } }), latencyMs, tokS: tps?.toFixed(1) });
+      recordPf({ bench: 'triage', model, think: thinkState, vars: { item_id: item.id }, promptRaw: messages[1].content, output: raw, gradingResult: triageGrader(raw, { vars: { item_id: item.id } }), latencyMs, tokS: tps?.toFixed(1) });
    }
 
    const { total: score } = triageComputeScore(itemResults);
-   const avgTps = tokList.length ? (tokList.reduce((a, b) => a + b) / tokList.length) : 0;
+   const avgTps = tokList.length ? (tokList.reduce((a, b) => a + b, 0) / tokList.length) : 0;
    return { score: score.toFixed(1), halls, json_fail: jsonFail, tok_s: avgTps.toFixed(1), wall_s: (totalMs / 1000).toFixed(0) };
 }
 
-async function runReasoning(client, model, think, kv) {
-   const opts = samplingOpts(model, think, 'reasoning');
+async function runReasoning(client, model, thinkState) {
+   const sampling = sampleOpts(model, thinkState, 'reasoning');
    const ANSWER_SCHEMA = { type: 'object', properties: { answer: { type: 'string' } }, required: ['answer'] };
-   const SYSTEM = 'You are solving short reasoning problems. Work out the correct answer.\nRespond ONLY with JSON: {"answer": "<your final answer, as short as possible>"}.\nPut just the final value in "answer" — a number or single word where possible, no explanation.';
+   const SYSTEM = 'Solve the reasoning problem. Think step by step.\nRespond ONLY with JSON: {"answer": "<final answer — a number or single word>"}.';
 
    let correct = 0, errors = 0, totalMs = 0;
    const tokList = [];
 
-   for (const [caseId] of Object.entries(REASON_CASES)) {
-      const q = REASON_QUESTIONS[caseId];
-      if (!q) continue;
+   for (const [caseId, caseData] of Object.entries(REASON_CASES)) {
+      const q = caseData.question ?? caseData;
       const messages = [{ role: 'system', content: SYSTEM }, { role: 'user', content: q }];
+      const maxTok = (thinkState === true) ? MAX_TOKENS.think : MAX_TOKENS.no_think;
       const t0 = Date.now();
-      let resp;
-      const maxTok = think ? MAX_TOKENS.think : MAX_TOKENS.no_think;
-      // In think mode, omit the JSON grammar so the model can emit its think block
-      // then the answer, stopped by its native EOS — grader strips think before parsing.
-      try { resp = await client.chat(messages, { think, responseFormat: think ? null : ANSWER_SCHEMA, max_tokens: maxTok, ...opts }); }
-      catch { errors++; continue; }
-      const latencyMs = Date.now() - t0;
-      totalMs += latencyMs;
-      const tps = client.tokPerSec(resp);
+      let completion;
+      try {
+         const res = await client.chat(messages, {
+            think: thinkState,
+            responseFormat: (thinkState === true) ? null : ANSWER_SCHEMA,
+            max_tokens: maxTok,
+            ...sampling,
+         });
+         completion = res.completion;
+      } catch { errors++; continue; }
+      totalMs += Date.now() - t0;
+      const tps = client.tokPerSec();
       if (tps) tokList.push(tps);
-      const raw = client.content(resp);
-      warnRunaway('reasoning', caseId, client.finishReason(resp));
-      const gradingResult = reasoningGrader(client.stripThink(raw), { vars: { case_id: caseId } });
+      const raw = completion.choices?.[0]?.message?.content ?? '';
+      warnRunaway('reasoning', caseId, completion);
+      const gradingResult = reasoningGrader(stripThink(raw), { vars: { case_id: caseId } });
       if (gradingResult.pass) correct++;
-      recordPf({ bench: 'reasoning', model, think, kv, vars: { case_id: caseId, question: q }, promptRaw: q, output: raw, gradingResult, latencyMs, tokS: tps?.toFixed(1) });
+      recordPf({ bench: 'reasoning', model, think: thinkState, vars: { case_id: caseId, question: q }, promptRaw: q, output: raw, gradingResult, latencyMs: 0, tokS: tps?.toFixed(1) });
    }
 
    const total = Object.keys(REASON_CASES).length;
-   const avgTps = tokList.length ? (tokList.reduce((a, b) => a + b) / tokList.length) : 0;
+   const avgTps = tokList.length ? (tokList.reduce((a, b) => a + b, 0) / tokList.length) : 0;
    return { score: (correct / total * 100).toFixed(1), halls: '-', json_fail: errors, tok_s: avgTps.toFixed(1), wall_s: (totalMs / 1000).toFixed(0) };
 }
 
-async function runToolcalling(client, model, kv) {
-   const opts = samplingOpts(model, false, 'toolcalling');
-   const SYSTEM = 'You are a helpful assistant with access to tools. Call a tool ONLY when it is needed. If no available tool fits, or no tool is needed, respond in plain text WITHOUT calling any tool.';
+async function runToolcalling(client, model) {
+   const sampling = sampleOpts(model, false, 'toolcalling');
+   const SYSTEM = 'You are a helpful assistant with access to tools. Call a tool ONLY when needed. If no tool fits, respond in plain text WITHOUT calling any tool.';
 
    let pass = 0, totalMs = 0;
 
    for (const [caseId] of Object.entries(TOOL_CASES)) {
-      const userMsg = TOOL_USER_REQUESTS[caseId] ?? caseId;
-      const tools = TOOL_CASES[caseId].tools.map((n) => TOOLS_POOL[n]).filter(Boolean);
+      const tc = TOOL_CASES[caseId];
+      const userMsg = tc.user ?? caseId;
+      const tools = (tc.tools ?? []).map((n) => TOOLS_POOL[n]).filter(Boolean);
       const messages = [{ role: 'system', content: SYSTEM }, { role: 'user', content: userMsg }];
       const t0 = Date.now();
-      let resp;
-      try { resp = await client.chat(messages, { think: false, tools, max_tokens: MAX_TOKENS.tool, ...opts }); }
-      catch { continue; }
-      const latencyMs = Date.now() - t0;
-      totalMs += latencyMs;
-      const calls = client.toolCalls(resp);
+      let completion;
+      try {
+         const res = await client.chat(messages, {
+            think: false,
+            tools,
+            max_tokens: MAX_TOKENS.tool,
+            ...sampling,
+         });
+         completion = res.completion;
+      } catch { continue; }
+      totalMs += Date.now() - t0;
+
+      const calls = completion.choices?.[0]?.message?.tool_calls ?? [];
       const output = JSON.stringify(calls);
       const gradingResult = toolGrader(output, { vars: { case_id: caseId } });
       if (gradingResult.pass) pass++;
-      recordPf({ bench: 'toolcalling', model, think: false, kv, vars: { case_id: caseId }, promptRaw: userMsg, output, gradingResult, latencyMs, tokS: null });
+      recordPf({ bench: 'toolcalling', model, think: false, vars: { case_id: caseId }, promptRaw: userMsg, output, gradingResult, latencyMs: Date.now() - t0, tokS: null });
    }
 
    const total = Object.keys(TOOL_CASES).length;
    return { score: (pass / total * 100).toFixed(1), halls: '-', json_fail: '-', tok_s: '-', wall_s: (totalMs / 1000).toFixed(0) };
 }
 
-async function runSummarization(client, model, think, kv) {
-   const opts = samplingOpts(model, think, 'summarization');
-   const SYSTEM = 'You are summarizing and categorizing content for a personal knowledge vault.\nThe vault has 4 areas: craft (software, AI, hardware, PKM), finance (trading, markets), music (DJing, production), work (career, employer).\n\nRespond with JSON only:\n{\n  "summary": "<1-2 sentence factual summary>",\n  "area": "<craft|finance|music|work>",\n  "tags": ["<area/subtag>", ...]\n}';
+async function runSummarization(client, model, thinkState) {
+   const effectiveThink = thinkState === true ? false : thinkState;   // summarization: skip think mode
+   const sampling = sampleOpts(model, effectiveThink, 'summarization');
+   const SYSTEM = 'Summarize and categorize content for a personal knowledge vault.\nVault areas: craft (software, AI, hardware, PKM), finance (trading, markets), music (DJing, production), work (career, employer).\n\nRespond with JSON only:\n{"summary": "<1-2 sentence factual summary>", "area": "<craft|finance|music|work>", "tags": ["<area/subtag>", ...]}';
 
    let totalScore = 0, totalMs = 0, count = 0;
 
    for (const [caseId, item] of Object.entries(SUMM_ITEMS)) {
       const messages = [{ role: 'system', content: SYSTEM }, { role: 'user', content: `Title: ${item.title}\n\n${item.content}` }];
       const t0 = Date.now();
-      let resp;
-      const summMaxTok = think ? MAX_TOKENS.think : MAX_TOKENS.no_think;
-      try { resp = await client.chat(messages, { think: think ?? null, max_tokens: summMaxTok, ...opts }); }
-      catch { continue; }
-      const latencyMs = Date.now() - t0;
-      totalMs += latencyMs;
-      const raw = client.stripThink(client.content(resp));
+      let completion;
+      try {
+         const res = await client.chat(messages, {
+            think: effectiveThink,
+            max_tokens: MAX_TOKENS.instruct,
+            ...sampling,
+         });
+         completion = res.completion;
+      } catch { continue; }
+      totalMs += Date.now() - t0;
+      const raw = stripThink(completion.choices?.[0]?.message?.content ?? '');
       const gradingResult = summGrader(raw, { vars: { case_id: caseId } });
       totalScore += gradingResult.score ?? 0;
       count++;
-      recordPf({ bench: 'summarization', model, think, kv, vars: { case_id: caseId }, promptRaw: messages[1].content, output: raw, gradingResult, latencyMs, tokS: null });
+      recordPf({ bench: 'summarization', model, think: effectiveThink, vars: { case_id: caseId }, promptRaw: messages[1].content, output: raw, gradingResult, latencyMs: 0, tokS: null });
    }
 
    return { score: count ? (totalScore / count * 100).toFixed(1) : '?', halls: '-', json_fail: '-', tok_s: '-', wall_s: (totalMs / 1000).toFixed(0) };
 }
 
-// runSpeed removed — replaced by llama-bench (runners/llama-bench.mjs).
+async function runSpeed(client) {
+   const SHORT_PROMPT = 'Tell me a single short sentence about the sky.';
+   const LONG_PROMPT  = 'Tell me about the history of computing. Be as comprehensive as possible and write at least 2000 words covering all major developments from ancient times to today.';
+   const rows = [];
+
+   for (const [label, prompt] of [['short', SHORT_PROMPT], ['long-32k', LONG_PROMPT]]) {
+      const t0 = Date.now();
+      let completion, prefillTps = null, decodeTps = null;
+      try {
+         const res = await client.chat([{ role: 'user', content: prompt }], {
+            think: null,
+            max_tokens: MAX_TOKENS.speed,
+            temperature: 0.7,
+         });
+         completion = res.completion;
+         decodeTps  = client.tokPerSec();
+         prefillTps = client.prefillTokPerSec();
+      } catch (e) {
+         console.error(`    speed/${label} error: ${e.message}`);
+         rows.push({ label, error: e.message });
+         continue;
+      }
+      rows.push({ label, decodeTps, prefillTps, wallMs: Date.now() - t0, tokens: completion.usage?.completion_tokens ?? 0 });
+      warnRunaway(`speed/${label}`, label, completion);
+   }
+   return rows;
+}
+
+// ── Smoke gate ──────────────────────────────────────────────────────────────────
+
+/**
+ * Fast per-model validation before the full bench run.
+ * Steps: health → short gen → triage JSON (1 item) → tool call (1 case).
+ * Returns { ok: boolean, failStep: string|null }
+ */
+async function smokePasses(client, model) {
+   // 1. Health (503-aware already handled by waitHealthy before this, but one more check)
+   try {
+      await client.waitHealthy(5_000);
+   } catch {
+      return { ok: false, failStep: 'health' };
+   }
+
+   // 2. Short generation (confirms decode)
+   try {
+      const { completion } = await client.chat(
+         [{ role: 'user', content: 'Say "ready" and nothing else.' }],
+         { max_tokens: 10, temperature: 0.0 },
+         15_000
+      );
+      const text = completion.choices?.[0]?.message?.content ?? '';
+      if (!text.trim()) return { ok: false, failStep: 'short-gen:empty' };
+   } catch (e) {
+      return { ok: false, failStep: `short-gen:${e.message.slice(0, 40)}` };
+   }
+
+   // 3. Triage JSON (1 item, confirms response_format + JSON parsing)
+   if ((model.benches ?? []).includes('triage')) {
+      const item = GOLDEN[0];
+      const thinkState = model.think_state ?? (model.think === 'required' ? true : false);
+      try {
+         const { completion } = await client.chat(
+            [
+               { role: 'system', content: TRIAGE_STATIC_PROMPT },
+               { role: 'user',   content: `Title: ${item.title}\nContent preview:\n${item.content_preview}` },
+            ],
+            { think: thinkState, responseFormat: thinkState ? null : TRIAGE_SCHEMA, max_tokens: 256 },
+            30_000
+         );
+         const raw = completion.choices?.[0]?.message?.content ?? '';
+         const parsed = extractJson(stripThink(raw));
+         if (!parsed?.action) return { ok: false, failStep: 'triage-json:no-action' };
+      } catch (e) {
+         return { ok: false, failStep: `triage-json:${e.message.slice(0, 40)}` };
+      }
+   }
+
+   // 4. Tool call (1 case, confirms tools + single-step response)
+   if (model.tools) {
+      const firstCase = Object.entries(TOOL_CASES).find(([, tc]) => tc.tools?.length > 0);
+      if (firstCase) {
+         const [, tc] = firstCase;
+         const tools = (tc.tools ?? []).map((n) => TOOLS_POOL[n]).filter(Boolean);
+         try {
+            const { completion } = await client.chat(
+               [
+                  { role: 'system', content: 'Call a tool when asked.' },
+                  { role: 'user',   content: tc.user ?? 'What is the weather in London?' },
+               ],
+               { think: false, tools, max_tokens: MAX_TOKENS.tool },
+               30_000
+            );
+            // Smoke only checks we didn't get an exception — not grading
+            if (!completion?.choices?.[0]) return { ok: false, failStep: 'tool-call:no-choice' };
+         } catch (e) {
+            return { ok: false, failStep: `tool-call:${e.message.slice(0, 40)}` };
+         }
+      }
+   }
+
+   return { ok: true, failStep: null };
+}
 
 // ── Dry-run ────────────────────────────────────────────────────────────────────
 function dryRun() {
-   const models  = filterModels();
-   const kvTypes = FILTER_KV.length ? FILTER_KV : (modelsConfig.kv_configs?.llamacpp ?? ['f16','q8_0','q4_0','k8v4']);
-   const starts  = models.length * kvTypes.length;
-
-   console.log(`\nDry-run — target=${TARGET}  LLAMA_URL=${LLAMA_URL}\n`);
-   console.log(`${models.length} models × ${kvTypes.length} KV configs = ${starts} server starts\n`);
+   const models = filterModels();
+   console.log(`\nDry-run — target=${TARGET}  backend=${BACKEND}  LLAMA_URL=${LLAMA_URL}\n`);
+   console.log(`${models.length} models\n`);
 
    for (const m of models) {
       const b = (m.benches ?? []).filter((x) => !FILTER_BENCHES.length || FILTER_BENCHES.includes(x));
-      console.log(`  ${modelId(m).padEnd(55)} benches=[${b.join(',')}]`);
-      for (const kv of kvTypes) {
-         const [ctk, ctv] = kv === 'k8v4' ? ['q8_0', 'q4_0'] : [kv, kv];
-         console.log(`    KV=${kv.padEnd(5)} ctk=${ctk} ctv=${ctv}`);
-      }
+      const thinkModes = getThinkModes(m).map((t) => t === null ? 'n/a' : t ? 'think' : 'no_think');
+      console.log(`  ${(m.label ?? modelId(m)).padEnd(55)} think=[${thinkModes.join(',')}]  benches=[${b.join(',')}]`);
    }
-   console.log(`\nTotal server starts: ${starts}`);
+   console.log(`\nTotal models: ${models.length}`);
 }
 
 if (DRY_RUN) { dryRun(); process.exit(0); }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 const { llamacppServer } = await import('./llamacpp-server.mjs');
-const { runLlamaBench }  = await import('./llama-bench.mjs');
-const srv      = llamacppServer({ sshHost: SSH_HOST, llamaUrl: LLAMA_URL });
+const srv   = llamacppServer({ sshHost: SSH_HOST, llamaUrl: LLAMA_URL, backend: BACKEND, debug: DEBUG });
+const client = srv.client;
+
 const models   = filterModels();
-const kvTypes  = FILTER_KV.length ? FILTER_KV : (modelsConfig.kv_configs?.llamacpp ?? ['f16','q8_0','q4_0','k8v4']);
 const doneKeys = flags.resume ? loadDoneKeys() : new Set();
 
-// Kill any orphaned llama-server on the remote host before starting.
-console.log('[run-suite] sweeping remote for orphaned llama-server processes...');
-await srv.stop();
+if (!models.length) {
+   console.error('[run-suite] No models matched filter. Exiting.');
+   process.exit(1);
+}
 
-// On SIGINT / SIGTERM: stop the remote server before exiting so nothing is left dangling.
+// Kill any orphaned server before starting
+console.log('[run-suite] sweeping remote for orphaned llama-server processes...');
+await srv.killAll();
+
+// SIGINT / SIGTERM handler
 async function shutdown(sig) {
    console.log(`\n[run-suite] ${sig} received — stopping remote server...`);
-   await srv.stop();
+   flushPfJson();
+   await srv.killAll().catch(() => {});
    process.exit(1);
 }
 process.on('SIGINT',  () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 
-console.log(`\n[run-suite] ${models.length} models × ${kvTypes.length} KV = ${models.length * kvTypes.length} server starts`);
-console.log(`[run-suite] LLAMA_URL=${LLAMA_URL}  SSH=${SSH_HOST}\n`);
+console.log(`\n[run-suite] ${models.length} models  target=${TARGET}  backend=${BACKEND}  LLAMA_URL=${LLAMA_URL}  SSH=${SSH_HOST}\n`);
 
+// ─────────────────────────────────────────────────────────────────────────────
 for (const model of models) {
-   // required: template enforces thinking — only run think:true (false would be misrepresented).
-   // optional: run both modes — the think vs no_think comparison is the data point.
-   // none:     no thinking mode at all — pass think:null (no chat_template_kwargs sent).
-   const thinkModes = model.think === 'required' ? [true]
-                    : model.think === 'optional' ? [false, true]
-                    : [null];
-   const benches       = (model.benches ?? []).filter((b) => !FILTER_BENCHES.length || FILTER_BENCHES.includes(b));
-   const mid           = modelId(model);
+   const mid         = modelId(model);
+   const thinkModes  = getThinkModes(model);
+   const benches     = (model.benches ?? []).filter((b) => !FILTER_BENCHES.length || FILTER_BENCHES.includes(b));
 
-   for (const [kvIdx, kv] of kvTypes.entries()) {
-      const [ctk, ctv] = kv === 'k8v4' ? ['q8_0', 'q4_0'] : [kv, kv];
-      const isFirstKv  = kvIdx === 0;
+   console.log(`\n${'═'.repeat(70)}`);
+   console.log(`  ${model.label ?? mid}`);
+   console.log('═'.repeat(70));
 
-      console.log(`\n${'═'.repeat(70)}`);
-      console.log(`  ${model.label}  KV=${kv}  (ctk=${ctk} ctv=${ctv})`);
-      console.log('═'.repeat(70));
-
-      // Start server — downloads model on first use, auto-probes largest fitting context
-      let ctxLoaded, vramMib;    // mutable: ensureAlive() may update on restart
+   // ── Max-ctx binary search ─────────────────────────────────────────────────
+   let ctxLoaded, oomCeiling, coherenceCeiling, vramMib;
+   if (SKIP_MAXCTX) {
+      ctxLoaded = model.ctx_cap ?? model.native_max_ctx ?? 8192;
+      oomCeiling = ctxLoaded;
+      coherenceCeiling = ctxLoaded;
+      console.log(`  [maxctx] skipped — using ${ctxLoaded} (ctx_cap or native_max_ctx)`);
+   } else {
       try {
-         ({ ctxLoaded, vramMib } = await srv.start({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctk, ctv }));
+         ({ ctxLoaded, oomCeiling, coherenceCeiling, vramMib } = await srv.startForModel(model));
       } catch (e) {
-         console.error(`  [error] ${e.message}`);
-         appendTsv({ target: TARGET, kv, model: mid, think: '-', bench: 'load', score: '?', halls: '-', json_fail: '-', tok_s: '-', vram_mib: '-', ctx_loaded: '-', status: `error:${e.message.slice(0, 60)}`, wall_s: '-', notes: '' });
+         console.error(`  [error] max-ctx probe failed: ${e.message}`);
+         appendTsv({ target: TARGET, backend: BACKEND, model: mid, think: '-', bench: 'load', score: '?', halls: '-', json_fail: '-', tok_s: '-', prefill_tps: '-', vram_mib: '-', ctx_loaded: '-', oom_ceiling: '-', coherence_ceiling: '-', status: `error:${e.message.slice(0, 60)}`, wall_s: '-', notes: '' });
          continue;
       }
+   }
 
-      const client = srv.client;
-      const startOpts = { hf_repo: model.hf_repo, hf_file: model.hf_file, ctk, ctv };
+   // Record maxctx result
+   if (benches.includes('maxctx')) {
+      const key = tsvKey(mid, '-', 'maxctx');
+      if (!(flags.resume && doneKeys.has(key))) {
+         console.log(`  [maxctx] ${ctxLoaded?.toLocaleString()} tokens  oom=${oomCeiling}  coherence=${coherenceCeiling}  vram=${vramMib ?? '?'}MiB`);
+         appendTsv({ target: TARGET, backend: BACKEND, model: mid, think: '-', bench: 'maxctx', score: ctxLoaded ?? '?', halls: '-', json_fail: '-', tok_s: '-', prefill_tps: '-', vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded ?? '?', oom_ceiling: oomCeiling ?? '?', coherence_ceiling: coherenceCeiling ?? '?', status: 'ok', wall_s: '-', notes: '' });
+      }
+   }
 
-      /** Restart the server if it has crashed. Returns false if restart fails. */
-      async function ensureAlive() {
-         const alive = await client.waitHealthy(5_000).then(() => true).catch(() => false);
-         if (alive) return true;
-         console.warn('  [warn] server died, restarting...');
+   // ── Start real server at discovered ctx ───────────────────────────────────
+   if (!SKIP_MAXCTX) {
+      // startForModel already left the server running at ctxLoaded; no restart needed.
+      // The binary-search probe calls stop after each probe, then startForModel restarts.
+      // If we're here, the server should already be up. Just verify.
+      const alive = await client.waitHealthy(5_000).then(() => true).catch(() => false);
+      if (!alive) {
          try {
-            const r = await srv.start(startOpts);
-            ctxLoaded = r.ctxLoaded;
-            vramMib   = r.vramMib;
-            return true;
+            await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx: ctxLoaded, extraFlags: model.extra_flags ?? '' });
+            await srv.waitHealthy(120_000);
          } catch (e) {
-            console.error(`  [error] restart failed: ${e.message}`);
-            return false;
+            console.error(`  [error] server failed to restart for bench pass: ${e.message}`);
+            continue;
+         }
+      }
+   } else {
+      // SKIP_MAXCTX: need to start the server fresh
+      try {
+         await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx: ctxLoaded, extraFlags: model.extra_flags ?? '' });
+         await srv.waitHealthy(360_000);
+         vramMib = await srv.snapshotVram();
+      } catch (e) {
+         console.error(`  [error] server start failed: ${e.message}`);
+         appendTsv({ target: TARGET, backend: BACKEND, model: mid, think: '-', bench: 'load', score: '?', halls: '-', json_fail: '-', tok_s: '-', prefill_tps: '-', vram_mib: '-', ctx_loaded: '-', oom_ceiling: '-', coherence_ceiling: '-', status: `error:${e.message.slice(0, 60)}`, wall_s: '-', notes: '' });
+         continue;
+      }
+   }
+
+   // ── Per-model smoke gate ───────────────────────────────────────────────────
+   const { ok: smokeOk, failStep } = await smokePasses(client, model);
+   if (!smokeOk) {
+      console.error(`  [smoke] FAIL step=${failStep} — skipping all benches for this model`);
+      appendTsv({ target: TARGET, backend: BACKEND, model: mid, think: '-', bench: 'smoke', score: '0', halls: '-', json_fail: '-', tok_s: '-', prefill_tps: '-', vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded ?? '?', oom_ceiling: oomCeiling ?? '?', coherence_ceiling: coherenceCeiling ?? '?', status: `error:smoke:${failStep}`, wall_s: '-', notes: '' });
+      await srv.stopServer();
+      await srv.waitVramClear();
+      continue;
+   }
+   console.log(`  [smoke] PASS`);
+
+   // ── model._ctxLoaded (for ensureAlive restarts) ───────────────────────────
+   model._ctxLoaded = ctxLoaded;
+
+   // ── Bench passes ──────────────────────────────────────────────────────────
+   for (const thinkState of thinkModes) {
+      const tl = thinkState === null ? 'n/a' : thinkState ? 'think' : 'no_think';
+
+      // Helper: skip if already done, check server alive
+      async function skipOrRun(benchName, fn) {
+         if (FILTER_BENCHES.length && !FILTER_BENCHES.includes(benchName)) return;
+         if (!benches.includes(benchName)) return;
+         const key = tsvKey(mid, tl, benchName);
+         if (flags.resume && doneKeys.has(key)) { console.log(`  [${benchName} ${tl}] skip`); return; }
+         const { alive } = await srv.ensureAlive(model);
+         if (!alive) { console.error(`  [${benchName} ${tl}] server dead — skipping`); return; }
+
+         process.stdout.write(`  [${benchName} ${tl}] `);
+         const t0 = Date.now();
+         let r;
+         try {
+            r = await fn();
+         } catch (e) {
+            console.error(`error: ${e.message}`);
+            appendTsv({ target: TARGET, backend: BACKEND, model: mid, think: tl, bench: benchName, score: '?', halls: '-', json_fail: '-', tok_s: '-', prefill_tps: '-', vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded ?? '?', oom_ceiling: oomCeiling ?? '?', coherence_ceiling: coherenceCeiling ?? '?', status: `error:${e.message.slice(0, 60)}`, wall_s: ((Date.now() - t0) / 1000).toFixed(0), notes: '' });
+            return;
+         }
+         const curVram = await srv.snapshotVram();
+         return { r, curVram, wallS: ((Date.now() - t0) / 1000).toFixed(0) };
+      }
+
+      // triage
+      {
+         const res = await skipOrRun('triage', () => runTriage(client, model, thinkState));
+         if (res) {
+            console.log(`score=${res.r.score}  halls=${res.r.halls}  json_fail=${res.r.json_fail}  tok/s=${res.r.tok_s}  vram=${res.curVram ?? '?'}MiB`);
+            appendTsv({ target: TARGET, backend: BACKEND, model: mid, think: tl, bench: 'triage', score: res.r.score, halls: res.r.halls, json_fail: res.r.json_fail, tok_s: res.r.tok_s, prefill_tps: '-', vram_mib: res.curVram ?? '?', ctx_loaded: ctxLoaded ?? '?', oom_ceiling: oomCeiling ?? '?', coherence_ceiling: coherenceCeiling ?? '?', status: 'ok', wall_s: res.r.wall_s, notes: '' });
          }
       }
 
-      for (const think of thinkModes) {
-         const tl = think === null ? 'n/a' : think ? 'think' : 'no_think';
-
-         if (benches.includes('triage')) {
-            const key = tsvKey(kv, mid, tl, 'triage');
-            if (flags.resume && doneKeys.has(key)) { console.log(`  [triage ${tl}] skip`); }
-            else if (await ensureAlive()) {
-               process.stdout.write(`  [triage ${tl}] `);
-               const r = await runTriage(client, model, think, kv);
-               const vram = await srv.snapshotVram();
-               console.log(`score=${r.score}  halls=${r.halls}  json_fail=${r.json_fail}  tok/s=${r.tok_s}  vram=${vram ?? '?'}MiB`);
-               appendTsv({ target: TARGET, kv, model: mid, think: tl, bench: 'triage', score: r.score, halls: r.halls, json_fail: r.json_fail, tok_s: r.tok_s, vram_mib: vram ?? '?', ctx_loaded: ctxLoaded, status: 'ok', wall_s: r.wall_s, notes: '' });
-            }
+      // reasoning
+      {
+         const res = await skipOrRun('reasoning', () => runReasoning(client, model, thinkState));
+         if (res) {
+            console.log(`accuracy=${res.r.score}%  tok/s=${res.r.tok_s}`);
+            appendTsv({ target: TARGET, backend: BACKEND, model: mid, think: tl, bench: 'reasoning', score: res.r.score, halls: '-', json_fail: res.r.json_fail, tok_s: res.r.tok_s, prefill_tps: '-', vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded ?? '?', oom_ceiling: oomCeiling ?? '?', coherence_ceiling: coherenceCeiling ?? '?', status: 'ok', wall_s: res.r.wall_s, notes: '' });
          }
+      }
 
-         if (benches.includes('reasoning')) {
-            const key = tsvKey(kv, mid, tl, 'reasoning');
-            if (flags.resume && doneKeys.has(key)) { console.log(`  [reasoning ${tl}] skip`); }
-            else if (await ensureAlive()) {
-               process.stdout.write(`  [reasoning ${tl}] `);
-               const r = await runReasoning(client, model, think, kv);
-               console.log(`accuracy=${r.score}%  tok/s=${r.tok_s}`);
-               appendTsv({ target: TARGET, kv, model: mid, think: tl, bench: 'reasoning', score: r.score, halls: '-', json_fail: r.json_fail, tok_s: r.tok_s, vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded, status: 'ok', wall_s: r.wall_s, notes: '' });
-            }
+      // toolcalling — only in no-think mode
+      if (model.tools && thinkState !== true) {
+         const res = await skipOrRun('toolcalling', () => runToolcalling(client, model));
+         if (res) {
+            console.log(`accuracy=${res.r.score}%`);
+            appendTsv({ target: TARGET, backend: BACKEND, model: mid, think: tl, bench: 'toolcalling', score: res.r.score, halls: '-', json_fail: '-', tok_s: '-', prefill_tps: '-', vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded ?? '?', oom_ceiling: oomCeiling ?? '?', coherence_ceiling: coherenceCeiling ?? '?', status: 'ok', wall_s: res.r.wall_s, notes: '' });
          }
+      }
 
-         if (benches.includes('toolcalling') && model.tools && think !== true) {
-            const key = tsvKey(kv, mid, tl, 'toolcalling');
-            if (flags.resume && doneKeys.has(key)) { console.log(`  [toolcalling] skip`); }
-            else if (await ensureAlive()) {
-               process.stdout.write(`  [toolcalling] `);
-               const r = await runToolcalling(client, model, kv);
-               console.log(`accuracy=${r.score}%`);
-               appendTsv({ target: TARGET, kv, model: mid, think: tl, bench: 'toolcalling', score: r.score, halls: '-', json_fail: '-', tok_s: '-', vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded, status: 'ok', wall_s: r.wall_s, notes: '' });
-            }
+      // summarization — skip in pure-think mode
+      if (thinkState !== true) {
+         const res = await skipOrRun('summarization', () => runSummarization(client, model, thinkState));
+         if (res) {
+            console.log(`score=${res.r.score}`);
+            appendTsv({ target: TARGET, backend: BACKEND, model: mid, think: tl, bench: 'summarization', score: res.r.score, halls: '-', json_fail: '-', tok_s: '-', prefill_tps: '-', vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded ?? '?', oom_ceiling: oomCeiling ?? '?', coherence_ceiling: coherenceCeiling ?? '?', status: 'ok', wall_s: res.r.wall_s, notes: '' });
          }
+      }
 
-         if (benches.includes('summarization') && think !== true) {
-            const key = tsvKey(kv, mid, tl, 'summarization');
-            if (flags.resume && doneKeys.has(key)) { console.log(`  [summarization] skip`); }
-            else if (await ensureAlive()) {
-               process.stdout.write(`  [summarization] `);
-               const r = await runSummarization(client, model, think === null ? null : false, kv);
-               console.log(`score=${r.score}`);
-               appendTsv({ target: TARGET, kv, model: mid, think: tl, bench: 'summarization', score: r.score, halls: '-', json_fail: '-', tok_s: '-', vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded, status: 'ok', wall_s: r.wall_s, notes: '' });
+      // speed
+      {
+         if (benches.includes('speed') && (!FILTER_BENCHES.length || FILTER_BENCHES.includes('speed'))) {
+            const key = tsvKey(mid, tl, 'speed');
+            if (flags.resume && doneKeys.has(key)) { console.log(`  [speed ${tl}] skip`); }
+            else {
+               const { alive } = await srv.ensureAlive(model);
+               if (alive) {
+                  process.stdout.write(`  [speed ${tl}] `);
+                  const speedRows = await runSpeed(client).catch((e) => { console.error(`error: ${e.message}`); return []; });
+                  for (const sr of speedRows) {
+                     if (sr.error) continue;
+                     const decodeTps = sr.decodeTps?.toFixed(1) ?? '-';
+                     const prefTps   = sr.prefillTps?.toFixed(1) ?? '-';
+                     console.log(`${sr.label}: decode=${decodeTps} tok/s  prefill=${prefTps} tok/s`);
+                     appendTsv({ target: TARGET, backend: BACKEND, model: mid, think: tl, bench: `speed_${sr.label}`, score: decodeTps, halls: '-', json_fail: '-', tok_s: decodeTps, prefill_tps: prefTps, vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded ?? '?', oom_ceiling: oomCeiling ?? '?', coherence_ceiling: coherenceCeiling ?? '?', status: 'ok', wall_s: '-', notes: `prefill_tps=${prefTps}` });
+                  }
+               }
             }
          }
       }
 
-      // speed — now handled by llama-bench (per-model, after server loop); skipped here.
-
-      // maxctx + toolcalling_decay — first KV pass only (KV-type-independent results)
-      if (isFirstKv) {
-         // maxctx: ctxLoaded from auto-probe above IS the result
-         if (benches.includes('maxctx')) {
-            const key = tsvKey(kv, mid, '-', 'maxctx');
-            if (!(flags.resume && doneKeys.has(key))) {
-               console.log(`  [maxctx] ${ctxLoaded.toLocaleString()} tokens (${(ctxLoaded * 4).toLocaleString()} chars)  vram=${vramMib ?? '?'}MiB`);
-               appendTsv({ target: TARGET, kv, model: mid, think: '-', bench: 'maxctx', score: ctxLoaded, halls: '-', json_fail: '-', tok_s: '-', vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded, status: 'ok', wall_s: '-', notes: '' });
-            }
-         }
-
-         if (benches.includes('toolcalling_decay') && model.tools) {
-            const key = tsvKey(kv, mid, 'no_think', 'toolcalling_decay');
+      // toolcalling_decay — no-think mode only, once per model (KV-independent)
+      if (model.tools && thinkState !== true && thinkModes.indexOf(thinkState) === 0) {
+         if (benches.includes('toolcalling_decay') && (!FILTER_BENCHES.length || FILTER_BENCHES.includes('toolcalling_decay'))) {
+            const key = tsvKey(mid, 'no_think', 'toolcalling_decay');
             if (flags.resume && doneKeys.has(key)) { console.log(`  [toolcalling_decay] skip`); }
-            else if (await ensureAlive()) {
-               process.stdout.write(`  [toolcalling_decay] `);
-               const t0 = Date.now();
-               const { stdout } = await execP(
-                  'node', [join(ROOT, 'benchmarks/toolcalling/decay-bench.mjs'), mid],
-                  { env: { ...process.env, LLAMA_URL }, timeout: 3_600_000 }
-               ).catch((e) => ({ stdout: '', stderr: e.message }));
-               const decayRows = [...stdout.matchAll(/^\s+(\d+)\s+\d+\s+([\d.]+)%/gm)].map((m) => `r${m[1]}=${m[2]}%`);
-               const wall = ((Date.now() - t0) / 1000).toFixed(0);
-               console.log(decayRows.join(' ') || 'done');
-               appendTsv({ target: TARGET, kv, model: mid, think: 'no_think', bench: 'toolcalling_decay', score: '-', halls: '-', json_fail: '-', tok_s: '-', vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded, status: 'ok', wall_s: wall, notes: decayRows.join(' ') });
+            else {
+               const { alive } = await srv.ensureAlive(model);
+               if (alive) {
+                  process.stdout.write(`  [toolcalling_decay] `);
+                  const t0 = Date.now();
+                  const { stdout } = await execP(
+                     'node', [join(ROOT, 'benchmarks/toolcalling/decay-bench.mjs'), mid],
+                     { env: { ...process.env, LLAMA_URL }, timeout: 3_600_000 }
+                  ).catch((e) => ({ stdout: '', stderr: e.message }));
+                  const decayRows = [...stdout.matchAll(/^\s+(\d+)\s+\d+\s+([\d.]+)%/gm)].map((m) => `r${m[1]}=${m[2]}%`);
+                  const wall = ((Date.now() - t0) / 1000).toFixed(0);
+                  console.log(decayRows.join(' ') || 'done');
+                  appendTsv({ target: TARGET, backend: BACKEND, model: mid, think: 'no_think', bench: 'toolcalling_decay', score: '-', halls: '-', json_fail: '-', tok_s: '-', prefill_tps: '-', vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded ?? '?', oom_ceiling: oomCeiling ?? '?', coherence_ceiling: coherenceCeiling ?? '?', status: 'ok', wall_s: wall, notes: decayRows.join(' ') });
+               }
             }
          }
       }
 
-      // longctx — passkey + multifact (all KV passes; this IS the KV sweep)
-      if (benches.includes('longctx')) {
-         const key = tsvKey(kv, model.tag, '-', 'longctx');
-         if (flags.resume && doneKeys.has(key)) { console.log(`  [longctx] skip`); }
-         else if (await ensureAlive()) {
-            process.stdout.write(`  [longctx] `);
-            const t0 = Date.now();
-            const llamaEnv = { ...process.env, LLAMA_URL };
-            const [pkOut, mfOut] = await Promise.all([
-               execP('node', [join(ROOT, 'benchmarks/longctx/passkey-bench.mjs'), '24000', kv, mid], { env: llamaEnv, timeout: 600_000 }).catch(() => ({ stdout: '' })),
-               execP('node', [join(ROOT, 'benchmarks/longctx/multifact-bench.mjs'), '24000', kv, mid], { env: llamaEnv, timeout: 600_000 }).catch(() => ({ stdout: '' })),
-            ]);
-            const pkScore = pkOut.stdout.split('\n').find((l) => l.startsWith('RESULT\t'))?.split('\t')[4] ?? '?';
-            const mfScore = mfOut.stdout.split('\n').find((l) => l.startsWith('RESULT_MULTIFACT\t'))?.split('\t')[4] ?? '?';
-            const wall = ((Date.now() - t0) / 1000).toFixed(0);
-            console.log(`passkey=${pkScore}  multifact=${mfScore}`);
-            appendTsv({ target: TARGET, kv, model: mid, think: '-', bench: 'longctx', score: pkScore, halls: '-', json_fail: '-', tok_s: '-', vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded, status: 'ok', wall_s: wall, notes: `multifact=${mfScore}` });
-         }
-      }
-
-      await srv.stop();
-   }
-
-   // ── llama-bench perf pass (runs after server loop, no server needed) ──────
-   // Only for models that have 'speed' in their bench list.
-   if ((model.benches ?? []).includes('speed') && (!FILTER_BENCHES.length || FILTER_BENCHES.includes('speed'))) {
-      const perfKey = tsvKey('all', mid, '-', 'speed_pp');
-      if (flags.resume && doneKeys.has(perfKey)) {
-         console.log(`  [llama-bench] skip (already in results)`);
-      } else {
-         try {
-            const perfRows = await runLlamaBench({ sshHost: SSH_HOST, hf_file: model.hf_file });
-            for (const r of perfRows) {
-               appendTsv({
-                  target: TARGET, kv: r.kv, model: mid, think: '-', bench: r.bench,
-                  score: r.avg_ts.toFixed(1), halls: '-', json_fail: '-',
-                  tok_s: r.avg_ts.toFixed(1), vram_mib: '-', ctx_loaded: '-',
-                  status: 'ok', wall_s: '-',
-                  notes: `stddev=${r.stddev_ts.toFixed(1)}`,
-               });
+      // longctx — passkey + multifact
+      if (thinkState !== true) {
+         if (benches.includes('longctx') && (!FILTER_BENCHES.length || FILTER_BENCHES.includes('longctx'))) {
+            const key = tsvKey(mid, tl, 'longctx');
+            if (flags.resume && doneKeys.has(key)) { console.log(`  [longctx] skip`); }
+            else {
+               const { alive } = await srv.ensureAlive(model);
+               if (alive) {
+                  process.stdout.write(`  [longctx] `);
+                  const t0 = Date.now();
+                  const llamaEnv = { ...process.env, LLAMA_URL };
+                  const ctxArg = String(ctxLoaded ?? 24000);
+                  const [pkOut, mfOut] = await Promise.all([
+                     execP('node', [join(ROOT, 'benchmarks/longctx/passkey-bench.mjs'), ctxArg], { env: llamaEnv, timeout: 600_000 }).catch(() => ({ stdout: '' })),
+                     execP('node', [join(ROOT, 'benchmarks/longctx/multifact-bench.mjs'), ctxArg], { env: llamaEnv, timeout: 600_000 }).catch(() => ({ stdout: '' })),
+                  ]);
+                  const pkScore = pkOut.stdout.split('\n').find((l) => l.startsWith('RESULT\t'))?.split('\t')[4] ?? '?';
+                  const mfScore = mfOut.stdout.split('\n').find((l) => l.startsWith('RESULT_MULTIFACT\t'))?.split('\t')[4] ?? '?';
+                  const wall = ((Date.now() - t0) / 1000).toFixed(0);
+                  console.log(`passkey=${pkScore}  multifact=${mfScore}`);
+                  appendTsv({ target: TARGET, backend: BACKEND, model: mid, think: tl, bench: 'longctx', score: pkScore, halls: '-', json_fail: '-', tok_s: '-', prefill_tps: '-', vram_mib: vramMib ?? '?', ctx_loaded: ctxLoaded ?? '?', oom_ceiling: oomCeiling ?? '?', coherence_ceiling: coherenceCeiling ?? '?', status: 'ok', wall_s: wall, notes: `multifact=${mfScore}` });
+               }
             }
-         } catch (e) {
-            console.error(`  [llama-bench] error: ${e.message}`);
          }
       }
-   }
-}
+   }  // end thinkModes loop
+
+   await srv.stopServer();
+   await srv.waitVramClear();
+}  // end model loop
 
 flushPfJson();
 console.log(`\n[run-suite] Done. Results: ${RESULTS_TSV}`);

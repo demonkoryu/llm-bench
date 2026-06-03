@@ -1,0 +1,84 @@
+/**
+ * Think-mode utilities for llama.cpp models.
+ *
+ * Covers the two mechanisms llama.cpp uses for reasoning/thinking:
+ *
+ *  1. Tag-based: model outputs <think>...</think> inline in content (Qwen3, DeepSeek-R1).
+ *     Controlled per-request via chat_template_kwargs.enable_thinking.
+ *
+ *  2. Split-field: model puts reasoning in `reasoning_content` and leaves `content`
+ *     empty or null (LFM2.5 and other always-reasoning models). The openai SDK strips
+ *     non-standard response fields, so we must intercept and merge before SDK parsing
+ *     (see client.mjs customFetch).
+ *
+ * Capability classes:
+ *   non_thinking   — no thinking mode at all (Gemma4, older Qwen2.5, phi, granite, llama)
+ *   hybrid         — supports both think=true and think=false (Qwen3, Qwen3.6, 14B)
+ *   thinking       — always outputs think tags, think toggle a no-op (DeepSeek-R1 distill)
+ *   reasoning_only — always reasons, reasoning in `reasoning_content` field (LFM2.5)
+ */
+
+export const CAPABILITY = {
+   NON_THINKING:   'non_thinking',
+   HYBRID:         'hybrid',
+   THINKING:       'thinking',
+   REASONING_ONLY: 'reasoning_only',
+};
+
+/**
+ * Return the capability class for a model config entry.
+ * Looks at model.think field from models.yaml:
+ *   none      → non_thinking
+ *   optional  → hybrid
+ *   required  → thinking
+ *   reasoning → reasoning_only  (new value for LFM2.5)
+ */
+export function capabilityClass(model) {
+   switch (model.think) {
+      case 'optional':   return CAPABILITY.HYBRID;
+      case 'required':   return CAPABILITY.THINKING;
+      case 'reasoning':  return CAPABILITY.REASONING_ONLY;
+      default:           return CAPABILITY.NON_THINKING;
+   }
+}
+
+/**
+ * Given a capability class, return the think-toggle states to run.
+ *   non_thinking   → [null]          (never send enable_thinking)
+ *   hybrid         → [false, true]   (run both)
+ *   thinking       → [true]          (always on; false would be a no-op)
+ *   reasoning_only → [null]          (server-controlled; can't toggle)
+ */
+export function thinkStates(cap) {
+   switch (cap) {
+      case CAPABILITY.HYBRID:         return [false, true];
+      case CAPABILITY.THINKING:       return [true];
+      case CAPABILITY.REASONING_ONLY: return [null];
+      default:                        return [null];   // non_thinking
+   }
+}
+
+/**
+ * Build the chat_template_kwargs to inject into the request body.
+ * Returns null if think state is null (don't send the field at all).
+ */
+export function thinkKwargs(thinkState) {
+   if (thinkState === null) return null;
+   return { enable_thinking: thinkState };
+}
+
+/**
+ * Merge reasoning_content into content for models that split them.
+ * Mutates the parsed response object in place; returns it.
+ * Used by customFetch in client.mjs.
+ */
+export function mergeReasoningContent(data) {
+   if (!data?.choices) return data;
+   for (const choice of data.choices) {
+      const msg = choice.message;
+      if (msg && (msg.content === '' || msg.content == null) && msg.reasoning_content) {
+         msg.content = `<think>${msg.reasoning_content}</think>`;
+      }
+   }
+   return data;
+}

@@ -1,307 +1,265 @@
 # Model matrix for llm-bench.
 #
 # Fields per model:
-#   hf_repo      HuggingFace repo (passed to llama-server --hf-repo)
-#   hf_file      GGUF filename inside the repo (--hf-file)
-#   label        Human-readable label for results tables
-#   family       Model family (used for sampling defaults)
-#   params       Approx active parameter count (B); for MoE = active experts
-#   type         dense | moe
-#   think        none | optional | required
-#                  none     = no thinking mode (llama, gemma, etc.)
-#                  optional = supports think:true/false (qwen3, deepseek-r1, etc.)
-#                  required = always reasons
-#   tools        true | false
-#   vram_q4_gb   Approx VRAM at Q4 weight quant (weights only; add KV separately)
-#   fit_rose     fits | spills | oom  (approximate, at 4k ctx + f16 KV)
-#   benches      list of applicable benchmark suites
-#                  triage | reasoning | toolcalling | toolcalling_decay | longctx | summarization | speed | maxctx
-#   notes        any caveats
+#   hf_repo          HuggingFace repo (passed to llama-server --hf-repo)
+#   hf_file          GGUF filename inside the repo (--hf-file)
+#   label            Human-readable label for results tables
+#   family           Model family (used for sampling defaults)
+#   type             dense | moe
+#   think            none | optional | required | reasoning
+#                      none       = no thinking mode (gemma4, etc.)
+#                      optional   = supports think:true/false (qwen3, qwen3.6, 14b)
+#                      required   = always outputs think tags (deep-seek-r1 distills)
+#                      reasoning  = always reasons in reasoning_content field (lfm2.5)
+#   tools            true | false
+#   native_max_ctx   Documented maximum context window (tokens). Used to cap binary search.
+#   ctx_cap          Hard override cap (OOM/RoPE ceiling discovered empirically — below native_max)
+#   kv_bytes_per_token  Q8_0 KV cache bytes per input token (empirical, used to estimate hi bound)
+#   extra_flags      Additional llama-server flags (sampling presets, MTP draft, chat-template)
+#   benches          Applicable benchmark suites:
+#                      triage | reasoning | toolcalling | toolcalling_decay | longctx
+#                      summarization | speed | maxctx | docqa
+#   notes            Caveats
 #
-# KV quant variants (applied by the runner, llama.cpp only):
-#   f16, q8_0, q4_0, k8v4  (k8v4 = q8_0/q4_0 asymmetric, ctk q8_0 / ctv q4_0)
+# HF repo IDs: TODO comments mark repos that need verification before the first run.
+# Models are expected to already be cached in ~/.cache/huggingface/hub on llm2.
+# The binary search max-ctx probe will discover the real usable context per model.
 
 models:
 
-   # ── qwen3.5 family (0-hallucination triage club) ────────────────────────────
-
-   - hf_repo: unsloth/Qwen3.5-4B-GGUF
-     hf_file: Qwen3.5-4B-Q4_K_M.gguf
-     label: "qwen3.5 4B Q4"
-     family: qwen3.5
-     params: 4
-     type: dense
-     think: optional
-     tools: true
-     vram_q4_gb: 5.9
-     fit_rose: fits
-     benches: [triage, reasoning, toolcalling, toolcalling_decay, summarization, speed, maxctx]
-
-   - hf_repo: unsloth/Qwen3.5-4B-GGUF
-     hf_file: Qwen3.5-4B-Q8_0.gguf
-     label: "qwen3.5 4B Q8"
-     family: qwen3.5
-     params: 4
-     type: dense
-     think: optional
-     tools: true
-     vram_q4_gb: 8.0
-     fit_rose: fits
-     benches: [triage, speed, maxctx]
-
-   - hf_repo: unsloth/Qwen3.5-9B-GGUF
-     hf_file: Qwen3.5-9B-Q4_K_M.gguf
-     label: "qwen3.5 9B Q4"
-     family: qwen3.5
-     params: 9
-     type: dense
-     think: optional
-     tools: true
-     vram_q4_gb: 8.7
-     fit_rose: fits
-     benches: [triage, reasoning, toolcalling, toolcalling_decay, summarization, speed, maxctx]
-
-   - hf_repo: unsloth/Qwen3.5-9B-GGUF
-     hf_file: Qwen3.5-9B-Q8_0.gguf
-     label: "qwen3.5 9B Q8"
-     family: qwen3.5
-     params: 9
-     type: dense
-     think: optional
-     tools: true
-     vram_q4_gb: 13.0
-     fit_rose: fits
-     benches: [triage, speed, maxctx]
-
-   - hf_repo: unsloth/Qwen3.5-27B-GGUF
-     hf_file: Qwen3.5-27B-Q4_K_M.gguf
-     label: "qwen3.5 27B Q4"
-     family: qwen3.5
-     params: 27
-     type: dense
-     think: optional
-     tools: true
-     vram_q4_gb: 22.0
-     fit_rose: spills      # ~22 GB → partial CPU offload
-     benches: [triage, speed, maxctx]
-     notes: "Spills VRAM (~22 GB); ~15 tok/s. q4_0 KV crashed at VRAM edge — do not use."
-
-   # ── qwen3 family ────────────────────────────────────────────────────────────
-
-   - hf_repo: unsloth/Qwen3-4B-GGUF
-     hf_file: Qwen3-4B-Q4_K_M.gguf
-     label: "qwen3 4B Q4"
+   # ── Qwen3-Coder 30B ──────────────────────────────────────────────────────────
+   # NOTE: --chat-template qwen3-coder intentionally NOT set (conflicts with --jinja
+   # tool parsing). Standard Qwen3 template handles tool calls correctly.
+   - hf_repo: unsloth/Qwen3-Coder-30B-A3B-GGUF   # TODO: verify — may be a different community upload
+     hf_file: Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL.gguf
+     label: "Qwen3-Coder 30B UD-Q4_K_XL"
      family: qwen3
-     params: 4
-     type: dense
-     think: optional
-     tools: true
-     vram_q4_gb: 3.5
-     fit_rose: fits
-     benches: [triage, reasoning, toolcalling, speed, maxctx]
-
-   - hf_repo: unsloth/Qwen3-30B-A3B-GGUF
-     hf_file: Qwen3-30B-A3B-Q4_K_M.gguf
-     label: "qwen3 30B-A3B (MoE) Q4"
-     family: qwen3
-     params: 3   # active
      type: moe
      think: optional
      tools: true
-     vram_q4_gb: 18.0
-     fit_rose: fits
-     benches: [triage, reasoning, toolcalling, speed, maxctx]
+     native_max_ctx: 131072
+     kv_bytes_per_token: 49152   # 48 KiB/tok — empirical, 30B-A3B GQA Q8_0
+     extra_flags: "--temp 0.7 --top-p 0.8 --top-k 20 --min-p 0 --repeat-penalty 1.05"
+     benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
+     notes: "Coding-specialist variant of Qwen3-30B-A3B."
 
-   # ── qwen2.5 family ──────────────────────────────────────────────────────────
-
-   - hf_repo: unsloth/Qwen2.5-7B-Instruct-GGUF
-     hf_file: Qwen2.5-7B-Instruct-Q4_K_M.gguf
-     label: "qwen2.5 7B Q4"
-     family: qwen2.5
-     params: 7
-     type: dense
-     think: none
+   # ── Qwen3-30B-A3B-Instruct-2507 UD quant ────────────────────────────────────
+   - hf_repo: unsloth/Qwen3-30B-A3B-GGUF   # TODO: verify 2507 revision availability
+     hf_file: Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL.gguf
+     label: "Qwen3-30B-A3B-2507 UD-Q4_K_XL"
+     family: qwen3
+     type: moe
+     think: optional
      tools: true
-     vram_q4_gb: 4.9
-     fit_rose: fits
-     benches: [triage, toolcalling, summarization, speed, maxctx]
+     native_max_ctx: 131072
+     kv_bytes_per_token: 49152
+     extra_flags: "--temp 0.7 --top-p 0.8 --top-k 20 --min-p 0"
+     benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
-   - hf_repo: unsloth/Qwen2.5-14B-Instruct-GGUF
-     hf_file: Qwen2.5-14B-Instruct-Q4_K_M.gguf
-     label: "qwen2.5 14B Q4"
-     family: qwen2.5
-     params: 14
-     type: dense
-     think: none
+   # ── Qwen3-30B-A3B-Instruct-2507 IQ4_XS ─────────────────────────────────────
+   - hf_repo: unsloth/Qwen3-30B-A3B-GGUF   # TODO: verify IQ4_XS file in this repo
+     hf_file: Qwen3-30B-A3B-Instruct-2507-IQ4_XS.gguf
+     label: "Qwen3-30B-A3B-2507 IQ4_XS"
+     family: qwen3
+     type: moe
+     think: optional
      tools: true
-     vram_q4_gb: 9.7
-     fit_rose: fits
-     benches: [triage, toolcalling, summarization, speed, maxctx]
+     native_max_ctx: 131072
+     ctx_cap: 81920   # 92k probe-max leaves only 531 MiB; OOMs during 90k prefill inference
+     kv_bytes_per_token: 49152
+     extra_flags: "--temp 0.7 --top-p 0.8 --top-k 20 --min-p 0"
+     benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
-   # ── DeepSeek family ─────────────────────────────────────────────────────────
-
-   - hf_repo: unsloth/DeepSeek-R1-0528-Qwen3-8B-GGUF
-     hf_file: DeepSeek-R1-0528-Qwen3-8B-Q4_K_XL.gguf
-     label: "DeepSeek-R1-0528 8B Q4"
-     family: deepseek-r1
-     params: 8
-     type: dense
-     think: required
-     tools: true
-     vram_q4_gb: 5.9
-     fit_rose: fits
-     benches: [triage, reasoning, summarization, speed, maxctx]
-
-   - hf_repo: bartowski/DeepSeek-R1-Distill-Qwen-14B-GGUF
-     hf_file: DeepSeek-R1-Distill-Qwen-14B-Q4_K_M.gguf
-     label: "deepseek-r1 14B Q4"
-     family: deepseek-r1
-     params: 14
+   # ── Qwen3-14B Q5_K_M ────────────────────────────────────────────────────────
+   - hf_repo: bartowski/Qwen3-14B-GGUF   # TODO: verify — or unsloth/Qwen3-14B-GGUF
+     hf_file: Qwen3-14B-Q5_K_M.gguf
+     label: "Qwen3-14B Q5_K_M"
+     family: qwen3
      type: dense
      think: optional
-     tools: false
-     vram_q4_gb: 9.7
-     fit_rose: fits
-     benches: [reasoning, speed, maxctx]
-     notes: "No tool support in chat template. Reasoning specialist only."
-
-   # ── OpenAI gpt-oss ───────────────────────────────────────────────────────────
-
-   - hf_repo: unsloth/gpt-oss-20b-GGUF
-     hf_file: gpt-oss-20b-Q4_K_M.gguf
-     label: "gpt-oss 20B Q4"
-     family: gpt-oss
-     params: 20
-     type: dense
-     think: required   # always reasons internally
      tools: true
-     vram_q4_gb: 11.6
-     fit_rose: fits
-     benches: [triage, reasoning, toolcalling, summarization, speed, maxctx]
-     notes: "MXFP4 native weights; Unsloth GGUF conversion. 11.6 GB Q4_K_M."
+     native_max_ctx: 131072
+     ctx_cap: 40960   # GGUF rejects prompts beyond this; RoPE not extended past 40k
+     kv_bytes_per_token: 24576   # 24 KiB/tok — estimated ~half of 30B
+     extra_flags: "--temp 0.7 --top-p 0.8 --top-k 20 --min-p 0"
+     benches: [triage, reasoning, toolcalling, toolcalling_decay, summarization, docqa, speed, maxctx]
 
-   # ── Other models ─────────────────────────────────────────────────────────────
-
-   - hf_repo: unsloth/Mistral-Small-24B-Instruct-2501-GGUF
-     hf_file: Mistral-Small-24B-Instruct-2501-Q4_K_M.gguf
-     label: "mistral-small 24B Q4"
-     family: mistral
-     params: 24
-     type: dense
-     think: none
-     tools: true
-     vram_q4_gb: 14.0
-     fit_rose: fits
-     benches: [triage, toolcalling, toolcalling_decay, summarization, speed, maxctx]
-
-   - hf_repo: unsloth/phi-4-GGUF
-     hf_file: phi-4-Q4_K_M.gguf
-     label: "phi4 14B Q4"
-     family: phi4
-     params: 14
-     type: dense
-     think: none
-     tools: false
-     vram_q4_gb: 10.0
-     fit_rose: fits
-     benches: [triage, summarization, speed, maxctx]
-
-   - hf_repo: ibm-granite/granite-3.3-8b-instruct-GGUF
-     hf_file: granite-3.3-8b-instruct-Q4_K_M.gguf
-     label: "granite3.3 8B Q4"
-     family: granite
-     params: 8
-     type: dense
-     think: none
-     tools: false
-     vram_q4_gb: 6.1
-     fit_rose: fits
-     benches: [triage, summarization, speed, maxctx]
-
-   - hf_repo: bartowski/Meta-Llama-3.1-8B-Instruct-GGUF
-     hf_file: Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf
-     label: "llama3.1 8B Q4"
-     family: llama
-     params: 8
-     type: dense
-     think: none
-     tools: true
-     vram_q4_gb: 5.5
-     fit_rose: fits
-     benches: [triage, toolcalling, longctx, summarization, speed, maxctx]
-     notes: "Primary long-context reference model for KV sweep."
-
-   - hf_repo: mradermacher/gemma-4-26B-A4B-GGUF
-     hf_file: gemma-4-26B-A4B.Q4_K_M.gguf
-     label: "gemma4 26B A4B MoE Q4"
-     family: gemma4
-     params: 4   # active; 4B active out of 26B total
+   # ── Qwen3.6-35B-A3B IQ4_XS 3.97bpw ─────────────────────────────────────────
+   # Hybrid model: run as separate aliases for nothi and think modes.
+   # MTP speculative draft: requires Vulkan build with MTP support; smoke test will catch if absent.
+   - hf_repo: unsloth/Qwen3.6-35B-A3B-GGUF   # TODO: verify — community quant, may be bartowski
+     hf_file: Qwen3.6-35B-A3B-IQ4_XS-3.97bpw.gguf
+     label: "Qwen3.6-35B MoE IQ4_XS-3.97bpw nothi"
+     family: qwen3.6
      type: moe
-     think: none
-     tools: false
-     vram_q4_gb: 16.9
-     fit_rose: fits
-     benches: [triage, speed, maxctx]
-     notes: "MoE (4B active). 16.9 GB Q4_K_M fits on 20 GiB. Sliding-window attention helps at long ctx."
+     think: optional
+     think_state: false   # this entry = non-thinking pass
+     tools: true
+     native_max_ctx: 131072
+     kv_bytes_per_token: 49152
+     extra_flags: "--temp 0.7 --top-p 0.8 --top-k 20 --min-p 0 --spec-type draft-mtp --spec-draft-n-max 4"
+     benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
+     notes: "MTP speculative draft; drop --spec-type if Vulkan build lacks support."
 
-   # ── Qwen3.6 35B MoE ─────────────────────────────────────────────────────────
+   - hf_repo: unsloth/Qwen3.6-35B-A3B-GGUF   # same file, thinking pass
+     hf_file: Qwen3.6-35B-A3B-IQ4_XS-3.97bpw.gguf
+     label: "Qwen3.6-35B MoE IQ4_XS-3.97bpw think"
+     family: qwen3.6
+     type: moe
+     think: optional
+     think_state: true    # this entry = thinking pass
+     tools: true
+     native_max_ctx: 131072
+     kv_bytes_per_token: 49152
+     extra_flags: "--temp 0.6 --top-p 0.95 --top-k 20 --min-p 0 --spec-type draft-mtp --spec-draft-n-max 4"
+     benches: [triage, reasoning, summarization, docqa, speed]
+     notes: "Thinking pass of qwen36-397 — no toolcalling (think mode incompatible with tool calling in current llama.cpp)."
+
+   # ── Qwen3.6-35B-A3B IQ4_XS 4.19bpw ─────────────────────────────────────────
+   - hf_repo: unsloth/Qwen3.6-35B-A3B-GGUF   # TODO: verify 4.19bpw file in same repo
+     hf_file: Qwen3.6-35B-A3B-IQ4_XS-4.19bpw.gguf
+     label: "Qwen3.6-35B MoE IQ4_XS-4.19bpw nothi"
+     family: qwen3.6
+     type: moe
+     think: optional
+     think_state: false
+     tools: true
+     native_max_ctx: 131072
+     kv_bytes_per_token: 49152
+     extra_flags: "--temp 0.7 --top-p 0.8 --top-k 20 --min-p 0 --spec-type draft-mtp --spec-draft-n-max 4"
+     benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
    - hf_repo: unsloth/Qwen3.6-35B-A3B-GGUF
-     hf_file: UD-Q4_K_S/Qwen3.6-35B-A3B-UD-Q4_K_S.gguf
-     label: "Qwen3.6 35B MoE UD-Q4_K_S"
+     hf_file: Qwen3.6-35B-A3B-IQ4_XS-4.19bpw.gguf
+     label: "Qwen3.6-35B MoE IQ4_XS-4.19bpw think"
      family: qwen3.6
-     params: 3   # active; 3B active out of 35B total
      type: moe
      think: optional
+     think_state: true
      tools: true
-     vram_q4_gb: 20.9
-     fit_rose: spills    # 20.9 GB → minimal spill; MoE active-param count keeps tok/s viable
-     benches: [triage, reasoning, toolcalling, speed, maxctx]
-     notes: "UD-Q4_K_S = 20.9 GB; minimal spill on 20 GiB card. Q4_K_M (22.1 GB) skipped — too much spill."
+     native_max_ctx: 131072
+     kv_bytes_per_token: 49152
+     extra_flags: "--temp 0.6 --top-p 0.95 --top-k 20 --min-p 0 --spec-type draft-mtp --spec-draft-n-max 4"
+     benches: [triage, reasoning, summarization, docqa, speed]
+
+   # ── Gemma4-E4B (Google Gemma 4, 4B effective MoE) ───────────────────────────
+   # Non-thinking; no tool support in current chat template.
+   # Sliding-window attention helps at long contexts.
+   - hf_repo: google/gemma-4-e4b-it-GGUF   # TODO: verify — may be mradermacher/bartowski community
+     hf_file: gemma-4-e4b-it-Q8_0.gguf
+     label: "Gemma4-E4B Q8_0"
+     family: gemma4
+     type: moe
+     think: none
+     tools: false
+     native_max_ctx: 131072
+     kv_bytes_per_token: 16384   # estimated; 4B active params, smaller KV footprint
+     extra_flags: "--temp 0.1"
+     benches: [triage, summarization, docqa, speed, maxctx]
+     notes: "Q8_0 for quality comparison vs Q5_K_M variant."
+
+   - hf_repo: google/gemma-4-e4b-it-GGUF   # TODO: same uncertainty as Q8_0
+     hf_file: gemma-4-e4b-it-Q5_K_M.gguf
+     label: "Gemma4-E4B Q5_K_M"
+     family: gemma4
+     type: moe
+     think: none
+     tools: false
+     native_max_ctx: 131072
+     kv_bytes_per_token: 16384
+     extra_flags: "--temp 0.1"
+     benches: [triage, summarization, docqa, speed, maxctx]
+
+   # ── LFM2.5-8B-A1B ────────────────────────────────────────────────────────────
+   # Always-reasoning: outputs to reasoning_content field (not content).
+   # The LLM client merges reasoning_content → content before SDK parsing.
+   # Only 6 of 24 layers are attention (rest are LIV conv) → tiny KV footprint.
+   - hf_repo: leafsage-ai/LFM2.5-8B-A1B-GGUF   # TODO: verify — community repo TBD
+     hf_file: LFM2.5-8B-A1B-Q5_K_M.gguf
+     label: "LFM2.5-8B-A1B Q5_K_M"
+     family: lfm2.5
+     type: dense
+     think: reasoning      # always-reasoning: outputs reasoning_content; no toggle
+     tools: false          # reasoning-only specialization — no tool calls
+     native_max_ctx: 131072
+     ctx_cap: 131072
+     kv_bytes_per_token: 8192    # 8 KiB/tok — 6 attention layers only
+     extra_flags: "--temp 0.2 --top-k 80 --min-p 0 --repeat-penalty 1.05"
+     benches: [reasoning, summarization, docqa, speed, maxctx]
+     notes: "reasoning_content field merged into content by llm client (think.mjs)."
 
 
-# ── Sampling profiles per family ────────────────────────────────────────────────
-sampling:
-   qwen3.5_nothink:
-      temperature: 0.7
-      top_p: 0.8
-      top_k: 20
-      presence_penalty: 1.5
+# ── Sampling matrix ───────────────────────────────────────────────────────────────
+# Read by shared/llm/sampling.mjs. Authoritative source for all sampling params.
+# Organized by capability class × think state × use-case.
+# Use-case keys override the parent defaults for that bench type.
+#
+# Sourced from vendor documentation:
+#   Qwen3: https://huggingface.co/Qwen/Qwen3-30B-A3B (June 2025)
+#   Qwen3.6: https://huggingface.co/Qwen/Qwen3.6-30B-A3B (2025)
+#   LFM2.5: https://huggingface.co/leafsage-ai/LFM2.5-8B-A1B (TODO: verify)
+#   Gemma4: https://huggingface.co/google/gemma-4-e4b-it (TODO: verify)
 
-   qwen3.5_think:
-      temperature: 0.6
-      top_p: 0.95
-      top_k: 20
-      presence_penalty: 0.0
+sampling_matrix:
 
-   deepseek_r1:
-      temperature: 0.6
-      top_p: 0.95
-      min_p: 0.05
+   # ── Hybrid models (optional think) ─────────────────────────────────────────
+   hybrid:
+      think:     # enable_thinking: true
+         temperature: 0.6
+         top_p: 0.95
+         top_k: 20
+         min_p: 0
+         # Use-case overrides for thinking mode:
+         reasoning:
+            temperature: 0.6
+            top_p: 0.95
+            top_k: 20
+            min_p: 0
+      no_think:  # enable_thinking: false
+         temperature: 0.7
+         top_p: 0.8
+         top_k: 20
+         min_p: 0
+         presence_penalty: 1.5
+         # Use-case overrides for non-thinking mode:
+         toolcalling:
+            temperature: 0.4
+            top_p: 0.9
+            top_k: 20
+            min_p: 0
+         reasoning:
+            temperature: 0.6
+            top_p: 0.95
+            top_k: 20
+            min_p: 0
+         longctx:
+            temperature: 0.1
+            top_p: 0.9
+            top_k: 20
+            min_p: 0
 
-   deepseek_r1_0528:
-      temperature: 0.6
-      top_p: 0.95
-      min_p: 0.01
+   # ── Reasoning-only models (always-reasoning, reasoning_content split) ──────
+   reasoning_only:
+      null:      # no toggle; enable_thinking not sent
+         temperature: 0.2
+         top_k: 80
+         min_p: 0
+         presence_penalty: 1.05
 
-   default:
-      temperature: 0.1
+   # ── Non-thinking instruct models ────────────────────────────────────────────
+   non_thinking:
+      null:
+         temperature: 0.1
+         toolcalling:
+            temperature: 0.4
+            top_p: 0.9
+         summarization:
+            temperature: 0.3
+         longctx:
+            temperature: 0.1
+            top_p: 0.9
 
-   reasoning:   # all models, reasoning bench only
-      temperature: 0.6
-      top_p: 0.95
-      top_k: 20
-      num_ctx: 8192
 
-   toolcalling:  # all models, toolcalling bench only
-      temperature: 0.4
-      top_p: 0.9
-      num_ctx: 8192
-
-
-# ── KV quant configs ────────────────────────────────────────────────────────────
-kv_configs:
-   llamacpp: [f16, q8_0, q4_0, k8v4]   # k8v4 = ctk q8_0 / ctv q4_0 asymmetric
-
-# Context probe points for speed + maxctx bench
-ctx_probe_points: [4096, 16384, 32768, 65536]
+# ── Host configuration ───────────────────────────────────────────────────────────
+# Defined separately in config/hosts.yaml.
+# Models run on: rose (llm2)  — RX 7900 XT 20 GiB

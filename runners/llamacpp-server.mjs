@@ -1,118 +1,354 @@
 /**
- * Manages a remote llama-server process via SSH.
+ * Remote llama-server lifecycle manager.
  *
- * Models are identified by { hf_repo, hf_file } — passed directly to
- * llama-server via --hf-repo / --hf-file.  llama.cpp downloads on first use
- * and caches in ~/.cache/llama.cpp/ on the remote host.
+ * Orchestrates the llm2 shell scripts over SSH to:
+ *   - Detect available backends (vulkan | rocm)
+ *   - Start / stop llama-server with a lockfile + VRAM-clear wait
+ *   - Probe the maximum usable context via binary search
  *
- * Features:
- *   - HF model download + caching (no Ollama required)
- *   - Auto context-size probe: tries ctxSizes descending, returns largest that loads
- *   - Asymmetric KV cache (-ctk / -ctv) for k8v4 config
- *   - Flash attention enabled by default
- *   - VRAM snapshot via rocm-smi after load
+ * All system-level operations (process start/stop, VRAM query, health probe)
+ * run as shell scripts on llm2 — Node stays on the dev host.
+ *
+ * Shell scripts live at: llm2:~/llm-bench/scripts/llm2/
+ * Deploy path:           ~/llm-bench   (set via REMOTE_BENCH_DIR)
  */
 
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { openaiCompatClient } from '../shared/openai-compat.mjs';
+import { createClient } from '../shared/llm/index.mjs';
 
-const exec = promisify(execFile);
+const execP = promisify(execFile);
 
-async function ssh(host, cmd, opts = {}) {
-   const { stdout, stderr } = await exec(
-      'ssh', ['-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', host, cmd],
-      { timeout: opts.timeout ?? 30_000 }
-   );
-   return { stdout: stdout.trim(), stderr: stderr.trim() };
+const SCRIPTS_DIR   = '~/llm-bench/scripts/llm2';
+const DEFAULT_PORT  = 8090;
+
+async function ssh(host, cmd, { timeout = 30_000 } = {}) {
+   try {
+      const { stdout, stderr } = await execP(
+         'ssh', ['-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', host, cmd],
+         { timeout }
+      );
+      return { stdout: stdout.trim(), stderr: stderr.trim(), ok: true };
+   } catch (e) {
+      return { stdout: '', stderr: e.message, ok: false, exitCode: e.code };
+   }
 }
 
-// ROCm build: DeltaNet GPU-accelerated, -ctk/-ctv supported, June 2026
-const DEFAULT_BIN = '~/llama.cpp/build-rocm/bin/llama-server';
+/**
+ * Create a server manager for a specific SSH host + LLAMA_URL pair.
+ *
+ * @param {object} opts
+ *   sshHost   {string}   SSH alias for llm2 (e.g. 'llm2')
+ *   llamaUrl  {string}   HTTP endpoint for the OpenAI-compat API
+ *   backend   {string}   'vulkan' | 'rocm' (default: 'vulkan')
+ *   port      {number}   llama-server port (default: 8090)
+ *   debug     {boolean}  verbose logging
+ */
+export function llamacppServer({ sshHost, llamaUrl = 'http://192.168.1.120:8090', backend = 'vulkan', port = DEFAULT_PORT, debug = false }) {
 
-export function llamacppServer({ sshHost, llamaUrl = 'http://192.168.1.120:8090', llamaBin = DEFAULT_BIN }) {
-   let _pid = null;
-   const port = new URL(llamaUrl).port || '8090';
-   const client = openaiCompatClient(llamaUrl);
+   const client = createClient(llamaUrl, { debug });
+
+   /** Run a script on llm2, return stdout. Throws on failure unless tolerant=true. */
+   async function runScript(script, args = '', { tolerant = false, timeout = 30_000 } = {}) {
+      const cmd = `bash ${SCRIPTS_DIR}/${script} ${args}`;
+      if (debug) console.error(`[ssh] ${cmd}`);
+      const r = await ssh(sshHost, cmd, { timeout });
+      if (!r.ok && !tolerant) {
+         throw new Error(`${script} failed: ${r.stderr.slice(0, 200)}`);
+      }
+      return r.stdout;
+   }
 
    /**
-    * Start llama-server for a model identified by HuggingFace repo + file.
-    * Probes context sizes in descending order until one loads successfully.
+    * Detect available backends on the remote host.
+    * Returns array of { backend, path } objects.
+    */
+   async function detectBackends() {
+      const out = await runScript('backends.sh', '', { tolerant: true });
+      return out.split('\n').filter(Boolean).map((line) => {
+         const [name, path] = line.trim().split(/\s+/);
+         return { backend: name, path };
+      });
+   }
+
+   /**
+    * Start the server for a model config.
     *
     * @param {object} opts
-    *   hf_repo    {string}   HuggingFace repo (e.g. "unsloth/Qwen3.5-4B-GGUF")
-    *   hf_file    {string}   GGUF filename    (e.g. "Qwen3.5-4B-Q4_K_M.gguf")
-    *   ctk        {string}   KV cache type for K (f16|q8_0|q4_0)
-    *   ctv        {string}   KV cache type for V; defaults to ctk
-    *   ngl        {number}   GPU layers (default 99 = all)
-    *   ctxSizes   {Array}    descending list to probe (default [65536,32768,16384,8192])
-    *
-    * Returns { vramMib, ctxLoaded } where ctxLoaded is the largest ctx that fit.
+    *   hf_repo    {string}   HF repo id
+    *   hf_file    {string}   GGUF filename
+    *   ctx        {number}   Context size (tokens)
+    *   extraFlags {string}   Additional llama-server flags (e.g. MTP, chat-template)
+    * @returns {string} PID of the launched server
     */
-   async function start({ hf_repo, hf_file, ctk = 'f16', ctv = null, ngl = 99, ctxSizes = [65536, 32768, 16384, 8192] }) {
-      const ctvArg = ctv ?? ctk;
-      // Clear any orphaned server on this port before starting a new one.
-      await stop();
+   async function startServer({ hf_repo, hf_file, ctx, extraFlags = '' }) {
+      const args = [
+         `--backend ${backend}`,
+         `--ctx ${ctx}`,
+         `--port ${port}`,
+         `--hf-repo '${hf_repo}'`,
+         `--hf-file '${hf_file}'`,
+         extraFlags,
+      ].filter(Boolean).join(' ');
 
-      for (const ctx of ctxSizes) {
-         const cmd = [
-            `nohup ${llamaBin}`,
-            `--hf-repo '${hf_repo}'`,
-            `--hf-file '${hf_file}'`,
-            `-c ${ctx}`,
-            `-ngl ${ngl}`,
-            `-ctk ${ctk}`,
-            `-ctv ${ctvArg}`,
-            `--flash-attn on`,
-            `--parallel 1`,
-            `--no-cache-prompt`,
-            `--host 0.0.0.0`,
-            `--port ${port}`,
-            `> /tmp/llamasrv.log 2>&1 & echo $!`,
-         ].join(' ');
+      // HF downloads can take a while on first run — give 600s
+      const pid = await runScript('start-server.sh', args, { timeout: 600_000 });
+      console.log(`[llamacpp] started PID=${pid} backend=${backend} ctx=${ctx} ${hf_file}`);
+      return pid;
+   }
 
-         const { stdout } = await ssh(sshHost, cmd, { timeout: 15_000 });
-         _pid = stdout.trim();
-         console.log(`[llamacpp] starting PID=${_pid} ${hf_file} ctx=${ctx} ctk=${ctk} ctv=${ctvArg}`);
+   /**
+    * Wait until the server is ready for inference (503-aware, model-load wait).
+    * Falls back to the shell health.sh if direct HTTP fails (cross-machine firewall).
+    */
+   async function waitHealthy(timeoutMs = 300_000) {
+      // Try direct HTTP first (faster; works when the dev host can reach llm2 directly)
+      const ready = await client.waitHealthy(timeoutMs).then(() => true).catch(() => false);
+      if (ready) return true;
+      // Fallback: run health.sh on llm2 (handles firewall/NAT cases)
+      const timeoutS = Math.floor(timeoutMs / 1000);
+      const r = await runScript('health.sh',
+         `--url ${llamaUrl} --timeout ${timeoutS}`,
+         { tolerant: true, timeout: timeoutMs + 5_000 }
+      );
+      if (r.includes('ready')) return true;
+      throw new Error(`Server not ready within ${timeoutS}s`);
+   }
 
-         // Wait up to 300s for health — model download from HF happens on first run
-         const loaded = await client.waitHealthy(300_000).then(() => true).catch(() => false);
+   /** Stop the tracked server and clean up. */
+   async function stopServer() {
+      await runScript('stop-server.sh', `--port ${port}`, { tolerant: true, timeout: 15_000 });
+      _lastPid = null;
+   }
 
-         if (loaded) {
-            const vramMib = await snapshotVram();
-            console.log(`[llamacpp] ready  ctx=${ctx}  vram=${vramMib ?? '?'}MiB`);
-            return { vramMib, ctxLoaded: ctx };
+   /** Aggressive kill — use on SIGINT/SIGTERM and before each probe. */
+   async function killAll() {
+      await runScript('kill-all.sh', `--port ${port}`, { tolerant: true, timeout: 10_000 });
+      _lastPid = null;
+   }
+
+   /** VRAM used in MiB (reads rocm-smi on llm2). */
+   async function snapshotVram() {
+      const out = await runScript('vram.sh', '', { tolerant: true, timeout: 10_000 });
+      const n = parseInt(out, 10);
+      return isNaN(n) ? null : n;
+   }
+
+   /** Check for crash patterns in the server log. Returns true if crashed. */
+   async function hasCrashed() {
+      const r = await ssh(sshHost, `bash ${SCRIPTS_DIR}/log-tail.sh --lines 20`, { timeout: 10_000 });
+      return r.exitCode === 2;
+   }
+
+   /**
+    * Poll VRAM until it drops below 512 MiB (server + allocations have released).
+    * Prevents OOM from leftover allocations before the next model starts.
+    */
+   async function waitVramClear(timeoutMs = 60_000) {
+      const deadline = Date.now() + timeoutMs;
+      while (Date.now() < deadline) {
+         const mib = await snapshotVram();
+         if (mib === null || mib < 512) return;
+         if (debug) console.log(`[llamacpp] waiting VRAM clear — ${mib} MiB...`);
+         await new Promise((r) => setTimeout(r, 2_000));
+      }
+      console.warn('[llamacpp] VRAM did not clear within timeout — proceeding anyway');
+   }
+
+   /**
+    * Binary-search for the maximum context size that loads AND passes a coherence check.
+    *
+    * The coherence check uses the codebase generator from shared/codebase.mjs:
+    * fills ~ctx tokens with synthetic code, plants a needle near the end, asks for it.
+    * Records oom_ceiling (largest that loaded) and coherence_ceiling (largest correct).
+    *
+    * @param {object} modelCfg   model entry from models.yaml
+    * @param {number} freeVram   VRAM free in MiB (used to estimate hi bound)
+    * @returns {{ ctxLoaded, oomCeiling, coherenceCeiling, vramMib }}
+    */
+   async function binarySearchCtx(modelCfg) {
+      const { hf_repo, hf_file, native_max_ctx, ctx_cap, kv_bytes_per_token = 32768, extra_flags = '' } = modelCfg;
+
+      // Estimate hi from VRAM — seed only, not authoritative
+      const vramFree = await snapshotVram().then((mib) => (mib !== null ? 20480 - mib : 16384));
+      const vramEstimate = Math.floor((vramFree * 1024 * 1024) / kv_bytes_per_token);
+
+      // Cap at documented native window, ctxCap override, VRAM estimate, and absolute max
+      const hi = Math.min(
+         native_max_ctx ?? 131072,
+         ctx_cap        ?? 131072,
+         roundTo2k(vramEstimate),
+         131072
+      );
+      let lo = 4096;
+
+      if (hi <= lo) {
+         console.log(`  [maxctx] hi=${hi} ≤ lo=${lo}, skipping search — using ${lo}`);
+         return { ctxLoaded: lo, oomCeiling: lo, coherenceCeiling: lo, vramMib: null };
+      }
+
+      console.log(`  [maxctx] binary search lo=${lo} hi=${hi} native_max=${native_max_ctx ?? 'unknown'}`);
+
+      let oomCeiling    = lo;
+      let coherenceCeiling = lo;
+      let lastVram = null;
+
+      // Lazy-import codebase generator (Node-side, no SSH)
+      const { makeFillPrompt } = await import('../shared/codebase.mjs').catch(() => null) ?? {};
+
+      while (hi - lo > 2048) {
+         const mid = roundTo2k(Math.floor((lo + hi) / 2));
+
+         // 1. Try to load
+         await killAll();
+         await waitVramClear(30_000);
+
+         try {
+            await startServer({ hf_repo, hf_file, ctx: mid, extraFlags: extra_flags });
+            // HF download may be needed on first run — give 360s
+            await waitHealthy(360_000);
+            oomCeiling = mid;
+         } catch {
+            // Tailed log for crash patterns
+            const crashed = await hasCrashed();
+            console.log(`  [maxctx] ctx=${mid} — load failed (${crashed ? 'crash/OOM' : 'timeout'})`);
+            hi = mid - 2048;
+            await killAll();
+            continue;
          }
 
-         console.log(`[llamacpp] ctx=${ctx} failed (OOM?), trying smaller`);
-         await stop();
+         // 2. Coherence check (if codebase module available)
+         let coherent = true;
+         if (makeFillPrompt) {
+            try {
+               coherent = await checkCoherence(mid, makeFillPrompt);
+            } catch (e) {
+               console.warn(`  [maxctx] coherence check error: ${e.message}`);
+               coherent = false;
+            }
+         }
+
+         lastVram = await snapshotVram();
+         await stopServer();
+         await waitVramClear(20_000);
+
+         if (coherent) {
+            console.log(`  [maxctx] ctx=${mid} ✓ coherent  vram=${lastVram ?? '?'}MiB`);
+            coherenceCeiling = mid;
+            lo = mid;
+         } else {
+            console.log(`  [maxctx] ctx=${mid} ✗ incoherent (possible RoPE failure or OOM partial)`);
+            hi = mid - 2048;
+         }
       }
 
-      throw new Error(`${hf_file}: failed to load at any ctx size`);
+      const ctxLoaded = coherenceCeiling > lo ? coherenceCeiling : lo;
+      console.log(`  [maxctx] result: ${ctxLoaded.toLocaleString()} tokens  (oom_ceiling=${oomCeiling}, coherence_ceiling=${coherenceCeiling})`);
+      return { ctxLoaded, oomCeiling, coherenceCeiling, vramMib: lastVram };
    }
 
-   async function stop() {
-      // 1. Kill tracked PID.
-      if (_pid) {
-         await ssh(sshHost, `kill ${_pid} 2>/dev/null; sleep 1; kill -9 ${_pid} 2>/dev/null || true`).catch(() => {});
-         _pid = null;
+   /**
+    * Coherence check: feed a large synthetic codebase prompt, ask for needle near the end.
+    * Returns true if the model answers correctly.
+    */
+   async function checkCoherence(ctxSize, makeFillPrompt) {
+      const { messages, expectedAnswer, fillRate } = makeFillPrompt(ctxSize);
+
+      if (fillRate < 0.93) {
+         console.warn(`  [maxctx] fill_rate=${fillRate.toFixed(2)} < 0.93 — skipping coherence (stale context size)`);
+         return false;
       }
-      // 2. Kill anything still holding the port.
-      await ssh(sshHost, `fuser -k ${port}/tcp 2>/dev/null || true`).catch(() => {});
-      // 3. Kill all llama-server processes — catches orphans from previous runs or crashes.
-      await ssh(sshHost, `pkill -9 -f llama-server 2>/dev/null || true`).catch(() => {});
-      await new Promise((r) => setTimeout(r, 5000));
-   }
 
-   /** rocm-smi VRAM used in MiB. */
-   async function snapshotVram() {
+      let resp;
       try {
-         const { stdout } = await ssh(sshHost, 'rocm-smi --showmeminfo vram --json', { timeout: 10_000 });
-         const card = Object.values(JSON.parse(stdout))[0] ?? {};
-         const bytes = parseInt(card['VRAM Total Used Memory (B)'] ?? '0', 10);
-         return Math.round(bytes / (1024 * 1024));
-      } catch { return null; }
+         resp = await client.chat(messages, {
+            think: null,
+            temperature: 0.0,
+            max_tokens: 64,
+         }, 120_000);
+      } catch {
+         return false;
+      }
+
+      const content = (resp.completion?.choices?.[0]?.message?.content ?? '').toLowerCase();
+      const answer = String(expectedAnswer).toLowerCase();
+      const isCorrect = content.includes(answer);
+
+      if (process.env.BENCH_DEBUG) {
+         console.error(`  [coherence] expected="${answer}" got="${content.slice(0, 100)}"`);
+      }
+      return isCorrect;
    }
 
-   return { start, stop, snapshotVram, client };
+   function roundTo2k(n) { return Math.max(4096, Math.round(n / 2048) * 2048); }
+
+   /**
+    * Full start sequence: kill orphans → binary-search max-ctx → start real server.
+    * Used by run-suite.mjs before each model's bench pass.
+    *
+    * @param {object} modelCfg  model entry from models.yaml
+    * @returns {{ ctxLoaded, oomCeiling, coherenceCeiling, vramMib }}
+    */
+   async function startForModel(modelCfg) {
+      await killAll();
+      await waitVramClear(30_000);
+
+      // Run binary search to find max usable ctx
+      const ctxResult = await binarySearchCtx(modelCfg);
+
+      // Now start the real server at discovered ctx
+      await startServer({
+         hf_repo: modelCfg.hf_repo,
+         hf_file: modelCfg.hf_file,
+         ctx: ctxResult.ctxLoaded,
+         extraFlags: modelCfg.extra_flags ?? '',
+      });
+      await waitHealthy(360_000);
+
+      const vramMib = await snapshotVram();
+      console.log(`[llamacpp] ready  ctx=${ctxResult.ctxLoaded}  vram=${vramMib ?? '?'}MiB`);
+      return { ...ctxResult, vramMib };
+   }
+
+   /**
+    * Check if the server is still alive. Restart once if dead.
+    * Returns false only if restart also fails.
+    */
+   async function ensureAlive(modelCfg) {
+      const alive = await client.waitHealthy(5_000).then(() => true).catch(() => false);
+      if (alive) return { alive: true };
+
+      // Check for crash before restarting
+      const crashed = await hasCrashed();
+      console.warn(`  [warn] server ${crashed ? 'crashed' : 'died'}, restarting...`);
+
+      try {
+         await killAll();
+         await startServer({
+            hf_repo: modelCfg.hf_repo,
+            hf_file: modelCfg.hf_file,
+            ctx: modelCfg._ctxLoaded ?? 8192,
+            extraFlags: modelCfg.extra_flags ?? '',
+         });
+         await waitHealthy(120_000);
+         return { alive: true, restarted: true };
+      } catch (e) {
+         console.error(`  [error] restart failed: ${e.message}`);
+         return { alive: false };
+      }
+   }
+
+   return {
+      client,
+      detectBackends,
+      startForModel,
+      startServer,
+      stopServer,
+      killAll,
+      waitHealthy,
+      snapshotVram,
+      waitVramClear,
+      hasCrashed,
+      ensureAlive,
+   };
 }

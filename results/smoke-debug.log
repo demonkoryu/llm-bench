@@ -1,0 +1,53 @@
+
+[run-suite] 1 models × 1 KV = 1 server starts
+[run-suite] LLAMA_URL=http://192.168.1.120:8090  SSH=llm2
+
+
+══════════════════════════════════════════════════════════════════════
+  qwen3.5 4B Q4  KV=f16  (ctk=f16 ctv=f16)
+══════════════════════════════════════════════════════════════════════
+[llamacpp] starting PID=2889557 Qwen3.5-4B-Q4_K_M.gguf ctx=65536 ctk=f16 ctv=f16
+[llamacpp] ready  ctx=65536  vram=8096MiB
+  [reasoning no_think] [req] max_tokens=1024 think=false rf=true
+[req] max_tokens=1024 think=false rf=true
+[req] max_tokens=1024 think=false rf=true
+[req] max_tokens=1024 think=false rf=true
+[req] max_tokens=1024 think=false rf=true
+[req] max_tokens=1024 think=false rf=true
+[req] max_tokens=1024 think=false rf=true
+[req] max_tokens=1024 think=false rf=true
+[req] max_tokens=1024 think=false rf=true
+[req] max_tokens=1024 think=false rf=true
+[req] max_tokens=1024 think=false rf=true
+[req] max_tokens=1024 think=false rf=true
+accuracy=91.7%  tok/s=29.9
+  [reasoning think] [req] max_tokens=32768 think=true rf=false
+[req] max_tokens=32768 think=true rf=false
+[req] max_tokens=32768 think=true rf=false
+[req] max_tokens=32768 think=true rf=false
+[req] max_tokens=32768 think=true rf=false
+[req] max_tokens=32768 think=true rf=false
+[req] max_tokens=32768 think=true rf=false
+[req] max_tokens=32768 think=true rf=false
+[req] max_tokens=32768 think=true rf=false
+[req] max_tokens=32768 think=true rf=false
+[req] max_tokens=32768 think=true rf=false
+[req] max_tokens=32768 think=true rf=false
+accuracy=8.3%  tok/s=28.6
+
+[run-suite] promptfoo JSON → F:\repos\llm-bench\results\run-2026-06-01T15-42-36-851Z.json
+[run-suite] View: npx promptfoo view F:\repos\llm-bench\results\run-2026-06-01T15-42-36-851Z.json
+
+[run-suite] Done. Results: F:\repos\llm-bench\results\results.tsv
+q] max_tokens=32768 think=true rf=false
+[req] max_tokens=32768 think=true rf=false
+[req] max_tokens=32768 think=true rf=false
+[req] max_tokens=32768 think=true rf=false
+[req] max_tokens=32768 think=true rf=false
+[req] max_tokens=32768 think=true rf=false
+accuracy=8.3%  tok/s=29.6
+
+[run-suite] promptfoo JSON → F:\repos\llm-bench\results\run-2026-06-01T15-42-36-600Z.json
+[run-suite] View: npx promptfoo view F:\repos\llm-bench\results\run-2026-06-01T15-42-36-600Z.json
+
+[run-suite] Done. Results: F:\repos\llm-bench\results\results.tsv

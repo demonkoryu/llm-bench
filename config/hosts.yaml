@@ -1,17 +1,31 @@
 # Endpoint config per target host.
-# Override via env: LLAMA_URL, SSH_HOST
+# Override via env: LLAMA_URL, SSH_HOST, BACKEND
+#
+# Backend switching:
+#   Default backend is 'vulkan'. Pass --backend rocm to use ROCm build.
+#   The harness auto-detects which builds are present via scripts/llm2/backends.sh.
 
 rose:
    label: "rose / RX 7900 XT (20 GiB)"
    llamacpp: "${LLAMA_URL:-http://192.168.1.120:8090}"
    ssh_host: "${SSH_HOST:-llm2}"
-   vram_cmd: "rocm-smi --showmemuse --json"
-   # llama.cpp binary: ROCm build ~/llama.cpp/build-rocm/bin/llama-server (June 2026)
-   # DeltaNet HIP GPU kernel + ctk/ctv support.
-   # Model cache: ~/.cache/llama.cpp/ (downloaded via --hf-repo/--hf-file on first run)
+   port: 8090
+   # llama.cpp backend binaries on llm2:
+   backends:
+      vulkan:
+         bin: "~/llama.cpp/build-vulkan/bin/llama-server"
+      rocm:
+         bin: "~/llama.cpp/build-rocm/bin/llama-server"
+         notes: "ROCm/DeltaNet HIP build — use --backend rocm"
+   # Remote benchmark deploy path (git pull target)
+   remote_dir: "~/llm-bench"
+   # VRAM monitoring command (works regardless of inference backend)
+   vram_cmd: "rocm-smi --showmeminfo vram --json"
 
 m1:
    label: "M1 Mac (32 GB unified)"
-   llamacpp: null                    # no llama.cpp on M1; MLX runner only
+   llamacpp: null                    # no llama.cpp on M1; MLX runner only (not yet implemented)
    ssh_host: "${SSH_HOST_M1:-m1}"
+   port: 8080
+   backends: {}
    vram_cmd: "sudo powermetrics --samplers gpu_power -n 1 2>/dev/null | grep 'GPU HW'"
