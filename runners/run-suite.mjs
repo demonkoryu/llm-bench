@@ -137,12 +137,10 @@ function getThinkModes(model) {
    return thinkStates(capabilityClass(model));
 }
 
-/**
- * Benches to skip when running in think mode.
- * Tool-calling is incompatible with think mode; maxctx is think-independent
- * (probed once in the no_think / null pass).
- */
-const _THINK_SKIP = ['toolcalling', 'toolcalling_decay', 'maxctx'];
+// Think-mode bench gating is inline at each bench dispatch (thinkState !== true
+// checks). For reference, the benches that do NOT run in think mode are:
+// toolcalling + toolcalling_decay (tool use is incompatible with a think pass)
+// and maxctx (think-independent — probed once in the no_think / null pass).
 
 // ── Token budgets ──────────────────────────────────────────────────────────────
 const MAX_TOKENS = {
@@ -467,8 +465,7 @@ async function runToolcalling(client, model) {
 }
 
 async function runSummarization(client, model, thinkState) {
-   const effectiveThink = thinkState === true ? false : thinkState; // summarization: skip think mode
-   const sampling = sampleOpts(model, effectiveThink, 'summarization');
+   const sampling = sampleOpts(model, thinkState, 'summarization');
    const thinkControl = model.think_control ?? 'enable_thinking';
    const SYSTEM =
       'Summarize and categorize content for a personal knowledge vault.\nVault areas: craft (software, AI, hardware, PKM), finance (trading, markets), music (DJing, production), work (career, employer).\n\nRespond with JSON only:\n{"summary": "<1-2 sentence factual summary>", "area": "<craft|finance|music|work>", "tags": ["<area/subtag>", ...]}';
@@ -486,9 +483,9 @@ async function runSummarization(client, model, thinkState) {
       let completion;
       try {
          const res = await client.chat(messages, {
-            think: effectiveThink,
+            think: thinkState,
             thinkControl,
-            max_tokens: MAX_TOKENS.instruct,
+            max_tokens: thinkState === true ? MAX_TOKENS.think : MAX_TOKENS.instruct,
             ...sampling,
          });
          completion = res.completion;
@@ -503,7 +500,7 @@ async function runSummarization(client, model, thinkState) {
       recordPf({
          bench: 'summarization',
          model,
-         think: effectiveThink,
+         think: thinkState,
          vars: { case_id: caseId },
          promptRaw: messages[1].content,
          output: raw,
@@ -523,8 +520,7 @@ async function runSummarization(client, model, thinkState) {
 }
 
 async function runDocqa(client, model, thinkState) {
-   const effectiveThink = thinkState === true ? false : thinkState;
-   const sampling = sampleOpts(model, effectiveThink, 'docqa');
+   const sampling = sampleOpts(model, thinkState, 'docqa');
    const thinkControl = model.think_control ?? 'enable_thinking';
    const { docs, questions } = docqaCases;
    const docMap = Object.fromEntries((docs ?? []).map((d) => [d.id, d.source]));
@@ -545,9 +541,9 @@ async function runDocqa(client, model, thinkState) {
       let completion;
       try {
          const res = await client.chat(messages, {
-            think: effectiveThink,
+            think: thinkState,
             thinkControl,
-            max_tokens: MAX_TOKENS.docqa,
+            max_tokens: thinkState === true ? MAX_TOKENS.think : MAX_TOKENS.docqa,
             ...sampling,
          });
          completion = res.completion;
@@ -1042,8 +1038,8 @@ for (const model of models) {
          }
       }
 
-      // docqa — skip in pure-think mode
-      if (thinkState !== true) {
+      // docqa — runs in both think and no-think passes
+      {
          const res = await skipOrRun('docqa', () => runDocqa(client, model, thinkState));
          if (res) {
             console.log(`mean=${res.r.score}/10  trap_hits=${res.r.halls}`);
@@ -1069,8 +1065,8 @@ for (const model of models) {
          }
       }
 
-      // summarization — skip in pure-think mode
-      if (thinkState !== true) {
+      // summarization — runs in both think and no-think passes
+      {
          const res = await skipOrRun('summarization', () => runSummarization(client, model, thinkState));
          if (res) {
             console.log(`score=${res.r.score}`);

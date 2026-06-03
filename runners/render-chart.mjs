@@ -44,9 +44,26 @@ const data = rows
    })
    .filter((r) => r.status === 'ok' && r.bench !== 'load' && r.bench !== 'smoke');
 
+// maxctx is recorded once per model (think='-'); the think/no_think variants
+// reuse that single probe. Build a base-model → maxctx lookup so every variant
+// can inherit it, and keep maxctx rows out of the per-variant grouping.
+const baseModel = (m) => m.replace(/--(?:nothi|think)$/, '');
+const maxctxByModel = new Map();
+for (const row of data) {
+   if (row.bench === 'maxctx') {
+      const v = parseFloat(row.score);
+      if (Number.isFinite(v)) {
+         maxctxByModel.set(baseModel(row.model), v);
+      }
+   }
+}
+
 // Group by model × think-state
 const modelMap = new Map();
 for (const row of data) {
+   if (row.bench === 'maxctx') {
+      continue;
+   }
    const key = `${row.model}|${row.think}`;
    if (!modelMap.has(key)) {
       modelMap.set(key, { model: row.model, think: row.think, rows: [] });
@@ -66,7 +83,7 @@ function bestScore(rows, bench) {
 // Build model summaries
 const models = [...modelMap.values()]
    .map(({ model, think, rows }) => {
-      const maxctx = bestScore(rows, 'maxctx');
+      const maxctx = maxctxByModel.get(baseModel(model)) ?? null;
       const triage = bestScore(rows, 'triage');
       const toolcall = bestScore(rows, 'toolcalling');
       const summ = bestScore(rows, 'summarization');
@@ -96,6 +113,25 @@ const models = [...modelMap.values()]
 if (!models.length) {
    console.error('No completed model results found in TSV. Run the benchmark first.');
    process.exit(0);
+}
+
+// Flag maxctx reuse: think variants of the same base model share one probe.
+// The first variant (n/a → no_think → think order) owns the displayed number;
+// siblings render "same as <owner>" so a blank cell reads as intentional reuse.
+const THINK_ORDER = { 'n/a': 0, no_think: 1, think: 2 };
+const variantsByBase = new Map();
+for (const m of models) {
+   const b = baseModel(m.model);
+   if (!variantsByBase.has(b)) {
+      variantsByBase.set(b, []);
+   }
+   variantsByBase.get(b).push(m);
+}
+for (const variants of variantsByBase.values()) {
+   variants.sort((a, b) => (THINK_ORDER[a.think] ?? 9) - (THINK_ORDER[b.think] ?? 9));
+   for (const v of variants) {
+      v.maxctxSharedFrom = v === variants[0] ? null : variants[0].think;
+   }
 }
 
 // Normalize for ranking
@@ -296,21 +332,27 @@ ranked.forEach((m, rank) => {
    svg += rect(tx0 + COLS[1].x - 2, ty - 9, 9, 9, m.color, 2);
    svg += svgText(tx0 + COLS[1].x + 12, ty, m.label, { fill: TEXT, size: 10 });
 
-   const ctxStr = m.maxctx != null ? (m.maxctx >= 1000 ? `${Math.round(m.maxctx / 1000)}k` : String(m.maxctx)) : '?';
+   const ctxNum = m.maxctx != null ? (m.maxctx >= 1000 ? `${Math.round(m.maxctx / 1000)}k` : String(m.maxctx)) : '?';
+   const ctxStr = m.maxctxSharedFrom ? `same as ${m.maxctxSharedFrom}` : ctxNum;
    const spdStr = m.speedTg != null ? `${m.speedTg.toFixed(0)} t/s` : '?';
    const qualStr = m.qual != null ? m.qual.toFixed(1) : '?';
    const toolStr = m.toolcall != null ? `${m.toolcall.toFixed(0)}%` : 'n/a';
 
    const vals = [
       { col: COLS[0], v: String(rank + 1), fill: '#777' },
-      { col: COLS[2], v: ctxStr, fill: m.maxctx && m.maxctx >= maxCtx * 0.9 ? ACCENT : TEXT },
+      {
+         col: COLS[2],
+         v: ctxStr,
+         fill: m.maxctxSharedFrom ? DIM : m.maxctx && m.maxctx >= maxCtx * 0.9 ? ACCENT : TEXT,
+         size: m.maxctxSharedFrom ? 8 : 10,
+      },
       { col: COLS[3], v: spdStr, fill: TEXT },
       { col: COLS[4], v: qualStr, fill: TEXT },
       { col: COLS[5], v: toolStr, fill: TEXT },
       { col: COLS[6], v: `${m.score.toFixed(1)}%`, fill: ACCENT, weight: '700' },
    ];
-   for (const { col, v, fill, weight } of vals) {
-      svg += svgText(tx0 + col.x, ty, v, { fill, size: 10, weight: weight ?? 'normal' });
+   for (const { col, v, fill, weight, size } of vals) {
+      svg += svgText(tx0 + col.x, ty, v, { fill, size: size ?? 10, weight: weight ?? 'normal' });
    }
    svg += rect(PAD.left, ty + 8, WIDE_W, 1, '#1e1e2a');
 });
