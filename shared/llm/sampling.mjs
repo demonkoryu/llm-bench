@@ -48,7 +48,7 @@ const FALLBACKS = {
    },
    // Reasoning-only split field (LFM2.5)
    [CAPABILITY.REASONING_ONLY]: {
-      null: {
+      default: {
          temperature: 0.2,
          top_k: 80,
          min_p: 0,
@@ -57,7 +57,7 @@ const FALLBACKS = {
    },
    // Standard instruct (no think)
    [CAPABILITY.NON_THINKING]: {
-      null: {
+      default: {
          temperature: 0.1,
          toolcalling: { temperature: 0.4, top_p: 0.9 },
          summarization: { temperature: 0.3 },
@@ -80,16 +80,16 @@ const FALLBACKS = {
  * @returns {object}  sampling params to spread into the request body
  */
 export function resolveSampling(model, cap, think, useCase, matrix) {
-   const thinkKey = think === true ? 'think' : think === false ? 'no_think' : 'null';
+   const thinkKey = think === true ? 'think' : think === false ? 'no_think' : 'default';
    const family = model.family ?? '';
 
    // 1. Look up by model family name — exact match first, then underscore-normalised
    //    (YAML keys with dashes are valid; we store the literal family name in the matrix)
    const familyEntry =
       matrix?.[family]?.[thinkKey] ??
-      matrix?.[family]?.null ??
+      matrix?.[family]?.default ??
       matrix?.[family.replace(/-/g, '_')]?.[thinkKey] ??
-      matrix?.[family.replace(/-/g, '_')]?.null;
+      matrix?.[family.replace(/-/g, '_')]?.default;
 
    if (familyEntry) {
       const useCaseOverride = familyEntry[useCase];
@@ -97,7 +97,7 @@ export function resolveSampling(model, cap, think, useCase, matrix) {
    }
 
    // 2. Hardcoded fallback keyed by capability class (for families not in the matrix)
-   const fallback = FALLBACKS[cap]?.[thinkKey] ?? FALLBACKS[cap]?.null ?? {};
+   const fallback = FALLBACKS[cap]?.[thinkKey] ?? FALLBACKS[cap]?.default ?? {};
    const useCaseOverride = fallback[useCase];
    return cleanSampling(useCaseOverride ? { ...fallback, ...useCaseOverride } : fallback);
 }
