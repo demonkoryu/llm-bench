@@ -8,8 +8,11 @@
    },
    "scripts": {
       "dry-run": "node runners/run-suite.mjs --dry-run",
-      "bench": "node runners/run-suite.mjs",
-      "results": "node runners/results-to-md.mjs"
+      "bench":   "node runners/run-suite.mjs",
+      "smoke":   "node runners/smoke.mjs",
+      "chart":   "node runners/render-chart.mjs",
+      "results": "node runners/results-to-md.mjs",
+      "deploy":  "bash scripts/deploy.sh"
    },
    "devDependencies": {
       "promptfoo": "^0.121.13"
