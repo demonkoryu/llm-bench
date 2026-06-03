@@ -14,140 +14,37 @@
  * Output: results/chart.svg
  */
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import { aggregateModels, latestResultsFile, readTable } from '../shared/results-csv.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dir, '..');
+const RESULTS_DIR = join(ROOT, 'results');
 
 const { values: flags } = parseArgs({
    options: {
-      input: { type: 'string', default: join(ROOT, 'results/results.tsv') },
-      output: { type: 'string', default: join(ROOT, 'results/chart.svg') },
+      input: { type: 'string' },
+      output: { type: 'string', default: join(RESULTS_DIR, 'chart.svg') },
    },
 });
 
-// ── Read & aggregate TSV ───────────────────────────────────────────────────────
-if (!existsSync(flags.input)) {
-   console.error(`Results file not found: ${flags.input}`);
+// ── Read & aggregate ────────────────────────────────────────────────────────────
+const inputPath = flags.input ?? latestResultsFile(RESULTS_DIR);
+if (!existsSync(inputPath)) {
+   console.error(`Results file not found: ${inputPath}`);
    process.exit(1);
 }
-const rows = readFileSync(flags.input, 'utf8').split('\n').filter(Boolean);
-const header = rows[0].split('\t');
-const data = rows
-   .slice(1)
-   .map((line) => {
-      const cells = line.split('\t');
-      return Object.fromEntries(header.map((h, i) => [h, cells[i] ?? '']));
-   })
-   .filter((r) => r.status === 'ok' && r.bench !== 'load' && r.bench !== 'smoke');
-
-// maxctx is recorded once per model (think='-'); the think/no_think variants
-// reuse that single probe. Build a base-model → maxctx lookup so every variant
-// can inherit it, and keep maxctx rows out of the per-variant grouping.
-const baseModel = (m) => m.replace(/--(?:nothi|think)$/, '');
-const maxctxByModel = new Map();
-for (const row of data) {
-   if (row.bench === 'maxctx') {
-      const v = parseFloat(row.score);
-      if (Number.isFinite(v)) {
-         maxctxByModel.set(baseModel(row.model), v);
-      }
-   }
-}
-
-// Group by model × think-state
-const modelMap = new Map();
-for (const row of data) {
-   if (row.bench === 'maxctx') {
-      continue;
-   }
-   const key = `${row.model}|${row.think}`;
-   if (!modelMap.has(key)) {
-      modelMap.set(key, { model: row.model, think: row.think, rows: [] });
-   }
-   modelMap.get(key).rows.push(row);
-}
-
-// Extract best numeric value for a bench
-function bestScore(rows, bench) {
-   const matches = rows
-      .filter((r) => r.bench === bench)
-      .map((r) => parseFloat(r.score))
-      .filter(Number.isFinite);
-   return matches.length ? Math.max(...matches) : null;
-}
-
-// Build model summaries
-const models = [...modelMap.values()]
-   .map(({ model, think, rows }) => {
-      const maxctx = maxctxByModel.get(baseModel(model)) ?? null;
-      const triage = bestScore(rows, 'triage');
-      const toolcall = bestScore(rows, 'toolcalling');
-      const summ = bestScore(rows, 'summarization');
-      const docqa = bestScore(rows, 'docqa');
-      const speedTg =
-         Math.max(bestScore(rows, 'speed_short') ?? 0, bestScore(rows, 'speed_long-32k') ?? 0, bestScore(rows, 'speed') ?? 0) || null;
-
-      // Quality blend: triage (0-100), summ (0-100), docqa (0-10→*10)
-      const qualParts = [triage, summ, docqa != null ? docqa * 10 : null].filter((v) => v != null);
-      const qual = qualParts.length ? qualParts.reduce((a, b) => a + b, 0) / qualParts.length : null;
-
-      return {
-         label: `${model}${think !== 'n/a' ? ` [${think}]` : ''}`,
-         model,
-         think,
-         maxctx,
-         triage,
-         toolcall,
-         summ,
-         docqa,
-         speedTg,
-         qual,
-      };
-   })
-   .filter((m) => m.maxctx || m.triage || m.speedTg); // skip empty rows
+const { models, ranking, maxCtx, maxSpeed } = aggregateModels(readTable(inputPath));
 
 if (!models.length) {
-   console.error('No completed model results found in TSV. Run the benchmark first.');
+   console.error('No completed model results found. Run the benchmark first.');
    process.exit(0);
 }
 
-// Flag maxctx reuse: think variants of the same base model share one probe.
-// The first variant (n/a → no_think → think order) owns the displayed number;
-// siblings render "same as <owner>" so a blank cell reads as intentional reuse.
-const THINK_ORDER = { 'n/a': 0, no_think: 1, think: 2 };
-const variantsByBase = new Map();
-for (const m of models) {
-   const b = baseModel(m.model);
-   if (!variantsByBase.has(b)) {
-      variantsByBase.set(b, []);
-   }
-   variantsByBase.get(b).push(m);
-}
-for (const variants of variantsByBase.values()) {
-   variants.sort((a, b) => (THINK_ORDER[a.think] ?? 9) - (THINK_ORDER[b.think] ?? 9));
-   for (const v of variants) {
-      v.maxctxSharedFrom = v === variants[0] ? null : variants[0].think;
-   }
-}
-
-// Normalize for ranking
-const maxCtx = Math.max(...models.map((m) => m.maxctx ?? 0)) || 1;
-const maxSpeed = Math.max(...models.map((m) => m.speedTg ?? 0)) || 1;
-
-// Weighted ranking: quality 25, tool 20, ctx 30, speed 25
-function finalScore(m) {
-   const qualN = m.qual != null ? m.qual / 100 : 0;
-   const toolN = m.toolcall != null ? m.toolcall / 100 : 0;
-   const ctxN = m.maxctx != null ? m.maxctx / maxCtx : 0;
-   const speedN = m.speedTg != null ? m.speedTg / maxSpeed : 0;
-   return 0.25 * qualN + 0.2 * toolN + 0.3 * ctxN + 0.25 * speedN;
-}
-
-// ── SVG constants ─────────────────────────────────────────────────────────────
+// Colors are presentation-only; assign per model after aggregation.
 const COLORS = [
    '#5ab4fa',
    '#82dc82',
@@ -162,14 +59,12 @@ const COLORS = [
    '#e06090',
    '#90e060',
 ];
-
 models.forEach((m, i) => {
-   m.score = Math.round(finalScore(m) * 1000) / 10;
    m.color = COLORS[i % COLORS.length];
 });
+const ranked = ranking;
 
-const ranked = [...models].sort((a, b) => b.score - a.score);
-
+// ── SVG constants ─────────────────────────────────────────────────────────────
 const BG = '#0f0f13';
 const PANEL = '#18181f';
 const TRACK = '#252530';

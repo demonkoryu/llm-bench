@@ -1,30 +1,31 @@
 /**
- * Convert results/results.tsv to a consolidated markdown report.
- * Usage: node runners/results-to-md.mjs [--output results/report.md]
+ * Convert a results CSV (or legacy TSV) to a consolidated markdown report.
+ * Usage: node runners/results-to-md.mjs [--input <file>] [--output results/report.md]
  */
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import { latestResultsFile, readTable } from '../shared/results-csv.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dir, '..');
+const RESULTS_DIR = join(ROOT, 'results');
 
 const { values: flags } = parseArgs({
-   options: { output: { type: 'string', default: join(ROOT, 'results/report.md') } },
+   options: {
+      input: { type: 'string' },
+      output: { type: 'string', default: join(RESULTS_DIR, 'report.md') },
+   },
 });
 
-const tsv = readFileSync(join(ROOT, 'results/results.tsv'), 'utf8');
-const lines = tsv.trim().split('\n');
-const headers = lines[0].split('\t');
-const rows = lines
-   .slice(1)
-   .filter(Boolean)
-   .map((l) => {
-      const cols = l.split('\t');
-      return Object.fromEntries(headers.map((h, i) => [h, cols[i] ?? '']));
-   });
+const inputPath = flags.input ?? latestResultsFile(RESULTS_DIR);
+if (!existsSync(inputPath)) {
+   console.error(`Results file not found: ${inputPath}`);
+   process.exit(1);
+}
+const rows = readTable(inputPath);
 
 // Group by bench type
 const byBench = {};
@@ -38,7 +39,7 @@ for (const r of rows) {
 const lines_out = [
    '# LLM Benchmark Report',
    '',
-   `Generated from \`results/results.tsv\` — ${rows.length} result rows across ${Object.keys(byBench).length} bench types.`,
+   `Generated from \`${inputPath.split(/[\\/]/).pop()}\` — ${rows.length} result rows across ${Object.keys(byBench).length} bench types.`,
    '',
 ];
 
@@ -53,16 +54,16 @@ for (const bench of benchOrder) {
    lines_out.push(`## ${bench}`);
    lines_out.push('');
 
-   // Group by KV type
-   const kvGroups = [...new Set(bRows.map((r) => r.kv))].sort();
+   // Group by backend (vulkan / rocm)
+   const backends = [...new Set(bRows.map((r) => r.backend))].sort();
 
-   for (const kv of kvGroups) {
-      const kvRows = bRows.filter((r) => r.kv === kv).sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
+   for (const backend of backends) {
+      const kvRows = bRows.filter((r) => r.backend === backend).sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
       if (!kvRows.length) {
          continue;
       }
 
-      lines_out.push(`### KV=${kv}`);
+      lines_out.push(`### backend=${backend}`);
       lines_out.push('');
 
       // Determine columns based on bench type
@@ -100,10 +101,10 @@ for (const bench of benchOrder) {
             lines_out.push(`| ${r.model} | ${r.score} | ${chars} | ${r.vram_mib} |`);
          }
       } else if (bench === 'longctx') {
-         lines_out.push('| Model | KV | Passkey | Multi-fact | VRAM MiB |');
+         lines_out.push('| Model | Backend | Passkey | Multi-fact | VRAM MiB |');
          lines_out.push('|---|---|---|---|---|');
          for (const r of kvRows) {
-            lines_out.push(`| ${r.model} | ${r.kv} | ${r.score} | ${r.notes.replace('multifact=', '')} | ${r.vram_mib} |`);
+            lines_out.push(`| ${r.model} | ${r.backend} | ${r.score} | ${r.notes.replace('multifact=', '')} | ${r.vram_mib} |`);
          }
       } else {
          lines_out.push('| Model | Think | Score | Status |');

@@ -34,14 +34,17 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import { formatRow, headerLine, latestResultsFile, readTable } from '../shared/results-csv.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dir, '..');
+const RESULTS_DIR = join(ROOT, 'results');
 
 const { values: flags } = parseArgs({
    options: {
       verdicts: { type: 'string', default: join(ROOT, 'results/judge') },
-      tsv: { type: 'string', default: join(ROOT, 'results/results.tsv') },
+      results: { type: 'string' },
+      tsv: { type: 'string' }, // legacy alias for --results
    },
 });
 
@@ -77,64 +80,43 @@ if (!scoreByModelId.size) {
    process.exit(1);
 }
 
-// ── Read TSV ──────────────────────────────────────────────────────────────────
-if (!existsSync(flags.tsv)) {
-   console.error(`TSV not found: ${flags.tsv}`);
+// ── Read results table ──────────────────────────────────────────────────────────
+const resultsPath = flags.results ?? flags.tsv ?? latestResultsFile(RESULTS_DIR);
+if (!existsSync(resultsPath)) {
+   console.error(`Results file not found: ${resultsPath}`);
    process.exit(1);
 }
 
-const raw = readFileSync(flags.tsv, 'utf8');
-const lines = raw.split('\n');
-const headerLine = lines[0] ?? '';
-const headers = headerLine.split('\t');
+const rows = readTable(resultsPath);
+if (!rows.length) {
+   console.error(`No rows in ${resultsPath}`);
+   process.exit(1);
+}
 
-// Add judge_score column if absent
-let judgeIdx = headers.indexOf('judge_score');
-if (judgeIdx < 0) {
-   headers.push('judge_score');
-   judgeIdx = headers.length - 1;
+// Preserve the file's existing column order; ensure judge_score is present.
+const columns = Object.keys(rows[0]);
+if (!columns.includes('judge_score')) {
+   columns.push('judge_score');
 }
 
 // ── Merge scores ──────────────────────────────────────────────────────────────
-// The model column in TSV is 'model' (from `modelId(m)` which is the hf_file base + think suffix)
-// The verdict model_id is 'llamacpp:<modelId>' (from `provider.id` in run-suite pfResults).
-// We match on the base model ID part (strip 'llamacpp:' prefix).
-const modelColIdx = headers.indexOf('model');
-if (modelColIdx < 0) {
-   console.error('No "model" column in TSV header.');
-   process.exit(1);
-}
-
+// The 'model' column is modelId(m) (hf_file base + think suffix). Verdict model_id
+// may carry the run-suite provider prefix 'llamacpp:<modelId>' — match either form.
 let updatedCount = 0;
-const outLines = [headers.join('\t')];
-
-for (const line of lines.slice(1)) {
-   if (!line.trim()) {
-      continue;
-   }
-   const cells = line.split('\t');
-
-   // Extend cells if needed
-   while (cells.length <= judgeIdx) {
-      cells.push('');
-   }
-
-   const modelId = cells[modelColIdx] ?? '';
-   // Try exact match first, then try stripping 'llamacpp:' prefix from verdict keys
-   let score = scoreByModelId.get(modelId);
-   if (score == null) {
-      score = scoreByModelId.get(`llamacpp:${modelId}`);
-   }
+for (const row of rows) {
+   const modelId = row.model ?? '';
+   const score = scoreByModelId.get(modelId) ?? scoreByModelId.get(`llamacpp:${modelId}`);
    if (score != null) {
-      cells[judgeIdx] = score.toFixed(2);
+      row.judge_score = score.toFixed(2);
       updatedCount++;
+   } else if (row.judge_score == null) {
+      row.judge_score = '';
    }
-
-   outLines.push(cells.join('\t'));
 }
 
 // ── Write back ────────────────────────────────────────────────────────────────
-writeFileSync(flags.tsv, `${outLines.join('\n')}\n`, 'utf-8');
+const out = [headerLine(columns), ...rows.map((r) => formatRow(r, columns))].join('\n');
+writeFileSync(resultsPath, `${out}\n`, 'utf-8');
 
-console.log(`\njudge-merge: ${updatedCount} TSV row(s) updated with judge_score → ${basename(flags.tsv)}`);
+console.log(`\njudge-merge: ${updatedCount} row(s) updated with judge_score → ${basename(resultsPath)}`);
 console.log('Next: node runners/render-chart.mjs  (picks up judge_score automatically)');

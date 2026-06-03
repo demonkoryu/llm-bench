@@ -17,15 +17,17 @@
  *   --benches <name,...>   Restrict bench names
  *   --skip-maxctx          Skip binary-search ctx probe (use ctx_cap or 8192)
  *   --dry-run              Print matrix and exit
- *   --resume               Skip combos already in results/results.tsv
+ *   --resume               Skip combos already present in the results CSV
+ *   --out <file>           Append to an existing results CSV (default: new timestamped file)
  *   --debug                Enable LLM request/response logging (BENCH_DEBUG=1)
  */
 
 import { execFile } from 'node:child_process';
-import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, isAbsolute, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs, promisify } from 'node:util';
+import { appendRow, csvFilename, ensureHeader, readTable } from '../shared/results-csv.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dir, '..');
@@ -42,6 +44,7 @@ const { values: flags } = parseArgs({
       'dry-run': { type: 'boolean', default: false },
       resume: { type: 'boolean', default: false },
       debug: { type: 'boolean', default: false },
+      out: { type: 'string' }, // append to an existing results CSV instead of a new file
    },
 });
 
@@ -85,6 +88,7 @@ function resolveEnv(s) {
 
 const LLAMA_URL = resolveEnv(hostCfg.llamacpp);
 const SSH_HOST = resolveEnv(hostCfg.ssh_host);
+const GPU = hostCfg.gpu ?? TARGET;
 const SAMPLING_MATRIX = modelsConfig.sampling_matrix ?? {};
 
 // ── Shared LLM imports ──────────────────────────────────────────────────────────
@@ -197,34 +201,31 @@ export function isDivergent(text, minReps = 5) {
 
 // ── Results ────────────────────────────────────────────────────────────────────
 const RESULTS_DIR = join(ROOT, 'results');
-const RESULTS_TSV = join(RESULTS_DIR, 'results.tsv');
 mkdirSync(RESULTS_DIR, { recursive: true });
 
-const TSV_HEADER =
-   'target\tbackend\tmodel\tthink\tbench\tscore\thalls\tjson_fail\ttok_s\tprefill_tps\tvram_mib\tctx_loaded\toom_ceiling\tcoherence_ceiling\tstatus\twall_s\tnotes\n';
-if (!existsSync(RESULTS_TSV)) {
-   appendFileSync(RESULTS_TSV, TSV_HEADER);
-}
+// Each run writes to a self-describing CSV (host/gpu/backend/datetime). --out
+// appends to an existing CSV instead — used by resume / follow-up runs.
+const RESULTS_CSV = flags.out
+   ? isAbsolute(flags.out)
+      ? flags.out
+      : join(RESULTS_DIR, flags.out)
+   : join(RESULTS_DIR, csvFilename({ host: TARGET, gpu: GPU, backend: BACKEND, date: new Date() }));
+ensureHeader(RESULTS_CSV);
 
+// Resume key = the five identity columns (target, backend, model, think, bench).
 function tsvKey(model, think, bench) {
    return `${TARGET}\t${BACKEND}\t${model}\t${think}\t${bench}`;
 }
 
 function loadDoneKeys() {
-   if (!existsSync(RESULTS_TSV)) {
+   if (!existsSync(RESULTS_CSV)) {
       return new Set();
    }
-   return new Set(
-      readFileSync(RESULTS_TSV, 'utf8')
-         .split('\n')
-         .slice(1)
-         .filter(Boolean)
-         .map((l) => l.split('\t').slice(0, 5).join('\t')),
-   );
+   return new Set(readTable(RESULTS_CSV).map((r) => `${r.target}\t${r.backend}\t${r.model}\t${r.think}\t${r.bench}`));
 }
 
 function appendTsv(row) {
-   appendFileSync(RESULTS_TSV, `${Object.values(row).join('\t')}\n`);
+   appendRow(RESULTS_CSV, row);
 }
 
 // promptfoo JSON accumulator (compatible with `npx promptfoo view`)
@@ -1241,13 +1242,20 @@ for (const model of models) {
 
 flushPfJson();
 
-// Render the results SVG directly from the TSV (no external viewer needed).
+// Build the summary report (report.json) and SVG chart directly from the CSV.
+const REPORT_JSON = join(RESULTS_DIR, 'report.json');
 const CHART_SVG = join(RESULTS_DIR, 'chart.svg');
 try {
-   await execP('node', [join(ROOT, 'runners/render-chart.mjs'), '--input', RESULTS_TSV, '--output', CHART_SVG]);
+   await execP('node', [join(ROOT, 'runners/build-report.mjs'), '--input', RESULTS_CSV, '--output', REPORT_JSON]);
+   console.log(`[run-suite] report → ${REPORT_JSON}`);
+} catch (e) {
+   console.warn(`[run-suite] report build failed: ${e.message.slice(0, 120)}`);
+}
+try {
+   await execP('node', [join(ROOT, 'runners/render-chart.mjs'), '--input', RESULTS_CSV, '--output', CHART_SVG]);
    console.log(`[run-suite] chart → ${CHART_SVG}`);
 } catch (e) {
    console.warn(`[run-suite] chart render failed: ${e.message.slice(0, 120)}`);
 }
 
-console.log(`\n[run-suite] Done. Results: ${RESULTS_TSV}`);
+console.log(`\n[run-suite] Done. Results: ${RESULTS_CSV}`);

@@ -1,6 +1,8 @@
 node_modules/
 results/*.tsv
+results/*.csv
 results/*.md
 results/*.json
+results/*.svg
 *.out
 nohup.log

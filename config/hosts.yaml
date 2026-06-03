@@ -7,6 +7,7 @@
 
 rose:
    label: "rose / RX 7900 XT (20 GiB)"
+   gpu: "RX 7900 XT"                  # slugged into result CSV filenames (→ rx7900xt)
    llamacpp: "${LLAMA_URL:-http://192.168.1.120:8090}"
    ssh_host: "${SSH_HOST:-llm2}"
    port: 8090
@@ -24,6 +25,7 @@ rose:
 
 m1:
    label: "M1 Mac (32 GB unified)"
+   gpu: "M1"
    llamacpp: null                    # no llama.cpp on M1; MLX runner only (not yet implemented)
    ssh_host: "${SSH_HOST_M1:-m1}"
    port: 8080
