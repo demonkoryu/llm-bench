@@ -228,8 +228,12 @@ export function llamacppServer({
       const vramFree = await snapshotVram().then((mib) => (mib !== null ? 20480 - mib : 16384));
       const vramEstimate = Math.floor((vramFree * 1024 * 1024) / kv_bytes_per_token);
 
-      // Cap at documented native window, ctxCap override, VRAM estimate, and absolute max
-      let hi = Math.min(native_max_ctx ?? 131072, ctx_cap ?? 131072, roundTo2k(vramEstimate), 131072);
+      // Upper bound: documented native window (128k default when unknown), an
+      // optional ctx_cap override, and the VRAM estimate — whichever is smallest.
+      // No arbitrary absolute cap: 200k+ models (GLM-4.7-Flash, Gemma4-12B) must
+      // not be silently clipped to 128k. The empirical search still finds the real
+      // coherent ceiling, which on a 20 GiB card is usually VRAM-bound well below native.
+      let hi = Math.min(native_max_ctx ?? 131072, ctx_cap ?? Infinity, roundTo2k(vramEstimate));
       let lo = 4096;
 
       if (hi <= lo) {
