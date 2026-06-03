@@ -1,0 +1,3 @@
+# Normalize line endings: keep LF in repo, don't convert on checkout
+* text=auto eol=lf
+*.sh text eol=lf
