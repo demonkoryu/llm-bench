@@ -56,6 +56,9 @@ const vramFree = (m) => (m.maxctxVram != null ? CARD_TOTAL_MIB - m.maxctxVram : 
 // Decode-speed degradation under context load.
 const maxDecodeRef = Math.max(...models.map((m) => m.decodeRef ?? 0), 1);
 const maxRetention = Math.max(...models.map((m) => m.decodeRetentionPct ?? 0), 100);
+// Parallel-generation throughput.
+const maxPargenAgg = Math.max(...models.map((m) => m.pargenAggMax ?? 0), 1);
+const maxPargenSpeedup = Math.max(...models.map((m) => m.pargenSpeedup ?? 0), 1);
 
 // Colors are presentation-only; assign per model after aggregation.
 const COLORS = [
@@ -98,7 +101,7 @@ const TITLE_H = 32;
 const N = models.length;
 const PANEL_H = N * ROW_H + 8;
 
-const GRID_PANELS = 14; // one per metric panel (must match METRIC_PANELS.length below)
+const GRID_PANELS = 16; // one per metric panel (must match METRIC_PANELS.length below)
 const GRID_ROWS = Math.ceil(GRID_PANELS / 2);
 const GRID_H = GRID_ROWS * (TITLE_H + PANEL_H + 28);
 const TABLE_H = (N + 3) * 22 + 20;
@@ -260,6 +263,20 @@ const METRIC_PANELS = [
       getValue: (m) => m.decodeRetentionPct,
       formatVal: (v) => (v != null ? `${v.toFixed(0)}%` : '?'),
       getMax: () => maxRetention,
+   },
+   {
+      title: 'Aggregate decode @ 8 parallel slots (tok/s)',
+      weight: 'parallel',
+      getValue: (m) => m.pargenAggMax,
+      formatVal: (v) => (v != null ? `${v.toFixed(0)} t/s` : '?'),
+      getMax: () => maxPargenAgg,
+   },
+   {
+      title: 'Parallel batching speedup (8 slots vs 1)',
+      weight: 'parallel',
+      getValue: (m) => m.pargenSpeedup,
+      formatVal: (v) => (v != null ? `${v.toFixed(2)}×` : '?'),
+      getMax: () => maxPargenSpeedup,
    },
 ];
 

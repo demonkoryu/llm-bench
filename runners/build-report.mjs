@@ -123,6 +123,15 @@ const report = {
          ref_depth: m.decodeRefDepth,
          curve: m.decayCurve.map((p) => ({ depth: p.depth, tok_s: p.decode })),
       },
+      // Parallel-generation throughput: aggregate tok/s at K concurrent slots and
+      // the batching multiplier (agg@maxK ÷ agg@1) — how many agent slots one
+      // model can usefully serve at once.
+      parallel_gen: {
+         agg_tok_s_max: m.pargenAggMax,
+         max_slots: m.pargenMaxK,
+         speedup: m.pargenSpeedup,
+         curve: m.pargenCurve.map((p) => ({ slots: p.conc, agg_tok_s: p.tps })),
+      },
       weighted_score: m.score,
    })),
    ranking: ranking.map((m, i) => ({
@@ -150,6 +159,8 @@ const report = {
          ['vram_free_at_maxctx_mib', (m) => (m.maxctxVram != null ? CARD_TOTAL_MIB - m.maxctxVram : null)],
          ['decode_retention_pct', (m) => m.decodeRetentionPct], // % of base decode held at ~32k ctx
          ['decode_tok_s_at_ref', (m) => m.decodeRef], // absolute decode tok/s at the reference depth
+         ['parallel_agg_tok_s_8slots', (m) => m.pargenAggMax], // aggregate decode tok/s at max concurrency
+         ['parallel_speedup', (m) => m.pargenSpeedup], // batching multiplier vs single slot
       ].map(([category, get]) => [
          category,
          models

@@ -223,7 +223,16 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
    // them by base model so they attach to every think variant (like maxctx) and
    // don't spawn phantom 'n/a' model groups.
    const decayByModel = new Map(); // base model → Map(depth → decode tok/s, newest wins)
+   const pargenByModel = new Map(); // base model → Map(concurrency → aggregate tok/s)
    for (const r of data) {
+      if (String(r.bench).startsWith('speed_pargen-')) {
+         const k = Number(r.bench.replace('speed_pargen-', ''));
+         const tps = parseFloat(r.score);
+         if (Number.isFinite(k) && Number.isFinite(tps)) {
+            if (!pargenByModel.has(baseModel(r.model))) pargenByModel.set(baseModel(r.model), new Map());
+            pargenByModel.get(baseModel(r.model)).set(k, tps); // later row wins
+         }
+      }
       if (r.bench === 'maxctx') {
          const v = parseFloat(r.score);
          if (Number.isFinite(v)) {
@@ -245,7 +254,7 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
 
    const modelMap = new Map();
    for (const r of data) {
-      if (r.bench === 'maxctx' || String(r.bench).startsWith('speed_decay-')) {
+      if (r.bench === 'maxctx' || String(r.bench).startsWith('speed_decay-') || String(r.bench).startsWith('speed_pargen-')) {
          continue;
       }
       const key = `${r.model}|${r.think}`;
@@ -310,6 +319,14 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          const decodeRef = refPt?.decode ?? null;
          const decodeRefDepth = refPt?.depth ?? null;
          const decodeRetentionPct = decodeBase && decodeRef ? Math.round((decodeRef / decodeBase) * 100) : null;
+         // Parallel-generation throughput: aggregate tok/s at K concurrent slots,
+         // shared across think variants (measured once per base model).
+         const pgMap = pargenByModel.get(baseModel(model));
+         const pargenCurve = pgMap ? [...pgMap.entries()].map(([conc, tps]) => ({ conc, tps })).sort((a, b) => a.conc - b.conc) : [];
+         const pargen1 = pgMap?.get(1) ?? null;
+         const pargenMaxK = pargenCurve.length ? pargenCurve[pargenCurve.length - 1].conc : null;
+         const pargenAggMax = pargenCurve.length ? pargenCurve[pargenCurve.length - 1].tps : null;
+         const pargenSpeedup = pargen1 && pargenAggMax ? Math.round((pargenAggMax / pargen1) * 100) / 100 : null;
          return {
             label: `${model}${think !== 'n/a' ? ` [${think}]` : ''}`,
             model,
@@ -332,6 +349,11 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
             decodeRef,
             decodeRefDepth,
             decodeRetentionPct,
+            pargenCurve,
+            pargen1,
+            pargenAggMax,
+            pargenMaxK,
+            pargenSpeedup,
          };
       })
       .filter((m) => m.maxctx || m.triage || m.speedTg);

@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-04T07:22:15.718Z",
+  "generated": "2026-06-04T07:48:34.936Z",
   "sources": [
     "llm-benchmarks-rose-rx7900xt-vulkan-20260603-165909.csv"
   ],
@@ -68,6 +68,29 @@
           }
         ]
       },
+      "parallel_gen": {
+        "agg_tok_s_max": 229.7,
+        "max_slots": 8,
+        "speedup": 2.14,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 107.4
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 141.6
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 193.2
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 229.7
+          }
+        ]
+      },
       "weighted_score": 61.3
     },
     {
@@ -121,6 +144,29 @@
           {
             "depth": 65536,
             "tok_s": 29.8
+          }
+        ]
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": 228.8,
+        "max_slots": 8,
+        "speedup": 2.12,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 107.8
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 140.5
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 195.8
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 228.8
           }
         ]
       },
@@ -180,6 +226,29 @@
           }
         ]
       },
+      "parallel_gen": {
+        "agg_tok_s_max": 196.1,
+        "max_slots": 8,
+        "speedup": 1.85,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 106.1
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 147.5
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 186.4
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 196.1
+          }
+        ]
+      },
       "weighted_score": 70.3
     },
     {
@@ -228,6 +297,29 @@
           }
         ]
       },
+      "parallel_gen": {
+        "agg_tok_s_max": 199.6,
+        "max_slots": 8,
+        "speedup": 3.37,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 59.3
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 110.2
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 168.9
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 199.6
+          }
+        ]
+      },
       "weighted_score": 61.1
     },
     {
@@ -273,6 +365,29 @@
           {
             "depth": 16384,
             "tok_s": 48.5
+          }
+        ]
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": 199.6,
+        "max_slots": 8,
+        "speedup": 3.37,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 59.3
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 110.2
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 168.9
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 199.6
           }
         ]
       },
@@ -332,6 +447,29 @@
           }
         ]
       },
+      "parallel_gen": {
+        "agg_tok_s_max": 44.2,
+        "max_slots": 8,
+        "speedup": 0.95,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 46.3
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 42.5
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 44.1
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 44.2
+          }
+        ]
+      },
       "weighted_score": 69.6
     },
     {
@@ -385,6 +523,29 @@
           {
             "depth": 65536,
             "tok_s": 38.7
+          }
+        ]
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": 44.2,
+        "max_slots": 8,
+        "speedup": 0.95,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 46.3
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 42.5
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 44.1
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 44.2
           }
         ]
       },
@@ -448,6 +609,29 @@
           }
         ]
       },
+      "parallel_gen": {
+        "agg_tok_s_max": 235.8,
+        "max_slots": 8,
+        "speedup": 3.2,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 73.8
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 127.6
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 197.3
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 235.8
+          }
+        ]
+      },
       "weighted_score": 79.1
     },
     {
@@ -505,6 +689,29 @@
           {
             "depth": 98304,
             "tok_s": 52.6
+          }
+        ]
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": 235.8,
+        "max_slots": 8,
+        "speedup": 3.2,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 73.8
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 127.6
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 197.3
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 235.8
           }
         ]
       },
@@ -568,6 +775,29 @@
           }
         ]
       },
+      "parallel_gen": {
+        "agg_tok_s_max": 257.7,
+        "max_slots": 8,
+        "speedup": 2.98,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 86.4
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 144.9
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 211.3
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 257.7
+          }
+        ]
+      },
       "weighted_score": 84
     },
     {
@@ -628,6 +858,29 @@
           }
         ]
       },
+      "parallel_gen": {
+        "agg_tok_s_max": 257.7,
+        "max_slots": 8,
+        "speedup": 2.98,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 86.4
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 144.9
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 211.3
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 257.7
+          }
+        ]
+      },
       "weighted_score": 86.9
     },
     {
@@ -681,6 +934,29 @@
           {
             "depth": 65536,
             "tok_s": 39.3
+          }
+        ]
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": 165.7,
+        "max_slots": 8,
+        "speedup": 2.45,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 67.6
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 100.4
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 139.5
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 165.7
           }
         ]
       },
@@ -740,6 +1016,29 @@
           }
         ]
       },
+      "parallel_gen": {
+        "agg_tok_s_max": 165.7,
+        "max_slots": 8,
+        "speedup": 2.45,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 67.6
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 100.4
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 139.5
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 165.7
+          }
+        ]
+      },
       "weighted_score": 71.4
     },
     {
@@ -789,6 +1088,29 @@
           {
             "depth": 32768,
             "tok_s": 228.2
+          }
+        ]
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": 679.5,
+        "max_slots": 8,
+        "speedup": 2.43,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 279.8
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 395.4
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 547
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 679.5
           }
         ]
       },
@@ -844,6 +1166,29 @@
           }
         ]
       },
+      "parallel_gen": {
+        "agg_tok_s_max": 88.6,
+        "max_slots": 8,
+        "speedup": 1.41,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 62.8
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 35
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 57.9
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 88.6
+          }
+        ]
+      },
       "weighted_score": 63.5
     },
     {
@@ -893,6 +1238,29 @@
           {
             "depth": 32768,
             "tok_s": 15.5
+          }
+        ]
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": 88.6,
+        "max_slots": 8,
+        "speedup": 1.41,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 62.8
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 35
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 57.9
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 88.6
           }
         ]
       },
@@ -956,6 +1324,29 @@
           }
         ]
       },
+      "parallel_gen": {
+        "agg_tok_s_max": 466.2,
+        "max_slots": 8,
+        "speedup": 2.79,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 167.1
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 240.4
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 354
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 466.2
+          }
+        ]
+      },
       "weighted_score": 70.4
     },
     {
@@ -1004,6 +1395,29 @@
           }
         ]
       },
+      "parallel_gen": {
+        "agg_tok_s_max": 98.9,
+        "max_slots": 8,
+        "speedup": 1.45,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 68.4
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 83
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 93.7
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 98.9
+          }
+        ]
+      },
       "weighted_score": 40.1
     },
     {
@@ -1049,6 +1463,29 @@
           {
             "depth": 16384,
             "tok_s": 70.3
+          }
+        ]
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": 98.9,
+        "max_slots": 8,
+        "speedup": 1.45,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 68.4
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 83
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 93.7
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 98.9
           }
         ]
       },
@@ -1112,6 +1549,29 @@
           }
         ]
       },
+      "parallel_gen": {
+        "agg_tok_s_max": 145.7,
+        "max_slots": 8,
+        "speedup": 3.05,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 47.8
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 82.7
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 126
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 145.7
+          }
+        ]
+      },
       "weighted_score": 81.3
     },
     {
@@ -1169,6 +1629,29 @@
           {
             "depth": 98304,
             "tok_s": 32.2
+          }
+        ]
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": 145.7,
+        "max_slots": 8,
+        "speedup": 3.05,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 47.8
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 82.7
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 126
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 145.7
           }
         ]
       },
@@ -3374,6 +3857,304 @@
         "model": "GLM-4.7-Flash-IQ4_XS--think",
         "think": "think",
         "score": 15.5
+      }
+    ],
+    "parallel_agg_tok_s_8slots": [
+      {
+        "rank": 1,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 679.5
+      },
+      {
+        "rank": 2,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 466.2
+      },
+      {
+        "rank": 3,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 257.7
+      },
+      {
+        "rank": 4,
+        "label": "gemma-4-E4B-it-Q5_K_M--think [think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--think",
+        "think": "think",
+        "score": 257.7
+      },
+      {
+        "rank": 5,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 235.8
+      },
+      {
+        "rank": 6,
+        "label": "gemma-4-E4B-it-Q8_0--think [think]",
+        "model": "gemma-4-E4B-it-Q8_0--think",
+        "think": "think",
+        "score": 235.8
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 229.7
+      },
+      {
+        "rank": 8,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 228.8
+      },
+      {
+        "rank": 9,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 199.6
+      },
+      {
+        "rank": 10,
+        "label": "Qwen3-14B-Q5_K_M--think [think]",
+        "model": "Qwen3-14B-Q5_K_M--think",
+        "think": "think",
+        "score": 199.6
+      },
+      {
+        "rank": 11,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 196.1
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 165.7
+      },
+      {
+        "rank": 13,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--think [think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--think",
+        "think": "think",
+        "score": 165.7
+      },
+      {
+        "rank": 14,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 145.7
+      },
+      {
+        "rank": 15,
+        "label": "gemma-4-12b-it-Q5_K_M--think [think]",
+        "model": "gemma-4-12b-it-Q5_K_M--think",
+        "think": "think",
+        "score": 145.7
+      },
+      {
+        "rank": 16,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 98.9
+      },
+      {
+        "rank": 17,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--think [think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--think",
+        "think": "think",
+        "score": 98.9
+      },
+      {
+        "rank": 18,
+        "label": "GLM-4.7-Flash-IQ4_XS--nothi [no_think]",
+        "model": "GLM-4.7-Flash-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 88.6
+      },
+      {
+        "rank": 19,
+        "label": "GLM-4.7-Flash-IQ4_XS--think [think]",
+        "model": "GLM-4.7-Flash-IQ4_XS--think",
+        "think": "think",
+        "score": 88.6
+      },
+      {
+        "rank": 20,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 44.2
+      },
+      {
+        "rank": 21,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--think [think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--think",
+        "think": "think",
+        "score": 44.2
+      }
+    ],
+    "parallel_speedup": [
+      {
+        "rank": 1,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 3.37
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3-14B-Q5_K_M--think [think]",
+        "model": "Qwen3-14B-Q5_K_M--think",
+        "think": "think",
+        "score": 3.37
+      },
+      {
+        "rank": 3,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 3.2
+      },
+      {
+        "rank": 4,
+        "label": "gemma-4-E4B-it-Q8_0--think [think]",
+        "model": "gemma-4-E4B-it-Q8_0--think",
+        "think": "think",
+        "score": 3.2
+      },
+      {
+        "rank": 5,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 3.05
+      },
+      {
+        "rank": 6,
+        "label": "gemma-4-12b-it-Q5_K_M--think [think]",
+        "model": "gemma-4-12b-it-Q5_K_M--think",
+        "think": "think",
+        "score": 3.05
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 2.98
+      },
+      {
+        "rank": 8,
+        "label": "gemma-4-E4B-it-Q5_K_M--think [think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--think",
+        "think": "think",
+        "score": 2.98
+      },
+      {
+        "rank": 9,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 2.79
+      },
+      {
+        "rank": 10,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 2.45
+      },
+      {
+        "rank": 11,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--think [think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--think",
+        "think": "think",
+        "score": 2.45
+      },
+      {
+        "rank": 12,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 2.43
+      },
+      {
+        "rank": 13,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 2.14
+      },
+      {
+        "rank": 14,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 2.12
+      },
+      {
+        "rank": 15,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 1.85
+      },
+      {
+        "rank": 16,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 1.45
+      },
+      {
+        "rank": 17,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--think [think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--think",
+        "think": "think",
+        "score": 1.45
+      },
+      {
+        "rank": 18,
+        "label": "GLM-4.7-Flash-IQ4_XS--nothi [no_think]",
+        "model": "GLM-4.7-Flash-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 1.41
+      },
+      {
+        "rank": 19,
+        "label": "GLM-4.7-Flash-IQ4_XS--think [think]",
+        "model": "GLM-4.7-Flash-IQ4_XS--think",
+        "think": "think",
+        "score": 1.41
+      },
+      {
+        "rank": 20,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 0.95
+      },
+      {
+        "rank": 21,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--think [think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--think",
+        "think": "think",
+        "score": 0.95
       }
     ]
   }
