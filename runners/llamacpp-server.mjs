@@ -230,7 +230,7 @@ export function llamacppServer({
 
       // Upper bound: documented native window (128k default when unknown), an
       // optional ctx_cap override, and the VRAM estimate — whichever is smallest.
-      // No arbitrary absolute cap: 200k+ models (GLM-4.7-Flash, Gemma4-12B) must
+      // No arbitrary absolute cap: 200k+ models (Qwen3-30B, Gemma4-12B) must
       // not be silently clipped to 128k. The empirical search still finds the real
       // coherent ceiling, which on a 20 GiB card is usually VRAM-bound well below native.
       let hi = Math.min(native_max_ctx ?? 131072, ctx_cap ?? Infinity, roundTo2k(vramEstimate));

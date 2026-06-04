@@ -1,6 +1,6 @@
 # LLM Benchmark Report
 
-Generated from `llm-benchmarks-rose-rx7900xt-vulkan-20260604-202514.csv` — 442 result rows across 31 bench types.
+Generated from `llm-benchmarks-rose-rx7900xt-vulkan-20260604-202514.csv` — 404 result rows across 31 bench types.
 
 ## triage
 
@@ -18,13 +18,11 @@ Generated from `llm-benchmarks-rose-rx7900xt-vulkan-20260604-202514.csv` — 442
 | gemma-4-E4B-it-Q8_0--think | think | 88.3 | 0 | 0 | 81.2 | 7042 MiB | ok |
 | gemma-4-E4B-it-Q5_K_M--think | think | 88.3 | 0 | 0 | 97.0 | 5464 MiB | ok |
 | gemma-4-12b-it-Q5_K_M--nothi | no_think | 88.3 | 6 | 0 | 39.8 | 8574 MiB | ok |
-| GLM-4.7-Flash-IQ4_XS--think | think | 87.8 | 2 | 0 | 93.7 | 16585 MiB | ok |
 | gemma-4-E4B-it-Q8_0--nothi | no_think | 87.6 | 8 | 0 | 74.3 | 7042 MiB | ok |
 | Qwen3-14B-Q5_K_M--nothi | no_think | 85.9 | 8 | 0 | 57.0 | 11567 MiB | ok |
 | gemma-4-26B-A4B-it-UD-Q4_K_M--nothi | no_think | 85.7 | 8 | 0 | 73.7 | 17696 MiB | ok |
 | Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL | n/a | 85.3 | 7 | 0 | 122.3 | 20044 MiB | ok |
 | Qwen3-30B-A3B-Instruct-2507-IQ4_XS | n/a | 85.3 | 7 | 0 | 112.9 | 17323 MiB | ok |
-| GLM-4.7-Flash-IQ4_XS--nothi | no_think | 82.0 | 9 | 0 | 92.0 | 16585 MiB | ok |
 | granite-4.0-h-tiny-Q5_K_M | n/a | 75.1 | 16 | 0 | 152.4 | 5534 MiB | ok |
 | nvidia_Nemotron-3-Nano-4B-Q8_0--think | think | 65.4 | 0 | 4 | 70.8 | 3858 MiB | ok |
 | nvidia_Nemotron-3-Nano-4B-Q8_0--nothi | no_think | 61.6 | 0 | 5 | 70.8 | 3858 MiB | ok |
@@ -43,7 +41,6 @@ Generated from `llm-benchmarks-rose-rx7900xt-vulkan-20260604-202514.csv` — 442
 | gemma-4-26B-A4B-it-UD-Q4_K_M--nothi | no_think | 100.0 | 84.7 | ok |
 | gemma-4-26B-A4B-it-UD-Q4_K_M--think | think | 100.0 | 84.7 | ok |
 | LFM2.5-8B-A1B-Q5_K_M | n/a | 100.0 | 232.3 | ok |
-| GLM-4.7-Flash-IQ4_XS--think | think | 100.0 | 112.3 | ok |
 | nvidia_Nemotron-3-Nano-4B-Q8_0--nothi | no_think | 100.0 | 71.4 | ok |
 | nvidia_Nemotron-3-Nano-4B-Q8_0--think | think | 100.0 | 71.4 | ok |
 | gemma-4-12b-it-Q5_K_M--nothi | no_think | 100.0 | 52.1 | ok |
@@ -52,7 +49,6 @@ Generated from `llm-benchmarks-rose-rx7900xt-vulkan-20260604-202514.csv` — 442
 | Qwen3-14B-Q5_K_M--nothi | no_think | 91.7 | 68.1 | ok |
 | gemma-4-E4B-it-Q5_K_M--nothi | no_think | 91.7 | 103.1 | ok |
 | Qwen3-30B-A3B-Instruct-2507-IQ4_XS | n/a | 83.3 | 143.7 | ok |
-| GLM-4.7-Flash-IQ4_XS--nothi | no_think | 83.3 | 113.4 | ok |
 | gemma-4-E4B-it-Q8_0--nothi | no_think | 75.0 | 86.1 | ok |
 
 ## toolcalling
@@ -75,9 +71,7 @@ Generated from `llm-benchmarks-rose-rx7900xt-vulkan-20260604-202514.csv` — 442
 | gemma-4-E4B-it-Q5_K_M--think | 100.0 | ok |
 | gemma-4-26B-A4B-it-UD-Q4_K_M--think | 100.0 | ok |
 | gemma-4-12b-it-Q5_K_M--nothi | 100.0 | ok |
-| GLM-4.7-Flash-IQ4_XS--think | 100.0 | ok |
 | Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL | 90.0 | ok |
-| GLM-4.7-Flash-IQ4_XS--nothi | 80.0 | ok |
 | gemma-4-12b-it-Q5_K_M--think | 80.0 | ok |
 | LFM2.5-8B-A1B-Q5_K_M | 60.0 | ok |
 
@@ -89,12 +83,10 @@ Generated from `llm-benchmarks-rose-rx7900xt-vulkan-20260604-202514.csv` — 442
 |---|---|---|---|
 | Qwen3-14B-Q5_K_M--nothi | no_think | 92.2 | ok |
 | Qwen3-14B-Q5_K_M--think | think | 90.0 | ok |
-| GLM-4.7-Flash-IQ4_XS--nothi | no_think | 85.6 | ok |
 | gemma-4-26B-A4B-it-UD-Q4_K_M--think | think | 82.2 | ok |
 | Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL | n/a | 77.8 | ok |
 | gemma-4-E4B-it-Q8_0--think | think | 76.7 | ok |
 | gemma-4-E4B-it-Q5_K_M--think | think | 75.6 | ok |
-| GLM-4.7-Flash-IQ4_XS--think | think | 75.6 | ok |
 | Qwen3.6-35B-A3B-UD-IQ4_XS--think | think | 74.4 | ok |
 | gemma-4-26B-A4B-it-UD-Q4_K_M--nothi | no_think | 74.4 | ok |
 | LFM2.5-8B-A1B-Q5_K_M | n/a | 73.3 | ok |
@@ -124,7 +116,6 @@ Generated from `llm-benchmarks-rose-rx7900xt-vulkan-20260604-202514.csv` — 442
 | Qwen3.6-35B-A3B-UD-IQ4_XS | 75776 | 303,104 | 19753 |
 | gemma-4-26B-A4B-it-UD-Q4_K_M | 71680 | 286,720 | 17913 |
 | Qwen3-30B-A3B-Instruct-2507-IQ4_XS | 69632 | 278,528 | 19354 |
-| GLM-4.7-Flash-IQ4_XS | 61440 | 245,760 | 17671 |
 | LFM2.5-8B-A1B-Q5_K_M | 36864 | 147,456 | 6010 |
 | Qwen3-14B-Q5_K_M | 30720 | 122,880 | 12251 |
 | nvidia_Nemotron-3-Nano-4B-Q8_0 | 18432 | 73,728 | 3884 |

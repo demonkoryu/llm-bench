@@ -205,20 +205,6 @@ models:
      benches: [reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
      notes: "reasoning_content merged by llm client. repeat_penalty in sampling_matrix."
 
-   # ── GLM-4.7-Flash (MoE 30B-A3B, 200K ctx) ─────────────────────────────────────
-   # Hybrid think; native function-calling; non-mamba (no #24081 risk). IQ4_XS ≈16.3GB.
-   - hf_repo: unsloth/GLM-4.7-Flash-GGUF
-     hf_file: GLM-4.7-Flash-IQ4_XS.gguf
-     label: "GLM-4.7-Flash IQ4_XS"
-     family: glm
-     type: moe
-     think: optional
-     think_control: enable_thinking
-     tools: true
-     native_max_ctx: 200000
-     kv_bytes_per_token: 16384
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
-
    # ── Granite-4.0-H-Tiny (MoE 7B-A1B, mamba-hybrid) ─────────────────────────────
    # IBM: strong function-calling; no native think toggle. ≈5GB → big KV headroom.
    - hf_repo: unsloth/granite-4.0-h-tiny-GGUF
@@ -380,19 +366,6 @@ sampling_matrix:
          temperature: 0.2
          top_k: 80
          repeat_penalty: 1.05
-
-   # ── GLM-4.x (Flash): chat-template thinking; standard sampling. ──────
-   glm:
-      default:
-         temperature: 0.6
-         top_p: 0.95
-         top_k: 40
-         coding:
-            temperature: 0.2
-            top_p: 0.9
-      think:
-         temperature: 0.6
-         top_p: 0.95
 
    # ── Granite 4.0 (IBM recommends near-greedy for instruction following) ──────
    granite:

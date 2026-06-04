@@ -100,20 +100,6 @@ rose,vulkan,gemma-4-E4B-it-Q8_0--nothi,no_think,toolcalling,100.0,-,-,-,-,7042,1
 rose,vulkan,gemma-4-E4B-it-Q5_K_M--nothi,no_think,toolcalling,100.0,-,-,-,-,5465,104448,108544,104448,ok,3,
 rose,vulkan,gemma-4-26B-A4B-it-UD-Q4_K_M--nothi,no_think,toolcalling,100.0,-,-,-,-,17689,30720,30720,30720,ok,7,
 rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,toolcalling,60.0,-,-,-,-,5998,34816,36864,34816,ok,7,
-rose,vulkan,GLM-4.7-Flash-IQ4_XS,-,maxctx,61440,-,-,-,-,17671,61440,65536,61440,ok,-,
-rose,vulkan,GLM-4.7-Flash-IQ4_XS--nothi,no_think,triage,82.0,9,0,92.0,-,16585,38912,38912,38912,ok,35,
-rose,vulkan,GLM-4.7-Flash-IQ4_XS--nothi,no_think,reasoning,83.3,-,0,113.4,-,16566,38912,38912,38912,ok,3,
-rose,vulkan,GLM-4.7-Flash-IQ4_XS--nothi,no_think,toolcalling,80.0,-,-,-,-,16566,38912,38912,38912,ok,6,
-rose,vulkan,GLM-4.7-Flash-IQ4_XS--nothi,no_think,docqa,7.58,0,-,-,-,16566,38912,38912,38912,ok,13,
-rose,vulkan,GLM-4.7-Flash-IQ4_XS--nothi,no_think,summarization,85.6,-,-,-,-,16566,38912,38912,38912,ok,5,
-rose,vulkan,GLM-4.7-Flash-IQ4_XS--nothi,no_think,speed_short,75.4,-,-,75.4,118.7,16200,16384,16384,16384,ok,-,prefill_tps=118.7
-rose,vulkan,GLM-4.7-Flash-IQ4_XS--nothi,no_think,speed_long-32k,75.3,-,-,75.3,236.3,16200,16384,16384,16384,ok,-,prefill_tps=236.3
-rose,vulkan,GLM-4.7-Flash-IQ4_XS--think,think,triage,87.8,2,0,93.7,-,16585,38912,38912,38912,ok,174,
-rose,vulkan,GLM-4.7-Flash-IQ4_XS--think,think,reasoning,100.0,-,0,112.3,-,16566,38912,38912,38912,ok,43,
-rose,vulkan,GLM-4.7-Flash-IQ4_XS--think,think,docqa,8.08,0,-,-,-,16566,38912,38912,38912,ok,68,
-rose,vulkan,GLM-4.7-Flash-IQ4_XS--think,think,summarization,75.6,-,-,-,-,16566,38912,38912,38912,ok,36,
-rose,vulkan,GLM-4.7-Flash-IQ4_XS--think,think,speed_short,75.3,-,-,75.3,118.9,16200,16384,16384,16384,ok,-,prefill_tps=118.9
-rose,vulkan,GLM-4.7-Flash-IQ4_XS--think,think,speed_long-32k,75.3,-,-,75.3,238.1,16200,16384,16384,16384,ok,-,prefill_tps=238.1
 rose,vulkan,granite-4.0-h-tiny-Q5_K_M,-,maxctx,126976,-,-,-,-,5526,126976,126976,126976,ok,-,
 rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,triage,75.1,16,0,152.4,-,5534,126976,126976,126976,ok,21,
 rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,toolcalling,100.0,-,-,-,-,5526,126976,126976,126976,ok,4,
@@ -154,7 +140,6 @@ rose,vulkan,gemma-4-12b-it-Q5_K_M--think,think,docqa,8.83,0,-,-,-,8571,43008,471
 rose,vulkan,gemma-4-12b-it-Q5_K_M--think,think,summarization,61.9,-,-,-,-,8571,43008,47104,43008,ok,63,
 rose,vulkan,gemma-4-12b-it-Q5_K_M--think,think,speed_short,54.1,-,-,54.1,202.9,9256,16384,16384,16384,ok,-,prefill_tps=202.9
 rose,vulkan,gemma-4-12b-it-Q5_K_M--think,think,speed_long-32k,54.1,-,-,54.1,327.9,9256,16384,16384,16384,ok,-,prefill_tps=327.9
-rose,vulkan,GLM-4.7-Flash-IQ4_XS--think,think,toolcalling,100.0,-,-,-,-,16566,38912,38912,38912,ok,12,
 rose,vulkan,gemma-4-E4B-it-Q8_0,-,load,?,-,-,-,-,-,-,-,-,error:Server not ready within 360s,-,
 rose,vulkan,Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL,n/a,speed_prefill-4k,134.5,-,-,134.5,2218.4,17926,16384,16384,16384,ok,-,prefill_tps=2218.4
 rose,vulkan,Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL,n/a,speed_prefill-12k,117.9,-,-,117.9,1600.5,17926,16384,16384,16384,ok,-,prefill_tps=1600.5
@@ -188,10 +173,6 @@ rose,vulkan,gemma-4-12b-it-Q5_K_M--think,think,speed_prefill-4k,58.2,-,-,58.2,12
 rose,vulkan,gemma-4-12b-it-Q5_K_M--think,think,speed_prefill-12k,57.3,-,-,57.3,1147.3,9256,16384,16384,16384,ok,-,prefill_tps=1147.3
 rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,speed_prefill-4k,307.2,-,-,307.2,6872.9,6149,16384,16384,16384,ok,-,prefill_tps=6872.9
 rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,speed_prefill-12k,295.0,-,-,295.0,6649.2,6149,16384,16384,16384,ok,-,prefill_tps=6649.2
-rose,vulkan,GLM-4.7-Flash-IQ4_XS--nothi,no_think,speed_prefill-4k,55.5,-,-,55.5,1139.8,16200,16384,16384,16384,ok,-,prefill_tps=1139.8
-rose,vulkan,GLM-4.7-Flash-IQ4_XS--nothi,no_think,speed_prefill-12k,34.9,-,-,34.9,720.6,16200,16384,16384,16384,ok,-,prefill_tps=720.6
-rose,vulkan,GLM-4.7-Flash-IQ4_XS--think,think,speed_prefill-4k,55.4,-,-,55.4,1143.1,16200,16384,16384,16384,ok,-,prefill_tps=1143.1
-rose,vulkan,GLM-4.7-Flash-IQ4_XS--think,think,speed_prefill-12k,34.9,-,-,34.9,720.4,16200,16384,16384,16384,ok,-,prefill_tps=720.4
 rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,speed_prefill-4k,154.8,-,-,154.8,732.9,4897,16384,16384,16384,ok,-,prefill_tps=732.9
 rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,speed_prefill-12k,153.6,-,-,153.6,732.9,4897,16384,16384,16384,ok,-,prefill_tps=732.9
 rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0--nothi,no_think,speed_prefill-4k,145.1,-,-,145.1,3532.8,4345,16384,16384,16384,ok,-,prefill_tps=3532.8
@@ -237,9 +218,6 @@ rose,vulkan,gemma-4-12b-it-Q5_K_M,n/a,speed_decay-96k,32.2,,,32.2,525.8,9293,120
 rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,speed_decay-0k,262.9,,,262.9,468.2,6010,36864,,,ok,,decode@0
 rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,speed_decay-16k,243.7,,,243.7,764.6,6010,36864,,,ok,,decode@16384
 rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,speed_decay-32k,228.2,,,228.2,754.9,6010,36864,,,ok,,decode@32768
-rose,vulkan,GLM-4.7-Flash-IQ4_XS,n/a,speed_decay-0k,113.6,,,113.6,225.0,17322,65536,,,ok,,decode@0
-rose,vulkan,GLM-4.7-Flash-IQ4_XS,n/a,speed_decay-16k,30.0,,,30.0,551.5,17322,65536,,,ok,,decode@16384
-rose,vulkan,GLM-4.7-Flash-IQ4_XS,n/a,speed_decay-32k,15.5,,,15.5,320.3,17322,65536,,,ok,,decode@32768
 rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,speed_decay-0k,174.5,,,174.5,372.9,5526,126976,,,ok,,decode@0
 rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,speed_decay-16k,248.5,,,248.5,4530.7,5526,126976,,,ok,,decode@16384
 rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,speed_decay-32k,243.5,,,243.5,4404.2,5526,126976,,,ok,,decode@32768
@@ -287,10 +265,6 @@ rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,speed_pargen-1,279.8,,,279.8,,5943,16384,,,
 rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,speed_pargen-2,395.4,,,395.4,,5943,16384,,,ok,,parallel=8 conc=2 per_slot=197.7
 rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,speed_pargen-4,547.0,,,547.0,,5943,16384,,,ok,,parallel=8 conc=4 per_slot=136.8
 rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,speed_pargen-8,679.5,,,679.5,,5943,16384,,,ok,,parallel=8 conc=8 per_slot=84.9
-rose,vulkan,GLM-4.7-Flash-IQ4_XS,n/a,speed_pargen-1,62.8,,,62.8,,15824,16384,,,ok,,parallel=8 conc=1 per_slot=62.8
-rose,vulkan,GLM-4.7-Flash-IQ4_XS,n/a,speed_pargen-2,35.0,,,35.0,,15824,16384,,,ok,,parallel=8 conc=2 per_slot=17.5
-rose,vulkan,GLM-4.7-Flash-IQ4_XS,n/a,speed_pargen-4,57.9,,,57.9,,15824,16384,,,ok,,parallel=8 conc=4 per_slot=14.5
-rose,vulkan,GLM-4.7-Flash-IQ4_XS,n/a,speed_pargen-8,88.6,,,88.6,,15824,16384,,,ok,,parallel=8 conc=8 per_slot=11.1
 rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,speed_pargen-1,167.1,,,167.1,,5343,16384,,,ok,,parallel=8 conc=1 per_slot=167.1
 rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,speed_pargen-2,240.4,,,240.4,,5343,16384,,,ok,,parallel=8 conc=2 per_slot=120.2
 rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,speed_pargen-4,354.0,,,354.0,,5343,16384,,,ok,,parallel=8 conc=4 per_slot=88.5
@@ -319,8 +293,6 @@ rose,vulkan,gemma-4-12b-it-Q5_K_M,n/a,power_eff,0.173,,,47.9,,,,,,ok,,W=277 tps=
 rose,vulkan,gemma-4-12b-it-Q5_K_M,n/a,struct_output,100.0,,0,,,,,,,ok,,parse=100% schema=100%
 rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,power_eff,1.177,,,306.8,,,,,,ok,,W=261 tps=306.8 n=11
 rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,struct_output,75.0,,3,,,,,,,ok,,parse=75% schema=75%
-rose,vulkan,GLM-4.7-Flash-IQ4_XS,n/a,power_eff,0.270,,,56.8,,,,,,ok,,W=211 tps=56.8 n=56
-rose,vulkan,GLM-4.7-Flash-IQ4_XS,n/a,struct_output,100.0,,0,,,,,,,ok,,parse=100% schema=100%
 rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,power_eff,0.776,,,173.0,,,,,,ok,,W=223 tps=173.0 n=18
 rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,struct_output,100.0,,0,,,,,,,ok,,parse=100% schema=100%
 rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0,n/a,power_eff,0.304,,,70.7,,,,,,ok,,W=232 tps=70.7 n=46
@@ -341,8 +313,6 @@ rose,vulkan,gemma-4-26B-A4B-it-UD-Q4_K_M--think,think,coding,100.0,-,0,72.7,-,18
 rose,vulkan,gemma-4-12b-it-Q5_K_M--nothi,no_think,coding,100.0,-,0,55.5,-,10657,131072,131072,131072,ok,45,tests 100.0%
 rose,vulkan,gemma-4-12b-it-Q5_K_M--think,think,coding,100.0,-,0,53.9,-,10657,131072,131072,131072,ok,538,tests 100.0%
 rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,coding,72.2,-,0,249.8,-,7311,131072,131072,131072,ok,38,tests 90.9%
-rose,vulkan,GLM-4.7-Flash-IQ4_XS--nothi,no_think,coding,100.0,-,0,64.3,-,20049,200000,200000,200000,ok,42,tests 100.0%
-rose,vulkan,GLM-4.7-Flash-IQ4_XS--think,think,coding,88.9,-,1,57.3,-,20049,200000,200000,200000,ok,399,tests 96.1%
 rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,coding,88.9,-,0,180.8,-,6047,128000,128000,128000,ok,13,tests 94.5%
 rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0--nothi,no_think,coding,100.0,-,0,130.7,-,5707,128000,128000,128000,ok,44,tests 100.0%
 rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0--think,think,coding,94.4,-,0,130.7,-,5707,128000,128000,128000,ok,40,tests 95.5%
@@ -362,8 +332,6 @@ rose,vulkan,gemma-4-26B-A4B-it-UD-Q4_K_M--think,think,coding_hard,100.0,-,0,78.4
 rose,vulkan,gemma-4-12b-it-Q5_K_M--nothi,no_think,coding_hard,100.0,-,0,53.7,-,10657,131072,131072,131072,ok,17,tests 100.0%
 rose,vulkan,gemma-4-12b-it-Q5_K_M--think,think,coding_hard,100.0,-,0,51.7,-,10657,131072,131072,131072,ok,188,tests 100.0%
 rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,coding_hard,0.0,-,0,249.4,-,7311,131072,131072,131072,ok,21,tests 0.0%
-rose,vulkan,GLM-4.7-Flash-IQ4_XS--nothi,no_think,coding_hard,0.0,-,0,87.6,-,20156,200000,200000,200000,ok,9,tests 50.0%
-rose,vulkan,GLM-4.7-Flash-IQ4_XS--think,think,coding_hard,100.0,-,0,58.1,-,20156,200000,200000,200000,ok,90,tests 100.0%
 rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,coding_hard,0.0,-,0,179.4,-,6047,128000,128000,128000,ok,8,tests 33.3%
 rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0--nothi,no_think,coding_hard,0.0,-,0,129.7,-,5708,128000,128000,128000,ok,20,tests 25.0%
 rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0--think,think,coding_hard,0.0,-,0,130.1,-,5708,128000,128000,128000,ok,9,tests 33.3%
@@ -425,12 +393,6 @@ rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,e2e-8k,3561.3,,,263.4,6779.9,6355,36864,,,o
 rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,ttft-8k,995,,,,,6355,36864,,,ok,,prompt_ms@8192 n=3
 rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,e2e-32k,4538.9,,,235.4,5490.5,6355,36864,,,ok,,e2e@32768 gen256 n=3
 rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,ttft-32k,4916,,,,,6355,36864,,,ok,,prompt_ms@32768 n=3
-rose,vulkan,GLM-4.7-Flash-IQ4_XS,n/a,e2e-2k,328.9,,,57.6,1458.7,17611,61440,,,ok,,e2e@2048 gen256 n=3
-rose,vulkan,GLM-4.7-Flash-IQ4_XS,n/a,ttft-2k,1067,,,,,17611,61440,,,ok,,prompt_ms@2048 n=3
-rose,vulkan,GLM-4.7-Flash-IQ4_XS,n/a,e2e-8k,472.4,,,37.3,881.1,17611,61440,,,ok,,e2e@8192 gen256 n=3
-rose,vulkan,GLM-4.7-Flash-IQ4_XS,n/a,ttft-8k,7313,,,,,17611,61440,,,ok,,prompt_ms@8192 n=3
-rose,vulkan,GLM-4.7-Flash-IQ4_XS,n/a,e2e-32k,284.1,,,15.1,345.0,17611,61440,,,ok,,e2e@32768 gen256 n=3
-rose,vulkan,GLM-4.7-Flash-IQ4_XS,n/a,ttft-32k,75216,,,,,17611,61440,,,ok,,prompt_ms@32768 n=3
 rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,e2e-2k,1051.7,,,178.7,5208.8,6039,126976,,,ok,,e2e@2048 gen256 n=3
 rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,ttft-2k,301,,,,,6039,126976,,,ok,,prompt_ms@2048 n=3
 rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,e2e-8k,2566.0,,,176.2,5555.7,6039,126976,,,ok,,e2e@8192 gen256 n=3
