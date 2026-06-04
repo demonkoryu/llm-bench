@@ -77,6 +77,16 @@ models.forEach((m, i) => {
 });
 const ranked = ranking;
 
+// Flag the top-5 overall finishers with a 5-star rank badge drawn next to their
+// bar in every per-metric panel: rank 1 = 5 gold stars, rank 5 = 1 gold + 4 grey.
+// So you can spot a winner (and how high it placed overall) across all metrics at
+// a glance. rankIdx lives on the shared model objects, seen by every panel.
+const MARKER_FILL = '#ffd54a'; // gold — stars earned by rank
+const MARKER_DIM = '#4a4a57'; // grey — stars not earned
+ranked.slice(0, 5).forEach((m, i) => {
+   m.rankIdx = i; // 0-based overall rank; gold stars = 5 - rankIdx
+});
+
 // ── SVG constants ─────────────────────────────────────────────────────────────
 const BG = '#0f0f13';
 const PANEL = '#18181f';
@@ -116,6 +126,21 @@ function svgText(x, y, content, { fill = TEXT, size = 11, anchor = 'start', weig
    return `<text x="${x}" y="${y}" fill="${fill}" font-size="${size}" text-anchor="${anchor}" font-weight="${weight}" font-family="'Segoe UI',Arial,sans-serif">${esc(content)}</text>`;
 }
 
+// 5-star overall-rank badge: `earned` gold stars (gold = high rank), the rest
+// greyed. Drawn on a dark pill (right-aligned at rightX) so it reads over any bar.
+function starBadge(rightX, midY, earned) {
+   const N = 5;
+   const step = 9;
+   const padX = 5;
+   const w = N * step + padX * 2 - 2;
+   const x0 = rightX - w;
+   let s = rect(x0, midY - 8, w, 16, '#0a0a0e', 4, 0.82);
+   for (let k = 0; k < N; k++) {
+      s += svgText(x0 + padX + k * step, midY + 4, '★', { fill: k < earned ? MARKER_FILL : MARKER_DIM, size: 11 });
+   }
+   return s;
+}
+
 function barPanel(x, y, pw, title, subtitle, items) {
    const bx = x + LABEL_W + 8;
    const trackW = pw - LABEL_W - 8 - 12;
@@ -129,10 +154,15 @@ function barPanel(x, y, pw, title, subtitle, items) {
    items.forEach((item, i) => {
       const barY = y + TITLE_H + i * ROW_H;
       const pct = trackW * Math.min(1, (item.value ?? 0) / (item.max || 1));
-      s += svgText(x + 10, barY + 13, item.label, { fill: TEXT, size: 10 });
+      const isTop = item.rankIdx != null;
+      s += svgText(x + 10, barY + 13, item.label, { fill: isTop ? '#ffffff' : TEXT, size: 10, weight: isTop ? '700' : 'normal' });
       s += rect(bx, barY, trackW, BAR_H, TRACK, 3);
       s += `<rect x="${bx}" y="${barY}" width="${Math.max(0, pct)}" height="${BAR_H}" fill="${item.color}" rx="3"/>`;
       s += svgText(bx + 6, barY + 13, item.displayVal, { fill: 'rgba(255,255,255,0.9)', size: 10, weight: '600' });
+      // Top-5 overall finishers get a 5-star rank badge at the bar's right end.
+      if (isTop) {
+         s += starBadge(bx + trackW - 2, barY + BAR_H / 2, 5 - item.rankIdx);
+      }
    });
    return s;
 }
@@ -277,6 +307,7 @@ METRIC_PANELS.forEach((panel, pi) => {
          value: raw ?? 0,
          max,
          displayVal: panel.formatVal(raw),
+         rankIdx: m.rankIdx,
       }));
    svg += barPanel(px, py, COL_W, panel.title, `weight ${panel.weight}`, items);
 });
