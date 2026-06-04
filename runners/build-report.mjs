@@ -114,6 +114,15 @@ const report = {
          used: m.maxctxVram,
          free: m.maxctxVram != null ? CARD_TOTAL_MIB - m.maxctxVram : null,
       },
+      // Decode-speed degradation under context load: tok/s at each depth, plus
+      // retention at the reference depth (decode@ref ÷ decode@0). Mamba/SSM models
+      // stay ~flat; KV-heavy attention models fall off steeply.
+      decode_decay: {
+         base_tok_s: m.decodeBase,
+         retention_pct: m.decodeRetentionPct,
+         ref_depth: m.decodeRefDepth,
+         curve: m.decayCurve.map((p) => ({ depth: p.depth, tok_s: p.decode })),
+      },
       weighted_score: m.score,
    })),
    ranking: ranking.map((m, i) => ({
@@ -139,6 +148,8 @@ const report = {
          ['total_tok_s_4k', (m) => m.total4k],
          ['total_tok_s_12k', (m) => m.total12k],
          ['vram_free_at_maxctx_mib', (m) => (m.maxctxVram != null ? CARD_TOTAL_MIB - m.maxctxVram : null)],
+         ['decode_retention_pct', (m) => m.decodeRetentionPct], // % of base decode held at ~32k ctx
+         ['decode_tok_s_at_ref', (m) => m.decodeRef], // absolute decode tok/s at the reference depth
       ].map(([category, get]) => [
          category,
          models

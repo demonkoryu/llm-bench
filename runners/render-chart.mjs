@@ -53,6 +53,9 @@ const maxTotal = Math.max(...models.map((m) => Math.max(m.total4k ?? 0, m.total1
 // VRAM at max ctx = this − used; high = model/coherence-bound, low = VRAM-bound.
 const CARD_TOTAL_MIB = 20464;
 const vramFree = (m) => (m.maxctxVram != null ? CARD_TOTAL_MIB - m.maxctxVram : null);
+// Decode-speed degradation under context load.
+const maxDecodeRef = Math.max(...models.map((m) => m.decodeRef ?? 0), 1);
+const maxRetention = Math.max(...models.map((m) => m.decodeRetentionPct ?? 0), 100);
 
 // Colors are presentation-only; assign per model after aggregation.
 const COLORS = [
@@ -95,7 +98,7 @@ const TITLE_H = 32;
 const N = models.length;
 const PANEL_H = N * ROW_H + 8;
 
-const GRID_PANELS = 12; // one per metric panel (must match METRIC_PANELS.length below)
+const GRID_PANELS = 14; // one per metric panel (must match METRIC_PANELS.length below)
 const GRID_ROWS = Math.ceil(GRID_PANELS / 2);
 const GRID_H = GRID_ROWS * (TITLE_H + PANEL_H + 28);
 const TABLE_H = (N + 3) * 22 + 20;
@@ -243,6 +246,20 @@ const METRIC_PANELS = [
       getValue: (m) => vramFree(m),
       formatVal: (v) => (v != null ? `${(v / 1024).toFixed(1)} GB` : '?'),
       getMax: () => CARD_TOTAL_MIB,
+   },
+   {
+      title: 'Decode @ ~32k ctx (tok/s) — under load',
+      weight: 'degrade',
+      getValue: (m) => m.decodeRef,
+      formatVal: (v) => (v != null ? `${v.toFixed(0)} t/s` : '?'),
+      getMax: () => maxDecodeRef,
+   },
+   {
+      title: 'Decode retention @ ~32k ctx (% of base)',
+      weight: 'degrade',
+      getValue: (m) => m.decodeRetentionPct,
+      formatVal: (v) => (v != null ? `${v.toFixed(0)}%` : '?'),
+      getMax: () => maxRetention,
    },
 ];
 

@@ -219,6 +219,10 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
 
    const maxctxByModel = new Map();
    const maxctxVramByModel = new Map(); // VRAM (MiB) used at the coherence ceiling
+   // Decode-decay rows are recorded once per base model (think='n/a'); collect
+   // them by base model so they attach to every think variant (like maxctx) and
+   // don't spawn phantom 'n/a' model groups.
+   const decayByModel = new Map(); // base model → Map(depth → decode tok/s, newest wins)
    for (const r of data) {
       if (r.bench === 'maxctx') {
          const v = parseFloat(r.score);
@@ -229,12 +233,19 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          if (Number.isFinite(vram)) {
             maxctxVramByModel.set(baseModel(r.model), vram);
          }
+      } else if (String(r.bench).startsWith('speed_decay-')) {
+         const depth = Number(r.bench.replace('speed_decay-', '').replace('k', '')) * 1024;
+         const dec = parseFloat(r.score);
+         if (Number.isFinite(dec)) {
+            if (!decayByModel.has(baseModel(r.model))) decayByModel.set(baseModel(r.model), new Map());
+            decayByModel.get(baseModel(r.model)).set(depth, dec); // later row wins
+         }
       }
    }
 
    const modelMap = new Map();
    for (const r of data) {
-      if (r.bench === 'maxctx') {
+      if (r.bench === 'maxctx' || String(r.bench).startsWith('speed_decay-')) {
          continue;
       }
       const key = `${r.model}|${r.think}`;
@@ -287,6 +298,18 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          const endToEnd = (P, pf) => (pf && speedTg ? (P + 512) / (P / pf + 512 / speedTg) : null);
          const total4k = endToEnd(4096, prefill4k);
          const total12k = endToEnd(12288, prefill12k);
+         // Decode-speed degradation under context load: decode tok/s at depths,
+         // shared across think variants (measured once per base model, think-independent).
+         // Reference = the deepest measured depth ≤ 32k for cross-model comparison.
+         const decayMap = decayByModel.get(baseModel(model));
+         const decayCurve = decayMap
+            ? [...decayMap.entries()].map(([depth, dec]) => ({ depth, decode: dec })).sort((a, b) => a.depth - b.depth)
+            : [];
+         const decodeBase = decayMap?.get(0) ?? null;
+         const refPt = [...decayCurve].filter((x) => x.depth > 0 && x.depth <= 32768).pop() ?? null;
+         const decodeRef = refPt?.decode ?? null;
+         const decodeRefDepth = refPt?.depth ?? null;
+         const decodeRetentionPct = decodeBase && decodeRef ? Math.round((decodeRef / decodeBase) * 100) : null;
          return {
             label: `${model}${think !== 'n/a' ? ` [${think}]` : ''}`,
             model,
@@ -304,6 +327,11 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
             prefill12k,
             total4k,
             total12k,
+            decayCurve,
+            decodeBase,
+            decodeRef,
+            decodeRefDepth,
+            decodeRetentionPct,
          };
       })
       .filter((m) => m.maxctx || m.triage || m.speedTg);

@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-04T05:35:56.183Z",
+  "generated": "2026-06-04T07:22:15.718Z",
   "sources": [
     "llm-benchmarks-rose-rx7900xt-vulkan-20260603-165909.csv"
   ],
@@ -49,6 +49,25 @@
         "used": 19858,
         "free": 606
       },
+      "decode_decay": {
+        "base_tok_s": 116.4,
+        "retention_pct": 42,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 116.4
+          },
+          {
+            "depth": 16384,
+            "tok_s": 70.8
+          },
+          {
+            "depth": 32768,
+            "tok_s": 49.4
+          }
+        ]
+      },
       "weighted_score": 61.3
     },
     {
@@ -81,6 +100,29 @@
       "vram_at_maxctx_mib": {
         "used": 19882,
         "free": 582
+      },
+      "decode_decay": {
+        "base_tok_s": 117.1,
+        "retention_pct": 42,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 117.1
+          },
+          {
+            "depth": 16384,
+            "tok_s": 71.6
+          },
+          {
+            "depth": 32768,
+            "tok_s": 49.3
+          },
+          {
+            "depth": 65536,
+            "tok_s": 29.8
+          }
+        ]
       },
       "weighted_score": 74.1
     },
@@ -115,6 +157,29 @@
         "used": 18951,
         "free": 1513
       },
+      "decode_decay": {
+        "base_tok_s": 112.7,
+        "retention_pct": 80,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 112.7
+          },
+          {
+            "depth": 16384,
+            "tok_s": 103.1
+          },
+          {
+            "depth": 32768,
+            "tok_s": 90.6
+          },
+          {
+            "depth": 65536,
+            "tok_s": 72
+          }
+        ]
+      },
       "weighted_score": 70.3
     },
     {
@@ -147,6 +212,21 @@
       "vram_at_maxctx_mib": {
         "used": 12251,
         "free": 8213
+      },
+      "decode_decay": {
+        "base_tok_s": 60.5,
+        "retention_pct": 80,
+        "ref_depth": 16384,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 60.5
+          },
+          {
+            "depth": 16384,
+            "tok_s": 48.5
+          }
+        ]
       },
       "weighted_score": 61.1
     },
@@ -181,6 +261,21 @@
         "used": 12251,
         "free": 8213
       },
+      "decode_decay": {
+        "base_tok_s": 60.5,
+        "retention_pct": 80,
+        "ref_depth": 16384,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 60.5
+          },
+          {
+            "depth": 16384,
+            "tok_s": 48.5
+          }
+        ]
+      },
       "weighted_score": 61.6
     },
     {
@@ -213,6 +308,29 @@
       "vram_at_maxctx_mib": {
         "used": 18841,
         "free": 1623
+      },
+      "decode_decay": {
+        "base_tok_s": 53.1,
+        "retention_pct": 89,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 53.1
+          },
+          {
+            "depth": 16384,
+            "tok_s": 52.5
+          },
+          {
+            "depth": 32768,
+            "tok_s": 47.1
+          },
+          {
+            "depth": 65536,
+            "tok_s": 38.7
+          }
+        ]
       },
       "weighted_score": 69.6
     },
@@ -247,6 +365,29 @@
         "used": 18841,
         "free": 1623
       },
+      "decode_decay": {
+        "base_tok_s": 53.1,
+        "retention_pct": 89,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 53.1
+          },
+          {
+            "depth": 16384,
+            "tok_s": 52.5
+          },
+          {
+            "depth": 32768,
+            "tok_s": 47.1
+          },
+          {
+            "depth": 65536,
+            "tok_s": 38.7
+          }
+        ]
+      },
       "weighted_score": 71.2
     },
     {
@@ -279,6 +420,33 @@
       "vram_at_maxctx_mib": {
         "used": 5924,
         "free": 14540
+      },
+      "decode_decay": {
+        "base_tok_s": 78.1,
+        "retention_pct": 84,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 78.1
+          },
+          {
+            "depth": 16384,
+            "tok_s": 70.8
+          },
+          {
+            "depth": 32768,
+            "tok_s": 65.6
+          },
+          {
+            "depth": 65536,
+            "tok_s": 58.3
+          },
+          {
+            "depth": 98304,
+            "tok_s": 52.6
+          }
+        ]
       },
       "weighted_score": 79.1
     },
@@ -313,6 +481,33 @@
         "used": 5924,
         "free": 14540
       },
+      "decode_decay": {
+        "base_tok_s": 78.1,
+        "retention_pct": 84,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 78.1
+          },
+          {
+            "depth": 16384,
+            "tok_s": 70.8
+          },
+          {
+            "depth": 32768,
+            "tok_s": 65.6
+          },
+          {
+            "depth": 65536,
+            "tok_s": 58.3
+          },
+          {
+            "depth": 98304,
+            "tok_s": 52.6
+          }
+        ]
+      },
       "weighted_score": 84.5
     },
     {
@@ -345,6 +540,33 @@
       "vram_at_maxctx_mib": {
         "used": 4478,
         "free": 15986
+      },
+      "decode_decay": {
+        "base_tok_s": 91.6,
+        "retention_pct": 82,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 91.6
+          },
+          {
+            "depth": 16384,
+            "tok_s": 82.2
+          },
+          {
+            "depth": 32768,
+            "tok_s": 75.5
+          },
+          {
+            "depth": 65536,
+            "tok_s": 66.1
+          },
+          {
+            "depth": 98304,
+            "tok_s": 58.9
+          }
+        ]
       },
       "weighted_score": 84
     },
@@ -379,6 +601,33 @@
         "used": 4478,
         "free": 15986
       },
+      "decode_decay": {
+        "base_tok_s": 91.6,
+        "retention_pct": 82,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 91.6
+          },
+          {
+            "depth": 16384,
+            "tok_s": 82.2
+          },
+          {
+            "depth": 32768,
+            "tok_s": 75.5
+          },
+          {
+            "depth": 65536,
+            "tok_s": 66.1
+          },
+          {
+            "depth": 98304,
+            "tok_s": 58.9
+          }
+        ]
+      },
       "weighted_score": 86.9
     },
     {
@@ -411,6 +660,29 @@
       "vram_at_maxctx_mib": {
         "used": 17091,
         "free": 3373
+      },
+      "decode_decay": {
+        "base_tok_s": 70,
+        "retention_pct": 63,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 70
+          },
+          {
+            "depth": 16384,
+            "tok_s": 47.6
+          },
+          {
+            "depth": 32768,
+            "tok_s": 44.3
+          },
+          {
+            "depth": 65536,
+            "tok_s": 39.3
+          }
+        ]
       },
       "weighted_score": 69.9
     },
@@ -445,6 +717,29 @@
         "used": 17091,
         "free": 3373
       },
+      "decode_decay": {
+        "base_tok_s": 70,
+        "retention_pct": 63,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 70
+          },
+          {
+            "depth": 16384,
+            "tok_s": 47.6
+          },
+          {
+            "depth": 32768,
+            "tok_s": 44.3
+          },
+          {
+            "depth": 65536,
+            "tok_s": 39.3
+          }
+        ]
+      },
       "weighted_score": 71.4
     },
     {
@@ -477,6 +772,25 @@
       "vram_at_maxctx_mib": {
         "used": 6010,
         "free": 14454
+      },
+      "decode_decay": {
+        "base_tok_s": 262.9,
+        "retention_pct": 87,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 262.9
+          },
+          {
+            "depth": 16384,
+            "tok_s": 243.7
+          },
+          {
+            "depth": 32768,
+            "tok_s": 228.2
+          }
+        ]
       },
       "weighted_score": 61
     },
@@ -511,6 +825,25 @@
         "used": 17322,
         "free": 3142
       },
+      "decode_decay": {
+        "base_tok_s": 113.6,
+        "retention_pct": 14,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 113.6
+          },
+          {
+            "depth": 16384,
+            "tok_s": 30
+          },
+          {
+            "depth": 32768,
+            "tok_s": 15.5
+          }
+        ]
+      },
       "weighted_score": 63.5
     },
     {
@@ -543,6 +876,25 @@
       "vram_at_maxctx_mib": {
         "used": 17322,
         "free": 3142
+      },
+      "decode_decay": {
+        "base_tok_s": 113.6,
+        "retention_pct": 14,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 113.6
+          },
+          {
+            "depth": 16384,
+            "tok_s": 30
+          },
+          {
+            "depth": 32768,
+            "tok_s": 15.5
+          }
+        ]
       },
       "weighted_score": 68.4
     },
@@ -577,6 +929,33 @@
         "used": 5526,
         "free": 14938
       },
+      "decode_decay": {
+        "base_tok_s": 174.5,
+        "retention_pct": 140,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 174.5
+          },
+          {
+            "depth": 16384,
+            "tok_s": 248.5
+          },
+          {
+            "depth": 32768,
+            "tok_s": 243.5
+          },
+          {
+            "depth": 65536,
+            "tok_s": 232
+          },
+          {
+            "depth": 98304,
+            "tok_s": 222.2
+          }
+        ]
+      },
       "weighted_score": 70.4
     },
     {
@@ -609,6 +988,21 @@
       "vram_at_maxctx_mib": {
         "used": 3884,
         "free": 16580
+      },
+      "decode_decay": {
+        "base_tok_s": 71.2,
+        "retention_pct": 99,
+        "ref_depth": 16384,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 71.2
+          },
+          {
+            "depth": 16384,
+            "tok_s": 70.3
+          }
+        ]
       },
       "weighted_score": 40.1
     },
@@ -643,6 +1037,21 @@
         "used": 3884,
         "free": 16580
       },
+      "decode_decay": {
+        "base_tok_s": 71.2,
+        "retention_pct": 99,
+        "ref_depth": 16384,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 71.2
+          },
+          {
+            "depth": 16384,
+            "tok_s": 70.3
+          }
+        ]
+      },
       "weighted_score": 41.8
     },
     {
@@ -676,6 +1085,33 @@
         "used": 9293,
         "free": 11171
       },
+      "decode_decay": {
+        "base_tok_s": 53.3,
+        "retention_pct": 64,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 53.3
+          },
+          {
+            "depth": 16384,
+            "tok_s": 39.5
+          },
+          {
+            "depth": 32768,
+            "tok_s": 34.2
+          },
+          {
+            "depth": 65536,
+            "tok_s": 33.3
+          },
+          {
+            "depth": 98304,
+            "tok_s": 32.2
+          }
+        ]
+      },
       "weighted_score": 81.3
     },
     {
@@ -708,6 +1144,33 @@
       "vram_at_maxctx_mib": {
         "used": 9293,
         "free": 11171
+      },
+      "decode_decay": {
+        "base_tok_s": 53.3,
+        "retention_pct": 64,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 53.3
+          },
+          {
+            "depth": 16384,
+            "tok_s": 39.5
+          },
+          {
+            "depth": 32768,
+            "tok_s": 34.2
+          },
+          {
+            "depth": 65536,
+            "tok_s": 33.3
+          },
+          {
+            "depth": 98304,
+            "tok_s": 32.2
+          }
+        ]
       },
       "weighted_score": 78.4
     }
@@ -2613,6 +3076,304 @@
         "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
         "think": "n/a",
         "score": 582
+      }
+    ],
+    "decode_retention_pct": [
+      {
+        "rank": 1,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 140
+      },
+      {
+        "rank": 2,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 99
+      },
+      {
+        "rank": 3,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--think [think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--think",
+        "think": "think",
+        "score": 99
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 89
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--think [think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--think",
+        "think": "think",
+        "score": 89
+      },
+      {
+        "rank": 6,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 87
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 84
+      },
+      {
+        "rank": 8,
+        "label": "gemma-4-E4B-it-Q8_0--think [think]",
+        "model": "gemma-4-E4B-it-Q8_0--think",
+        "think": "think",
+        "score": 84
+      },
+      {
+        "rank": 9,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 82
+      },
+      {
+        "rank": 10,
+        "label": "gemma-4-E4B-it-Q5_K_M--think [think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--think",
+        "think": "think",
+        "score": 82
+      },
+      {
+        "rank": 11,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 80
+      },
+      {
+        "rank": 12,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 80
+      },
+      {
+        "rank": 13,
+        "label": "Qwen3-14B-Q5_K_M--think [think]",
+        "model": "Qwen3-14B-Q5_K_M--think",
+        "think": "think",
+        "score": 80
+      },
+      {
+        "rank": 14,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 64
+      },
+      {
+        "rank": 15,
+        "label": "gemma-4-12b-it-Q5_K_M--think [think]",
+        "model": "gemma-4-12b-it-Q5_K_M--think",
+        "think": "think",
+        "score": 64
+      },
+      {
+        "rank": 16,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 63
+      },
+      {
+        "rank": 17,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--think [think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--think",
+        "think": "think",
+        "score": 63
+      },
+      {
+        "rank": 18,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 42
+      },
+      {
+        "rank": 19,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 42
+      },
+      {
+        "rank": 20,
+        "label": "GLM-4.7-Flash-IQ4_XS--nothi [no_think]",
+        "model": "GLM-4.7-Flash-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 14
+      },
+      {
+        "rank": 21,
+        "label": "GLM-4.7-Flash-IQ4_XS--think [think]",
+        "model": "GLM-4.7-Flash-IQ4_XS--think",
+        "think": "think",
+        "score": 14
+      }
+    ],
+    "decode_tok_s_at_ref": [
+      {
+        "rank": 1,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 243.5
+      },
+      {
+        "rank": 2,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 228.2
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 90.6
+      },
+      {
+        "rank": 4,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 75.5
+      },
+      {
+        "rank": 5,
+        "label": "gemma-4-E4B-it-Q5_K_M--think [think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--think",
+        "think": "think",
+        "score": 75.5
+      },
+      {
+        "rank": 6,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 70.3
+      },
+      {
+        "rank": 7,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--think [think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--think",
+        "think": "think",
+        "score": 70.3
+      },
+      {
+        "rank": 8,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 65.6
+      },
+      {
+        "rank": 9,
+        "label": "gemma-4-E4B-it-Q8_0--think [think]",
+        "model": "gemma-4-E4B-it-Q8_0--think",
+        "think": "think",
+        "score": 65.6
+      },
+      {
+        "rank": 10,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 49.4
+      },
+      {
+        "rank": 11,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 49.3
+      },
+      {
+        "rank": 12,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 48.5
+      },
+      {
+        "rank": 13,
+        "label": "Qwen3-14B-Q5_K_M--think [think]",
+        "model": "Qwen3-14B-Q5_K_M--think",
+        "think": "think",
+        "score": 48.5
+      },
+      {
+        "rank": 14,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 47.1
+      },
+      {
+        "rank": 15,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--think [think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--think",
+        "think": "think",
+        "score": 47.1
+      },
+      {
+        "rank": 16,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 44.3
+      },
+      {
+        "rank": 17,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--think [think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--think",
+        "think": "think",
+        "score": 44.3
+      },
+      {
+        "rank": 18,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 34.2
+      },
+      {
+        "rank": 19,
+        "label": "gemma-4-12b-it-Q5_K_M--think [think]",
+        "model": "gemma-4-12b-it-Q5_K_M--think",
+        "think": "think",
+        "score": 34.2
+      },
+      {
+        "rank": 20,
+        "label": "GLM-4.7-Flash-IQ4_XS--nothi [no_think]",
+        "model": "GLM-4.7-Flash-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 15.5
+      },
+      {
+        "rank": 21,
+        "label": "GLM-4.7-Flash-IQ4_XS--think [think]",
+        "model": "GLM-4.7-Flash-IQ4_XS--think",
+        "think": "think",
+        "score": 15.5
       }
     ]
   }
