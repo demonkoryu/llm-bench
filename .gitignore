@@ -9,3 +9,6 @@ results/*.png
 nohup.log
 .claude/scheduled_tasks.lock
 .claude/scheduled_tasks.json
+
+# local run logs
+logs/
