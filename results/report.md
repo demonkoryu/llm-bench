@@ -1,6 +1,6 @@
 # LLM Benchmark Report
 
-Generated from `llm-benchmarks-rose-rx7900xt-vulkan-20260604-202514.csv` — 450 result rows across 31 bench types.
+Generated from `llm-benchmarks-rose-rx7900xt-vulkan-20260604-202514.csv` — 442 result rows across 31 bench types.
 
 ## triage
 
@@ -124,7 +124,6 @@ Generated from `llm-benchmarks-rose-rx7900xt-vulkan-20260604-202514.csv` — 450
 | Qwen3.6-35B-A3B-UD-IQ4_XS | 75776 | 303,104 | 19753 |
 | gemma-4-26B-A4B-it-UD-Q4_K_M | 71680 | 286,720 | 17913 |
 | Qwen3-30B-A3B-Instruct-2507-IQ4_XS | 69632 | 278,528 | 19354 |
-| GLM-4.1V-9B-Thinking-Q5_K_M | 63488 | 253,952 | 7821 |
 | GLM-4.7-Flash-IQ4_XS | 61440 | 245,760 | 17671 |
 | LFM2.5-8B-A1B-Q5_K_M | 36864 | 147,456 | 6010 |
 | Qwen3-14B-Q5_K_M | 30720 | 122,880 | 12251 |

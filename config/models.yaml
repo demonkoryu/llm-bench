@@ -250,19 +250,6 @@ models:
      kv_bytes_per_token: 16384
      benches: [triage, reasoning, summarization, docqa, coding, coding_hard, speed, maxctx]
 
-   # ── GLM-4.1V-9B-Thinking (vision-LM, run text-only) ───────────────────────────
-   # Always-thinking; native FC. No mmproj → vision tower unused, text-only benchmark.
-   - hf_repo: unsloth/GLM-4.1V-9B-Thinking-GGUF
-     hf_file: GLM-4.1V-9B-Thinking-Q5_K_M.gguf
-     label: "GLM-4.1V-9B-Thinking Q5_K_M"
-     family: glm
-     type: dense
-     think: required
-     tools: true
-     native_max_ctx: 65536
-     kv_bytes_per_token: 16384
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
-
 
 # ── Sampling matrix ───────────────────────────────────────────────────────────────
 # Read by shared/llm/sampling.mjs. Authoritative source for ALL per-request sampling.
@@ -394,7 +381,7 @@ sampling_matrix:
          top_k: 80
          repeat_penalty: 1.05
 
-   # ── GLM-4.x (Flash + 4.1V): chat-template thinking; standard sampling. ──────
+   # ── GLM-4.x (Flash): chat-template thinking; standard sampling. ──────
    glm:
       default:
          temperature: 0.6

@@ -134,8 +134,6 @@ rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0--think,think,docqa,8.58,0,-,-,-,3850,
 rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0--think,think,summarization,24.4,-,-,-,-,3850,14336,14336,14336,ok,10,
 rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0--think,think,speed_short,132.5,-,-,132.5,540.5,4345,16384,16384,16384,ok,-,prefill_tps=540.5
 rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0--think,think,speed_long-32k,131.5,-,-,131.5,841.2,4345,16384,16384,16384,ok,-,prefill_tps=841.2
-rose,vulkan,GLM-4.1V-9B-Thinking-Q5_K_M,-,maxctx,63488,-,-,-,-,7821,63488,63488,63488,ok,-,
-rose,vulkan,GLM-4.1V-9B-Thinking-Q5_K_M,-,smoke,0,-,-,-,-,8348,65536,65536,65536,error:smoke:triage-json:no-action,-,
 rose,vulkan,Qwen3-14B-Q5_K_M--think,think,toolcalling,100.0,-,-,-,-,11563,22528,22528,22528,ok,31,
 rose,vulkan,Qwen3.6-35B-A3B-UD-IQ4_XS--think,think,toolcalling,100.0,-,-,-,-,18710,51200,55296,51200,ok,23,
 rose,vulkan,gemma-4-E4B-it-Q8_0--think,think,toolcalling,100.0,-,-,-,-,7042,104448,108544,104448,ok,20,
@@ -443,9 +441,3 @@ rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0,n/a,e2e-2k,826.1,,,130.2,3434.5,4370,
 rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0,n/a,ttft-2k,525,,,,,4370,18432,,,ok,,prompt_ms@2048 n=3
 rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0,n/a,e2e-8k,1898.9,,,127.9,3617.1,4370,18432,,,ok,,e2e@8192 gen256 n=3
 rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0,n/a,ttft-8k,2064,,,,,4370,18432,,,ok,,prompt_ms@8192 n=3
-rose,vulkan,GLM-4.1V-9B-Thinking-Q5_K_M,n/a,e2e-2k,440.6,,,78.6,1810.2,8298,63488,,,ok,,e2e@2048 gen256 n=3
-rose,vulkan,GLM-4.1V-9B-Thinking-Q5_K_M,n/a,ttft-2k,860,,,,,8298,63488,,,ok,,prompt_ms@2048 n=3
-rose,vulkan,GLM-4.1V-9B-Thinking-Q5_K_M,n/a,e2e-8k,885.6,,,75.6,1543.1,8298,63488,,,ok,,e2e@8192 gen256 n=3
-rose,vulkan,GLM-4.1V-9B-Thinking-Q5_K_M,n/a,ttft-8k,4175,,,,,8298,63488,,,ok,,prompt_ms@8192 n=3
-rose,vulkan,GLM-4.1V-9B-Thinking-Q5_K_M,n/a,e2e-32k,813.6,,,68.5,911.5,8298,63488,,,ok,,e2e@32768 gen256 n=3
-rose,vulkan,GLM-4.1V-9B-Thinking-Q5_K_M,n/a,ttft-32k,28468,,,,,8298,63488,,,ok,,prompt_ms@32768 n=3
