@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-04T21:06:42.768Z",
+  "generated": "2026-06-04T21:19:30.525Z",
   "sources": [
     "llm-benchmarks-rose-rx7900xt-vulkan-20260604-202514.csv"
   ],
@@ -20,12 +20,12 @@
       "vram_headroom"
     ],
     "rest_weights": {
-      "reasoning": 0.22,
-      "triage": 0.2,
-      "summarization": 0.18,
-      "docqa": 0.15,
-      "speed": 0.15,
-      "degradation": 0.1
+      "reasoning": 0.2,
+      "triage": 0.18,
+      "summarization": 0.16,
+      "docqa": 0.13,
+      "performance": 0.25,
+      "degradation": 0.08
     }
   },
   "models": [
@@ -73,6 +73,12 @@
             "tok_s": 682.7
           }
         ]
+      },
+      "performance": {
+        "axis": 0.24433261802398937,
+        "throughput_norm": 0.231543107957051,
+        "latency_norm": 0.25285895806861497,
+        "ttft_8k_ms": 3935
       },
       "vram_at_maxctx_mib": {
         "used": 20343,
@@ -145,7 +151,7 @@
       "struct_output_pct": 100,
       "coding_grade": 80.82,
       "power_eff_tok_s_per_w": 0.495,
-      "weighted_score": 12.6
+      "weighted_score": 11.8
     },
     {
       "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
@@ -191,6 +197,12 @@
             "tok_s": 684.4
           }
         ]
+      },
+      "performance": {
+        "axis": 0.2452205030447092,
+        "throughput_norm": 0.23153285270379753,
+        "latency_norm": 0.25434560327198363,
+        "ttft_8k_ms": 3912
       },
       "vram_at_maxctx_mib": {
         "used": 20366,
@@ -267,7 +279,7 @@
       "struct_output_pct": 100,
       "coding_grade": 100,
       "power_eff_tok_s_per_w": 0.495,
-      "weighted_score": 22.7
+      "weighted_score": 21.1
     },
     {
       "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
@@ -313,6 +325,12 @@
             "tok_s": 789.3
           }
         ]
+      },
+      "performance": {
+        "axis": 0.25519072062239334,
+        "throughput_norm": 0.2594579073130211,
+        "latency_norm": 0.25234592949530815,
+        "ttft_8k_ms": 3943
       },
       "vram_at_maxctx_mib": {
         "used": 19354,
@@ -389,7 +407,7 @@
       "struct_output_pct": 100,
       "coding_grade": 98.32,
       "power_eff_tok_s_per_w": 0.438,
-      "weighted_score": 22.3
+      "weighted_score": 20.6
     },
     {
       "model": "Qwen3-14B-Q5_K_M--nothi",
@@ -432,6 +450,12 @@
           }
         ]
       },
+      "performance": {
+        "axis": 0.13697766285025342,
+        "throughput_norm": 0.1468603542164474,
+        "latency_norm": 0.13038920193945747,
+        "ttft_8k_ms": 7631
+      },
       "vram_at_maxctx_mib": {
         "used": 12251,
         "free": 8213
@@ -495,7 +519,7 @@
       "struct_output_pct": 100,
       "coding_grade": 70.81,
       "power_eff_tok_s_per_w": 0.216,
-      "weighted_score": 20.4
+      "weighted_score": 18.4
     },
     {
       "model": "Qwen3-14B-Q5_K_M--think",
@@ -538,6 +562,12 @@
           }
         ]
       },
+      "performance": {
+        "axis": 0.13697766285025342,
+        "throughput_norm": 0.1468603542164474,
+        "latency_norm": 0.13038920193945747,
+        "ttft_8k_ms": 7631
+      },
       "vram_at_maxctx_mib": {
         "used": 12251,
         "free": 8213
@@ -601,7 +631,7 @@
       "struct_output_pct": 100,
       "coding_grade": 70.81,
       "power_eff_tok_s_per_w": 0.216,
-      "weighted_score": 20.6
+      "weighted_score": 18.6
     },
     {
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
@@ -648,6 +678,12 @@
           }
         ]
       },
+      "performance": {
+        "axis": 0.319940587600933,
+        "throughput_norm": 0.3653536524084462,
+        "latency_norm": 0.28966521106259097,
+        "ttft_8k_ms": 3435
+      },
       "vram_at_maxctx_mib": {
         "used": 19753,
         "free": 711
@@ -723,7 +759,7 @@
       "struct_output_pct": 100,
       "coding_grade": 100,
       "power_eff_tok_s_per_w": 0.181,
-      "weighted_score": 25.3
+      "weighted_score": 23.3
     },
     {
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--think",
@@ -770,6 +806,12 @@
           }
         ]
       },
+      "performance": {
+        "axis": 0.319940587600933,
+        "throughput_norm": 0.3653536524084462,
+        "latency_norm": 0.28966521106259097,
+        "ttft_8k_ms": 3435
+      },
       "vram_at_maxctx_mib": {
         "used": 19753,
         "free": 711
@@ -845,7 +887,7 @@
       "struct_output_pct": 100,
       "coding_grade": 100,
       "power_eff_tok_s_per_w": 0.181,
-      "weighted_score": 26
+      "weighted_score": 24
     },
     {
       "model": "gemma-4-E4B-it-Q8_0--nothi",
@@ -892,6 +934,12 @@
           }
         ]
       },
+      "performance": {
+        "axis": 0.4055073189725043,
+        "throughput_norm": 0.40208796956240833,
+        "latency_norm": 0.4077868852459016,
+        "ttft_8k_ms": 2440
+      },
       "vram_at_maxctx_mib": {
         "used": 5924,
         "free": 14540
@@ -971,7 +1019,7 @@
       "struct_output_pct": 100,
       "coding_grade": 94.19,
       "power_eff_tok_s_per_w": 0.316,
-      "weighted_score": 64.5
+      "weighted_score": 61.1
     },
     {
       "model": "gemma-4-E4B-it-Q8_0--think",
@@ -1018,6 +1066,12 @@
           }
         ]
       },
+      "performance": {
+        "axis": 0.4055073189725043,
+        "throughput_norm": 0.40208796956240833,
+        "latency_norm": 0.4077868852459016,
+        "ttft_8k_ms": 2440
+      },
       "vram_at_maxctx_mib": {
         "used": 5924,
         "free": 14540
@@ -1097,7 +1151,7 @@
       "struct_output_pct": 100,
       "coding_grade": 94.19,
       "power_eff_tok_s_per_w": 0.316,
-      "weighted_score": 71.5
+      "weighted_score": 67.4
     },
     {
       "model": "gemma-4-E4B-it-Q5_K_M--nothi",
@@ -1144,6 +1198,12 @@
           }
         ]
       },
+      "performance": {
+        "axis": 0.4067747267523526,
+        "throughput_norm": 0.42561352052588936,
+        "latency_norm": 0.39421553090332806,
+        "ttft_8k_ms": 2524
+      },
       "vram_at_maxctx_mib": {
         "used": 4478,
         "free": 15986
@@ -1223,7 +1283,7 @@
       "struct_output_pct": 100,
       "coding_grade": 100,
       "power_eff_tok_s_per_w": 0.384,
-      "weighted_score": 77.3
+      "weighted_score": 72.7
     },
     {
       "model": "gemma-4-E4B-it-Q5_K_M--think",
@@ -1270,6 +1330,12 @@
           }
         ]
       },
+      "performance": {
+        "axis": 0.4067747267523526,
+        "throughput_norm": 0.42561352052588936,
+        "latency_norm": 0.39421553090332806,
+        "ttft_8k_ms": 2524
+      },
       "vram_at_maxctx_mib": {
         "used": 4478,
         "free": 15986
@@ -1349,7 +1415,7 @@
       "struct_output_pct": 100,
       "coding_grade": 100,
       "power_eff_tok_s_per_w": 0.384,
-      "weighted_score": 81.4
+      "weighted_score": 76.3
     },
     {
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
@@ -1396,6 +1462,12 @@
           }
         ]
       },
+      "performance": {
+        "axis": 0.3094080707081231,
+        "throughput_norm": 0.3090010357805786,
+        "latency_norm": 0.3096794273264861,
+        "ttft_8k_ms": 3213
+      },
       "vram_at_maxctx_mib": {
         "used": 17913,
         "free": 2551
@@ -1471,7 +1543,7 @@
       "struct_output_pct": 100,
       "coding_grade": 100,
       "power_eff_tok_s_per_w": 0.276,
-      "weighted_score": 27.2
+      "weighted_score": 25.4
     },
     {
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--think",
@@ -1518,6 +1590,12 @@
           }
         ]
       },
+      "performance": {
+        "axis": 0.3094080707081231,
+        "throughput_norm": 0.3090010357805786,
+        "latency_norm": 0.3096794273264861,
+        "ttft_8k_ms": 3213
+      },
       "vram_at_maxctx_mib": {
         "used": 17913,
         "free": 2551
@@ -1593,7 +1671,7 @@
       "struct_output_pct": 100,
       "coding_grade": 100,
       "power_eff_tok_s_per_w": 0.276,
-      "weighted_score": 28.3
+      "weighted_score": 26.4
     },
     {
       "model": "LFM2.5-8B-A1B-Q5_K_M",
@@ -1639,6 +1717,12 @@
             "tok_s": 4538.9
           }
         ]
+      },
+      "performance": {
+        "axis": 1,
+        "throughput_norm": 1,
+        "latency_norm": 1,
+        "ttft_8k_ms": 995
       },
       "vram_at_maxctx_mib": {
         "used": 6010,
@@ -1711,7 +1795,7 @@
       "struct_output_pct": 75,
       "coding_grade": 21.66,
       "power_eff_tok_s_per_w": 1.177,
-      "weighted_score": 4.1
+      "weighted_score": 4.2
     },
     {
       "model": "granite-4.0-h-tiny-Q5_K_M",
@@ -1757,6 +1841,12 @@
             "tok_s": 4127.4
           }
         ]
+      },
+      "performance": {
+        "axis": 0.8314812110610372,
+        "throughput_norm": 0.7942796197352093,
+        "latency_norm": 0.8562822719449226,
+        "ttft_8k_ms": 1162
       },
       "vram_at_maxctx_mib": {
         "used": 5526,
@@ -1837,7 +1927,7 @@
       "struct_output_pct": 100,
       "coding_grade": 49.98,
       "power_eff_tok_s_per_w": 0.776,
-      "weighted_score": 28.3
+      "weighted_score": 29.5
     },
     {
       "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
@@ -1879,6 +1969,12 @@
             "tok_s": 1898.9
           }
         ]
+      },
+      "performance": {
+        "axis": 0.45691757674089484,
+        "throughput_norm": 0.41918347673595796,
+        "latency_norm": 0.48207364341085274,
+        "ttft_8k_ms": 2064
       },
       "vram_at_maxctx_mib": {
         "used": 3884,
@@ -1985,6 +2081,12 @@
             "tok_s": 1898.9
           }
         ]
+      },
+      "performance": {
+        "axis": 0.45691757674089484,
+        "throughput_norm": 0.41918347673595796,
+        "latency_norm": 0.48207364341085274,
+        "ttft_8k_ms": 2064
       },
       "vram_at_maxctx_mib": {
         "used": 3884,
@@ -2096,6 +2198,12 @@
           }
         ]
       },
+      "performance": {
+        "axis": 0.1675071621347819,
+        "throughput_norm": 0.191322004696906,
+        "latency_norm": 0.15163060042669918,
+        "ttft_8k_ms": 6562
+      },
       "vram_at_maxctx_mib": {
         "used": 9293,
         "free": 11171
@@ -2175,7 +2283,7 @@
       "struct_output_pct": 100,
       "coding_grade": 100,
       "power_eff_tok_s_per_w": 0.173,
-      "weighted_score": 60.7
+      "weighted_score": 55.1
     },
     {
       "model": "gemma-4-12b-it-Q5_K_M--think",
@@ -2222,6 +2330,12 @@
           }
         ]
       },
+      "performance": {
+        "axis": 0.1675071621347819,
+        "throughput_norm": 0.191322004696906,
+        "latency_norm": 0.15163060042669918,
+        "ttft_8k_ms": 6562
+      },
       "vram_at_maxctx_mib": {
         "used": 9293,
         "free": 11171
@@ -2301,7 +2415,7 @@
       "struct_output_pct": 100,
       "coding_grade": 100,
       "power_eff_tok_s_per_w": 0.173,
-      "weighted_score": 47.8
+      "weighted_score": 43.4
     }
   ],
   "ranking": [
@@ -2310,119 +2424,119 @@
       "label": "gemma-4-E4B-it-Q5_K_M--think [think]",
       "model": "gemma-4-E4B-it-Q5_K_M--think",
       "think": "think",
-      "weighted_score": 81.4
+      "weighted_score": 76.3
     },
     {
       "rank": 2,
       "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
       "model": "gemma-4-E4B-it-Q5_K_M--nothi",
       "think": "no_think",
-      "weighted_score": 77.3
+      "weighted_score": 72.7
     },
     {
       "rank": 3,
       "label": "gemma-4-E4B-it-Q8_0--think [think]",
       "model": "gemma-4-E4B-it-Q8_0--think",
       "think": "think",
-      "weighted_score": 71.5
+      "weighted_score": 67.4
     },
     {
       "rank": 4,
       "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
       "model": "gemma-4-E4B-it-Q8_0--nothi",
       "think": "no_think",
-      "weighted_score": 64.5
+      "weighted_score": 61.1
     },
     {
       "rank": 5,
       "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
       "model": "gemma-4-12b-it-Q5_K_M--nothi",
       "think": "no_think",
-      "weighted_score": 60.7
+      "weighted_score": 55.1
     },
     {
       "rank": 6,
       "label": "gemma-4-12b-it-Q5_K_M--think [think]",
       "model": "gemma-4-12b-it-Q5_K_M--think",
       "think": "think",
-      "weighted_score": 47.8
+      "weighted_score": 43.4
     },
     {
       "rank": 7,
-      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--think [think]",
-      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--think",
-      "think": "think",
-      "weighted_score": 28.3
-    },
-    {
-      "rank": 8,
       "label": "granite-4.0-h-tiny-Q5_K_M",
       "model": "granite-4.0-h-tiny-Q5_K_M",
       "think": "n/a",
-      "weighted_score": 28.3
+      "weighted_score": 29.5
+    },
+    {
+      "rank": 8,
+      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--think [think]",
+      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--think",
+      "think": "think",
+      "weighted_score": 26.4
     },
     {
       "rank": 9,
       "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
       "think": "no_think",
-      "weighted_score": 27.2
+      "weighted_score": 25.4
     },
     {
       "rank": 10,
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--think [think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--think",
       "think": "think",
-      "weighted_score": 26
+      "weighted_score": 24
     },
     {
       "rank": 11,
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
       "think": "no_think",
-      "weighted_score": 25.3
+      "weighted_score": 23.3
     },
     {
       "rank": 12,
       "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
       "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
       "think": "n/a",
-      "weighted_score": 22.7
+      "weighted_score": 21.1
     },
     {
       "rank": 13,
       "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
       "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
       "think": "n/a",
-      "weighted_score": 22.3
+      "weighted_score": 20.6
     },
     {
       "rank": 14,
       "label": "Qwen3-14B-Q5_K_M--think [think]",
       "model": "Qwen3-14B-Q5_K_M--think",
       "think": "think",
-      "weighted_score": 20.6
+      "weighted_score": 18.6
     },
     {
       "rank": 15,
       "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
       "model": "Qwen3-14B-Q5_K_M--nothi",
       "think": "no_think",
-      "weighted_score": 20.4
+      "weighted_score": 18.4
     },
     {
       "rank": 16,
       "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
       "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
       "think": "n/a",
-      "weighted_score": 12.6
+      "weighted_score": 11.8
     },
     {
       "rank": 17,
       "label": "LFM2.5-8B-A1B-Q5_K_M",
       "model": "LFM2.5-8B-A1B-Q5_K_M",
       "think": "n/a",
-      "weighted_score": 4.1
+      "weighted_score": 4.2
     },
     {
       "rank": 18,
@@ -4158,6 +4272,276 @@
         "model": "Qwen3-14B-Q5_K_M--think",
         "think": "think",
         "score": 477.35
+      }
+    ],
+    "performance_axis": [
+      {
+        "rank": 1,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 1
+      },
+      {
+        "rank": 2,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 0.8314812110610372
+      },
+      {
+        "rank": 3,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 0.45691757674089484
+      },
+      {
+        "rank": 4,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--think [think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--think",
+        "think": "think",
+        "score": 0.45691757674089484
+      },
+      {
+        "rank": 5,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 0.4067747267523526
+      },
+      {
+        "rank": 6,
+        "label": "gemma-4-E4B-it-Q5_K_M--think [think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--think",
+        "think": "think",
+        "score": 0.4067747267523526
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 0.4055073189725043
+      },
+      {
+        "rank": 8,
+        "label": "gemma-4-E4B-it-Q8_0--think [think]",
+        "model": "gemma-4-E4B-it-Q8_0--think",
+        "think": "think",
+        "score": 0.4055073189725043
+      },
+      {
+        "rank": 9,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 0.319940587600933
+      },
+      {
+        "rank": 10,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--think [think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--think",
+        "think": "think",
+        "score": 0.319940587600933
+      },
+      {
+        "rank": 11,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 0.3094080707081231
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--think [think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--think",
+        "think": "think",
+        "score": 0.3094080707081231
+      },
+      {
+        "rank": 13,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 0.25519072062239334
+      },
+      {
+        "rank": 14,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 0.2452205030447092
+      },
+      {
+        "rank": 15,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 0.24433261802398937
+      },
+      {
+        "rank": 16,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 0.1675071621347819
+      },
+      {
+        "rank": 17,
+        "label": "gemma-4-12b-it-Q5_K_M--think [think]",
+        "model": "gemma-4-12b-it-Q5_K_M--think",
+        "think": "think",
+        "score": 0.1675071621347819
+      },
+      {
+        "rank": 18,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 0.13697766285025342
+      },
+      {
+        "rank": 19,
+        "label": "Qwen3-14B-Q5_K_M--think [think]",
+        "model": "Qwen3-14B-Q5_K_M--think",
+        "think": "think",
+        "score": 0.13697766285025342
+      }
+    ],
+    "latency_rel_8k": [
+      {
+        "rank": 1,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 1
+      },
+      {
+        "rank": 2,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 0.8562822719449226
+      },
+      {
+        "rank": 3,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 0.48207364341085274
+      },
+      {
+        "rank": 4,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--think [think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--think",
+        "think": "think",
+        "score": 0.48207364341085274
+      },
+      {
+        "rank": 5,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 0.4077868852459016
+      },
+      {
+        "rank": 6,
+        "label": "gemma-4-E4B-it-Q8_0--think [think]",
+        "model": "gemma-4-E4B-it-Q8_0--think",
+        "think": "think",
+        "score": 0.4077868852459016
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 0.39421553090332806
+      },
+      {
+        "rank": 8,
+        "label": "gemma-4-E4B-it-Q5_K_M--think [think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--think",
+        "think": "think",
+        "score": 0.39421553090332806
+      },
+      {
+        "rank": 9,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 0.3096794273264861
+      },
+      {
+        "rank": 10,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--think [think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--think",
+        "think": "think",
+        "score": 0.3096794273264861
+      },
+      {
+        "rank": 11,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 0.28966521106259097
+      },
+      {
+        "rank": 12,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--think [think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--think",
+        "think": "think",
+        "score": 0.28966521106259097
+      },
+      {
+        "rank": 13,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 0.25434560327198363
+      },
+      {
+        "rank": 14,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 0.25285895806861497
+      },
+      {
+        "rank": 15,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 0.25234592949530815
+      },
+      {
+        "rank": 16,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 0.15163060042669918
+      },
+      {
+        "rank": 17,
+        "label": "gemma-4-12b-it-Q5_K_M--think [think]",
+        "model": "gemma-4-12b-it-Q5_K_M--think",
+        "think": "think",
+        "score": 0.15163060042669918
+      },
+      {
+        "rank": 18,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 0.13038920193945747
+      },
+      {
+        "rank": 19,
+        "label": "Qwen3-14B-Q5_K_M--think [think]",
+        "model": "Qwen3-14B-Q5_K_M--think",
+        "think": "think",
+        "score": 0.13038920193945747
       }
     ],
     "vram_free_at_maxctx_mib": [

@@ -3,8 +3,8 @@
  * Data-driven SVG chart renderer for llm-bench results.
  *
  * Reads results/results.tsv and renders:
- *   1. Overall weighted ranking (quality 25% · tool 20% · ctx 30% · speed 25%)
- *   2. Per-metric bar panels (decode speed, max context, triage, toolcalling, docqa, summarization)
+ *   1. Overall weighted ranking (multiplicative; see SCORING in results-csv.mjs)
+ *   2. Per-metric bar panels (throughput, TTFT latency, max context, triage, toolcalling, docqa, summarization)
  *   3. Score breakdown table
  *
  * Usage:
@@ -188,7 +188,7 @@ const restLabels = {
    triage: 'triage',
    summarization: 'summ',
    docqa: 'docqa',
-   speed: 'speed',
+   performance: 'perf',
    degradation: 'degrade',
 };
 const restStr = Object.entries(SCORING.rest_weights)
@@ -202,42 +202,52 @@ const METRIC_PANELS = [
    // ── Rest axes (additive weighted sum, weights sum to 1.0) ──
    {
       title: 'Reasoning accuracy',
-      weight: '×0.22 (rest)',
+      weight: '×0.20 (rest)',
       getValue: (m) => m.reasoning,
       formatVal: (v) => (v != null ? `${v.toFixed(0)}%` : '–'),
       getMax: () => 100,
    },
    {
       title: 'Triage score (/100)',
-      weight: '×0.20 (rest)',
+      weight: '×0.18 (rest)',
       getValue: (m) => m.triage,
       formatVal: (v) => (v != null ? v.toFixed(0) : '–'),
       getMax: () => 100,
    },
    {
       title: 'Summarization score (/100)',
-      weight: '×0.18 (rest)',
+      weight: '×0.16 (rest)',
       getValue: (m) => m.summ,
       formatVal: (v) => (v != null ? v.toFixed(0) : '–'),
       getMax: () => 100,
    },
    {
       title: 'DocQA comprehension (/10)',
-      weight: '×0.15 (rest)',
+      weight: '×0.13 (rest)',
       getValue: (m) => m.docqa,
       formatVal: (v) => (v != null ? v.toFixed(1) : '–'),
       getMax: () => 10,
    },
    {
       title: 'End-to-end throughput — measured (tok/s)',
-      weight: '×0.15 (rest)',
+      weight: '×0.25 perf · 40%',
       getValue: (m) => m.e2eThroughput,
       formatVal: (v) => (v != null ? `${v.toFixed(0)} t/s` : '?'),
       getMax: () => maxE2E,
    },
    {
+      // Latency half of the performance axis. Plotted fleet-relative (fleet-fastest
+      // = 100) so longer bar = faster — keeps the chart's higher-is-better invariant
+      // and the top-5 badge correct. Absolute TTFT ms lives in report.json/report.md.
+      title: 'First-token latency @8k (rel., ↑=faster)',
+      weight: '×0.25 perf · 60%',
+      getValue: (m) => (m.latencyNorm != null ? m.latencyNorm * 100 : null),
+      formatVal: (v) => (v != null ? `${v.toFixed(0)}%` : '?'),
+      getMax: () => 100,
+   },
+   {
       title: 'Decode retention @ ~32k ctx (% of base)',
-      weight: '×0.10 (rest)',
+      weight: '×0.08 (rest)',
       getValue: (m) => m.decodeRetentionPct,
       formatVal: (v) => (v != null ? `${v.toFixed(0)}%` : '?'),
       getMax: () => maxRetention,

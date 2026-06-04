@@ -63,14 +63,20 @@ export const CARD_TOTAL_MIB = 20464;
 // so breadth counts and a narrow model can't win by being scored on fewer axes.
 // DEFAULT_WEIGHTS holds ONLY the rest axes — toolcalling, struct_output, maxctx and
 // vram are structural multipliers, not entries here.
-//   reasoning 22 · triage 20 · summarization 18 · docqa 15 · speed 15 · degradation 10
+//   reasoning 20 · triage 18 · summarization 16 · docqa 13 · performance 25 · degradation 8
+//
+// `performance` is a composite (NOT a hard multiplier — significant but bounded by its
+// 0.25 rest-weight): 0.4·throughput + 0.6·latency, latency-favored. Throughput =
+// directly-measured E2E tok/s ÷ fleet best; latency = fleet-min TTFT ÷ this model's
+// TTFT at the common 8k depth (lower TTFT → closer to 1). It replaces the old `speed`
+// axis (which scored throughput alone at 0.15) so first-token latency now counts too.
 export const DEFAULT_WEIGHTS = {
-   reasoning: 0.22,
-   triage: 0.2,
-   summarization: 0.18,
-   docqa: 0.15,
-   speed: 0.15,
-   degradation: 0.1,
+   reasoning: 0.2,
+   triage: 0.18,
+   summarization: 0.16,
+   docqa: 0.13,
+   performance: 0.25,
+   degradation: 0.08,
 };
 
 // Self-describing scoring shape for report.json + the chart subtitle (so the
@@ -425,6 +431,11 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          const ttftCurve = tMap ? [...tMap.entries()].map(([depth, ms]) => ({ depth, ms })).sort((a, b) => a.depth - b.depth) : [];
          const ttftRefPt = [...ttftCurve].filter((x) => x.depth > 0 && x.depth <= 32768).pop() ?? null;
          const ttftRefMs = ttftRefPt?.ms ?? null;
+         // TTFT at the common 8k depth — used for the latency half of the performance
+         // axis. 8k is measured by every model (even the small-ctx ones that can't
+         // reach 32k), so latency is compared apples-to-apples; ttftRefMs (deepest
+         // ≤32k) stays for display only.
+         const ttft8kMs = tMap?.get(8192) ?? null;
          // Directly-measured end-to-end throughput (tok/s): one real request per
          // operating-point depth — prefill + a fixed ignore_eos decode — with tok/s
          // read from the server's own timings as (prompt_n+predicted_n)÷(prompt_ms+
@@ -477,6 +488,7 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
             qualityRetentionPct,
             ttftCurve,
             ttftRefMs,
+            ttft8kMs,
             e2eCurve,
             e2eThroughput,
             e2eRef,
@@ -508,22 +520,40 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
    const maxSpeed = Math.max(...models.map((m) => m.speedTg ?? 0)) || 1;
    const maxTotal = Math.max(...models.map((m) => m.totalE2E ?? 0)) || 1;
    const maxE2E = Math.max(...models.map((m) => m.e2eThroughput ?? 0)) || 1;
+   // Fleet-fastest first-token latency at the common 8k depth (lower = better), the
+   // denominator-flipped reference for the latency half of the performance axis.
+   const minTtft8k = Math.min(...models.map((m) => m.ttft8kMs ?? Infinity));
    const maxFreeVram = Math.max(...models.map((m) => freeVram(m) ?? 0)) || 1;
 
    // ── Multiplicative score (see SCORING / DEFAULT_WEIGHTS comment above) ─────────
-   // restScore: additive weighted sum of capability axes. maxctx/speed are NOT in
-   // here (maxctx is an amplifier; speed uses directly-measured end-to-end tok/s).
+   // restScore: additive weighted sum of capability axes. maxctx is NOT here (it's an
+   // amplifier). `performance` blends measured throughput + TTFT (see its normalizer).
    // Quality benches are absolute (0-100, docqa 0-10); degradation is retention.
    const REST_NORMALIZE = {
       reasoning: (m) => (m.reasoning != null ? m.reasoning / 100 : null),
       triage: (m) => (m.triage != null ? m.triage / 100 : null),
       summarization: (m) => (m.summ != null ? m.summ / 100 : null),
       docqa: (m) => (m.docqa != null ? m.docqa / 10 : null),
-      // Directly-measured E2E throughput, normalized to the fleet best. No fallback:
-      // a model with no e2e-<k>k measurement contributes 0 to this axis (fixed
-      // denominator) rather than being silently scored on raw decode (which skewed
-      // the old totalE2E upward for models missing prefill data).
-      speed: (m) => (m.e2eThroughput != null ? m.e2eThroughput / maxE2E : null),
+      // Performance composite: 0.4·throughput + 0.6·latency, latency-favored, in 0..1.
+      //   throughput = directly-measured E2E tok/s ÷ fleet best (no decode fallback —
+      //                a model with no e2e measurement just omits this component)
+      //   latency    = fleet-min TTFT@8k ÷ this model's TTFT@8k (lower TTFT → ~1)
+      // Weighted-averaged over whichever components exist, so a model missing one
+      // sub-metric is scored on the other rather than zeroed outright; missing BOTH
+      // contributes 0 to the axis (fixed-denominator rule).
+      performance: (m) => {
+         let num = 0;
+         let den = 0;
+         if (m.e2eThroughput != null) {
+            num += 0.4 * (m.e2eThroughput / maxE2E);
+            den += 0.4;
+         }
+         if (m.ttft8kMs != null && Number.isFinite(minTtft8k)) {
+            num += 0.6 * (minTtft8k / m.ttft8kMs);
+            den += 0.6;
+         }
+         return den ? num / den : null;
+      },
       degradation: (m) => {
          // Mean of whichever retention %s exist (decode + quality-at-depth), 0-1.
          const r = [m.decodeRetentionPct, m.qualityRetentionPct].filter(Number.isFinite);
@@ -562,9 +592,13 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
    const codingMult = (m) => (m.codingGrade != null ? m.codingGrade / maxCoding : 0);
    const finalScore = (m) => codingMult(m) * toolGate(m) * structGate(m) * ctxAmp(m) * restScore(m);
    for (const m of models) {
+      // Expose the performance-axis breakdown for the report/chart (transparency).
+      m.throughputNorm = m.e2eThroughput != null ? m.e2eThroughput / maxE2E : null;
+      m.latencyNorm = m.ttft8kMs != null && Number.isFinite(minTtft8k) ? minTtft8k / m.ttft8kMs : null;
+      m.performance = REST_NORMALIZE.performance(m);
       m.score = Math.round(finalScore(m) * 1000) / 10;
    }
    const ranking = [...models].sort((a, b) => b.score - a.score);
 
-   return { models, ranking, maxCtx, maxSpeed, maxTotal, maxE2E, maxFreeVram, weights };
+   return { models, ranking, maxCtx, maxSpeed, maxTotal, maxE2E, minTtft8k, maxFreeVram, weights };
 }
