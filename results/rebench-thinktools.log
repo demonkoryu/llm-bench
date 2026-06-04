@@ -1,0 +1,305 @@
+[run-suite] sweeping remote for orphaned llama-server processes...
+
+[run-suite] 7 models  target=rose  backend=vulkan  LLAMA_URL=http://192.168.1.120:8090  SSH=llm2
+
+
+══════════════════════════════════════════════════════════════════════
+  Qwen3-14B Q5_K_M
+══════════════════════════════════════════════════════════════════════
+  [maxctx] binary search lo=4096 hi=32768 native_max=32768
+[llamacpp] started PID=3486771 backend=vulkan ctx=18432 Qwen3-14B-Q5_K_M.gguf
+  [maxctx] ctx=18432 ✓ coherent  vram=11079MiB
+[llamacpp] started PID=3487750 backend=vulkan ctx=26624 Qwen3-14B-Q5_K_M.gguf
+  [maxctx] ctx=26624 ✗ incoherent (possible RoPE failure or OOM partial)
+[llamacpp] started PID=3488744 backend=vulkan ctx=22528 Qwen3-14B-Q5_K_M.gguf
+  [maxctx] ctx=22528 ✓ coherent  vram=11567MiB
+  [maxctx] result: 22,528 tokens  (oom_ceiling=22528, coherence_ceiling=22528)
+[llamacpp] started PID=3489162 backend=vulkan ctx=22528 Qwen3-14B-Q5_K_M.gguf
+[llamacpp] ready  ctx=22528  vram=11563MiB
+  [smoke] PASS
+  [triage no_think] skip
+  [reasoning no_think] skip
+  [toolcalling no_think] skip
+  [docqa no_think] skip
+  [summarization no_think] skip
+  [speed no_think]     [RUNAWAY] speed/short/short: hit max_tokens ceiling — model did not converge
+    [RUNAWAY] speed/long-32k/long-32k: hit max_tokens ceiling — model did not converge
+short: decode=60.3 tok/s  prefill=250.1 tok/s
+long-32k: decode=60.2 tok/s  prefill=356.4 tok/s
+  [toolcalling_decay] skip
+  [triage think] skip
+  [reasoning think] skip
+  [toolcalling think] accuracy=100.0%
+  [docqa think] skip
+  [summarization think] skip
+  [speed think]     [RUNAWAY] speed/short/short: hit max_tokens ceiling — model did not converge
+    [RUNAWAY] speed/long-32k/long-32k: hit max_tokens ceiling — model did not converge
+short: decode=60.3 tok/s  prefill=241.0 tok/s
+long-32k: decode=60.3 tok/s  prefill=364.2 tok/s
+
+══════════════════════════════════════════════════════════════════════
+  Qwen3.6-35B IQ4_XS
+══════════════════════════════════════════════════════════════════════
+  [maxctx] binary search lo=4096 hi=131072 native_max=262144
+[llamacpp] started PID=3490022 backend=vulkan ctx=67584 Qwen3.6-35B-A3B-UD-IQ4_XS.gguf
+[llm] waiting for model load... 11s
+  [maxctx] ctx=67584 ✗ incoherent (possible RoPE failure or OOM partial)
+[llamacpp] started PID=3491041 backend=vulkan ctx=34816 Qwen3.6-35B-A3B-UD-IQ4_XS.gguf
+  [maxctx] ctx=34816 ✓ coherent  vram=18535MiB
+[llamacpp] started PID=3491623 backend=vulkan ctx=51200 Qwen3.6-35B-A3B-UD-IQ4_XS.gguf
+  [maxctx] ctx=51200 ✓ coherent  vram=18711MiB
+[llamacpp] started PID=3492309 backend=vulkan ctx=59392 Qwen3.6-35B-A3B-UD-IQ4_XS.gguf
+  [maxctx] ctx=59392 ✗ incoherent (possible RoPE failure or OOM partial)
+[llamacpp] started PID=3493271 backend=vulkan ctx=55296 Qwen3.6-35B-A3B-UD-IQ4_XS.gguf
+  [maxctx] ctx=55296 ✗ incoherent (possible RoPE failure or OOM partial)
+  [maxctx] result: 51,200 tokens  (oom_ceiling=55296, coherence_ceiling=51200)
+[llamacpp] started PID=3494151 backend=vulkan ctx=51200 Qwen3.6-35B-A3B-UD-IQ4_XS.gguf
+[llamacpp] ready  ctx=51200  vram=18710MiB
+  [smoke] PASS
+  [triage no_think] skip
+  [reasoning no_think] skip
+  [toolcalling no_think] skip
+  [docqa no_think] skip
+  [summarization no_think] skip
+  [speed no_think]     [RUNAWAY] speed/short/short: hit max_tokens ceiling — model did not converge
+    [RUNAWAY] speed/long-32k/long-32k: hit max_tokens ceiling — model did not converge
+short: decode=90.1 tok/s  prefill=126.0 tok/s
+long-32k: decode=81.4 tok/s  prefill=209.1 tok/s
+  [triage think] skip
+  [reasoning think] skip
+  [toolcalling think] accuracy=100.0%
+  [docqa think] skip
+  [summarization think] skip
+  [speed think]     [RUNAWAY] speed/short/short: hit max_tokens ceiling — model did not converge
+    [RUNAWAY] speed/long-32k/long-32k: hit max_tokens ceiling — model did not converge
+short: decode=84.1 tok/s  prefill=126.8 tok/s
+long-32k: decode=81.0 tok/s  prefill=208.5 tok/s
+
+══════════════════════════════════════════════════════════════════════
+  Gemma4-E4B Q8_0
+══════════════════════════════════════════════════════════════════════
+  [maxctx] binary search lo=4096 hi=128000 native_max=128000
+[llamacpp] started PID=3494963 backend=vulkan ctx=65536 gemma-4-E4B-it-Q8_0.gguf
+  [maxctx] ctx=65536 ✓ coherent  vram=6690MiB
+[llamacpp] started PID=3495639 backend=vulkan ctx=96256 gemma-4-E4B-it-Q8_0.gguf
+  [maxctx] ctx=96256 ✓ coherent  vram=6973MiB
+[llamacpp] started PID=3496416 backend=vulkan ctx=112640 gemma-4-E4B-it-Q8_0.gguf
+  [maxctx] ctx=112640 ✗ incoherent (possible RoPE failure or OOM partial)
+[llamacpp] started PID=3497377 backend=vulkan ctx=104448 gemma-4-E4B-it-Q8_0.gguf
+  [maxctx] ctx=104448 ✓ coherent  vram=7042MiB
+[llamacpp] started PID=3498224 backend=vulkan ctx=108544 gemma-4-E4B-it-Q8_0.gguf
+  [maxctx] ctx=108544 ✗ incoherent (possible RoPE failure or OOM partial)
+  [maxctx] result: 104,448 tokens  (oom_ceiling=108544, coherence_ceiling=104448)
+[llamacpp] started PID=3499086 backend=vulkan ctx=104448 gemma-4-E4B-it-Q8_0.gguf
+[llamacpp] ready  ctx=104448  vram=7042MiB
+  [smoke] PASS
+  [triage no_think] skip
+  [reasoning no_think] skip
+  [toolcalling no_think] skip
+  [docqa no_think] skip
+  [summarization no_think] skip
+  [speed no_think]     [RUNAWAY] speed/long-32k/long-32k: hit max_tokens ceiling — model did not converge
+short: decode=93.1 tok/s  prefill=372.4 tok/s
+long-32k: decode=84.5 tok/s  prefill=580.8 tok/s
+  [triage think] skip
+  [reasoning think] skip
+  [toolcalling think] accuracy=100.0%
+  [docqa think] skip
+  [summarization think] skip
+  [speed think]     [RUNAWAY] speed/long-32k/long-32k: hit max_tokens ceiling — model did not converge
+short: decode=89.1 tok/s  prefill=370.1 tok/s
+long-32k: decode=84.7 tok/s  prefill=581.9 tok/s
+
+══════════════════════════════════════════════════════════════════════
+  Gemma4-E4B Q5_K_M
+══════════════════════════════════════════════════════════════════════
+  [maxctx] binary search lo=4096 hi=128000 native_max=128000
+[llamacpp] started PID=3499854 backend=vulkan ctx=65536 gemma-4-E4B-it-Q5_K_M.gguf
+  [maxctx] ctx=65536 ✓ coherent  vram=5114MiB
+[llamacpp] started PID=3500483 backend=vulkan ctx=96256 gemma-4-E4B-it-Q5_K_M.gguf
+  [maxctx] ctx=96256 ✓ coherent  vram=5397MiB
+[llamacpp] started PID=3501261 backend=vulkan ctx=112640 gemma-4-E4B-it-Q5_K_M.gguf
+  [maxctx] ctx=112640 ✗ incoherent (possible RoPE failure or OOM partial)
+[llamacpp] started PID=3502204 backend=vulkan ctx=104448 gemma-4-E4B-it-Q5_K_M.gguf
+  [maxctx] ctx=104448 ✓ coherent  vram=5465MiB
+[llamacpp] started PID=3503053 backend=vulkan ctx=108544 gemma-4-E4B-it-Q5_K_M.gguf
+  [maxctx] ctx=108544 ✗ incoherent (possible RoPE failure or OOM partial)
+  [maxctx] result: 104,448 tokens  (oom_ceiling=108544, coherence_ceiling=104448)
+[llamacpp] started PID=3503912 backend=vulkan ctx=104448 gemma-4-E4B-it-Q5_K_M.gguf
+[llamacpp] ready  ctx=104448  vram=5465MiB
+  [smoke] PASS
+  [triage no_think] skip
+  [reasoning no_think] skip
+  [toolcalling no_think] skip
+  [docqa no_think] skip
+  [summarization no_think] skip
+  [speed no_think]     [RUNAWAY] speed/long-32k/long-32k: hit max_tokens ceiling — model did not converge
+short: decode=107.9 tok/s  prefill=378.9 tok/s
+long-32k: decode=102.0 tok/s  prefill=585.1 tok/s
+  [triage think] skip
+  [reasoning think] skip
+  [toolcalling think] accuracy=100.0%
+  [docqa think] skip
+  [summarization think] skip
+  [speed think]     [RUNAWAY] speed/long-32k/long-32k: hit max_tokens ceiling — model did not converge
+short: decode=109.5 tok/s  prefill=374.4 tok/s
+long-32k: decode=102.0 tok/s  prefill=587.9 tok/s
+
+══════════════════════════════════════════════════════════════════════
+  Gemma4-26B Q4_K_M
+══════════════════════════════════════════════════════════════════════
+  [maxctx] binary search lo=4096 hi=128000 native_max=128000
+[llamacpp] started PID=3504658 backend=vulkan ctx=65536 gemma-4-26B-A4B-it-UD-Q4_K_M.gguf
+  [maxctx] ctx=65536 ✗ incoherent (possible RoPE failure or OOM partial)
+[llamacpp] started PID=3505625 backend=vulkan ctx=34816 gemma-4-26B-A4B-it-UD-Q4_K_M.gguf
+  [maxctx] ctx=34816 ✗ incoherent (possible RoPE failure or OOM partial)
+[llamacpp] started PID=3506587 backend=vulkan ctx=18432 gemma-4-26B-A4B-it-UD-Q4_K_M.gguf
+  [maxctx] ctx=18432 ✓ coherent  vram=17405MiB
+[llamacpp] started PID=3507347 backend=vulkan ctx=26624 gemma-4-26B-A4B-it-UD-Q4_K_M.gguf
+  [maxctx] ctx=26624 ✓ coherent  vram=17650MiB
+[llamacpp] started PID=3508255 backend=vulkan ctx=30720 gemma-4-26B-A4B-it-UD-Q4_K_M.gguf
+  [maxctx] ctx=30720 ✓ coherent  vram=17692MiB
+  [maxctx] result: 30,720 tokens  (oom_ceiling=30720, coherence_ceiling=30720)
+[llamacpp] started PID=3509086 backend=vulkan ctx=30720 gemma-4-26B-A4B-it-UD-Q4_K_M.gguf
+[llamacpp] ready  ctx=30720  vram=17689MiB
+  [smoke] PASS
+  [triage no_think] skip
+  [reasoning no_think] skip
+  [toolcalling no_think] skip
+  [docqa no_think] skip
+  [summarization no_think] skip
+  [speed no_think]     [RUNAWAY] speed/short/short: hit max_tokens ceiling — model did not converge
+    [RUNAWAY] speed/long-32k/long-32k: hit max_tokens ceiling — model did not converge
+short: decode=85.4 tok/s  prefill=211.6 tok/s
+long-32k: decode=85.4 tok/s  prefill=263.6 tok/s
+  [triage think] skip
+  [reasoning think] skip
+  [toolcalling think] accuracy=100.0%
+  [docqa think] skip
+  [summarization think] skip
+  [speed think]     [RUNAWAY] speed/short/short: hit max_tokens ceiling — model did not converge
+    [RUNAWAY] speed/long-32k/long-32k: hit max_tokens ceiling — model did not converge
+short: decode=85.4 tok/s  prefill=211.3 tok/s
+long-32k: decode=85.4 tok/s  prefill=261.2 tok/s
+
+══════════════════════════════════════════════════════════════════════
+  Gemma4-12B Q5_K_M
+══════════════════════════════════════════════════════════════════════
+  [maxctx] binary search lo=4096 hi=131072 native_max=256000
+[llamacpp] started PID=3509869 backend=vulkan ctx=67584 gemma-4-12b-it-Q5_K_M.gguf
+[llm] waiting for model load... 10s
+[llm] waiting for model load... 22s
+[llm] waiting for model load... 34s
+[llm] waiting for model load... 46s
+[llm] waiting for model load... 59s
+[llm] waiting for model load... 71s
+[llm] waiting for model load... 82s
+[llm] waiting for model load... 94s
+[llm] waiting for model load... 106s
+[llm] waiting for model load... 118s
+[llm] waiting for model load... 130s
+[llm] waiting for model load... 142s
+[llm] waiting for model load... 154s
+[llm] waiting for model load... 166s
+[llm] waiting for model load... 178s
+[llm] waiting for model load... 191s
+[llm] waiting for model load... 203s
+[llm] waiting for model load... 215s
+[llm] waiting for model load... 227s
+[llm] waiting for model load... 239s
+[llm] waiting for model load... 251s
+[llm] waiting for model load... 263s
+[llm] waiting for model load... 275s
+[llm] waiting for model load... 287s
+[llm] waiting for model load... 300s
+[llm] waiting for model load... 312s
+[llm] waiting for model load... 324s
+[llm] waiting for model load... 336s
+[llm] waiting for model load... 348s
+[llm] waiting for model load... 360s
+  [maxctx] ctx=67584 — load failed (crash/OOM)
+[llamacpp] started PID=3511877 backend=vulkan ctx=34816 gemma-4-12b-it-Q5_K_M.gguf
+[llm] waiting for model load... 12s
+[llm] waiting for model load... 24s
+[llm] waiting for model load... 36s
+[llm] waiting for model load... 48s
+[llm] waiting for model load... 61s
+[llm] waiting for model load... 73s
+[llm] waiting for model load... 85s
+[llm] waiting for model load... 97s
+[llm] waiting for model load... 109s
+[llm] waiting for model load... 121s
+[llm] waiting for model load... 133s
+[llm] waiting for model load... 145s
+[llm] waiting for model load... 157s
+[llm] waiting for model load... 170s
+[llm] waiting for model load... 182s
+[llm] waiting for model load... 194s
+[llm] waiting for model load... 206s
+[llm] waiting for model load... 218s
+[llm] waiting for model load... 230s
+[llm] waiting for model load... 242s
+[llm] waiting for model load... 254s
+[llm] waiting for model load... 266s
+[llm] waiting for model load... 279s
+[llm] waiting for model load... 291s
+[llm] waiting for model load... 303s
+[llm] waiting for model load... 315s
+[llm] waiting for model load... 327s
+[llm] waiting for model load... 339s
+[llm] waiting for model load... 351s
+  [maxctx] ctx=34816 — load failed (crash/OOM)
+[llamacpp] started PID=3513913 backend=vulkan ctx=18432 gemma-4-12b-it-Q5_K_M.gguf
+[llm] waiting for model load... 12s
+[llm] waiting for model load... 24s
+[llm] waiting for model load... 36s
+[llm] waiting for model load... 48s
+[llm] waiting for model load... 61s
+[llm] waiting for model load... 73s
+[llm] waiting for model load... 85s
+[llm] waiting for model load... 97s
+[llm] waiting for model load... 109s
+[llm] waiting for model load... 121s
+[llm] waiting for model load... 133s
+[llm] waiting for model load... 145s
+[llm] waiting for model load... 157s
+[llm] waiting for model load... 170s
+[llm] waiting for model load... 182s
+[llm] waiting for model load... 194s
+[llm] waiting for model load... 206s
+[llm] waiting for model load... 218s
+[llm] waiting for model load... 230s
+[llm] waiting for model load... 242s
+[llm] waiting for model load... 254s
+[llm] waiting for model load... 267s
+[llm] waiting for model load... 279s
+[llm] waiting for model load... 291s
+[llm] waiting for model load... 303s
+[llm] waiting for model load... 315s
+[llm] waiting for model load... 327s
+[llm] waiting for model load... 339s
+[llm] waiting for model load... 351s
+  [maxctx] ctx=18432 — load failed (crash/OOM)
+[llamacpp] started PID=3516006 backend=vulkan ctx=10240 gemma-4-12b-it-Q5_K_M.gguf
+[llm] waiting for model load... 12s
+[llm] waiting for model load... 24s
+[llm] waiting for model load... 36s
+[llm] waiting for model load... 48s
+[llm] waiting for model load... 61s
+[llm] waiting for model load... 73s
+[llm] waiting for model load... 85s
+[llm] waiting for model load... 97s
+[llm] waiting for model load... 109s
+[llm] waiting for model load... 121s
+[llm] waiting for model load... 133s
+[llm] waiting for model load... 145s
+[llm] waiting for model load... 158s
+[llm] waiting for model load... 170s
+[llm] waiting for model load... 182s
+[llm] waiting for model load... 194s
+[llm] waiting for model load... 206s
+[llm] waiting for model load... 218s
+[llm] waiting for model load... 230s
+[llm] waiting for model load... 242s
+[llm] waiting for model load... 254s
+[llm] waiting for model load... 266s

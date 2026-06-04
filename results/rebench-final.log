@@ -1,0 +1,86 @@
+[run-suite] sweeping remote for orphaned llama-server processes...
+
+[run-suite] 2 models  target=rose  backend=vulkan  LLAMA_URL=http://192.168.1.120:8090  SSH=llm2
+
+
+══════════════════════════════════════════════════════════════════════
+  Gemma4-12B Q5_K_M
+══════════════════════════════════════════════════════════════════════
+  [maxctx] binary search lo=4096 hi=131072 native_max=256000
+[llamacpp] started PID=3521798 backend=vulkan ctx=67584 gemma-4-12b-it-Q5_K_M.gguf
+  [maxctx] ctx=67584 ✗ incoherent (possible RoPE failure or OOM partial)
+[llamacpp] started PID=3522756 backend=vulkan ctx=34816 gemma-4-12b-it-Q5_K_M.gguf
+  [maxctx] ctx=34816 ✓ coherent  vram=8571MiB
+[llamacpp] started PID=3523390 backend=vulkan ctx=51200 gemma-4-12b-it-Q5_K_M.gguf
+  [maxctx] ctx=51200 ✗ incoherent (possible RoPE failure or OOM partial)
+[llamacpp] started PID=3524345 backend=vulkan ctx=43008 gemma-4-12b-it-Q5_K_M.gguf
+  [maxctx] ctx=43008 ✓ coherent  vram=8575MiB
+[llamacpp] started PID=3525063 backend=vulkan ctx=47104 gemma-4-12b-it-Q5_K_M.gguf
+  [maxctx] ctx=47104 ✗ incoherent (possible RoPE failure or OOM partial)
+  [maxctx] result: 43,008 tokens  (oom_ceiling=47104, coherence_ceiling=43008)
+[llamacpp] started PID=3525944 backend=vulkan ctx=43008 gemma-4-12b-it-Q5_K_M.gguf
+[llamacpp] ready  ctx=43008  vram=8571MiB
+  [maxctx] 43,008 tokens  oom=47104  coherence=43008  vram=8571MiB
+  [smoke] PASS
+  [triage no_think] score=88.3  halls=6  json_fail=0  tok/s=39.8  vram=8574MiB
+  [reasoning no_think] accuracy=100.0%  tok/s=52.1
+  [toolcalling no_think] accuracy=100.0%
+  [docqa no_think] mean=9.42/10  trap_hits=0
+  [summarization no_think] score=64.7
+  [speed no_think]     [RUNAWAY] speed/short/short: hit max_tokens ceiling — model did not converge
+    [RUNAWAY] speed/long-32k/long-32k: hit max_tokens ceiling — model did not converge
+short: decode=53.2 tok/s  prefill=211.1 tok/s
+long-32k: decode=52.9 tok/s  prefill=335.3 tok/s
+  [triage think] score=89.2  halls=0  json_fail=0  tok/s=40.5  vram=8577MiB
+  [reasoning think] accuracy=100.0%  tok/s=49.8
+  [toolcalling think] accuracy=80.0%
+  [docqa think] mean=8.83/10  trap_hits=0
+  [summarization think] score=61.9
+  [speed think]     [RUNAWAY] speed/short/short: hit max_tokens ceiling — model did not converge
+    [RUNAWAY] speed/long-32k/long-32k: hit max_tokens ceiling — model did not converge
+short: decode=53.2 tok/s  prefill=210.7 tok/s
+long-32k: decode=52.8 tok/s  prefill=331.8 tok/s
+
+══════════════════════════════════════════════════════════════════════
+  GLM-4.7-Flash IQ4_XS
+══════════════════════════════════════════════════════════════════════
+  [maxctx] binary search lo=4096 hi=131072 native_max=200000
+[llamacpp] started PID=3532154 backend=vulkan ctx=67584 GLM-4.7-Flash-IQ4_XS.gguf
+[llm] waiting for model load... 11s
+  [maxctx] ctx=67584 ✗ incoherent (possible RoPE failure or OOM partial)
+[llamacpp] started PID=3533180 backend=vulkan ctx=34816 GLM-4.7-Flash-IQ4_XS.gguf
+  [maxctx] ctx=34816 ✓ coherent  vram=16471MiB
+[llamacpp] started PID=3534008 backend=vulkan ctx=51200 GLM-4.7-Flash-IQ4_XS.gguf
+  [maxctx] ctx=51200 ✗ incoherent (possible RoPE failure or OOM partial)
+[llamacpp] started PID=3534989 backend=vulkan ctx=43008 GLM-4.7-Flash-IQ4_XS.gguf
+  [maxctx] ctx=43008 ✗ incoherent (possible RoPE failure or OOM partial)
+[llamacpp] started PID=3535942 backend=vulkan ctx=38912 GLM-4.7-Flash-IQ4_XS.gguf
+  [maxctx] ctx=38912 ✓ coherent  vram=16585MiB
+  [maxctx] result: 38,912 tokens  (oom_ceiling=38912, coherence_ceiling=38912)
+[llamacpp] started PID=3536772 backend=vulkan ctx=38912 GLM-4.7-Flash-IQ4_XS.gguf
+[llamacpp] ready  ctx=38912  vram=16566MiB
+  [smoke] PASS
+  [triage no_think] skip
+  [reasoning no_think] skip
+  [toolcalling no_think] skip
+  [docqa no_think] skip
+  [summarization no_think] skip
+  [speed no_think]     [RUNAWAY] speed/short/short: hit max_tokens ceiling — model did not converge
+    [RUNAWAY] speed/long-32k/long-32k: hit max_tokens ceiling — model did not converge
+short: decode=113.9 tok/s  prefill=197.7 tok/s
+long-32k: decode=113.8 tok/s  prefill=391.4 tok/s
+  [triage think] skip
+  [reasoning think] skip
+  [toolcalling think] accuracy=100.0%
+  [docqa think] skip
+  [summarization think] skip
+  [speed think]     [RUNAWAY] speed/short/short: hit max_tokens ceiling — model did not converge
+    [RUNAWAY] speed/long-32k/long-32k: hit max_tokens ceiling — model did not converge
+short: decode=113.8 tok/s  prefill=183.2 tok/s
+long-32k: decode=113.8 tok/s  prefill=390.7 tok/s
+
+[run-suite] promptfoo JSON → F:\repos\llm-bench\results\run-2026-06-03T21-27-14-882Z.json
+[run-suite] report → F:\repos\llm-bench\results\report.json
+[run-suite] chart → F:\repos\llm-bench\results\chart.svg
+
+[run-suite] Done. Results: F:\repos\llm-bench\results\llm-benchmarks-rose-rx7900xt-vulkan-20260603-165909.csv

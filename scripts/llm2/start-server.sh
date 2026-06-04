@@ -115,7 +115,7 @@ cmd="nohup $BIN $model_args \
    --cache-type-k q8_0 --cache-type-v q8_0 \
    -fa on \
    -np 1 \
-   -b 2048 -ub 512 \
+   -b 2048 -ub 2048 \
    --jinja \
    $rf_flag \
    --host 0.0.0.0 --port $port \

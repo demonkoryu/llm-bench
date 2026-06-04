@@ -1,0 +1,9 @@
+
+[quality-decay] 13 models · depths [0, 16384, 32768, 65536, 98304] · http://192.168.1.120:8090
+
+
+══ Qwen3-Coder-30B Q4_K_XL  (ctx 79,872, depths 0k,16k,32k,64k)
+[llamacpp] started PID=3786271 backend=vulkan ctx=79872 Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL.gguf
+[llm] waiting for model load... 11s
+  depth   0k: accuracy  67%  (ret 100%)  TTFT 4.4s
+  depth  16k: accuracy  83%  (ret 125%)  TTFT 55.3s
