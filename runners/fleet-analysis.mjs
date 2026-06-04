@@ -49,10 +49,14 @@ if (!existsSync(input)) {
 const rows = readTable(input);
 const { models } = aggregateModels(rows);
 
-// VRAM used at ctx=16384, captured by the speed re-run (ctx_loaded == 16384).
+// VRAM used at ctx=16384 by a SINGLE sequence, captured by the speed re-run
+// (ctx_loaded == 16384). speed_pargen rows allocate KV for up to 8 concurrent
+// slots, so their VRAM is inflated and must NOT seed the single-slot baseline —
+// otherwise the KV/token slope (vramMax - v16) can go negative.
 const vram16k = new Map();
 for (const r of rows) {
-   if (String(r.bench).startsWith('speed') && Number(r.ctx_loaded) === 16384) {
+   const bench = String(r.bench);
+   if (bench.startsWith('speed') && !bench.startsWith('speed_pargen') && Number(r.ctx_loaded) === 16384) {
       const v = parseFloat(r.vram_mib);
       if (Number.isFinite(v)) vram16k.set(r.model.replace(/--(nothi|think)$/, ''), v);
    }

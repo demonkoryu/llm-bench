@@ -30,7 +30,6 @@ rose,vulkan,Qwen3-14B-Q5_K_M--nothi,no_think,docqa,9.25,0,-,-,-,11563,22528,2252
 rose,vulkan,Qwen3-14B-Q5_K_M--nothi,no_think,summarization,92.2,-,-,-,-,11563,22528,22528,22528,ok,7,
 rose,vulkan,Qwen3-14B-Q5_K_M--nothi,no_think,speed_short,60.3,-,-,60.3,245.8,11563,22528,22528,22528,ok,-,prefill_tps=245.8
 rose,vulkan,Qwen3-14B-Q5_K_M--nothi,no_think,speed_long-32k,60.2,-,-,60.2,365.1,11563,22528,22528,22528,ok,-,prefill_tps=365.1
-rose,vulkan,Qwen3-14B-Q5_K_M--nothi,no_think,toolcalling_decay,-,-,-,-,-,11563,22528,22528,22528,ok,3,r0=100.0% r5=0.0% r20=0.0% r50=0.0%
 rose,vulkan,Qwen3-14B-Q5_K_M--think,think,triage,88.6,0,0,59.1,-,11567,22528,22528,22528,ok,164,
 rose,vulkan,Qwen3-14B-Q5_K_M--think,think,reasoning,100.0,-,0,59.8,-,11563,22528,22528,22528,ok,107,
 rose,vulkan,Qwen3-14B-Q5_K_M--think,think,speed_short,60.2,-,-,60.2,240.5,11563,22528,22528,22528,ok,-,prefill_tps=240.5
