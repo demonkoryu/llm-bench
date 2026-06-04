@@ -38,9 +38,7 @@ const { values: flags } = parseArgs({
 });
 
 const CARD_TOTAL_MIB = 20464; // RX 7900 XT usable (see config/hosts.yaml)
-const SEC_CTX = Number(flags['sec-ctx']);
 const RESERVE = Number(flags.reserve);
-const ANCHOR_MIN_CTX = Number(flags.anchor);
 const BUDGET = CARD_TOTAL_MIB - RESERVE;
 
 const input = flags.input ?? latestResultsFile(RESULTS_DIR);
@@ -108,53 +106,34 @@ for (const m of fleet) {
    );
 }
 
-// ── 3: best fleets — 1 long-ctx anchor + distinct secondaries packed in ──────
-const anchors = fleet.filter((m) => m.maxctx >= ANCHOR_MIN_CTX);
-const combos = [];
-for (const a of anchors) {
-   const remaining = BUDGET - a.vramMax;
-   const pool = fleet.filter((m) => m.id !== a.id).map((m) => ({ ...m, secVram: m.vramAt(SEC_CTX), secCtx: Math.min(SEC_CTX, m.maxctx) }));
-   const n = pool.length;
-   for (let mask = 0; mask < 1 << n; mask++) {
-      let used = 0;
-      const members = [];
-      for (let i = 0; i < n; i++) {
-         if (mask & (1 << i)) {
-            used += pool[i].secVram;
-            members.push(pool[i]);
-         }
-      }
-      if (used > remaining) continue;
-      combos.push({
-         anchor: a,
-         members,
-         totalQ: a.score + members.reduce((s, m) => s + m.score, 0),
-         totalVram: a.vramMax + used,
-         totalCtx: a.maxctx + members.reduce((s, m) => s + m.secCtx, 0),
-         count: 1 + members.length,
-      });
-   }
-}
-combos.sort((x, y) => y.totalQ - x.totalQ || y.totalCtx - x.totalCtx);
-const seen = new Set();
-const top = [];
-for (const c of combos) {
-   const key = [c.anchor.id, ...c.members.map((m) => m.id).sort()].join('+');
-   if (seen.has(key)) continue;
-   seen.add(key);
-   top.push(c);
-   if (top.length >= 10) break;
-}
+// ── 3: best SINGLE-model setups — weights paid once, 2 slots (main + scratch) ──
+// With `--parallel` + a unified KV cache, one weight load serves N concurrent
+// sequences drawing from a shared KV pool, so VRAM = weights + KV·(Σ slot tokens).
+// Running two *different* models would pay the weight tax twice; instead run ONE
+// model with a full-ctx main slot + a smaller scratchpad slot. Per-slot ctx is
+// still capped at the model's coherence ceiling (maxctx).
+const SCRATCH_MIN = 4096; // a scratchpad smaller than this isn't worth a slot
+const setups = fleet
+   .map((m) => {
+      const tokenBudget = m.kv > 0 ? (BUDGET - m.weights) / m.kv : Infinity; // total KV tokens that fit
+      const main = m.maxctx; // the "1 max ctx" slot
+      const leftover = Math.max(0, tokenBudget - main);
+      const scratch = Math.min(m.maxctx, leftover); // 2nd slot, capped at coherence ceiling
+      const fullSlots = m.kv > 0 ? Math.floor(tokenBudget / m.maxctx) : 99; // how many full-ctx slots fit
+      const vramUsed = m.weights + m.kv * (main + scratch);
+      return { ...m, tokenBudget, main, scratch, fullSlots, vramUsed };
+   })
+   .sort((a, b) => b.score - a.score);
 
-console.log(`\nBEST 10 FLEETS — anchor (maxctx≥${r0(ANCHOR_MIN_CTX)}) at full ctx + distinct secondaries @ ${r0(SEC_CTX)} ctx`);
-console.log(`(budget ${gb(BUDGET)} GB after ${RESERVE} MiB reserve; ranked by total fleet quality)\n`);
-top.forEach((c, i) => {
-   console.log(`#${i + 1}  Σquality ${c.totalQ.toFixed(0)} · ${c.count} models · ${gb(c.totalVram)}/${gb(BUDGET)} GB · free ${gb(BUDGET - c.totalVram)} GB`);
-   console.log(`     anchor ${pad(c.anchor.id, 26)} q${c.anchor.score}  ctx ${r0(c.anchor.maxctx)}`);
-   for (const m of [...c.members].sort((a, b) => b.score - a.score)) {
-      console.log(`       +    ${pad(m.id, 26)} q${m.score}  ctx ${r0(m.secCtx)}`);
-   }
-});
+console.log(`\nBEST SINGLE-MODEL SETUPS — 1 model, weights paid ONCE, main @ max ctx + scratchpad slot`);
+console.log(`(budget ${gb(BUDGET)} GB after ${RESERVE} MiB reserve; needs --parallel + unified KV; ranked by quality)\n`);
+console.log(`${pad('model', 28)} ${pad('qual', 5)} ${pad('weights', 8)} ${pad('main ctx', 9)} ${pad('scratch', 9)} ${pad('full slots', 11)} note`);
+for (const s of setups) {
+   const note = s.scratch < SCRATCH_MIN ? 'VRAM-bound — no scratchpad' : s.fullSlots >= 3 ? `room for ${s.fullSlots}× full-ctx slots` : 'main + scratchpad';
+   console.log(
+      `${pad(s.id, 28)} ${pad(s.score, 5)} ${pad(gb(s.weights) + 'G', 8)} ${pad(r0(s.main), 9)} ${pad(s.scratch < SCRATCH_MIN ? '—' : r0(s.scratch), 9)} ${pad(s.fullSlots >= 99 ? 'many' : s.fullSlots, 11)} ${note}`,
+   );
+}
 
 // ── SVG + PNG render ─────────────────────────────────────────────────────────
 const BG = '#0f0f13';
@@ -169,29 +148,26 @@ const T = (x, y, s, { fill = TEXT, size = 12, w = 'normal', anchor = 'start', mo
    `<text x="${x}" y="${y}" fill="${fill}" font-size="${size}" font-weight="${w}" text-anchor="${anchor}" font-family="${mono ? "'Consolas','Courier New',monospace" : "'Segoe UI',Arial,sans-serif"}">${esc(s)}</text>`;
 const R = (x, y, w, h, fill, rx = 0) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" rx="${rx}"/>`;
 
-const W = 1080;
-const fleetLineH = 15;
-const fleetBlockH = (c) => 22 + c.count * fleetLineH + 10;
+const W = 1120;
 const tableTop = 92;
 const tableRowH = 22;
-const fleetsTop = tableTop + 28 + fleet.length * tableRowH + 46;
-const fleetsH = top.reduce((s, c) => s + fleetBlockH(c), 0);
-const H = fleetsTop + fleetsH + 30;
+const setupsTop = tableTop + 28 + fleet.length * tableRowH + 52;
+const H = setupsTop + 28 + setups.length * tableRowH + 50;
 
 let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}"><rect width="${W}" height="${H}" fill="${BG}"/>`;
-svg += T(28, 38, 'LLM Fleet Planner — VRAM packing @ max ctx (RX 7900 XT · 20 GiB · Vulkan)', { fill: ACCENT, size: 18, w: '700' });
+svg += T(28, 38, 'LLM Fleet Planner — VRAM @ max ctx (RX 7900 XT · 20 GiB · Vulkan)', { fill: ACCENT, size: 18, w: '700' });
 svg += T(28, 58, `Card ${gb(CARD_TOTAL_MIB)} GB usable · quality = weighted score · fit× = card ÷ footprint at max ctx`, { fill: DIM, size: 11 });
 
-// Per-model table
+// ── Table 1: per-model footprint + efficiency ──
 svg += T(28, tableTop - 8, 'Per-model footprint & memory efficiency at max ctx', { fill: '#a0a0c0', size: 13, w: '600' });
 const cols = [
    { x: 28, label: 'Model', get: (m) => m.id, anchor: 'start' },
-   { x: 300, label: 'Quality', get: (m) => m.score.toFixed(1), anchor: 'end' },
-   { x: 400, label: 'Max ctx', get: (m) => r0(m.maxctx), anchor: 'end' },
-   { x: 500, label: 'VRAM@max', get: (m) => `${r0(m.vramMax)}M`, anchor: 'end' },
-   { x: 575, label: '% card', get: (m) => `${m.footprintPct.toFixed(0)}%`, anchor: 'end' },
-   { x: 690, label: 'KV KiB/tok', get: (m) => m.kvPerTokKiB.toFixed(1), anchor: 'end' },
-   { x: 760, label: 'fit×', get: (m) => (CARD_TOTAL_MIB / m.vramMax).toFixed(1), anchor: 'end' },
+   { x: 330, label: 'Quality', get: (m) => m.score.toFixed(1), anchor: 'end' },
+   { x: 430, label: 'Max ctx', get: (m) => r0(m.maxctx), anchor: 'end' },
+   { x: 535, label: 'VRAM@max', get: (m) => `${r0(m.vramMax)}M`, anchor: 'end' },
+   { x: 610, label: '% card', get: (m) => `${m.footprintPct.toFixed(0)}%`, anchor: 'end' },
+   { x: 730, label: 'KV KiB/tok', get: (m) => m.kvPerTokKiB.toFixed(1), anchor: 'end' },
+   { x: 800, label: 'fit×', get: (m) => (CARD_TOTAL_MIB / m.vramMax).toFixed(1), anchor: 'end' },
 ];
 svg += R(20, tableTop, W - 40, 24 + fleet.length * tableRowH, PANEL, 8);
 for (const c of cols) svg += T(c.x, tableTop + 18, c.label, { fill: DIM, size: 10, anchor: c.anchor });
@@ -205,33 +181,34 @@ fleet.forEach((m, i) => {
    }
 });
 
-// Fleets
-svg += T(28, fleetsTop - 14, `Best 10 fleets — 1 anchor (max ctx ≥ ${r0(ANCHOR_MIN_CTX)}) at full ctx + distinct models @ ${r0(SEC_CTX)} ctx`, {
+// ── Table 2: best single-model setups (weights once · main + scratchpad) ──
+svg += T(28, setupsTop - 8, 'Best single-model setups — weights paid ONCE, main @ max ctx + scratchpad slot (--parallel + unified KV)', {
    fill: '#a0a0c0',
    size: 13,
    w: '600',
 });
-let fy = fleetsTop;
-top.forEach((c, i) => {
-   const h = fleetBlockH(c);
-   svg += R(20, fy, W - 40, h - 8, PANEL, 8);
-   svg += T(32, fy + 18, `#${i + 1}`, { fill: ACCENT, size: 13, w: '700' });
-   svg += T(70, fy + 18, `Σquality ${c.totalQ.toFixed(0)}`, { fill: GOOD, size: 12, w: '600' });
-   svg += T(
-      200,
-      fy + 18,
-      `${c.count} models · ${gb(c.totalVram)}/${gb(BUDGET)} GB · free ${gb(BUDGET - c.totalVram)} GB · Σctx ${r0(c.totalCtx)}`,
-      { fill: DIM, size: 11 },
-   );
-   let ly = fy + 18 + fleetLineH;
-   svg += T(48, ly, `⚓ ${c.anchor.id}`, { fill: TEXT, size: 11, w: '600' });
-   svg += T(W - 40, ly, `q${c.anchor.score} · ${r0(c.anchor.maxctx)} ctx`, { fill: DIM, size: 11, anchor: 'end', mono: true });
-   for (const m of [...c.members].sort((a, b) => b.score - a.score)) {
-      ly += fleetLineH;
-      svg += T(56, ly, `+ ${m.id}`, { fill: '#b8b8c8', size: 11 });
-      svg += T(W - 40, ly, `q${m.score} · ${r0(m.secCtx)} ctx`, { fill: DIM, size: 11, anchor: 'end', mono: true });
+const scols = [
+   { x: 28, label: 'Model', get: (s) => s.id, anchor: 'start' },
+   { x: 330, label: 'Quality', get: (s) => s.score.toFixed(1), anchor: 'end' },
+   { x: 430, label: 'Weights', get: (s) => `${gb(s.weights)}G`, anchor: 'end' },
+   { x: 545, label: 'Main ctx', get: (s) => r0(s.main), anchor: 'end' },
+   { x: 660, label: 'Scratchpad', get: (s) => (s.scratch < SCRATCH_MIN ? '—' : r0(s.scratch)), anchor: 'end' },
+   { x: 760, label: 'Full slots', get: (s) => (s.fullSlots >= 99 ? 'many' : String(s.fullSlots)), anchor: 'end' },
+   { x: 800, label: 'Note', get: (s) => (s.scratch < SCRATCH_MIN ? 'VRAM-bound' : s.fullSlots >= 3 ? `${s.fullSlots}× full slots` : 'main+scratch'), anchor: 'start' },
+];
+svg += R(20, setupsTop, W - 40, 24 + setups.length * tableRowH, PANEL, 8);
+for (const c of scols) svg += T(c.x, setupsTop + 18, c.label, { fill: DIM, size: 10, anchor: c.anchor });
+setups.forEach((s, i) => {
+   const y = setupsTop + 24 + (i + 1) * tableRowH - 6;
+   if (i % 2) svg += R(24, y - 14, W - 48, tableRowH, '#1e1e2a', 0);
+   const scratchOK = s.scratch >= SCRATCH_MIN;
+   for (const c of scols) {
+      let fill = TEXT;
+      if (c.label === 'Quality') fill = ACCENT;
+      else if (c.label === 'Scratchpad') fill = scratchOK ? GOOD : WARN;
+      else if (c.label === 'Note') fill = scratchOK ? DIM : WARN;
+      svg += T(c.x, y, c.get(s), { fill, size: 11, anchor: c.anchor, mono: c.label !== 'Model' && c.label !== 'Note' });
    }
-   fy += h;
 });
 svg += '</svg>';
 
