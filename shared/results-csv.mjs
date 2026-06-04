@@ -254,6 +254,7 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
    const pargenByModel = new Map(); // base model → Map(concurrency → aggregate tok/s)
    const qualityByModel = new Map(); // base model → Map(depth → accuracy %)
    const ttftByModel = new Map(); // base model → Map(depth → prefill ms)
+   const e2eByModel = new Map(); // base model → Map(depth → end-to-end tok/s, directly measured)
    const structByModel = new Map(); // base model → schema-conformance %
    const powerEffByModel = new Map(); // base model → decode tok/s per watt
    const codingEasyByMT = new Map(); // `${base}|${think}` → easy coding pass@1
@@ -273,6 +274,8 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          if (Number.isFinite(v)) setDepth(qualityByModel, baseModel(r.model), depthOf(bench, 'quality_decay-'), v);
       } else if (bench.startsWith('ttft-')) {
          if (Number.isFinite(v)) setDepth(ttftByModel, baseModel(r.model), depthOf(bench, 'ttft-'), v);
+      } else if (bench.startsWith('e2e-')) {
+         if (Number.isFinite(v)) setDepth(e2eByModel, baseModel(r.model), depthOf(bench, 'e2e-'), v);
       } else if (bench === 'struct_output') {
          if (Number.isFinite(v)) structByModel.set(baseModel(r.model), v);
       } else if (bench === 'power_eff') {
@@ -315,7 +318,8 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          b.startsWith('speed_decay-') ||
          b.startsWith('speed_pargen-') ||
          b.startsWith('quality_decay-') ||
-         b.startsWith('ttft-')
+         b.startsWith('ttft-') ||
+         b.startsWith('e2e-')
       ) {
          continue;
       }
@@ -421,6 +425,17 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          const ttftCurve = tMap ? [...tMap.entries()].map(([depth, ms]) => ({ depth, ms })).sort((a, b) => a.depth - b.depth) : [];
          const ttftRefPt = [...ttftCurve].filter((x) => x.depth > 0 && x.depth <= 32768).pop() ?? null;
          const ttftRefMs = ttftRefPt?.ms ?? null;
+         // Directly-measured end-to-end throughput (tok/s): one real request per
+         // operating-point depth — prefill + a fixed ignore_eos decode — with tok/s
+         // read from the server's own timings as (prompt_n+predicted_n)÷(prompt_ms+
+         // predicted_ms). No formula combining separate runs, no decode fallback.
+         // The headline `e2eThroughput` is the mean across measured depths; this is
+         // what feeds the score's speed axis (replacing the synthetic totalE2E).
+         const e2eMap = e2eByModel.get(baseModel(model));
+         const e2eCurve = e2eMap ? [...e2eMap.entries()].map(([depth, tps]) => ({ depth, tps })).sort((a, b) => a.depth - b.depth) : [];
+         const e2eThroughput = e2eCurve.length ? e2eCurve.reduce((a, b) => a + b.tps, 0) / e2eCurve.length : null;
+         const e2eRefPt = [...e2eCurve].filter((x) => x.depth > 0 && x.depth <= 32768).pop() ?? null;
+         const e2eRef = e2eRefPt?.tps ?? null;
          // Structured-output reliability: % of JSON tasks that were schema-conformant.
          const structScore = structByModel.get(baseModel(model)) ?? null;
          // Coding grade (no_think-primary): combined easy+hard from the no_think /
@@ -462,6 +477,9 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
             qualityRetentionPct,
             ttftCurve,
             ttftRefMs,
+            e2eCurve,
+            e2eThroughput,
+            e2eRef,
             structScore,
             powerEff,
             codingGrade,
@@ -489,18 +507,23 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
    const maxCtx = Math.max(...models.map((m) => m.maxctx ?? 0)) || 1;
    const maxSpeed = Math.max(...models.map((m) => m.speedTg ?? 0)) || 1;
    const maxTotal = Math.max(...models.map((m) => m.totalE2E ?? 0)) || 1;
+   const maxE2E = Math.max(...models.map((m) => m.e2eThroughput ?? 0)) || 1;
    const maxFreeVram = Math.max(...models.map((m) => freeVram(m) ?? 0)) || 1;
 
    // ── Multiplicative score (see SCORING / DEFAULT_WEIGHTS comment above) ─────────
    // restScore: additive weighted sum of capability axes. maxctx/speed are NOT in
-   // here (maxctx is an amplifier; speed uses end-to-end totalE2E). Quality benches
-   // are absolute (0-100, docqa 0-10); degradation is decode/quality retention.
+   // here (maxctx is an amplifier; speed uses directly-measured end-to-end tok/s).
+   // Quality benches are absolute (0-100, docqa 0-10); degradation is retention.
    const REST_NORMALIZE = {
       reasoning: (m) => (m.reasoning != null ? m.reasoning / 100 : null),
       triage: (m) => (m.triage != null ? m.triage / 100 : null),
       summarization: (m) => (m.summ != null ? m.summ / 100 : null),
       docqa: (m) => (m.docqa != null ? m.docqa / 10 : null),
-      speed: (m) => (m.totalE2E != null ? m.totalE2E / maxTotal : null),
+      // Directly-measured E2E throughput, normalized to the fleet best. No fallback:
+      // a model with no e2e-<k>k measurement contributes 0 to this axis (fixed
+      // denominator) rather than being silently scored on raw decode (which skewed
+      // the old totalE2E upward for models missing prefill data).
+      speed: (m) => (m.e2eThroughput != null ? m.e2eThroughput / maxE2E : null),
       degradation: (m) => {
          // Mean of whichever retention %s exist (decode + quality-at-depth), 0-1.
          const r = [m.decodeRetentionPct, m.qualityRetentionPct].filter(Number.isFinite);
@@ -543,5 +566,5 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
    }
    const ranking = [...models].sort((a, b) => b.score - a.score);
 
-   return { models, ranking, maxCtx, maxSpeed, maxTotal, maxFreeVram, weights };
+   return { models, ranking, maxCtx, maxSpeed, maxTotal, maxE2E, maxFreeVram, weights };
 }

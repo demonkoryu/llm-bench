@@ -46,8 +46,8 @@ if (!models.length) {
    process.exit(0);
 }
 
-// Panel scale for the surviving end-to-end throughput panel (12k+512 prompt).
-const maxTotal12k = Math.max(...models.map((m) => m.total12k ?? 0), 1);
+// Panel scale for the directly-measured end-to-end throughput panel (mean across depths).
+const maxE2E = Math.max(...models.map((m) => m.e2eThroughput ?? 0), 1);
 // Usable VRAM on the benchmark card (RX 7900 XT; see config/hosts.yaml). Free
 // VRAM at max ctx = this − used; high = model/coherence-bound, low = VRAM-bound.
 const CARD_TOTAL_MIB = 20464;
@@ -229,11 +229,11 @@ const METRIC_PANELS = [
       getMax: () => 10,
    },
    {
-      title: 'End-to-end throughput — 12k+512 (tok/s)',
+      title: 'End-to-end throughput — measured (tok/s)',
       weight: '×0.15 (rest)',
-      getValue: (m) => m.total12k,
+      getValue: (m) => m.e2eThroughput,
       formatVal: (v) => (v != null ? `${v.toFixed(0)} t/s` : '?'),
-      getMax: () => maxTotal12k,
+      getMax: () => maxE2E,
    },
    {
       title: 'Decode retention @ ~32k ctx (% of base)',

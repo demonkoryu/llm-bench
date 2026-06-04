@@ -105,10 +105,18 @@ const report = {
       capabilities: { tools: caps.get(m.base_model)?.tools ?? null },
       capability_note: caps.get(m.base_model)?.note ?? null,
       // speed: generation (decode) tok/s, real prefill tok/s on 4k/12k prompts,
-      // and end-to-end throughput (P-token prompt + 512 gen) for each prompt size.
+      // and the synthetic legacy end-to-end estimate (kept for reference only).
       speed_tok_s: m.speedTg,
       prefill_tok_s: { '4k': m.prefill4k, '12k': m.prefill12k },
       total_tok_s: { '4k': m.total4k, '12k': m.total12k },
+      // Directly-measured end-to-end throughput (tok/s) — one real request per depth
+      // (prefill + fixed-length decode), read from server timings. This is the value
+      // that feeds the score's speed axis; `mean` is the headline across depths.
+      e2e_throughput_tok_s: {
+         mean: m.e2eThroughput,
+         ref: m.e2eRef,
+         curve: m.e2eCurve.map((p) => ({ depth: p.depth, tok_s: p.tps })),
+      },
       // VRAM used (MiB) at the coherence ceiling, and the free headroom on the
       // card — low free = VRAM-bound (more VRAM → more ctx); high free = the model
       // hit its native/coherence limit with VRAM to spare.
@@ -173,6 +181,7 @@ const report = {
          ['prefill_tok_s_12k', (m) => m.prefill12k],
          ['total_tok_s_4k', (m) => m.total4k],
          ['total_tok_s_12k', (m) => m.total12k],
+         ['e2e_throughput_tok_s', (m) => m.e2eThroughput], // directly-measured, feeds the speed axis
          ['vram_free_at_maxctx_mib', (m) => (m.maxctxVram != null ? CARD_TOTAL_MIB - m.maxctxVram : null)],
          ['decode_retention_pct', (m) => m.decodeRetentionPct], // % of base decode held at ~32k ctx
          ['decode_tok_s_at_ref', (m) => m.decodeRef], // absolute decode tok/s at the reference depth

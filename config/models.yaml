@@ -20,20 +20,29 @@
 #   kv_bytes_per_token  Q8_0 KV cache bytes per input token (used to estimate hi bound)
 #   extra_flags      Server-launch-only flags (speculative decoding, backend tweaks).
 #                    NO sampling keys here — those belong exclusively in sampling_matrix.
-#                    Batch sizing lives here per-model: every entry carries
-#                    batch-size: 2048, ubatch-size: 2048. (Use the long-form keys — the
-#                    flag builder prepends '--', and llama.cpp rejects --b / --ub; only
-#                    -b/-ub or --batch-size/--ubatch-size are valid.)
-#                    The micro-batch must stay 2048 (NOT llama.cpp's default 512): on the
-#                    Vulkan backend -ub 512 throttles prefill ~6× (per-ubatch submit-sync
-#                    cost); 2048 matches llama-bench and costs ~550 MiB extra VRAM on a 14B.
-#                    start-server.sh sets NO batch defaults — if a new model omits these
-#                    flags it silently regresses to -ub 512, so copy them onto every entry.
-#                    For a 30B MoE that OOMs at max ctx, drop the entry to ubatch-size: 1024.
+#                    Batch sizing is NOT set per-entry: it comes from the top-level
+#                    `defaults.extra_flags` block below (batch-size: 2048, ubatch-size:
+#                    2048), merged into every model by shared/models-config.mjs with
+#                    per-model keys overriding. So a model only lists extra_flags for
+#                    what's UNIQUE to it (e.g. no-mmproj, spec-type); it inherits batch
+#                    sizing automatically and can't silently regress to -ub 512.
+#                    (Use the long-form keys — the flag builder prepends '--', and
+#                    llama.cpp rejects --b / --ub; only -b/-ub or --batch-size/
+#                    --ubatch-size are valid.) For a 30B MoE that OOMs at max ctx,
+#                    override with `extra_flags: { ubatch-size: 1024 }`.
 #   benches          Applicable benchmark suites:
 #                      triage | reasoning | toolcalling | toolcalling_decay | longctx
 #                      summarization | speed | maxctx | docqa
 #   notes            Caveats
+
+# Global defaults merged into every model's extra_flags (per-model keys override).
+# Lives here so batch sizing is uniform fleet-wide and a newly-added model can't
+# silently regress to llama.cpp's default -ub 512. Merge is done by
+# shared/models-config.mjs → loadModelsConfig(); raw `yaml.load()` does NOT apply it.
+defaults:
+   extra_flags:
+      batch-size: 2048
+      ubatch-size: 2048
 
 models:
 
@@ -49,7 +58,6 @@ models:
      tools: true
      native_max_ctx: 262144
      kv_bytes_per_token: 49152
-     extra_flags: { batch-size: 2048, ubatch-size: 2048 }
      benches: [triage, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
      notes: "No think mode. repeat_penalty in sampling_matrix. If ub2048 OOMs at max ctx, set ubatch-size: 1024."
 
@@ -65,7 +73,6 @@ models:
      tools: true
      native_max_ctx: 262144
      kv_bytes_per_token: 49152
-     extra_flags: { batch-size: 2048, ubatch-size: 2048 }
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
      notes: "If ub2048 OOMs at max ctx, set ubatch-size: 1024."
 
@@ -79,7 +86,6 @@ models:
      native_max_ctx: 262144
      ctx_cap: 81920
      kv_bytes_per_token: 49152
-     extra_flags: { batch-size: 2048, ubatch-size: 2048 }
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
 
    # ── Qwen3-14B Q5_K_M ────────────────────────────────────────────────────────
@@ -95,7 +101,6 @@ models:
      native_max_ctx: 32768
      ctx_cap: 40960
      kv_bytes_per_token: 24576
-     extra_flags: { batch-size: 2048, ubatch-size: 2048 }
      benches: [triage, reasoning, toolcalling, toolcalling_decay, summarization, docqa, coding, coding_hard, speed, maxctx]
 
    # ── Qwen3.6-35B-A3B IQ4_XS ──────────────────────────────────────────────────
@@ -112,8 +117,6 @@ models:
      native_max_ctx: 262144
      kv_bytes_per_token: 49152
      extra_flags:
-        batch-size: 2048
-        ubatch-size: 2048
         spec-type: draft-mtp
         spec-draft-n-max: 4
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
@@ -135,7 +138,7 @@ models:
      kv_bytes_per_token: 16384
      # b9496 auto-loads a vision projector for gemma4 → clip.cpp "Unknown projector
      # type" abort on load. We benchmark text-only, so disable it.
-     extra_flags: { "no-mmproj": true, batch-size: 2048, ubatch-size: 2048 }
+     extra_flags: { "no-mmproj": true }
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
 
    - hf_repo: unsloth/gemma-4-E4B-it-GGUF
@@ -148,7 +151,7 @@ models:
      tools: true
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
-     extra_flags: { "no-mmproj": true, batch-size: 2048, ubatch-size: 2048 }   # see Q8 note: skip gemma4 vision projector (text-only)
+     extra_flags: { "no-mmproj": true }   # see Q8 note: skip gemma4 vision projector (text-only)
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
 
    # ── Gemma4-26B-A4B ───────────────────────────────────────────────────────────
@@ -164,7 +167,7 @@ models:
      tools: true
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
-     extra_flags: { "no-mmproj": true, batch-size: 2048, ubatch-size: 2048 }   # see E4B Q8 note: skip gemma4 vision projector (text-only)
+     extra_flags: { "no-mmproj": true }   # see E4B Q8 note: skip gemma4 vision projector (text-only)
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
 
    # ── Gemma4-12B (dense "unified" — encoder-free multimodal, run text-only) ──────
@@ -183,7 +186,7 @@ models:
      # bound the search at the real trained length rather than probing dead range.
      native_max_ctx: 131072
      kv_bytes_per_token: 16384
-     extra_flags: { "no-mmproj": true, batch-size: 2048, ubatch-size: 2048 }   # see E4B Q8 note: skip gemma4 vision projector (text-only)
+     extra_flags: { "no-mmproj": true }   # see E4B Q8 note: skip gemma4 vision projector (text-only)
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
 
    # ── LFM2.5-8B-A1B ────────────────────────────────────────────────────────────
@@ -199,7 +202,6 @@ models:
      native_max_ctx: 128000
      ctx_cap: 131072
      kv_bytes_per_token: 8192
-     extra_flags: { batch-size: 2048, ubatch-size: 2048 }
      benches: [reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
      notes: "reasoning_content merged by llm client. repeat_penalty in sampling_matrix."
 
@@ -215,7 +217,6 @@ models:
      tools: true
      native_max_ctx: 200000
      kv_bytes_per_token: 16384
-     extra_flags: { batch-size: 2048, ubatch-size: 2048 }
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
 
    # ── Granite-4.0-H-Tiny (MoE 7B-A1B, mamba-hybrid) ─────────────────────────────
@@ -229,7 +230,6 @@ models:
      tools: true
      native_max_ctx: 128000
      kv_bytes_per_token: 8192
-     extra_flags: { batch-size: 2048, ubatch-size: 2048 }
      benches: [triage, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
 
    # ── Nemotron-3-Nano-4B (mamba-hybrid) ─────────────────────────────────────────
@@ -248,7 +248,6 @@ models:
      no_schema: true
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
-     extra_flags: { batch-size: 2048, ubatch-size: 2048 }
      benches: [triage, reasoning, summarization, docqa, coding, coding_hard, speed, maxctx]
 
    # ── GLM-4.1V-9B-Thinking (vision-LM, run text-only) ───────────────────────────
@@ -262,7 +261,6 @@ models:
      tools: true
      native_max_ctx: 65536
      kv_bytes_per_token: 16384
-     extra_flags: { batch-size: 2048, ubatch-size: 2048 }
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
 
 

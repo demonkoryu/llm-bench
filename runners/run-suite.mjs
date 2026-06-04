@@ -28,6 +28,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs, promisify } from 'node:util';
 import { appendRow, csvFilename, ensureHeader, readTable } from '../shared/results-csv.mjs';
+import { loadModelsConfig } from '../shared/models-config.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dir, '..');
@@ -76,7 +77,7 @@ try {
    };
 }
 
-const modelsConfig = yaml.load(readFileSync(join(ROOT, 'config/models.yaml'), 'utf8'));
+const modelsConfig = loadModelsConfig(join(ROOT, 'config/models.yaml'));
 const hostsConfig = yaml.load(readFileSync(join(ROOT, 'config/hosts.yaml'), 'utf8'));
 const hostCfg = hostsConfig[TARGET];
 if (!hostCfg) {

@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs, promisify } from 'node:util';
 import { appendRow, ensureHeader, latestResultsFile } from '../shared/results-csv.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
+import { loadModelsConfig } from '../shared/models-config.mjs';
 
 const execP = promisify(execFile);
 
@@ -28,7 +29,7 @@ const { values: flags } = parseArgs({
 });
 
 const yaml = (await import('js-yaml')).default;
-const modelsCfg = yaml.load(readFileSync(join(ROOT, 'config/models.yaml'), 'utf8'));
+const modelsCfg = loadModelsConfig(join(ROOT, 'config/models.yaml'));
 const hostsCfg = yaml.load(readFileSync(join(ROOT, 'config/hosts.yaml'), 'utf8'));
 const host = hostsCfg[flags.target];
 const resolveEnv = (s) => String(s ?? '').replace(/\$\{([^}]+)\}/g, (_, e) => process.env[e.split(':-')[0]] ?? e.split(':-')[1] ?? '');
