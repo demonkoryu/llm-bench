@@ -8,6 +8,7 @@
 rose:
    label: "rose / RX 7900 XT (20 GiB)"
    gpu: "RX 7900 XT"                  # slugged into result CSV filenames (→ rx7900xt)
+   vram_total_mib: 20464              # usable VRAM (rocm-reported 21458059264 B); free-at-maxctx baseline
    llamacpp: "${LLAMA_URL:-http://192.168.1.120:8090}"
    ssh_host: "${SSH_HOST:-llm2}"
    port: 8090

@@ -218,11 +218,16 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
    const data = rows.filter((r) => r.status === 'ok' && r.bench !== 'load' && r.bench !== 'smoke');
 
    const maxctxByModel = new Map();
+   const maxctxVramByModel = new Map(); // VRAM (MiB) used at the coherence ceiling
    for (const r of data) {
       if (r.bench === 'maxctx') {
          const v = parseFloat(r.score);
          if (Number.isFinite(v)) {
             maxctxByModel.set(baseModel(r.model), v);
+         }
+         const vram = parseFloat(r.vram_mib);
+         if (Number.isFinite(vram)) {
+            maxctxVramByModel.set(baseModel(r.model), vram);
          }
       }
    }
@@ -255,6 +260,7 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
    const models = [...modelMap.values()]
       .map(({ model, think, rows: rs }) => {
          const maxctx = maxctxByModel.get(baseModel(model)) ?? null;
+         const maxctxVram = maxctxVramByModel.get(baseModel(model)) ?? null; // VRAM used (MiB) at max ctx
          const triage = latestScore(rs, 'triage');
          const reasoning = latestScore(rs, 'reasoning');
          const toolcall = latestScore(rs, 'toolcalling');
@@ -287,6 +293,7 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
             base_model: baseModel(model),
             think,
             maxctx,
+            maxctxVram,
             triage,
             reasoning,
             toolcall,

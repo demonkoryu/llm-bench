@@ -49,6 +49,10 @@ if (!models.length) {
 // Panel scales for the new speed metrics (prefill + end-to-end total).
 const maxPrefill = Math.max(...models.map((m) => Math.max(m.prefill4k ?? 0, m.prefill12k ?? 0)), 1);
 const maxTotal = Math.max(...models.map((m) => Math.max(m.total4k ?? 0, m.total12k ?? 0)), 1);
+// Usable VRAM on the benchmark card (RX 7900 XT; see config/hosts.yaml). Free
+// VRAM at max ctx = this − used; high = model/coherence-bound, low = VRAM-bound.
+const CARD_TOTAL_MIB = 20464;
+const vramFree = (m) => (m.maxctxVram != null ? CARD_TOTAL_MIB - m.maxctxVram : null);
 
 // Colors are presentation-only; assign per model after aggregation.
 const COLORS = [
@@ -91,7 +95,7 @@ const TITLE_H = 32;
 const N = models.length;
 const PANEL_H = N * ROW_H + 8;
 
-const GRID_PANELS = 11; // one per metric panel (must match METRIC_PANELS.length below)
+const GRID_PANELS = 12; // one per metric panel (must match METRIC_PANELS.length below)
 const GRID_ROWS = Math.ceil(GRID_PANELS / 2);
 const GRID_H = GRID_ROWS * (TITLE_H + PANEL_H + 28);
 const TABLE_H = (N + 3) * 22 + 20;
@@ -232,6 +236,13 @@ const METRIC_PANELS = [
       getValue: (m) => m.total12k,
       formatVal: (v) => (v != null ? `${v.toFixed(0)} t/s` : '?'),
       getMax: () => maxTotal,
+   },
+   {
+      title: 'Free VRAM at max ctx (MiB)',
+      weight: 'headroom',
+      getValue: (m) => vramFree(m),
+      formatVal: (v) => (v != null ? `${(v / 1024).toFixed(1)} GB` : '?'),
+      getMax: () => CARD_TOTAL_MIB,
    },
 ];
 

@@ -30,6 +30,11 @@ const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dir, '..');
 const RESULTS_DIR = join(ROOT, 'results');
 
+// Usable VRAM on the benchmark card (RX 7900 XT, rocm-reported 21458059264 B).
+// Single-GPU benchmark (the results filename encodes the GPU); also recorded in
+// config/hosts.yaml as vram_total_mib. Used to derive free VRAM at max ctx.
+const CARD_TOTAL_MIB = 20464;
+
 const { values: flags } = parseArgs({
    options: {
       input: { type: 'string', multiple: true },
@@ -102,6 +107,13 @@ const report = {
       speed_tok_s: m.speedTg,
       prefill_tok_s: { '4k': m.prefill4k, '12k': m.prefill12k },
       total_tok_s: { '4k': m.total4k, '12k': m.total12k },
+      // VRAM used (MiB) at the coherence ceiling, and the free headroom on the
+      // card — low free = VRAM-bound (more VRAM → more ctx); high free = the model
+      // hit its native/coherence limit with VRAM to spare.
+      vram_at_maxctx_mib: {
+         used: m.maxctxVram,
+         free: m.maxctxVram != null ? CARD_TOTAL_MIB - m.maxctxVram : null,
+      },
       weighted_score: m.score,
    })),
    ranking: ranking.map((m, i) => ({
@@ -126,6 +138,7 @@ const report = {
          ['prefill_tok_s_12k', (m) => m.prefill12k],
          ['total_tok_s_4k', (m) => m.total4k],
          ['total_tok_s_12k', (m) => m.total12k],
+         ['vram_free_at_maxctx_mib', (m) => (m.maxctxVram != null ? CARD_TOTAL_MIB - m.maxctxVram : null)],
       ].map(([category, get]) => [
          category,
          models
