@@ -107,15 +107,22 @@ for (const m of fleet) {
 }
 
 // ── 3: best SINGLE-model setups — weights paid once, 2 slots (main + scratch) ──
-// With `--parallel` + a unified KV cache, one weight load serves N concurrent
-// sequences drawing from a shared KV pool, so VRAM = weights + KV·(Σ slot tokens).
-// Running two *different* models would pay the weight tax twice; instead run ONE
-// model with a full-ctx main slot + a smaller scratchpad slot. Per-slot ctx is
-// still capped at the model's coherence ceiling (maxctx).
+// One weight load serves N concurrent sequences from a shared KV pool, so
+// VRAM = weights + KV·(Σ slot tokens). Running two *different* models would pay
+// the weight tax twice; instead run ONE model with a full-ctx main slot + a
+// smaller scratchpad slot. Per-slot ctx is capped at the coherence ceiling.
+//
+// VERIFIED on b9496 (gemma-4-E4B, --parallel 2): the shared pool needs
+// `--kv-unified` (-kvu) — WITHOUT it the default SPLITS the window (each slot
+// gets -c/n_parallel), which would waste KV on an asymmetric main+scratch.
+// `--parallel 2` also adds ~0.4–0.5 GB overhead beyond weights+KV; PARALLEL_OH
+// reserves for it so the scratchpad estimate stays safe.
+//   recipe: llama-server --hf-repo … -c <main+scratch> --parallel 2 --kv-unified --no-mmproj
 const SCRATCH_MIN = 4096; // a scratchpad smaller than this isn't worth a slot
+const PARALLEL_OH = 512; // MiB extra overhead for running 2 slots (measured ~0.45 GB)
 const setups = fleet
    .map((m) => {
-      const tokenBudget = m.kv > 0 ? (BUDGET - m.weights) / m.kv : Infinity; // total KV tokens that fit
+      const tokenBudget = m.kv > 0 ? (BUDGET - PARALLEL_OH - m.weights) / m.kv : Infinity; // total KV tokens that fit (2 slots)
       const main = m.maxctx; // the "1 max ctx" slot
       const leftover = Math.max(0, tokenBudget - main);
       const scratch = Math.min(m.maxctx, leftover); // 2nd slot, capped at coherence ceiling
@@ -182,7 +189,7 @@ fleet.forEach((m, i) => {
 });
 
 // ── Table 2: best single-model setups (weights once · main + scratchpad) ──
-svg += T(28, setupsTop - 8, 'Best single-model setups — weights paid ONCE, main @ max ctx + scratchpad slot (--parallel + unified KV)', {
+svg += T(28, setupsTop - 8, 'Best single-model setups — weights ONCE, main @ max ctx + scratchpad (REQUIRES --parallel + --kv-unified; default splits the window)', {
    fill: '#a0a0c0',
    size: 13,
    w: '600',
