@@ -392,6 +392,93 @@ export function llamacppServer({
    }
 
    /**
+    * Re-validate a known max-ctx ceiling under the current server config WITHOUT a
+    * full binary search — the "extreme limits only" probe. Tests AT the seed ceiling
+    * first; if it still loads + coheres the ceiling holds and we record fresh VRAM.
+    * If it now OOMs / goes incoherent (e.g. a larger ubatch ate the VRAM headroom),
+    * step DOWN in fixed increments until it passes or hits a floor. Never probes
+    * above the seed (extreme-only). Cheap: a single load when the ceiling holds.
+    *
+    * On success the server is left RUNNING at the resolved ctx so the caller can
+    * reuse it for bench passes (mirrors startForModel). On total failure it kills.
+    *
+    * @param {object} modelCfg   model entry from models.yaml
+    * @param {number} seedCtx    previously-recorded coherence ceiling to re-test
+    * @param {object} [opts]
+    *   step  {number}  step-down granularity in tokens (default 4096)
+    *   floor {number}  lowest ctx worth probing (default 8192)
+    * @returns {{ ctxLoaded, oomCeiling, coherenceCeiling, vramMib, held, probes }}
+    */
+   async function probeCeiling(modelCfg, seedCtx, { step = 4096, floor = 8192 } = {}) {
+      const { hf_repo, hf_file } = modelCfg;
+      const extra_flags = extraFlagsToString(modelCfg.extra_flags);
+      const probeThink = modelCfg.think === 'optional' ? false : null;
+      const thinkControl = modelCfg.think_control ?? 'enable_thinking';
+      const { makeFillPrompt } = (await import('../shared/codebase.mjs').catch(() => null)) ?? {};
+
+      await killAll();
+      await waitVramClear(30_000);
+
+      let ctx = roundTo2k(seedCtx);
+      let oomCeiling = null; // largest ctx that LOADED (we only ever descend)
+      let probes = 0;
+      let held = true; // true only while the very first (seed) probe is the one that passes
+
+      console.log(`  [recheck] seed ceiling=${ctx} step=${step} floor=${floor}`);
+
+      while (ctx >= floor) {
+         probes += 1;
+
+         // 1. Load at this ctx
+         try {
+            await startServer({ hf_repo, hf_file, ctx, extraFlags: extra_flags });
+            await waitHealthy(360_000);
+            if (oomCeiling === null) {
+               oomCeiling = ctx;
+            }
+         } catch {
+            const crashed = await hasCrashed();
+            console.log(`  [recheck] ctx=${ctx} — load failed (${crashed ? 'crash/OOM' : 'timeout'})`);
+            await killAll();
+            await waitVramClear(20_000);
+            held = false;
+            ctx = roundTo2k(ctx - step);
+            continue;
+         }
+
+         // 2. Coherence at this ctx
+         let coherent = true;
+         if (makeFillPrompt) {
+            try {
+               coherent = await checkCoherence(ctx, makeFillPrompt, probeThink, thinkControl);
+            } catch (e) {
+               console.warn(`  [recheck] coherence check error: ${e.message}`);
+               coherent = false;
+            }
+         }
+         const vramMib = await snapshotVram();
+
+         if (coherent) {
+            console.log(
+               `  [recheck] ctx=${ctx} ✓ coherent  vram=${vramMib ?? '?'}MiB  ${held ? '(ceiling holds)' : `(stepped down from ${roundTo2k(seedCtx)})`}`,
+            );
+            // Leave the server running at this ctx for the caller's bench passes.
+            return { ctxLoaded: ctx, oomCeiling: oomCeiling ?? ctx, coherenceCeiling: ctx, vramMib, held, probes };
+         }
+
+         console.log(`  [recheck] ctx=${ctx} ✗ incoherent — stepping down`);
+         await killAll();
+         await waitVramClear(20_000);
+         held = false;
+         ctx = roundTo2k(ctx - step);
+      }
+
+      // Nothing passed down to the floor — give up (caller records the failure).
+      await killAll();
+      return { ctxLoaded: floor, oomCeiling: oomCeiling ?? floor, coherenceCeiling: floor, vramMib: null, held: false, probes };
+   }
+
+   /**
     * Full start sequence: kill orphans → binary-search max-ctx → start real server.
     * Used by run-suite.mjs before each model's bench pass.
     *
@@ -456,6 +543,7 @@ export function llamacppServer({
       client,
       detectBackends,
       startForModel,
+      probeCeiling,
       startServer,
       stopServer,
       killAll,

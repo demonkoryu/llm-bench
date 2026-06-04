@@ -41,6 +41,8 @@ const { values: flags } = parseArgs({
       models: { type: 'string', default: '' },
       benches: { type: 'string', default: '' },
       'skip-maxctx': { type: 'boolean', default: false },
+      'maxctx-recheck': { type: 'boolean', default: false }, // re-validate prior ceiling at current config (extreme-only, no full search)
+      'recheck-from': { type: 'string' }, // CSV to seed prior ceilings from (default: latest results file)
       ctx: { type: 'string' }, // with --skip-maxctx: start server at this fixed ctx (skip the search)
       'dry-run': { type: 'boolean', default: false },
       resume: { type: 'boolean', default: false },
@@ -55,6 +57,7 @@ const BACKEND = flags.backend;
 const FILTER_MODELS = flags.models ? flags.models.split(',').map((s) => s.trim()) : [];
 const FILTER_BENCHES = flags.benches ? flags.benches.split(',').map((s) => s.trim()) : [];
 const SKIP_MAXCTX = flags['skip-maxctx'];
+const MAXCTX_RECHECK = flags['maxctx-recheck'];
 const DEBUG = flags.debug || !!process.env.BENCH_DEBUG;
 
 if (DEBUG) {
@@ -750,6 +753,27 @@ const client = srv.client;
 const models = filterModels();
 const doneKeys = flags.resume ? loadDoneKeys() : new Set();
 
+// Seed prior max-ctx ceilings for --maxctx-recheck (extreme-only re-validation).
+// Keyed by base model id (hf_file minus .gguf — matches the CSV `model` column).
+const recheckSeeds = new Map();
+if (MAXCTX_RECHECK) {
+   const { latestResultsFile } = await import('../shared/results-csv.mjs');
+   const seedPath = flags['recheck-from'] ?? latestResultsFile(join(ROOT, 'results'));
+   if (!seedPath || !existsSync(seedPath)) {
+      console.error(`[run-suite] --maxctx-recheck needs a seed CSV; none found (${seedPath ?? 'no results file'}).`);
+      process.exit(1);
+   }
+   for (const row of readTable(seedPath)) {
+      if (row.bench === 'maxctx') {
+         const c = Number(row.coherence_ceiling ?? row.ctx_loaded);
+         if (Number.isFinite(c) && c > 0) {
+            recheckSeeds.set(row.model, c);
+         }
+      }
+   }
+   console.log(`[run-suite] maxctx-recheck: seeded ${recheckSeeds.size} prior ceilings from ${seedPath}`);
+}
+
 if (!models.length) {
    console.error('[run-suite] No models matched filter. Exiting.');
    process.exit(1);
@@ -783,7 +807,27 @@ for (const model of models) {
 
    // ── Max-ctx binary search ─────────────────────────────────────────────────
    let ctxLoaded, oomCeiling, coherenceCeiling, vramMib;
-   if (SKIP_MAXCTX) {
+   if (MAXCTX_RECHECK) {
+      // Extreme-only re-validation: probe AT the prior ceiling under the current
+      // config; step down only if it now OOMs. No full binary search.
+      const seed = recheckSeeds.get(mid);
+      if (!seed) {
+         console.log(`  [maxctx] recheck: no prior ceiling for ${mid} — falling back to full search`);
+         try {
+            ({ ctxLoaded, oomCeiling, coherenceCeiling, vramMib } = await srv.startForModel(model));
+         } catch (e) {
+            console.error(`  [error] max-ctx probe failed: ${e.message}`);
+            continue;
+         }
+      } else {
+         let held, probes;
+         ({ ctxLoaded, oomCeiling, coherenceCeiling, vramMib, held, probes } = await srv.probeCeiling(model, seed));
+         console.log(
+            `  [maxctx] recheck ${held ? 'HELD' : 'CHANGED'}: ${seed} → ${ctxLoaded} ` +
+               `(oom=${oomCeiling}, vram=${vramMib ?? '?'}MiB, ${probes} probe${probes === 1 ? '' : 's'})`,
+         );
+      }
+   } else if (SKIP_MAXCTX) {
       // --ctx forces a fixed window (skips the slow search) — used by the speed-only
       // re-run so the server starts fast at a size that fits every model.
       ctxLoaded = flags.ctx ? Number(flags.ctx) : (model.ctx_cap ?? model.native_max_ctx ?? 8192);
