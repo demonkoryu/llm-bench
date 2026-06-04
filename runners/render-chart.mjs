@@ -108,7 +108,7 @@ const TITLE_H = 32;
 const N = models.length;
 const PANEL_H = N * ROW_H + 8;
 
-const GRID_PANELS = 12; // one per metric panel (must match METRIC_PANELS.length below)
+const GRID_PANELS = 13; // one per metric panel — MUST equal METRIC_PANELS.length below
 const GRID_ROWS = Math.ceil(GRID_PANELS / 2);
 const GRID_H = GRID_ROWS * (TITLE_H + PANEL_H + 28);
 const TABLE_H = (N + 3) * 22 + 20;
@@ -236,13 +236,14 @@ const METRIC_PANELS = [
       getMax: () => maxE2E,
    },
    {
-      // Latency half of the performance axis. Plotted fleet-relative (fleet-fastest
-      // = 100) so longer bar = faster — keeps the chart's higher-is-better invariant
-      // and the top-5 badge correct. Absolute TTFT ms lives in report.json/report.md.
-      title: 'First-token latency @8k (rel., ↑=faster)',
+      // Latency half of the performance axis. Bar length is fleet-relative (fleet-
+      // fastest = 100) so longer bar = faster — keeps the chart's higher-is-better
+      // invariant and the top-5 badge correct — but the LABEL shows the absolute
+      // TTFT@8k in seconds (formatVal gets the model, not just the bar value).
+      title: 'First-token latency @8k (s · longer=faster)',
       weight: '×0.25 perf · 60%',
       getValue: (m) => (m.latencyNorm != null ? m.latencyNorm * 100 : null),
-      formatVal: (v) => (v != null ? `${v.toFixed(0)}%` : '?'),
+      formatVal: (_v, m) => (m.ttft8kMs != null ? `${(m.ttft8kMs / 1000).toFixed(2)}s` : '?'),
       getMax: () => 100,
    },
    {
@@ -316,7 +317,7 @@ METRIC_PANELS.forEach((panel, pi) => {
          color: m.color,
          value: raw ?? 0,
          max,
-         displayVal: panel.formatVal(raw),
+         displayVal: panel.formatVal(raw, m),
          rankIdx: m.rankIdx,
       }));
    svg += barPanel(px, py, COL_W, panel.title, `weight ${panel.weight}`, items);
