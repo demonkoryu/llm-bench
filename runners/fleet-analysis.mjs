@@ -82,7 +82,12 @@ for (const e of byIdent.values()) {
    let kv = 0;
    let weights = e.vramMax;
    if (v16 != null && e.maxctx > 16384) {
-      kv = (e.vramMax - v16) / (e.maxctx - 16384);
+      // A negative slope is never physical — it means the 16k baseline and the
+      // maxctx VRAM were measured under different server configs (e.g. mixing
+      // -ub 512 maxctx rows with -ub 2048 16k rows inflates v16 above vramMax).
+      // Clamp to 0 so a stale/mixed dataset degrades to "no KV growth" rather
+      // than emitting nonsense weights > vramMax.
+      kv = Math.max(0, (e.vramMax - v16) / (e.maxctx - 16384));
       weights = e.vramMax - kv * e.maxctx;
    }
    fleet.push({
