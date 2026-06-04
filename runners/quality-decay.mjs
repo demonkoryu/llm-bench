@@ -85,6 +85,10 @@ for (const m of wanted) {
       continue;
    }
    const depths = [0, ...DEPTHS.filter((d) => d + 512 < maxctx)];
+   // Disable thinking on hybrid models so the 6 answers land in `content` within
+   // budget (think:null would default thinking ON → reasoning eats the budget → 0%).
+   const probeThink = m.think === 'optional' ? false : null;
+   const thinkControl = m.think_control ?? 'enable_thinking';
    console.log(`\n══ ${m.label ?? id}  (ctx ${maxctx.toLocaleString()}, depths ${depths.map((d) => Math.round(d / 1024) + 'k').join(',')})`);
    await srv.killAll();
    await srv.waitVramClear(30_000);
@@ -107,7 +111,7 @@ for (const m of wanted) {
       ];
       let acc, ttft;
       try {
-         const { completion, timings } = await client.chat(messages, { think: null, max_tokens: 400, temperature: 0.0 }, 900_000);
+         const { completion, timings } = await client.chat(messages, { think: probeThink, thinkControl, max_tokens: 512, temperature: 0.0 }, 900_000);
          acc = grade(completion?.choices?.[0]?.message?.content ?? '', probes);
          ttft = timings?.prompt_ms ?? null;
       } catch (e) {

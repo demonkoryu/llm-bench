@@ -521,3 +521,55 @@ rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0,n/a,speed_pargen-1,68.4,,,68.4,,4435,
 rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0,n/a,speed_pargen-2,83.0,,,83.0,,4435,16384,,,ok,,parallel=8 conc=2 per_slot=41.5
 rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0,n/a,speed_pargen-4,93.7,,,93.7,,4435,16384,,,ok,,parallel=8 conc=4 per_slot=23.4
 rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0,n/a,speed_pargen-8,98.9,,,98.9,,4435,16384,,,ok,,parallel=8 conc=8 per_slot=12.4
+rose,vulkan,Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL,n/a,power_eff,0.491,,,112.6,,,,,,ok,,W=230 tps=112.6 n=28
+rose,vulkan,Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL,n/a,struct_output,100.0,,0,,,,,,,ok,,parse=100% schema=100%
+rose,vulkan,Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL,n/a,power_eff,0.497,,,112.5,,,,,,ok,,W=227 tps=112.5 n=29
+rose,vulkan,Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL,n/a,struct_output,100.0,,0,,,,,,,ok,,parse=100% schema=100%
+rose,vulkan,Qwen3-30B-A3B-Instruct-2507-IQ4_XS,n/a,power_eff,0.454,,,109.9,,,,,,ok,,W=242 tps=109.9 n=28
+rose,vulkan,Qwen3-30B-A3B-Instruct-2507-IQ4_XS,n/a,struct_output,100.0,,0,,,,,,,ok,,parse=100% schema=100%
+rose,vulkan,Qwen3-14B-Q5_K_M,n/a,power_eff,0.215,,,59.7,,,,,,ok,,W=277 tps=59.7 n=53
+rose,vulkan,Qwen3-14B-Q5_K_M,n/a,struct_output,50.0,,6,,,,,,,ok,,parse=50% schema=50%
+rose,vulkan,Qwen3.6-35B-A3B-UD-IQ4_XS,n/a,power_eff,0.174,,,34.0,,,,,,ok,,W=195 tps=34.0 n=94
+rose,vulkan,Qwen3.6-35B-A3B-UD-IQ4_XS,n/a,struct_output,0.0,,12,,,,,,,ok,,parse=0% schema=0%
+rose,vulkan,gemma-4-E4B-it-Q8_0,n/a,power_eff,0.321,,,87.2,,,,,,ok,,W=272 tps=87.2 n=36
+rose,vulkan,gemma-4-E4B-it-Q8_0,n/a,struct_output,100.0,,0,,,,,,,ok,,parse=100% schema=100%
+rose,vulkan,gemma-4-E4B-it-Q5_K_M,n/a,power_eff,0.386,,,105.9,,,,,,ok,,W=274 tps=105.9 n=30
+rose,vulkan,gemma-4-E4B-it-Q5_K_M,n/a,struct_output,100.0,,0,,,,,,,ok,,parse=100% schema=100%
+rose,vulkan,gemma-4-26B-A4B-it-UD-Q4_K_M,n/a,power_eff,0.277,,,61.8,,,,,,ok,,W=223 tps=61.8 n=50
+rose,vulkan,gemma-4-26B-A4B-it-UD-Q4_K_M,n/a,struct_output,83.3,,2,,,,,,,ok,,parse=83% schema=83%
+rose,vulkan,gemma-4-12b-it-Q5_K_M,n/a,power_eff,0.172,,,47.9,,,,,,ok,,W=278 tps=47.9 n=65
+rose,vulkan,gemma-4-12b-it-Q5_K_M,n/a,struct_output,75.0,,3,,,,,,,ok,,parse=75% schema=75%
+rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,power_eff,1.217,,,306.1,,,,,,ok,,W=252 tps=306.1 n=11
+rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,struct_output,75.0,,3,,,,,,,ok,,parse=75% schema=75%
+rose,vulkan,GLM-4.7-Flash-IQ4_XS,n/a,power_eff,0.359,,,93.6,,,,,,ok,,W=261 tps=93.6 n=34
+rose,vulkan,GLM-4.7-Flash-IQ4_XS,n/a,struct_output,25.0,,9,,,,,,,ok,,parse=25% schema=25%
+rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,power_eff,0.782,,,174.0,,,,,,ok,,W=222 tps=174.0 n=18
+rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,struct_output,100.0,,0,,,,,,,ok,,parse=100% schema=100%
+rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0,n/a,power_eff,0.300,,,70.7,,,,,,ok,,W=236 tps=70.7 n=45
+rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0,n/a,struct_output,91.7,,0,,,,,,,ok,,parse=100% schema=92%
+rose,vulkan,Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL,n/a,power_eff,0.495,,,112.6,,,,,,ok,,W=227 tps=112.6 n=29
+rose,vulkan,Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL,n/a,struct_output,100.0,,0,,,,,,,ok,,parse=100% schema=100%
+rose,vulkan,Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL,n/a,power_eff,0.495,,,112.1,,,,,,ok,,W=226 tps=112.1 n=29
+rose,vulkan,Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL,n/a,struct_output,100.0,,0,,,,,,,ok,,parse=100% schema=100%
+rose,vulkan,Qwen3-30B-A3B-Instruct-2507-IQ4_XS,n/a,power_eff,0.438,,,110.0,,,,,,ok,,W=251 tps=110.0 n=28
+rose,vulkan,Qwen3-30B-A3B-Instruct-2507-IQ4_XS,n/a,struct_output,100.0,,0,,,,,,,ok,,parse=100% schema=100%
+rose,vulkan,Qwen3-14B-Q5_K_M,n/a,power_eff,0.216,,,59.7,,,,,,ok,,W=276 tps=59.7 n=53
+rose,vulkan,Qwen3-14B-Q5_K_M,n/a,struct_output,100.0,,0,,,,,,,ok,,parse=100% schema=100%
+rose,vulkan,Qwen3.6-35B-A3B-UD-IQ4_XS,n/a,power_eff,0.181,,,35.1,,,,,,ok,,W=194 tps=35.1 n=90
+rose,vulkan,Qwen3.6-35B-A3B-UD-IQ4_XS,n/a,struct_output,100.0,,0,,,,,,,ok,,parse=100% schema=100%
+rose,vulkan,gemma-4-E4B-it-Q8_0,n/a,power_eff,0.316,,,87.3,,,,,,ok,,W=277 tps=87.3 n=36
+rose,vulkan,gemma-4-E4B-it-Q8_0,n/a,struct_output,100.0,,0,,,,,,,ok,,parse=100% schema=100%
+rose,vulkan,gemma-4-E4B-it-Q5_K_M,n/a,power_eff,0.384,,,105.5,,,,,,ok,,W=275 tps=105.5 n=29
+rose,vulkan,gemma-4-E4B-it-Q5_K_M,n/a,struct_output,100.0,,0,,,,,,,ok,,parse=100% schema=100%
+rose,vulkan,gemma-4-26B-A4B-it-UD-Q4_K_M,n/a,power_eff,0.276,,,61.7,,,,,,ok,,W=223 tps=61.7 n=52
+rose,vulkan,gemma-4-26B-A4B-it-UD-Q4_K_M,n/a,struct_output,100.0,,0,,,,,,,ok,,parse=100% schema=100%
+rose,vulkan,gemma-4-12b-it-Q5_K_M,n/a,power_eff,0.173,,,47.9,,,,,,ok,,W=277 tps=47.9 n=65
+rose,vulkan,gemma-4-12b-it-Q5_K_M,n/a,struct_output,100.0,,0,,,,,,,ok,,parse=100% schema=100%
+rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,power_eff,1.177,,,306.8,,,,,,ok,,W=261 tps=306.8 n=11
+rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,struct_output,75.0,,3,,,,,,,ok,,parse=75% schema=75%
+rose,vulkan,GLM-4.7-Flash-IQ4_XS,n/a,power_eff,0.270,,,56.8,,,,,,ok,,W=211 tps=56.8 n=56
+rose,vulkan,GLM-4.7-Flash-IQ4_XS,n/a,struct_output,100.0,,0,,,,,,,ok,,parse=100% schema=100%
+rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,power_eff,0.776,,,173.0,,,,,,ok,,W=223 tps=173.0 n=18
+rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,struct_output,100.0,,0,,,,,,,ok,,parse=100% schema=100%
+rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0,n/a,power_eff,0.304,,,70.7,,,,,,ok,,W=232 tps=70.7 n=46
+rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0,n/a,struct_output,83.3,,0,,,,,,,ok,,parse=100% schema=83%

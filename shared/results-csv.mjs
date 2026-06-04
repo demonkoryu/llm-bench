@@ -224,14 +224,29 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
    // don't spawn phantom 'n/a' model groups.
    const decayByModel = new Map(); // base model → Map(depth → decode tok/s, newest wins)
    const pargenByModel = new Map(); // base model → Map(concurrency → aggregate tok/s)
+   const qualityByModel = new Map(); // base model → Map(depth → accuracy %)
+   const ttftByModel = new Map(); // base model → Map(depth → prefill ms)
+   const structByModel = new Map(); // base model → schema-conformance %
+   const powerEffByModel = new Map(); // base model → decode tok/s per watt
+   // Helper: set base→Map(key→val), later row wins.
+   const setDepth = (map, base, key, val) => {
+      if (!map.has(base)) map.set(base, new Map());
+      map.get(base).set(key, val);
+   };
+   const depthOf = (bench, prefix) => Number(bench.replace(prefix, '').replace('k', '')) * 1024;
    for (const r of data) {
-      if (String(r.bench).startsWith('speed_pargen-')) {
-         const k = Number(r.bench.replace('speed_pargen-', ''));
-         const tps = parseFloat(r.score);
-         if (Number.isFinite(k) && Number.isFinite(tps)) {
-            if (!pargenByModel.has(baseModel(r.model))) pargenByModel.set(baseModel(r.model), new Map());
-            pargenByModel.get(baseModel(r.model)).set(k, tps); // later row wins
-         }
+      const bench = String(r.bench);
+      const v = parseFloat(r.score);
+      if (bench.startsWith('speed_pargen-')) {
+         if (Number.isFinite(v)) setDepth(pargenByModel, baseModel(r.model), Number(bench.replace('speed_pargen-', '')), v);
+      } else if (bench.startsWith('quality_decay-')) {
+         if (Number.isFinite(v)) setDepth(qualityByModel, baseModel(r.model), depthOf(bench, 'quality_decay-'), v);
+      } else if (bench.startsWith('ttft-')) {
+         if (Number.isFinite(v)) setDepth(ttftByModel, baseModel(r.model), depthOf(bench, 'ttft-'), v);
+      } else if (bench === 'struct_output') {
+         if (Number.isFinite(v)) structByModel.set(baseModel(r.model), v);
+      } else if (bench === 'power_eff') {
+         if (Number.isFinite(v)) powerEffByModel.set(baseModel(r.model), v);
       }
       if (r.bench === 'maxctx') {
          const v = parseFloat(r.score);
@@ -254,7 +269,16 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
 
    const modelMap = new Map();
    for (const r of data) {
-      if (r.bench === 'maxctx' || String(r.bench).startsWith('speed_decay-') || String(r.bench).startsWith('speed_pargen-')) {
+      const b = String(r.bench);
+      if (
+         b === 'maxctx' ||
+         b === 'struct_output' ||
+         b === 'power_eff' ||
+         b.startsWith('speed_decay-') ||
+         b.startsWith('speed_pargen-') ||
+         b.startsWith('quality_decay-') ||
+         b.startsWith('ttft-')
+      ) {
          continue;
       }
       const key = `${r.model}|${r.think}`;
@@ -327,6 +351,22 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          const pargenMaxK = pargenCurve.length ? pargenCurve[pargenCurve.length - 1].conc : null;
          const pargenAggMax = pargenCurve.length ? pargenCurve[pargenCurve.length - 1].tps : null;
          const pargenSpeedup = pargen1 && pargenAggMax ? Math.round((pargenAggMax / pargen1) * 100) / 100 : null;
+         // Quality-at-depth: accuracy of the fixed 6-needle block at each context
+         // depth; retention = acc@ref ÷ acc@0 (ref = deepest measured ≤ 32k).
+         const qMap = qualityByModel.get(baseModel(model));
+         const qualityCurve = qMap ? [...qMap.entries()].map(([depth, acc]) => ({ depth, acc })).sort((a, b) => a.depth - b.depth) : [];
+         const qualityBase = qMap?.get(0) ?? null;
+         const qRef = [...qualityCurve].filter((x) => x.depth > 0 && x.depth <= 32768).pop() ?? null;
+         const qualityRetentionPct = qualityBase && qRef?.acc != null ? Math.round((qRef.acc / qualityBase) * 100) : null;
+         // TTFT (prefill latency, ms) at each depth — the latency an agent feels.
+         const tMap = ttftByModel.get(baseModel(model));
+         const ttftCurve = tMap ? [...tMap.entries()].map(([depth, ms]) => ({ depth, ms })).sort((a, b) => a.depth - b.depth) : [];
+         const ttftRefPt = [...ttftCurve].filter((x) => x.depth > 0 && x.depth <= 32768).pop() ?? null;
+         const ttftRefMs = ttftRefPt?.ms ?? null;
+         // Structured-output reliability: % of JSON tasks that were schema-conformant.
+         const structScore = structByModel.get(baseModel(model)) ?? null;
+         // Power efficiency: decode tok/s per watt (board power via lm-sensors).
+         const powerEff = powerEffByModel.get(baseModel(model)) ?? null;
          return {
             label: `${model}${think !== 'n/a' ? ` [${think}]` : ''}`,
             model,
@@ -354,6 +394,13 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
             pargenAggMax,
             pargenMaxK,
             pargenSpeedup,
+            qualityCurve,
+            qualityBase,
+            qualityRetentionPct,
+            ttftCurve,
+            ttftRefMs,
+            structScore,
+            powerEff,
          };
       })
       .filter((m) => m.maxctx || m.triage || m.speedTg);

@@ -132,6 +132,17 @@ const report = {
          speedup: m.pargenSpeedup,
          curve: m.pargenCurve.map((p) => ({ slots: p.conc, agg_tok_s: p.tps })),
       },
+      // Quality at depth (6-needle accuracy retention) + TTFT (prefill latency).
+      quality_decay: {
+         base_acc: m.qualityBase,
+         retention_pct: m.qualityRetentionPct,
+         curve: m.qualityCurve.map((p) => ({ depth: p.depth, acc: p.acc })),
+      },
+      ttft_ms: { ref: m.ttftRefMs, curve: m.ttftCurve.map((p) => ({ depth: p.depth, ms: p.ms })) },
+      // Structured-output reliability: % schema-conformant JSON (unconstrained).
+      struct_output_pct: m.structScore,
+      // Power efficiency: decode tok/s per watt (board power via lm-sensors).
+      power_eff_tok_s_per_w: m.powerEff,
       weighted_score: m.score,
    })),
    ranking: ranking.map((m, i) => ({
@@ -161,6 +172,10 @@ const report = {
          ['decode_tok_s_at_ref', (m) => m.decodeRef], // absolute decode tok/s at the reference depth
          ['parallel_agg_tok_s_8slots', (m) => m.pargenAggMax], // aggregate decode tok/s at max concurrency
          ['parallel_speedup', (m) => m.pargenSpeedup], // batching multiplier vs single slot
+         ['quality_retention_pct', (m) => m.qualityRetentionPct], // accuracy held at ~32k vs 0
+         ['struct_output_pct', (m) => m.structScore], // schema-conformant JSON rate
+         ['power_eff_tok_s_per_w', (m) => m.powerEff], // decode tok/s per watt
+         // (TTFT is lower-is-better — kept as per-model ttft_ms, not a descending ranking.)
       ].map(([category, get]) => [
          category,
          models

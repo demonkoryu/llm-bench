@@ -59,6 +59,7 @@ const maxRetention = Math.max(...models.map((m) => m.decodeRetentionPct ?? 0), 1
 // Parallel-generation throughput.
 const maxPargenAgg = Math.max(...models.map((m) => m.pargenAggMax ?? 0), 1);
 const maxPargenSpeedup = Math.max(...models.map((m) => m.pargenSpeedup ?? 0), 1);
+const maxPowerEff = Math.max(...models.map((m) => m.powerEff ?? 0), 0.1);
 
 // Colors are presentation-only; assign per model after aggregation.
 const COLORS = [
@@ -101,7 +102,7 @@ const TITLE_H = 32;
 const N = models.length;
 const PANEL_H = N * ROW_H + 8;
 
-const GRID_PANELS = 16; // one per metric panel (must match METRIC_PANELS.length below)
+const GRID_PANELS = 18; // one per metric panel (must match METRIC_PANELS.length below)
 const GRID_ROWS = Math.ceil(GRID_PANELS / 2);
 const GRID_H = GRID_ROWS * (TITLE_H + PANEL_H + 28);
 const TABLE_H = (N + 3) * 22 + 20;
@@ -277,6 +278,22 @@ const METRIC_PANELS = [
       getValue: (m) => m.pargenSpeedup,
       formatVal: (v) => (v != null ? `${v.toFixed(2)}×` : '?'),
       getMax: () => maxPargenSpeedup,
+   },
+   // NOTE: quality-retention panel deferred — the deep quality-at-depth run is
+   // pending (tonight). Re-add here once quality_decay rows exist.
+   {
+      title: 'Structured-output reliability (schema-conformant %)',
+      weight: 'quality',
+      getValue: (m) => m.structScore,
+      formatVal: (v) => (v != null ? `${v.toFixed(0)}%` : '?'),
+      getMax: () => 100,
+   },
+   {
+      title: 'Power efficiency (decode tok/s per watt)',
+      weight: 'efficiency',
+      getValue: (m) => m.powerEff,
+      formatVal: (v) => (v != null ? `${v.toFixed(2)} t/s/W` : '?'),
+      getMax: () => maxPowerEff,
    },
 ];
 

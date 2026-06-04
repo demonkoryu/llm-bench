@@ -12,12 +12,15 @@
  * Usage: node runners/struct-output.mjs [--input results/<csv>] [--models a,b]
  */
 
+import { execFile } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseArgs } from 'node:util';
+import { parseArgs, promisify } from 'node:util';
 import { appendRow, ensureHeader, latestResultsFile } from '../shared/results-csv.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
+
+const execP = promisify(execFile);
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const { values: flags } = parseArgs({
@@ -80,6 +83,24 @@ const srv = llamacppServer({ sshHost: SSH_HOST, llamaUrl: LLAMA_URL, backend: 'v
 const client = srv.client;
 const SYS = 'You output only valid JSON. No prose, no markdown fences — just the JSON object.';
 
+/** Board power (W) via lm-sensors PPT/power1_average — reads under load on the 7900 XT. */
+async function readPowerW() {
+   try {
+      const { stdout } = await execP('ssh', ['-o', 'BatchMode=yes', '-o', 'ConnectTimeout=8', SSH_HOST, 'sensors -j 2>/dev/null'], { timeout: 9000 });
+      const j = JSON.parse(stdout);
+      for (const chip of Object.values(j)) {
+         if (chip && typeof chip === 'object') {
+            for (const feat of Object.values(chip)) {
+               if (feat && typeof feat === 'object' && 'power1_average' in feat) return feat.power1_average;
+            }
+         }
+      }
+   } catch {
+      /* idle power-gates to N/A; under load it reads fine */
+   }
+   return null;
+}
+
 const filter = flags.models ? flags.models.split(',').map((s) => s.trim()) : [];
 const wanted = modelsCfg.models.filter((m) => {
    const id = m.hf_file.replace(/\.gguf$/, '');
@@ -99,12 +120,39 @@ for (const m of wanted) {
       console.log(`  load failed: ${e.message.slice(0, 70)} — skipping`);
       continue;
    }
+   // Disable thinking on hybrid models (else reasoning eats the budget → no JSON).
+   const probeThink = m.think === 'optional' ? false : null;
+   const thinkControl = m.think_control ?? 'enable_thinking';
+   // Power efficiency: sustained decode while sampling board power (tok/s ÷ W).
+   const pw = [];
+   let sampling = true;
+   const poller = (async () => {
+      while (sampling) {
+         const w = await readPowerW();
+         if (w) pw.push(w);
+      }
+   })();
+   let decodeTps = null;
+   try {
+      const { timings } = await client.chat([{ role: 'user', content: 'Write a long, detailed essay about the history of computing.' }], { think: probeThink, thinkControl, max_tokens: 768, temperature: 0.7 }, 120_000);
+      decodeTps = timings?.predicted_per_second ?? null;
+   } catch {
+      /* skip */
+   }
+   sampling = false;
+   await poller;
+   const avgW = pw.length ? pw.reduce((a, b) => a + b, 0) / pw.length : null;
+   const tokPerW = decodeTps && avgW ? decodeTps / avgW : null;
+   console.log(`  power: ${avgW ? avgW.toFixed(0) : '?'}W · ${decodeTps ? decodeTps.toFixed(0) : '?'} tok/s → ${tokPerW ? tokPerW.toFixed(2) : '?'} tok/s/W  (${pw.length} samples)`);
+   if (tokPerW != null)
+      appendRow(input, { target: flags.target, backend: 'vulkan', model: id, think: 'n/a', bench: 'power_eff', score: tokPerW.toFixed(3), tok_s: decodeTps.toFixed(1), status: 'ok', notes: `W=${avgW.toFixed(0)} tps=${decodeTps.toFixed(1)} n=${pw.length}` });
+
    let parseOk = 0;
    let schemaOk = 0;
    for (const t of TASKS) {
       let text = '';
       try {
-         const { completion } = await client.chat([{ role: 'system', content: SYS }, { role: 'user', content: t.p }], { think: null, max_tokens: 256, temperature: 0.0 }, 120_000);
+         const { completion } = await client.chat([{ role: 'system', content: SYS }, { role: 'user', content: t.p }], { think: probeThink, thinkControl, max_tokens: 256, temperature: 0.0 }, 120_000);
          text = completion?.choices?.[0]?.message?.content ?? '';
       } catch {
          /* request error → counts as failure */

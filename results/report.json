@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-04T07:48:34.936Z",
+  "generated": "2026-06-04T09:36:30.516Z",
   "sources": [
     "llm-benchmarks-rose-rx7900xt-vulkan-20260603-165909.csv"
   ],
@@ -91,6 +91,17 @@
           }
         ]
       },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "power_eff_tok_s_per_w": 0.495,
       "weighted_score": 61.3
     },
     {
@@ -170,6 +181,17 @@
           }
         ]
       },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "power_eff_tok_s_per_w": 0.495,
       "weighted_score": 74.1
     },
     {
@@ -249,6 +271,17 @@
           }
         ]
       },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "power_eff_tok_s_per_w": 0.438,
       "weighted_score": 70.3
     },
     {
@@ -320,6 +353,17 @@
           }
         ]
       },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "power_eff_tok_s_per_w": 0.216,
       "weighted_score": 61.1
     },
     {
@@ -391,6 +435,17 @@
           }
         ]
       },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "power_eff_tok_s_per_w": 0.216,
       "weighted_score": 61.6
     },
     {
@@ -470,6 +525,17 @@
           }
         ]
       },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "power_eff_tok_s_per_w": 0.181,
       "weighted_score": 69.6
     },
     {
@@ -549,6 +615,17 @@
           }
         ]
       },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "power_eff_tok_s_per_w": 0.181,
       "weighted_score": 71.2
     },
     {
@@ -632,6 +709,17 @@
           }
         ]
       },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "power_eff_tok_s_per_w": 0.316,
       "weighted_score": 79.1
     },
     {
@@ -715,6 +803,17 @@
           }
         ]
       },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "power_eff_tok_s_per_w": 0.316,
       "weighted_score": 84.5
     },
     {
@@ -798,6 +897,17 @@
           }
         ]
       },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "power_eff_tok_s_per_w": 0.384,
       "weighted_score": 84
     },
     {
@@ -881,6 +991,17 @@
           }
         ]
       },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "power_eff_tok_s_per_w": 0.384,
       "weighted_score": 86.9
     },
     {
@@ -960,6 +1081,17 @@
           }
         ]
       },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "power_eff_tok_s_per_w": 0.276,
       "weighted_score": 69.9
     },
     {
@@ -1039,6 +1171,17 @@
           }
         ]
       },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "power_eff_tok_s_per_w": 0.276,
       "weighted_score": 71.4
     },
     {
@@ -1114,6 +1257,17 @@
           }
         ]
       },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 75,
+      "power_eff_tok_s_per_w": 1.177,
       "weighted_score": 61
     },
     {
@@ -1189,6 +1343,17 @@
           }
         ]
       },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "power_eff_tok_s_per_w": 0.27,
       "weighted_score": 63.5
     },
     {
@@ -1264,6 +1429,17 @@
           }
         ]
       },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "power_eff_tok_s_per_w": 0.27,
       "weighted_score": 68.4
     },
     {
@@ -1347,6 +1523,17 @@
           }
         ]
       },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "power_eff_tok_s_per_w": 0.776,
       "weighted_score": 70.4
     },
     {
@@ -1418,6 +1605,17 @@
           }
         ]
       },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 83.3,
+      "power_eff_tok_s_per_w": 0.304,
       "weighted_score": 40.1
     },
     {
@@ -1489,6 +1687,17 @@
           }
         ]
       },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 83.3,
+      "power_eff_tok_s_per_w": 0.304,
       "weighted_score": 41.8
     },
     {
@@ -1572,6 +1781,17 @@
           }
         ]
       },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "power_eff_tok_s_per_w": 0.173,
       "weighted_score": 81.3
     },
     {
@@ -1655,6 +1875,17 @@
           }
         ]
       },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "power_eff_tok_s_per_w": 0.173,
       "weighted_score": 78.4
     }
   ],
@@ -4155,6 +4386,305 @@
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--think",
         "think": "think",
         "score": 0.95
+      }
+    ],
+    "quality_retention_pct": [],
+    "struct_output_pct": [
+      {
+        "rank": 1,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 100
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 100
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 100
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3-14B-Q5_K_M--think [think]",
+        "model": "Qwen3-14B-Q5_K_M--think",
+        "think": "think",
+        "score": 100
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--think [think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--think",
+        "think": "think",
+        "score": 100
+      },
+      {
+        "rank": 8,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 9,
+        "label": "gemma-4-E4B-it-Q8_0--think [think]",
+        "model": "gemma-4-E4B-it-Q8_0--think",
+        "think": "think",
+        "score": 100
+      },
+      {
+        "rank": 10,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 11,
+        "label": "gemma-4-E4B-it-Q5_K_M--think [think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--think",
+        "think": "think",
+        "score": 100
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 13,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--think [think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--think",
+        "think": "think",
+        "score": 100
+      },
+      {
+        "rank": 14,
+        "label": "GLM-4.7-Flash-IQ4_XS--nothi [no_think]",
+        "model": "GLM-4.7-Flash-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 15,
+        "label": "GLM-4.7-Flash-IQ4_XS--think [think]",
+        "model": "GLM-4.7-Flash-IQ4_XS--think",
+        "think": "think",
+        "score": 100
+      },
+      {
+        "rank": 16,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 100
+      },
+      {
+        "rank": 17,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 18,
+        "label": "gemma-4-12b-it-Q5_K_M--think [think]",
+        "model": "gemma-4-12b-it-Q5_K_M--think",
+        "think": "think",
+        "score": 100
+      },
+      {
+        "rank": 19,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 83.3
+      },
+      {
+        "rank": 20,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--think [think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--think",
+        "think": "think",
+        "score": 83.3
+      },
+      {
+        "rank": 21,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 75
+      }
+    ],
+    "power_eff_tok_s_per_w": [
+      {
+        "rank": 1,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 1.177
+      },
+      {
+        "rank": 2,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 0.776
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 0.495
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 0.495
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 0.438
+      },
+      {
+        "rank": 6,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 0.384
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-E4B-it-Q5_K_M--think [think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--think",
+        "think": "think",
+        "score": 0.384
+      },
+      {
+        "rank": 8,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 0.316
+      },
+      {
+        "rank": 9,
+        "label": "gemma-4-E4B-it-Q8_0--think [think]",
+        "model": "gemma-4-E4B-it-Q8_0--think",
+        "think": "think",
+        "score": 0.316
+      },
+      {
+        "rank": 10,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 0.304
+      },
+      {
+        "rank": 11,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--think [think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--think",
+        "think": "think",
+        "score": 0.304
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 0.276
+      },
+      {
+        "rank": 13,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--think [think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--think",
+        "think": "think",
+        "score": 0.276
+      },
+      {
+        "rank": 14,
+        "label": "GLM-4.7-Flash-IQ4_XS--nothi [no_think]",
+        "model": "GLM-4.7-Flash-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 0.27
+      },
+      {
+        "rank": 15,
+        "label": "GLM-4.7-Flash-IQ4_XS--think [think]",
+        "model": "GLM-4.7-Flash-IQ4_XS--think",
+        "think": "think",
+        "score": 0.27
+      },
+      {
+        "rank": 16,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 0.216
+      },
+      {
+        "rank": 17,
+        "label": "Qwen3-14B-Q5_K_M--think [think]",
+        "model": "Qwen3-14B-Q5_K_M--think",
+        "think": "think",
+        "score": 0.216
+      },
+      {
+        "rank": 18,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 0.181
+      },
+      {
+        "rank": 19,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--think [think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--think",
+        "think": "think",
+        "score": 0.181
+      },
+      {
+        "rank": 20,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 0.173
+      },
+      {
+        "rank": 21,
+        "label": "gemma-4-12b-it-Q5_K_M--think [think]",
+        "model": "gemma-4-12b-it-Q5_K_M--think",
+        "think": "think",
+        "score": 0.173
       }
     ]
   }
