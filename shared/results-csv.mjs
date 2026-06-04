@@ -37,21 +37,44 @@ export const COLUMNS = [
    'notes',
 ];
 
-// Per-metric weights (sum = 1.0). Context capacity is weighted heavily (0.30) —
-// long usable windows are a top priority for this PKM/docQA use case — with task
-// quality at 0.55 across the five capability benches and decode speed at 0.15.
-// The weighted score uses a FIXED denominator (see finalScore): a metric a model
-// didn't run contributes 0, so breadth of capability counts and a narrow model
-// can't top the ranking by being scored on fewer axes.
-//   maxctx 30 · reasoning 15 · docqa 12 · triage 10 · toolcalling 10 · summarization 8  · speed 15
+// RX 7900 XT usable VRAM (MiB). Mirrors build-report.mjs / config/hosts.yaml.
+// Used to turn "VRAM used at max ctx" into free headroom for the score's amplifier.
+export const CARD_TOTAL_MIB = 20464;
+
+// The composite score is MULTIPLICATIVE, not a flat weighted sum:
+//
+//   score = toolGate × structGate × ((maxctx% + vramHeadroom%) / 2) × restScore
+//
+//   • toolGate / structGate  — hard gates in 0..1 (accuracy/conformance as a fraction).
+//                              Either at 0 (or absent) zeroes the whole score: a model
+//                              that can't tool-call or can't emit valid structured
+//                              output is unusable for this agentic use case.
+//   • amplifier  — average of max-ctx and free-VRAM-headroom, each as a % of the
+//                  fleet's best (0..1). Rewards long usable windows AND idle headroom.
+//   • restScore  — additive weighted sum of the remaining capability axes (below),
+//                  weights sum to 1.0, each normalized to 0..1.
+//
+// restScore keeps the FIXED-denominator rule: an axis a model didn't run contributes 0,
+// so breadth counts and a narrow model can't win by being scored on fewer axes.
+// DEFAULT_WEIGHTS holds ONLY the rest axes — toolcalling, struct_output, maxctx and
+// vram are structural multipliers, not entries here.
+//   reasoning 22 · triage 20 · summarization 18 · docqa 15 · speed 15 · degradation 10
 export const DEFAULT_WEIGHTS = {
-   maxctx: 0.3,
-   reasoning: 0.15,
-   docqa: 0.12,
-   triage: 0.1,
-   toolcalling: 0.1,
-   summarization: 0.08,
+   reasoning: 0.22,
+   triage: 0.2,
+   summarization: 0.18,
+   docqa: 0.15,
    speed: 0.15,
+   degradation: 0.1,
+};
+
+// Self-describing scoring shape for report.json + the chart subtitle (so the
+// displayed formula can never drift from the code).
+export const SCORING = {
+   formula: 'toolcalling × struct_output × (maxctx% + vram_headroom%)/2 × Σ(rest)',
+   gates: ['toolcalling', 'struct_output'],
+   amplifiers: ['maxctx', 'vram_headroom'],
+   rest_weights: DEFAULT_WEIGHTS,
 };
 
 // ── Filename ─────────────────────────────────────────────────────────────────
@@ -331,6 +354,10 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          const endToEnd = (P, pf) => (pf && speedTg ? (P + 512) / (P / pf + 512 / speedTg) : null);
          const total4k = endToEnd(4096, prefill4k);
          const total12k = endToEnd(12288, prefill12k);
+         // Single end-to-end throughput number that feeds the score's `speed` axis:
+         // mean of the 4k/12k totals (whichever exist), falling back to raw decode.
+         const e2e = [total4k, total12k].filter(Number.isFinite);
+         const totalE2E = e2e.length ? e2e.reduce((a, b) => a + b, 0) / e2e.length : speedTg;
          // Decode-speed degradation under context load: decode tok/s at depths,
          // shared across think variants (measured once per base model, think-independent).
          // Reference = the deepest measured depth ≤ 32k for cross-model comparison.
@@ -380,6 +407,7 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
             summ,
             docqa,
             speedTg,
+            totalE2E,
             prefill4k,
             prefill12k,
             total4k,
@@ -421,40 +449,58 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
       }
    }
 
+   const freeVram = (m) => (m.maxctxVram != null ? CARD_TOTAL_MIB - m.maxctxVram : null);
    const maxCtx = Math.max(...models.map((m) => m.maxctx ?? 0)) || 1;
    const maxSpeed = Math.max(...models.map((m) => m.speedTg ?? 0)) || 1;
+   const maxTotal = Math.max(...models.map((m) => m.totalE2E ?? 0)) || 1;
+   const maxFreeVram = Math.max(...models.map((m) => freeVram(m) ?? 0)) || 1;
 
-   // Normalize each weighted metric to 0-1. maxctx/speed are relative to the best
-   // observed; the quality benches are absolute (triage/reasoning/toolcalling/summ
-   // are 0-100, docqa is 0-10). Returns null when the model didn't run that metric.
-   const NORMALIZE = {
+   // ── Multiplicative score (see SCORING / DEFAULT_WEIGHTS comment above) ─────────
+   // restScore: additive weighted sum of capability axes. maxctx/speed are NOT in
+   // here (maxctx is an amplifier; speed uses end-to-end totalE2E). Quality benches
+   // are absolute (0-100, docqa 0-10); degradation is decode/quality retention.
+   const REST_NORMALIZE = {
       reasoning: (m) => (m.reasoning != null ? m.reasoning / 100 : null),
       triage: (m) => (m.triage != null ? m.triage / 100 : null),
-      toolcalling: (m) => (m.toolcall != null ? m.toolcall / 100 : null),
-      docqa: (m) => (m.docqa != null ? m.docqa / 10 : null),
       summarization: (m) => (m.summ != null ? m.summ / 100 : null),
-      maxctx: (m) => (m.maxctx != null ? m.maxctx / maxCtx : null),
-      speed: (m) => (m.speedTg != null ? m.speedTg / maxSpeed : null),
+      docqa: (m) => (m.docqa != null ? m.docqa / 10 : null),
+      speed: (m) => (m.totalE2E != null ? m.totalE2E / maxTotal : null),
+      degradation: (m) => {
+         // Mean of whichever retention %s exist (decode + quality-at-depth), 0-1.
+         const r = [m.decodeRetentionPct, m.qualityRetentionPct].filter(Number.isFinite);
+         return r.length ? Math.min(1, r.reduce((a, b) => a + b, 0) / r.length / 100) : null;
+      },
    };
-   // Fixed denominator: a model earns a metric's weighted points only if it ran
-   // that metric; a missing/failed metric contributes 0. This rewards breadth —
-   // a model that can't tool-call or wasn't validated on a bench is genuinely a
-   // less complete assistant, so it shouldn't out-rank a complete one by virtue
-   // of being scored on fewer (easier) axes. The per-metric columns show the gaps.
-   const finalScore = (m) => {
-      let score = 0;
+   // Fixed denominator inside restScore: an axis a model didn't run contributes 0,
+   // so breadth counts and a narrow model can't win on fewer axes.
+   const restScore = (m) => {
+      let s = 0;
       for (const [metric, w] of Object.entries(weights)) {
-         const v = NORMALIZE[metric]?.(m);
+         const v = REST_NORMALIZE[metric]?.(m);
          if (v != null && Number.isFinite(v)) {
-            score += w * v;
+            s += w * v;
          }
       }
-      return score;
+      return s;
    };
+   // Two hard gates (0..1): a model with no toolcalling / struct_output data, or a
+   // genuine 0, is zeroed — unusable as an agent regardless of other strengths.
+   const toolGate = (m) => (m.toolcall != null ? m.toolcall / 100 : 0);
+   const structGate = (m) => (m.structScore != null ? m.structScore / 100 : 0);
+   // Amplifier: average of max-ctx and free-VRAM headroom, each as % of fleet best.
+   // Average only over whichever of the two the model actually measured; 0 if neither.
+   const ctxAmp = (m) => {
+      const parts = [];
+      if (m.maxctx != null) parts.push(m.maxctx / maxCtx);
+      const fv = freeVram(m);
+      if (fv != null) parts.push(fv / maxFreeVram);
+      return parts.length ? parts.reduce((a, b) => a + b, 0) / parts.length : 0;
+   };
+   const finalScore = (m) => toolGate(m) * structGate(m) * ctxAmp(m) * restScore(m);
    for (const m of models) {
       m.score = Math.round(finalScore(m) * 1000) / 10;
    }
    const ranking = [...models].sort((a, b) => b.score - a.score);
 
-   return { models, ranking, maxCtx, maxSpeed, weights };
+   return { models, ranking, maxCtx, maxSpeed, maxTotal, maxFreeVram, weights };
 }

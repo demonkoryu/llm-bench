@@ -7,7 +7,7 @@
  *     generated:    ISO timestamp,
  *     sources:      [csv filenames],
  *     environment:  { host, gpu, backend },
- *     weights:      { quality, tools, ctx, speed },
+ *     scoring:      { formula, gates, amplifiers, rest_weights },
  *     models: [{ model, base_model, label, think, maxctx, maxctx_shared_from,
  *                benches: { triage, reasoning, toolcalling, docqa, summarization },
  *                speed_tok_s, quality, weighted_score }],
@@ -24,7 +24,7 @@ import { existsSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { aggregateModels, DEFAULT_WEIGHTS, latestResultsFile, loadCapabilities, readTable } from '../shared/results-csv.mjs';
+import { aggregateModels, latestResultsFile, loadCapabilities, readTable, SCORING } from '../shared/results-csv.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dir, '..');
@@ -84,7 +84,9 @@ const report = {
    generated: new Date().toISOString(),
    sources: inputs.map((p) => basename(p)),
    environment,
-   weights: DEFAULT_WEIGHTS,
+   // Multiplicative scoring: two hard gates × a context/VRAM amplifier × the
+   // weighted "rest" axes. See SCORING in shared/results-csv.mjs.
+   scoring: SCORING,
    models: models.map((m) => ({
       model: m.model,
       base_model: m.base_model,

@@ -19,7 +19,7 @@ import { existsSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { aggregateModels, latestResultsFile, loadCapabilities, readTable } from '../shared/results-csv.mjs';
+import { aggregateModels, latestResultsFile, loadCapabilities, readTable, SCORING } from '../shared/results-csv.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dir, '..');
@@ -38,7 +38,7 @@ if (!existsSync(inputPath)) {
    console.error(`Results file not found: ${inputPath}`);
    process.exit(1);
 }
-const { models, ranking, maxCtx, maxSpeed } = aggregateModels(readTable(inputPath));
+const { models, ranking, maxCtx } = aggregateModels(readTable(inputPath));
 const CAPS = loadCapabilities(join(ROOT, 'config/models.yaml'));
 
 if (!models.length) {
@@ -46,19 +46,15 @@ if (!models.length) {
    process.exit(0);
 }
 
-// Panel scales for the new speed metrics (prefill + end-to-end total).
-const maxPrefill = Math.max(...models.map((m) => Math.max(m.prefill4k ?? 0, m.prefill12k ?? 0)), 1);
-const maxTotal = Math.max(...models.map((m) => Math.max(m.total4k ?? 0, m.total12k ?? 0)), 1);
+// Panel scale for the surviving end-to-end throughput panel (12k+512 prompt).
+const maxTotal12k = Math.max(...models.map((m) => m.total12k ?? 0), 1);
 // Usable VRAM on the benchmark card (RX 7900 XT; see config/hosts.yaml). Free
 // VRAM at max ctx = this − used; high = model/coherence-bound, low = VRAM-bound.
 const CARD_TOTAL_MIB = 20464;
 const vramFree = (m) => (m.maxctxVram != null ? CARD_TOTAL_MIB - m.maxctxVram : null);
+const maxFreeVram = Math.max(...models.map((m) => vramFree(m) ?? 0), 1);
 // Decode-speed degradation under context load.
-const maxDecodeRef = Math.max(...models.map((m) => m.decodeRef ?? 0), 1);
 const maxRetention = Math.max(...models.map((m) => m.decodeRetentionPct ?? 0), 100);
-// Parallel-generation throughput.
-const maxPargenAgg = Math.max(...models.map((m) => m.pargenAggMax ?? 0), 1);
-const maxPargenSpeedup = Math.max(...models.map((m) => m.pargenSpeedup ?? 0), 1);
 const maxPowerEff = Math.max(...models.map((m) => m.powerEff ?? 0), 0.1);
 
 // Colors are presentation-only; assign per model after aggregation.
@@ -156,141 +152,93 @@ const rankItems = ranked.map((r, i) => ({
    max: 100,
    displayVal: `${r.score.toFixed(1)}%`,
 }));
-svg += barPanel(
-   PAD.left,
-   rankY,
-   WIDE_W,
-   'Overall Ranking',
-   'max-ctx 30% · reasoning 15% · docqa 12% · triage 10% · toolcalling 10% · summarization 8% · speed 15%',
-   rankItems,
-);
+// Subtitle is derived from the SCORING export so it can never drift from the code.
+const restLabels = { reasoning: 'reasoning', triage: 'triage', summarization: 'summ', docqa: 'docqa', speed: 'speed', degradation: 'degrade' };
+const restStr = Object.entries(SCORING.rest_weights)
+   .map(([k, w]) => `${restLabels[k] ?? k} ${w.toFixed(2).replace(/^0/, '')}`)
+   .join(' · ');
+const scoreSubtitle = `score = toolcalling × struct-output × (maxctx% + vram-headroom%)/2 × Σ(${restStr})`;
+svg += barPanel(PAD.left, rankY, WIDE_W, 'Overall Ranking', scoreSubtitle, rankItems);
 
 // ── Per-metric grid (one panel per scored metric — no blending) ──────────────────
 const METRIC_PANELS = [
+   // ── Rest axes (additive weighted sum, weights sum to 1.0) ──
    {
       title: 'Reasoning accuracy',
-      weight: '15%',
+      weight: '×0.22 (rest)',
       getValue: (m) => m.reasoning,
       formatVal: (v) => (v != null ? `${v.toFixed(0)}%` : '–'),
       getMax: () => 100,
    },
    {
       title: 'Triage score (/100)',
-      weight: '10%',
+      weight: '×0.20 (rest)',
       getValue: (m) => m.triage,
       formatVal: (v) => (v != null ? v.toFixed(0) : '–'),
       getMax: () => 100,
    },
    {
-      title: 'Tool-call accuracy',
-      weight: '10%',
-      getValue: (m) => m.toolcall,
-      formatVal: (v) => (v != null ? `${v.toFixed(0)}%` : 'n/a'),
-      getMax: () => 100,
-   },
-   {
-      title: 'DocQA comprehension (/10)',
-      weight: '12%',
-      getValue: (m) => m.docqa,
-      formatVal: (v) => (v != null ? v.toFixed(1) : '–'),
-      getMax: () => 10,
-   },
-   {
       title: 'Summarization score (/100)',
-      weight: '8%',
+      weight: '×0.18 (rest)',
       getValue: (m) => m.summ,
       formatVal: (v) => (v != null ? v.toFixed(0) : '–'),
       getMax: () => 100,
    },
    {
+      title: 'DocQA comprehension (/10)',
+      weight: '×0.15 (rest)',
+      getValue: (m) => m.docqa,
+      formatVal: (v) => (v != null ? v.toFixed(1) : '–'),
+      getMax: () => 10,
+   },
+   {
+      title: 'End-to-end throughput — 12k+512 (tok/s)',
+      weight: '×0.15 (rest)',
+      getValue: (m) => m.total12k,
+      formatVal: (v) => (v != null ? `${v.toFixed(0)} t/s` : '?'),
+      getMax: () => maxTotal12k,
+   },
+   {
+      title: 'Decode retention @ ~32k ctx (% of base)',
+      weight: '×0.10 (rest)',
+      getValue: (m) => m.decodeRetentionPct,
+      formatVal: (v) => (v != null ? `${v.toFixed(0)}%` : '?'),
+      getMax: () => maxRetention,
+   },
+   // ── Hard gates (0 → total score 0) ──
+   {
+      title: 'Tool-call accuracy',
+      weight: '×gate',
+      getValue: (m) => m.toolcall,
+      formatVal: (v) => (v != null ? `${v.toFixed(0)}%` : 'n/a'),
+      getMax: () => 100,
+   },
+   {
+      title: 'Structured-output reliability (schema-conformant %)',
+      weight: '×gate',
+      getValue: (m) => m.structScore,
+      formatVal: (v) => (v != null ? `${v.toFixed(0)}%` : '?'),
+      getMax: () => 100,
+   },
+   // ── Context/VRAM amplifier (averaged, % of fleet best) ──
+   {
       title: 'Max Context (tokens, coherence-verified)',
-      weight: '30%',
+      weight: '×amp',
       getValue: (m) => m.maxctx,
       formatVal: (v) => (v != null ? (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)) : '?'),
       getMax: () => maxCtx,
    },
    {
-      title: 'Generation / Decode Speed (tok/s)',
-      weight: '15%',
-      getValue: (m) => m.speedTg,
-      formatVal: (v) => (v != null ? `${v.toFixed(0)} t/s` : '?'),
-      getMax: () => maxSpeed,
-   },
-   {
-      title: 'Prefill Speed — 4k prompt (tok/s)',
-      weight: '—',
-      getValue: (m) => m.prefill4k,
-      formatVal: (v) => (v != null ? `${v.toFixed(0)} t/s` : '?'),
-      getMax: () => maxPrefill,
-   },
-   {
-      title: 'Prefill Speed — 12k prompt (tok/s)',
-      weight: '—',
-      getValue: (m) => m.prefill12k,
-      formatVal: (v) => (v != null ? `${v.toFixed(0)} t/s` : '?'),
-      getMax: () => maxPrefill,
-   },
-   {
-      title: 'Total / End-to-End — 4k+512 (tok/s)',
-      weight: '—',
-      getValue: (m) => m.total4k,
-      formatVal: (v) => (v != null ? `${v.toFixed(0)} t/s` : '?'),
-      getMax: () => maxTotal,
-   },
-   {
-      title: 'Total / End-to-End — 12k+512 (tok/s)',
-      weight: '—',
-      getValue: (m) => m.total12k,
-      formatVal: (v) => (v != null ? `${v.toFixed(0)} t/s` : '?'),
-      getMax: () => maxTotal,
-   },
-   {
-      title: 'Free VRAM at max ctx (MiB)',
-      weight: 'headroom',
+      title: 'Free VRAM at max ctx (headroom)',
+      weight: '×amp',
       getValue: (m) => vramFree(m),
       formatVal: (v) => (v != null ? `${(v / 1024).toFixed(1)} GB` : '?'),
-      getMax: () => CARD_TOTAL_MIB,
+      getMax: () => maxFreeVram,
    },
-   {
-      title: 'Decode @ ~32k ctx (tok/s) — under load',
-      weight: 'degrade',
-      getValue: (m) => m.decodeRef,
-      formatVal: (v) => (v != null ? `${v.toFixed(0)} t/s` : '?'),
-      getMax: () => maxDecodeRef,
-   },
-   {
-      title: 'Decode retention @ ~32k ctx (% of base)',
-      weight: 'degrade',
-      getValue: (m) => m.decodeRetentionPct,
-      formatVal: (v) => (v != null ? `${v.toFixed(0)}%` : '?'),
-      getMax: () => maxRetention,
-   },
-   {
-      title: 'Aggregate decode @ 8 parallel slots (tok/s)',
-      weight: 'parallel',
-      getValue: (m) => m.pargenAggMax,
-      formatVal: (v) => (v != null ? `${v.toFixed(0)} t/s` : '?'),
-      getMax: () => maxPargenAgg,
-   },
-   {
-      title: 'Parallel batching speedup (8 slots vs 1)',
-      weight: 'parallel',
-      getValue: (m) => m.pargenSpeedup,
-      formatVal: (v) => (v != null ? `${v.toFixed(2)}×` : '?'),
-      getMax: () => maxPargenSpeedup,
-   },
-   // NOTE: quality-retention panel deferred — the deep quality-at-depth run is
-   // pending (tonight). Re-add here once quality_decay rows exist.
-   {
-      title: 'Structured-output reliability (schema-conformant %)',
-      weight: 'quality',
-      getValue: (m) => m.structScore,
-      formatVal: (v) => (v != null ? `${v.toFixed(0)}%` : '?'),
-      getMax: () => 100,
-   },
+   // ── Reported-only (not in the score) ──
    {
       title: 'Power efficiency (decode tok/s per watt)',
-      weight: 'efficiency',
+      weight: 'reported',
       getValue: (m) => m.powerEff,
       formatVal: (v) => (v != null ? `${v.toFixed(2)} t/s/W` : '?'),
       getMax: () => maxPowerEff,
