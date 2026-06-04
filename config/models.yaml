@@ -20,6 +20,13 @@
 #   kv_bytes_per_token  Q8_0 KV cache bytes per input token (used to estimate hi bound)
 #   extra_flags      Server-launch-only flags (speculative decoding, backend tweaks).
 #                    NO sampling keys here — those belong exclusively in sampling_matrix.
+#                    Batch sizing is global in scripts/llm2/start-server.sh: -b 2048 -ub 2048.
+#                    The micro-batch was bumped 512→2048 (commit f9b559f): on the Vulkan
+#                    backend -ub 512 throttles prefill ~6× (per-ubatch submit-sync cost),
+#                    so 2048 matches llama-bench. Costs ~550 MiB extra VRAM on a 14B.
+#                    To override per-model when ub2048 OOMs at max ctx (e.g. 30B MoE), add
+#                    extra_flags: { ub: 1024 } — start-server.sh appends extra_flags after
+#                    its defaults and llama.cpp honors the last occurrence.
 #   benches          Applicable benchmark suites:
 #                      triage | reasoning | toolcalling | toolcalling_decay | longctx
 #                      summarization | speed | maxctx | docqa
@@ -41,7 +48,7 @@ models:
      kv_bytes_per_token: 49152
      extra_flags: {}
      benches: [triage, toolcalling, summarization, docqa, speed, maxctx]
-     notes: "No think mode. repeat_penalty in sampling_matrix."
+     notes: "No think mode. repeat_penalty in sampling_matrix. If ub2048 OOMs at max ctx, set extra_flags: { ub: 1024 }."
 
    # ── Qwen3-30B-A3B-Instruct-2507 ──────────────────────────────────────────────
    # Non-thinking only: 2507-Instruct never emits <think> blocks.
@@ -57,6 +64,7 @@ models:
      kv_bytes_per_token: 49152
      extra_flags: {}
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
+     notes: "If ub2048 OOMs at max ctx, set extra_flags: { ub: 1024 }."
 
    - hf_repo: unsloth/Qwen3-30B-A3B-Instruct-2507-GGUF
      hf_file: Qwen3-30B-A3B-Instruct-2507-IQ4_XS.gguf
