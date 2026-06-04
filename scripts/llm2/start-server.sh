@@ -108,14 +108,17 @@ if [[ "$extra_flags" == *"--reasoning-format"* ]]; then
    rf_flag=""
 fi
 
-# Launch llama-server
+# Launch llama-server.
+# NOTE: batch sizing (-b / -ub) is intentionally NOT set here — it comes per-model
+# from config/models.yaml extra_flags (every entry carries batch-size:2048
+# ubatch-size:2048). Without it llama.cpp defaults to -ub 512, which throttles Vulkan
+# prefill ~6x. See models.yaml.
 cmd="nohup $BIN $model_args \
    -c $ctx \
    -ngl $ngl \
    --cache-type-k q8_0 --cache-type-v q8_0 \
    -fa on \
    -np 1 \
-   -b 2048 -ub 2048 \
    --jinja \
    $rf_flag \
    --host 0.0.0.0 --port $port \

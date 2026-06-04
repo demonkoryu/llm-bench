@@ -20,13 +20,16 @@
 #   kv_bytes_per_token  Q8_0 KV cache bytes per input token (used to estimate hi bound)
 #   extra_flags      Server-launch-only flags (speculative decoding, backend tweaks).
 #                    NO sampling keys here — those belong exclusively in sampling_matrix.
-#                    Batch sizing is global in scripts/llm2/start-server.sh: -b 2048 -ub 2048.
-#                    The micro-batch was bumped 512→2048 (commit f9b559f): on the Vulkan
-#                    backend -ub 512 throttles prefill ~6× (per-ubatch submit-sync cost),
-#                    so 2048 matches llama-bench. Costs ~550 MiB extra VRAM on a 14B.
-#                    To override per-model when ub2048 OOMs at max ctx (e.g. 30B MoE), add
-#                    extra_flags: { ub: 1024 } — start-server.sh appends extra_flags after
-#                    its defaults and llama.cpp honors the last occurrence.
+#                    Batch sizing lives here per-model: every entry carries
+#                    batch-size: 2048, ubatch-size: 2048. (Use the long-form keys — the
+#                    flag builder prepends '--', and llama.cpp rejects --b / --ub; only
+#                    -b/-ub or --batch-size/--ubatch-size are valid.)
+#                    The micro-batch must stay 2048 (NOT llama.cpp's default 512): on the
+#                    Vulkan backend -ub 512 throttles prefill ~6× (per-ubatch submit-sync
+#                    cost); 2048 matches llama-bench and costs ~550 MiB extra VRAM on a 14B.
+#                    start-server.sh sets NO batch defaults — if a new model omits these
+#                    flags it silently regresses to -ub 512, so copy them onto every entry.
+#                    For a 30B MoE that OOMs at max ctx, drop the entry to ubatch-size: 1024.
 #   benches          Applicable benchmark suites:
 #                      triage | reasoning | toolcalling | toolcalling_decay | longctx
 #                      summarization | speed | maxctx | docqa
@@ -46,9 +49,9 @@ models:
      tools: true
      native_max_ctx: 262144
      kv_bytes_per_token: 49152
-     extra_flags: {}
+     extra_flags: { batch-size: 2048, ubatch-size: 2048 }
      benches: [triage, toolcalling, summarization, docqa, speed, maxctx]
-     notes: "No think mode. repeat_penalty in sampling_matrix. If ub2048 OOMs at max ctx, set extra_flags: { ub: 1024 }."
+     notes: "No think mode. repeat_penalty in sampling_matrix. If ub2048 OOMs at max ctx, set ubatch-size: 1024."
 
    # ── Qwen3-30B-A3B-Instruct-2507 ──────────────────────────────────────────────
    # Non-thinking only: 2507-Instruct never emits <think> blocks.
@@ -62,9 +65,9 @@ models:
      tools: true
      native_max_ctx: 262144
      kv_bytes_per_token: 49152
-     extra_flags: {}
+     extra_flags: { batch-size: 2048, ubatch-size: 2048 }
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
-     notes: "If ub2048 OOMs at max ctx, set extra_flags: { ub: 1024 }."
+     notes: "If ub2048 OOMs at max ctx, set ubatch-size: 1024."
 
    - hf_repo: unsloth/Qwen3-30B-A3B-Instruct-2507-GGUF
      hf_file: Qwen3-30B-A3B-Instruct-2507-IQ4_XS.gguf
@@ -76,7 +79,7 @@ models:
      native_max_ctx: 262144
      ctx_cap: 81920
      kv_bytes_per_token: 49152
-     extra_flags: {}
+     extra_flags: { batch-size: 2048, ubatch-size: 2048 }
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
    # ── Qwen3-14B Q5_K_M ────────────────────────────────────────────────────────
@@ -92,7 +95,7 @@ models:
      native_max_ctx: 32768
      ctx_cap: 40960
      kv_bytes_per_token: 24576
-     extra_flags: {}
+     extra_flags: { batch-size: 2048, ubatch-size: 2048 }
      benches: [triage, reasoning, toolcalling, toolcalling_decay, summarization, docqa, speed, maxctx]
 
    # ── Qwen3.6-35B-A3B IQ4_XS ──────────────────────────────────────────────────
@@ -109,6 +112,8 @@ models:
      native_max_ctx: 262144
      kv_bytes_per_token: 49152
      extra_flags:
+        batch-size: 2048
+        ubatch-size: 2048
         spec-type: draft-mtp
         spec-draft-n-max: 4
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
@@ -130,7 +135,7 @@ models:
      kv_bytes_per_token: 16384
      # b9496 auto-loads a vision projector for gemma4 → clip.cpp "Unknown projector
      # type" abort on load. We benchmark text-only, so disable it.
-     extra_flags: { "no-mmproj": true }
+     extra_flags: { "no-mmproj": true, batch-size: 2048, ubatch-size: 2048 }
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
    - hf_repo: unsloth/gemma-4-E4B-it-GGUF
@@ -143,7 +148,7 @@ models:
      tools: true
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
-     extra_flags: { "no-mmproj": true }   # see Q8 note: skip gemma4 vision projector (text-only)
+     extra_flags: { "no-mmproj": true, batch-size: 2048, ubatch-size: 2048 }   # see Q8 note: skip gemma4 vision projector (text-only)
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
    # ── Gemma4-26B-A4B ───────────────────────────────────────────────────────────
@@ -159,7 +164,7 @@ models:
      tools: true
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
-     extra_flags: { "no-mmproj": true }   # see E4B Q8 note: skip gemma4 vision projector (text-only)
+     extra_flags: { "no-mmproj": true, batch-size: 2048, ubatch-size: 2048 }   # see E4B Q8 note: skip gemma4 vision projector (text-only)
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
    # ── Gemma4-12B (dense "unified" — encoder-free multimodal, run text-only) ──────
@@ -178,7 +183,7 @@ models:
      # bound the search at the real trained length rather than probing dead range.
      native_max_ctx: 131072
      kv_bytes_per_token: 16384
-     extra_flags: { "no-mmproj": true }   # see E4B Q8 note: skip gemma4 vision projector (text-only)
+     extra_flags: { "no-mmproj": true, batch-size: 2048, ubatch-size: 2048 }   # see E4B Q8 note: skip gemma4 vision projector (text-only)
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
    # ── LFM2.5-8B-A1B ────────────────────────────────────────────────────────────
@@ -194,7 +199,7 @@ models:
      native_max_ctx: 128000
      ctx_cap: 131072
      kv_bytes_per_token: 8192
-     extra_flags: {}
+     extra_flags: { batch-size: 2048, ubatch-size: 2048 }
      benches: [reasoning, toolcalling, summarization, docqa, speed, maxctx]
      notes: "reasoning_content merged by llm client. repeat_penalty in sampling_matrix."
 
@@ -210,7 +215,7 @@ models:
      tools: true
      native_max_ctx: 200000
      kv_bytes_per_token: 16384
-     extra_flags: {}
+     extra_flags: { batch-size: 2048, ubatch-size: 2048 }
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
    # ── Granite-4.0-H-Tiny (MoE 7B-A1B, mamba-hybrid) ─────────────────────────────
@@ -224,7 +229,7 @@ models:
      tools: true
      native_max_ctx: 128000
      kv_bytes_per_token: 8192
-     extra_flags: {}
+     extra_flags: { batch-size: 2048, ubatch-size: 2048 }
      benches: [triage, toolcalling, summarization, docqa, speed, maxctx]
 
    # ── Nemotron-3-Nano-4B (mamba-hybrid) ─────────────────────────────────────────
@@ -243,7 +248,7 @@ models:
      no_schema: true
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
-     extra_flags: {}
+     extra_flags: { batch-size: 2048, ubatch-size: 2048 }
      benches: [triage, reasoning, summarization, docqa, speed, maxctx]
 
    # ── GLM-4.1V-9B-Thinking (vision-LM, run text-only) ───────────────────────────
@@ -257,7 +262,7 @@ models:
      tools: true
      native_max_ctx: 65536
      kv_bytes_per_token: 16384
-     extra_flags: {}
+     extra_flags: { batch-size: 2048, ubatch-size: 2048 }
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
 
