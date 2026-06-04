@@ -564,6 +564,7 @@ async function runDocqa(client, model, thinkState) {
    return { score: mean_score.toFixed(2), halls: trapHits, json_fail: '-', tok_s: '-', wall_s: '-' };
 }
 
+let _speedNonce = 0; // increments across passes to keep each prefill probe cache-cold
 async function runSpeed(client) {
    const SHORT_PROMPT = 'Tell me a single short sentence about the sky.';
    const LONG_PROMPT =
@@ -605,6 +606,12 @@ async function runSpeed(client) {
       const label = `prefill-${Math.round(promptTokens / 1024)}k`;
       try {
          const built = makeFillPrompt(promptTokens);
+         // Bust the server KV prefix cache: makeFillPrompt is deterministic, so the
+         // identical prompt across think/no_think passes would cache-hit and report
+         // a bogus (tiny-processed) prefill rate. A unique leading nonce forces a
+         // full fresh prefill every time.
+         const um = built.messages[built.messages.length - 1];
+         um.content = `// prefill probe ${(_speedNonce += 1)}\n${um.content}`;
          await client.chat(built.messages, { think: null, max_tokens: 8, temperature: 0.0 }, 300_000);
          rows.push({ label, decodeTps: client.tokPerSec(), prefillTps: client.prefillTokPerSec() });
       } catch (e) {
