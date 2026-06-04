@@ -47,7 +47,7 @@ if (!existsSync(input)) {
    process.exit(1);
 }
 const rows = readTable(input);
-const { models } = aggregateModels(rows);
+const { models, ranking } = aggregateModels(rows);
 
 // VRAM used at ctx=16384 by a SINGLE sequence, captured by the speed re-run
 // (ctx_loaded == 16384). speed_pargen rows allocate KV for up to 8 concurrent
@@ -64,6 +64,15 @@ for (const r of rows) {
 
 // Architecture identity = base model with the quant suffix stripped.
 const identityOf = (base) => base.replace(/(-UD)?-I?Q\d[\w.]*$/i, '');
+
+// Top-5 overall finishers from the main chart, mapped to architectures (this view
+// collapses quant/think variants to one row per architecture, so a variant-level
+// top-5 maps to the best rank its architecture achieved). Drives the star badges.
+const rankByArch = new Map();
+ranking.slice(0, 5).forEach((m, i) => {
+   const a = identityOf(m.base_model);
+   if (!rankByArch.has(a)) rankByArch.set(a, i); // keep the best (lowest) rank
+});
 
 // Collapse to one entry per architecture: keep the best-quality benchmarked quant.
 const byIdent = new Map();
@@ -163,6 +172,20 @@ const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 const T = (x, y, s, { fill = TEXT, size = 12, w = 'normal', anchor = 'start', mono = false } = {}) =>
    `<text x="${x}" y="${y}" fill="${fill}" font-size="${size}" font-weight="${w}" text-anchor="${anchor}" font-family="${mono ? "'Consolas','Courier New',monospace" : "'Segoe UI',Arial,sans-serif"}">${esc(s)}</text>`;
 const R = (x, y, w, h, fill, rx = 0) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" rx="${rx}"/>`;
+const STAR_GOLD = '#ffd54a';
+const STAR_DIM = '#4a4a57';
+// 5-star overall-rank badge (gold = 5 - rankIdx), right-aligned on a dark pill.
+const starBadge = (rightX, midY, earned) => {
+   const step = 10;
+   const padX = 5;
+   const w = 5 * step + padX * 2 - 2;
+   const x0 = rightX - w;
+   let s = R(x0, midY - 9, w, 17, '#0a0a0e', 4);
+   for (let k = 0; k < 5; k++) {
+      s += T(x0 + padX + k * step, midY + 4, '★', { fill: k < earned ? STAR_GOLD : STAR_DIM, size: 12 });
+   }
+   return s;
+};
 
 const W = 1120;
 const tableTop = 92;
@@ -172,7 +195,10 @@ const H = setupsTop + 28 + setups.length * tableRowH + 50;
 
 let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}"><rect width="${W}" height="${H}" fill="${BG}"/>`;
 svg += T(28, 38, 'LLM Fleet Planner — VRAM @ max ctx (RX 7900 XT · 20 GiB · Vulkan)', { fill: ACCENT, size: 18, w: '700' });
-svg += T(28, 58, `Card ${gb(CARD_TOTAL_MIB)} GB usable · quality = weighted score · fit× = card ÷ footprint at max ctx`, { fill: DIM, size: 11 });
+svg += T(28, 58, `Card ${gb(CARD_TOTAL_MIB)} GB usable · quality = weighted score · fit× = card ÷ footprint at max ctx · ★★★★★ = top-5 overall (gold stars = rank; quants collapsed to best)`, {
+   fill: DIM,
+   size: 11,
+});
 
 // ── Table 1: per-model footprint + efficiency ──
 svg += T(28, tableTop - 8, 'Per-model footprint & memory efficiency at max ctx', { fill: '#a0a0c0', size: 13, w: '600' });
@@ -195,6 +221,7 @@ fleet.forEach((m, i) => {
       const fill = c.label === '% card' ? fpFill : c.label === 'Quality' ? ACCENT : TEXT;
       svg += T(c.x, y, c.get(m), { fill, size: 11, anchor: c.anchor, mono: c.label !== 'Model' });
    }
+   if (rankByArch.has(m.id)) svg += starBadge(W - 30, y - 3, 5 - rankByArch.get(m.id));
 });
 
 // ── Table 2: best single-model setups (weights once · main + scratchpad) ──
@@ -225,6 +252,7 @@ setups.forEach((s, i) => {
       else if (c.label === 'Note') fill = scratchOK ? DIM : WARN;
       svg += T(c.x, y, c.get(s), { fill, size: 11, anchor: c.anchor, mono: c.label !== 'Model' && c.label !== 'Note' });
    }
+   if (rankByArch.has(s.id)) svg += starBadge(W - 30, y - 3, 5 - rankByArch.get(s.id));
 });
 svg += '</svg>';
 
