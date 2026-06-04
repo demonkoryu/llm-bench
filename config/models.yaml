@@ -120,7 +120,9 @@ models:
      tools: true   # native function-calling (Google docs list gemma-4-E4B-it)
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
-     extra_flags: {}
+     # b9496 auto-loads a vision projector for gemma4 → clip.cpp "Unknown projector
+     # type" abort on load. We benchmark text-only, so disable it.
+     extra_flags: { "no-mmproj": true }
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
    - hf_repo: unsloth/gemma-4-E4B-it-GGUF
@@ -133,7 +135,7 @@ models:
      tools: true
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
-     extra_flags: {}
+     extra_flags: { "no-mmproj": true }   # see Q8 note: skip gemma4 vision projector (text-only)
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
    # ── Gemma4-26B-A4B ───────────────────────────────────────────────────────────
@@ -149,7 +151,7 @@ models:
      tools: true
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
-     extra_flags: {}
+     extra_flags: { "no-mmproj": true }   # see E4B Q8 note: skip gemma4 vision projector (text-only)
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
    # ── Gemma4-12B (dense "unified" — encoder-free multimodal, run text-only) ──────
@@ -168,7 +170,7 @@ models:
      # bound the search at the real trained length rather than probing dead range.
      native_max_ctx: 131072
      kv_bytes_per_token: 16384
-     extra_flags: {}
+     extra_flags: { "no-mmproj": true }   # see E4B Q8 note: skip gemma4 vision projector (text-only)
      benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
 
    # ── LFM2.5-8B-A1B ────────────────────────────────────────────────────────────
