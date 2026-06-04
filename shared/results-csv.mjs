@@ -265,6 +265,22 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          const speedTg =
             Math.max(latestScore(rs, 'speed_short') ?? 0, latestScore(rs, 'speed_long-32k') ?? 0, latestScore(rs, 'speed') ?? 0) ||
             null;
+         // Real prefill throughput (prompt processing) from large-prompt probes —
+         // newest value of the prefill_tps column for each probe bench.
+         const latestField = (bench, field) => {
+            const m = rs
+               .filter((r) => r.bench === bench)
+               .map((r) => parseFloat(r[field]))
+               .filter(Number.isFinite);
+            return m.length ? m[m.length - 1] : null;
+         };
+         const prefill4k = latestField('speed_prefill-4k', 'prefill_tps');
+         const prefill12k = latestField('speed_prefill-12k', 'prefill_tps');
+         // End-to-end throughput for a representative request: P-token prompt +
+         // 512 generated tokens. time = P/prefill + 512/decode; total = (P+512)/time.
+         const endToEnd = (P, pf) => (pf && speedTg ? (P + 512) / (P / pf + 512 / speedTg) : null);
+         const total4k = endToEnd(4096, prefill4k);
+         const total12k = endToEnd(12288, prefill12k);
          return {
             label: `${model}${think !== 'n/a' ? ` [${think}]` : ''}`,
             model,
@@ -277,6 +293,10 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
             summ,
             docqa,
             speedTg,
+            prefill4k,
+            prefill12k,
+            total4k,
+            total12k,
          };
       })
       .filter((m) => m.maxctx || m.triage || m.speedTg);

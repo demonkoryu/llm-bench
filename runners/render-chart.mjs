@@ -46,6 +46,10 @@ if (!models.length) {
    process.exit(0);
 }
 
+// Panel scales for the new speed metrics (prefill + end-to-end total).
+const maxPrefill = Math.max(...models.map((m) => Math.max(m.prefill4k ?? 0, m.prefill12k ?? 0)), 1);
+const maxTotal = Math.max(...models.map((m) => Math.max(m.total4k ?? 0, m.total12k ?? 0)), 1);
+
 // Colors are presentation-only; assign per model after aggregation.
 const COLORS = [
    '#5ab4fa',
@@ -87,7 +91,7 @@ const TITLE_H = 32;
 const N = models.length;
 const PANEL_H = N * ROW_H + 8;
 
-const GRID_PANELS = 7; // one per scored metric (must match METRIC_PANELS.length below)
+const GRID_PANELS = 11; // one per metric panel (must match METRIC_PANELS.length below)
 const GRID_ROWS = Math.ceil(GRID_PANELS / 2);
 const GRID_H = GRID_ROWS * (TITLE_H + PANEL_H + 28);
 const TABLE_H = (N + 3) * 22 + 20;
@@ -195,11 +199,39 @@ const METRIC_PANELS = [
       getMax: () => maxCtx,
    },
    {
-      title: 'Decode Speed (tok/s)',
+      title: 'Generation / Decode Speed (tok/s)',
       weight: '15%',
       getValue: (m) => m.speedTg,
       formatVal: (v) => (v != null ? `${v.toFixed(0)} t/s` : '?'),
       getMax: () => maxSpeed,
+   },
+   {
+      title: 'Prefill Speed — 4k prompt (tok/s)',
+      weight: '—',
+      getValue: (m) => m.prefill4k,
+      formatVal: (v) => (v != null ? `${v.toFixed(0)} t/s` : '?'),
+      getMax: () => maxPrefill,
+   },
+   {
+      title: 'Prefill Speed — 12k prompt (tok/s)',
+      weight: '—',
+      getValue: (m) => m.prefill12k,
+      formatVal: (v) => (v != null ? `${v.toFixed(0)} t/s` : '?'),
+      getMax: () => maxPrefill,
+   },
+   {
+      title: 'Total / End-to-End — 4k+512 (tok/s)',
+      weight: '—',
+      getValue: (m) => m.total4k,
+      formatVal: (v) => (v != null ? `${v.toFixed(0)} t/s` : '?'),
+      getMax: () => maxTotal,
+   },
+   {
+      title: 'Total / End-to-End — 12k+512 (tok/s)',
+      weight: '—',
+      getValue: (m) => m.total12k,
+      formatVal: (v) => (v != null ? `${v.toFixed(0)} t/s` : '?'),
+      getMax: () => maxTotal,
    },
 ];
 

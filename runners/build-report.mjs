@@ -97,7 +97,11 @@ const report = {
       // capabilities: distinguishes "unsupported" from "not measured" downstream
       capabilities: { tools: caps.get(m.base_model)?.tools ?? null },
       capability_note: caps.get(m.base_model)?.note ?? null,
+      // speed: generation (decode) tok/s, real prefill tok/s on 4k/12k prompts,
+      // and end-to-end throughput (P-token prompt + 512 gen) for each prompt size.
       speed_tok_s: m.speedTg,
+      prefill_tok_s: { '4k': m.prefill4k, '12k': m.prefill12k },
+      total_tok_s: { '4k': m.total4k, '12k': m.total12k },
       weighted_score: m.score,
    })),
    ranking: ranking.map((m, i) => ({
@@ -117,7 +121,11 @@ const report = {
          ['docqa', (m) => m.docqa],
          ['summarization', (m) => m.summ],
          ['maxctx', (m) => m.maxctx],
-         ['speed_tok_s', (m) => m.speedTg],
+         ['generation_tok_s', (m) => m.speedTg],
+         ['prefill_tok_s_4k', (m) => m.prefill4k],
+         ['prefill_tok_s_12k', (m) => m.prefill12k],
+         ['total_tok_s_4k', (m) => m.total4k],
+         ['total_tok_s_12k', (m) => m.total12k],
       ].map(([category, get]) => [
          category,
          models
