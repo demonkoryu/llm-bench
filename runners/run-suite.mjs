@@ -41,6 +41,7 @@ const { values: flags } = parseArgs({
       models: { type: 'string', default: '' },
       benches: { type: 'string', default: '' },
       'skip-maxctx': { type: 'boolean', default: false },
+      ctx: { type: 'string' }, // with --skip-maxctx: start server at this fixed ctx (skip the search)
       'dry-run': { type: 'boolean', default: false },
       resume: { type: 'boolean', default: false },
       debug: { type: 'boolean', default: false },
@@ -106,6 +107,7 @@ const toolGrader = (await import('../benchmarks/toolcalling/grader.mjs')).defaul
 const summGrader = (await import('../benchmarks/summarization/grader.mjs')).default;
 const { SUMM_ITEMS } = await import('../benchmarks/summarization/summcases.mjs');
 const { gradeAll: docqaGradeAll } = await import('../benchmarks/docqa/grader.mjs');
+const { makeFillPrompt } = await import('../shared/codebase.mjs');
 const docqaCases = JSON.parse(readFileSync(join(ROOT, 'benchmarks/docqa/cases.json'), 'utf8'));
 
 // ── Model helpers ──────────────────────────────────────────────────────────────
@@ -593,6 +595,23 @@ async function runSpeed(client) {
       rows.push({ label, decodeTps, prefillTps, wallMs: Date.now() - t0, tokens: completion.usage?.completion_tokens ?? 0 });
       warnRunaway(`speed/${label}`, label, completion);
    }
+
+   // Real prefill throughput on large prompts. The short/long runs above use tiny
+   // prompts (~10–30 tokens), so their prefill_tps is dominated by fixed overhead
+   // and not representative. Here we prefill a large synthetic codebase prompt and
+   // read the prompt-processing rate (max_tokens tiny — we only want prefill).
+   // Requires the server ctx ≥ the largest prompt (run with --skip-maxctx --ctx 16384).
+   for (const promptTokens of [4096, 12288]) {
+      const label = `prefill-${Math.round(promptTokens / 1024)}k`;
+      try {
+         const built = makeFillPrompt(promptTokens);
+         await client.chat(built.messages, { think: null, max_tokens: 8, temperature: 0.0 }, 300_000);
+         rows.push({ label, decodeTps: client.tokPerSec(), prefillTps: client.prefillTokPerSec() });
+      } catch (e) {
+         console.error(`    speed/${label} error: ${e.message}`);
+         rows.push({ label, error: e.message });
+      }
+   }
    return rows;
 }
 
@@ -758,10 +777,12 @@ for (const model of models) {
    // ── Max-ctx binary search ─────────────────────────────────────────────────
    let ctxLoaded, oomCeiling, coherenceCeiling, vramMib;
    if (SKIP_MAXCTX) {
-      ctxLoaded = model.ctx_cap ?? model.native_max_ctx ?? 8192;
+      // --ctx forces a fixed window (skips the slow search) — used by the speed-only
+      // re-run so the server starts fast at a size that fits every model.
+      ctxLoaded = flags.ctx ? Number(flags.ctx) : (model.ctx_cap ?? model.native_max_ctx ?? 8192);
       oomCeiling = ctxLoaded;
       coherenceCeiling = ctxLoaded;
-      console.log(`  [maxctx] skipped — using ${ctxLoaded} (ctx_cap or native_max_ctx)`);
+      console.log(`  [maxctx] skipped — using ${ctxLoaded} (${flags.ctx ? '--ctx' : 'ctx_cap or native_max_ctx'})`);
    } else {
       try {
          ({ ctxLoaded, oomCeiling, coherenceCeiling, vramMib } = await srv.startForModel(model));
