@@ -128,6 +128,58 @@ export function extractJson(s) {
 }
 
 /**
+ * Extract a source-code block from a model response — the code analogue of
+ * extractJson. Reusable across products that ask a model for code and then run
+ * or inspect it.
+ *
+ * Strategy (think/channel blocks stripped first via stripThink):
+ *   1. Fenced ```lang … ``` blocks — pick the longest (the full implementation,
+ *      not an inline mention). If a `lang` hint is given, matching tags win.
+ *   2. An opened-but-unclosed fence (truncated output) — take body to end.
+ *   3. No fence — recover from the first top-level declaration
+ *      (function/class/const/let/var, optionally export/async) to the end. NOTE
+ *      `class` is included: smaller models often emit an unfenced bare class.
+ *   4. Whole cleaned text.
+ *
+ * @param {string} s            raw model output
+ * @param {object} [opts]
+ * @param {string} [opts.lang]  language hint matched against the fence tag (e.g. 'js')
+ * @returns {{code: string, fenced: boolean}}  fenced=false ⇒ recovered heuristically
+ */
+export function extractCode(s, { lang } = {}) {
+   const cleaned = stripThink(s ?? '');
+   if (!cleaned) {
+      return { code: '', fenced: false };
+   }
+
+   // 1. Closed fenced blocks. Optional language tag, then a newline, then body.
+   const fences = [...cleaned.matchAll(/```([a-zA-Z0-9_+-]+)?[ \t]*\r?\n([\s\S]*?)```/g)]
+      .map((m) => ({ tag: (m[1] ?? '').toLowerCase(), body: m[2].trim() }))
+      .filter((b) => b.body);
+   if (fences.length) {
+      const preferred = lang ? fences.filter((b) => b.tag.includes(lang)) : [];
+      const pool = preferred.length ? preferred : fences;
+      pool.sort((a, b) => b.body.length - a.body.length);
+      return { code: pool[0].body, fenced: true };
+   }
+
+   // 2. Opened-but-unclosed fence (truncated generation): take from after it.
+   const open = cleaned.match(/```([a-zA-Z0-9_+-]+)?[ \t]*\r?\n([\s\S]*)$/);
+   if (open?.[2]?.trim()) {
+      return { code: open[2].trim(), fenced: true };
+   }
+
+   // 3. No fence — recover from the first top-level declaration to the end.
+   const decl = cleaned.search(/\b(?:export\s+)?(?:async\s+)?(?:function|class|const|let|var)\b/);
+   if (decl !== -1) {
+      return { code: cleaned.slice(decl).trim(), fenced: false };
+   }
+
+   // 4. Whole cleaned text.
+   return { code: cleaned, fenced: false };
+}
+
+/**
  * Parse tool-call arguments string, tolerating Python artifacts.
  * Returns parsed object, or {} on failure.
  */

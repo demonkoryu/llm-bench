@@ -50,7 +50,7 @@ models:
      native_max_ctx: 262144
      kv_bytes_per_token: 49152
      extra_flags: { batch-size: 2048, ubatch-size: 2048 }
-     benches: [triage, toolcalling, summarization, docqa, speed, maxctx]
+     benches: [triage, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
      notes: "No think mode. repeat_penalty in sampling_matrix. If ub2048 OOMs at max ctx, set ubatch-size: 1024."
 
    # ── Qwen3-30B-A3B-Instruct-2507 ──────────────────────────────────────────────
@@ -66,7 +66,7 @@ models:
      native_max_ctx: 262144
      kv_bytes_per_token: 49152
      extra_flags: { batch-size: 2048, ubatch-size: 2048 }
-     benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
      notes: "If ub2048 OOMs at max ctx, set ubatch-size: 1024."
 
    - hf_repo: unsloth/Qwen3-30B-A3B-Instruct-2507-GGUF
@@ -80,7 +80,7 @@ models:
      ctx_cap: 81920
      kv_bytes_per_token: 49152
      extra_flags: { batch-size: 2048, ubatch-size: 2048 }
-     benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
 
    # ── Qwen3-14B Q5_K_M ────────────────────────────────────────────────────────
    # Hybrid: runs both nothi and think passes.
@@ -96,7 +96,7 @@ models:
      ctx_cap: 40960
      kv_bytes_per_token: 24576
      extra_flags: { batch-size: 2048, ubatch-size: 2048 }
-     benches: [triage, reasoning, toolcalling, toolcalling_decay, summarization, docqa, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, toolcalling_decay, summarization, docqa, coding, coding_hard, speed, maxctx]
 
    # ── Qwen3.6-35B-A3B IQ4_XS ──────────────────────────────────────────────────
    # Hybrid: runs both nothi and think passes.
@@ -116,7 +116,7 @@ models:
         ubatch-size: 2048
         spec-type: draft-mtp
         spec-draft-n-max: 4
-     benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
      notes: "MTP speculative draft; smoke will catch if Vulkan build lacks support."
 
    # ── Gemma4-E4B ───────────────────────────────────────────────────────────────
@@ -136,7 +136,7 @@ models:
      # b9496 auto-loads a vision projector for gemma4 → clip.cpp "Unknown projector
      # type" abort on load. We benchmark text-only, so disable it.
      extra_flags: { "no-mmproj": true, batch-size: 2048, ubatch-size: 2048 }
-     benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
 
    - hf_repo: unsloth/gemma-4-E4B-it-GGUF
      hf_file: gemma-4-E4B-it-Q5_K_M.gguf
@@ -149,7 +149,7 @@ models:
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
      extra_flags: { "no-mmproj": true, batch-size: 2048, ubatch-size: 2048 }   # see Q8 note: skip gemma4 vision projector (text-only)
-     benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
 
    # ── Gemma4-26B-A4B ───────────────────────────────────────────────────────────
    # Hybrid: runs both nothi and think passes. ~16.9 GB weights.
@@ -165,7 +165,7 @@ models:
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
      extra_flags: { "no-mmproj": true, batch-size: 2048, ubatch-size: 2048 }   # see E4B Q8 note: skip gemma4 vision projector (text-only)
-     benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
 
    # ── Gemma4-12B (dense "unified" — encoder-free multimodal, run text-only) ──────
    # Released 2026-06-02. Dense 12B, hybrid think, native FC; ~8.4 GB at Q5_K_M.
@@ -184,7 +184,7 @@ models:
      native_max_ctx: 131072
      kv_bytes_per_token: 16384
      extra_flags: { "no-mmproj": true, batch-size: 2048, ubatch-size: 2048 }   # see E4B Q8 note: skip gemma4 vision projector (text-only)
-     benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
 
    # ── LFM2.5-8B-A1B ────────────────────────────────────────────────────────────
    # Always-reasoning: outputs to reasoning_content field, not content.
@@ -200,7 +200,7 @@ models:
      ctx_cap: 131072
      kv_bytes_per_token: 8192
      extra_flags: { batch-size: 2048, ubatch-size: 2048 }
-     benches: [reasoning, toolcalling, summarization, docqa, speed, maxctx]
+     benches: [reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
      notes: "reasoning_content merged by llm client. repeat_penalty in sampling_matrix."
 
    # ── GLM-4.7-Flash (MoE 30B-A3B, 200K ctx) ─────────────────────────────────────
@@ -216,7 +216,7 @@ models:
      native_max_ctx: 200000
      kv_bytes_per_token: 16384
      extra_flags: { batch-size: 2048, ubatch-size: 2048 }
-     benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
 
    # ── Granite-4.0-H-Tiny (MoE 7B-A1B, mamba-hybrid) ─────────────────────────────
    # IBM: strong function-calling; no native think toggle. ≈5GB → big KV headroom.
@@ -230,7 +230,7 @@ models:
      native_max_ctx: 128000
      kv_bytes_per_token: 8192
      extra_flags: { batch-size: 2048, ubatch-size: 2048 }
-     benches: [triage, toolcalling, summarization, docqa, speed, maxctx]
+     benches: [triage, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
 
    # ── Nemotron-3-Nano-4B (mamba-hybrid) ─────────────────────────────────────────
    # Small v3 Nemotron; Q8_0 ≈4.3GB → big KV headroom for long context. Same bug
@@ -249,7 +249,7 @@ models:
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
      extra_flags: { batch-size: 2048, ubatch-size: 2048 }
-     benches: [triage, reasoning, summarization, docqa, speed, maxctx]
+     benches: [triage, reasoning, summarization, docqa, coding, coding_hard, speed, maxctx]
 
    # ── GLM-4.1V-9B-Thinking (vision-LM, run text-only) ───────────────────────────
    # Always-thinking; native FC. No mmproj → vision tower unused, text-only benchmark.
@@ -263,7 +263,7 @@ models:
      native_max_ctx: 65536
      kv_bytes_per_token: 16384
      extra_flags: { batch-size: 2048, ubatch-size: 2048 }
-     benches: [triage, reasoning, toolcalling, summarization, docqa, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
 
 
 # ── Sampling matrix ───────────────────────────────────────────────────────────────
@@ -307,6 +307,9 @@ sampling_matrix:
          longctx:
             temperature: 0.1
             top_p: 0.9
+         coding:
+            temperature: 0.2
+            top_p: 0.9
       think:
          temperature: 0.6
          top_p: 0.95
@@ -319,6 +322,19 @@ sampling_matrix:
          top_k: 20
          min_p: 0
          presence_penalty: 1.5
+         # DO NOT set presence_penalty 0.0 here. Qwen's published coding preset
+         # (temp 0.6 / pp 0.0) is exactly the config that triggers Qwen3.6-A3B's
+         # documented infinite-reasoning-loop bug on coding — the model repeats
+         # phrases through the whole think budget and never emits code (QwenLM/
+         # Qwen3.6 issues #88, #145; HF discussions #19/#20: 17.4% of outputs
+         # truncated, 84% of those >30% repetition). Qwen's own mitigation is to
+         # RAISE presence_penalty (0–2) to suppress the loop, plus an optional
+         # reasoning-budget cap. We keep the shared pp 1.5 AND cap think at 12288
+         # (MAX_TOKENS.coding_hard_think). Verified: pp 1.5 + temp 0.2 → 100% on
+         # all coding passes; pp 0.0 (vendor preset) regressed think → RUNAWAY.
+         coding:
+            temperature: 0.2
+            top_p: 0.9
       think:
          temperature: 1.0
          top_p: 0.95
@@ -340,9 +356,18 @@ sampling_matrix:
          longctx:
             temperature: 0.1
             top_p: 0.9
+         coding:
+            temperature: 0.2
+            top_p: 0.9
 
    # ── Gemma 4 (E4B and 26B-A4B) ─────────────────────────────────────────────
-   # Google recommends identical params for all tasks and both think states.
+   # Google recommends identical params for all tasks and both think states:
+   # temp 1.0 / top_p 0.95 / top_k 64. NB: Gemma is calibrated for temp≈1.0 — a
+   # LOW-temp coding override (e.g. 0.2) starves it of entropy and causes
+   # degenerate repetition/looping, which in think mode runs away to the token
+   # ceiling (observed: gemma4-26B/12B coding_hard think → RUNAWAY at temp 0.2).
+   # So NO coding override here — Gemma keeps its native temp 1.0, which the
+   # community also finds codes best (some use up to 1.5). See model_card_4.
    gemma4:
       default:
          temperature: 1.0
@@ -377,6 +402,9 @@ sampling_matrix:
          temperature: 0.6
          top_p: 0.95
          top_k: 40
+         coding:
+            temperature: 0.2
+            top_p: 0.9
       think:
          temperature: 0.6
          top_p: 0.95

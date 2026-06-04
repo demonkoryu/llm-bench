@@ -43,8 +43,13 @@ export const CARD_TOTAL_MIB = 20464;
 
 // The composite score is MULTIPLICATIVE, not a flat weighted sum:
 //
-//   score = toolGate × structGate × ((maxctx% + vramHeadroom%) / 2) × restScore
+//   score = codingMult × toolGate × structGate × ((maxctx% + vramHeadroom%) / 2) × restScore
 //
+//   • codingMult — the no_think-primary coding grade (0.3·easy_pass@1 +
+//                  0.7·hard_test-rate), normalized to the fleet's best (0..1) and
+//                  multiplied in. Coding is a first-class requirement for this use
+//                  case, so a weak coder scales the whole score down; no coding data
+//                  zeroes it (same convention as the gates). NOT a rest-axis weight.
 //   • toolGate / structGate  — hard gates in 0..1 (accuracy/conformance as a fraction).
 //                              Either at 0 (or absent) zeroes the whole score: a model
 //                              that can't tool-call or can't emit valid structured
@@ -71,8 +76,8 @@ export const DEFAULT_WEIGHTS = {
 // Self-describing scoring shape for report.json + the chart subtitle (so the
 // displayed formula can never drift from the code).
 export const SCORING = {
-   formula: 'toolcalling × struct_output × (maxctx% + vram_headroom%)/2 × Σ(rest)',
-   gates: ['toolcalling', 'struct_output'],
+   formula: 'coding × toolcalling × struct_output × (maxctx% + vram_headroom%)/2 × Σ(rest)',
+   gates: ['coding', 'toolcalling', 'struct_output'],
    amplifiers: ['maxctx', 'vram_headroom'],
    rest_weights: DEFAULT_WEIGHTS,
 };
@@ -251,6 +256,8 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
    const ttftByModel = new Map(); // base model → Map(depth → prefill ms)
    const structByModel = new Map(); // base model → schema-conformance %
    const powerEffByModel = new Map(); // base model → decode tok/s per watt
+   const codingEasyByMT = new Map(); // `${base}|${think}` → easy coding pass@1
+   const codingHardByMT = new Map(); // `${base}|${think}` → coding_hard test-rate (passed/12)
    // Helper: set base→Map(key→val), later row wins.
    const setDepth = (map, base, key, val) => {
       if (!map.has(base)) map.set(base, new Map());
@@ -270,6 +277,14 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          if (Number.isFinite(v)) structByModel.set(baseModel(r.model), v);
       } else if (bench === 'power_eff') {
          if (Number.isFinite(v)) powerEffByModel.set(baseModel(r.model), v);
+      } else if (bench === 'coding') {
+         // easy tier: pass@1 over the 18 function problems (the `score` column).
+         if (Number.isFinite(v)) codingEasyByMT.set(`${baseModel(r.model)}|${r.think}`, v);
+      } else if (bench === 'coding_hard') {
+         // hard tier: test-rate (passed/12) lives in notes as "tests N%" — more
+         // granular than the binary single-case pass@1.
+         const tr = /tests\s+([\d.]+)%/.exec(r.notes ?? '');
+         if (tr) codingHardByMT.set(`${baseModel(r.model)}|${r.think}`, Number(tr[1]));
       }
       if (r.bench === 'maxctx') {
          const v = parseFloat(r.score);
@@ -324,6 +339,23 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
       return m.length ? m[m.length - 1] : null;
    };
 
+   // Coding grade — no_think-primary policy. Combine the easy tier (pass@1) and
+   // the hard tier (test-rate) from a single state, preferring no_think, then the
+   // null (n/a) state of non-hybrid models. Hard-weighted: easy ceilings (acts as
+   // a competence floor), hard discriminates. best-of-state is a future option.
+   const W_CODE_EASY = 0.3;
+   const W_CODE_HARD = 0.7;
+   const codingGradeOf = (base) => {
+      for (const st of ['no_think', 'n/a']) {
+         const easy = codingEasyByMT.get(`${base}|${st}`);
+         const hard = codingHardByMT.get(`${base}|${st}`);
+         if (easy != null || hard != null) {
+            return W_CODE_EASY * (easy ?? 0) + W_CODE_HARD * (hard ?? 0);
+         }
+      }
+      return null;
+   };
+
    const models = [...modelMap.values()]
       .map(({ model, think, rows: rs }) => {
          const maxctx = maxctxByModel.get(baseModel(model)) ?? null;
@@ -336,8 +368,7 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          // max() here combines DISTINCT metrics (short vs long-ctx decode) into a
          // headline tok/s — not a dedup; each component is already newest-wins.
          const speedTg =
-            Math.max(latestScore(rs, 'speed_short') ?? 0, latestScore(rs, 'speed_long-32k') ?? 0, latestScore(rs, 'speed') ?? 0) ||
-            null;
+            Math.max(latestScore(rs, 'speed_short') ?? 0, latestScore(rs, 'speed_long-32k') ?? 0, latestScore(rs, 'speed') ?? 0) || null;
          // Real prefill throughput (prompt processing) from large-prompt probes —
          // newest value of the prefill_tps column for each probe bench.
          const latestField = (bench, field) => {
@@ -392,6 +423,10 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          const ttftRefMs = ttftRefPt?.ms ?? null;
          // Structured-output reliability: % of JSON tasks that were schema-conformant.
          const structScore = structByModel.get(baseModel(model)) ?? null;
+         // Coding grade (no_think-primary): combined easy+hard from the no_think /
+         // null state — a base-model property shared across think variants (like
+         // struct/maxctx). best-of-state is deferred. Normalized to a multiplier below.
+         const codingGrade = codingGradeOf(baseModel(model));
          // Power efficiency: decode tok/s per watt (board power via lm-sensors).
          const powerEff = powerEffByModel.get(baseModel(model)) ?? null;
          return {
@@ -429,6 +464,7 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
             ttftRefMs,
             structScore,
             powerEff,
+            codingGrade,
          };
       })
       .filter((m) => m.maxctx || m.triage || m.speedTg);
@@ -496,7 +532,12 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
       if (fv != null) parts.push(fv / maxFreeVram);
       return parts.length ? parts.reduce((a, b) => a + b, 0) / parts.length : 0;
    };
-   const finalScore = (m) => toolGate(m) * structGate(m) * ctxAmp(m) * restScore(m);
+   // Coding multiplier: the no_think-primary coding grade normalized to the fleet's
+   // best (0..1), multiplied into the score like the gates. A model with no coding
+   // data is 0 (same convention as toolGate/structGate). NOT a rest-axis weight.
+   const maxCoding = Math.max(...models.map((m) => m.codingGrade ?? 0)) || 1;
+   const codingMult = (m) => (m.codingGrade != null ? m.codingGrade / maxCoding : 0);
+   const finalScore = (m) => codingMult(m) * toolGate(m) * structGate(m) * ctxAmp(m) * restScore(m);
    for (const m of models) {
       m.score = Math.round(finalScore(m) * 1000) / 10;
    }

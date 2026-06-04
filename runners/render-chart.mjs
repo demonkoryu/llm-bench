@@ -98,7 +98,7 @@ const TITLE_H = 32;
 const N = models.length;
 const PANEL_H = N * ROW_H + 8;
 
-const GRID_PANELS = 18; // one per metric panel (must match METRIC_PANELS.length below)
+const GRID_PANELS = 12; // one per metric panel (must match METRIC_PANELS.length below)
 const GRID_ROWS = Math.ceil(GRID_PANELS / 2);
 const GRID_H = GRID_ROWS * (TITLE_H + PANEL_H + 28);
 const TABLE_H = (N + 3) * 22 + 20;
@@ -153,11 +153,18 @@ const rankItems = ranked.map((r, i) => ({
    displayVal: `${r.score.toFixed(1)}%`,
 }));
 // Subtitle is derived from the SCORING export so it can never drift from the code.
-const restLabels = { reasoning: 'reasoning', triage: 'triage', summarization: 'summ', docqa: 'docqa', speed: 'speed', degradation: 'degrade' };
+const restLabels = {
+   reasoning: 'reasoning',
+   triage: 'triage',
+   summarization: 'summ',
+   docqa: 'docqa',
+   speed: 'speed',
+   degradation: 'degrade',
+};
 const restStr = Object.entries(SCORING.rest_weights)
    .map(([k, w]) => `${restLabels[k] ?? k} ${w.toFixed(2).replace(/^0/, '')}`)
    .join(' · ');
-const scoreSubtitle = `score = toolcalling × struct-output × (maxctx% + vram-headroom%)/2 × Σ(${restStr})`;
+const scoreSubtitle = `score = coding × toolcalling × struct-output × (maxctx% + vram-headroom%)/2 × Σ(${restStr})`;
 svg += barPanel(PAD.left, rankY, WIDE_W, 'Overall Ranking', scoreSubtitle, rankItems);
 
 // ── Per-metric grid (one panel per scored metric — no blending) ──────────────────
@@ -206,6 +213,13 @@ const METRIC_PANELS = [
       getMax: () => maxRetention,
    },
    // ── Hard gates (0 → total score 0) ──
+   {
+      title: 'Coding grade (no_think: .3·easy + .7·hard)',
+      weight: '×gate (norm)',
+      getValue: (m) => m.codingGrade,
+      formatVal: (v) => (v != null ? v.toFixed(0) : 'n/a'),
+      getMax: () => 100,
+   },
    {
       title: 'Tool-call accuracy',
       weight: '×gate',

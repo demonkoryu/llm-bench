@@ -33,7 +33,17 @@ export function resolveSampling(model, think, useCase, matrix) {
 
 /** Strip use-case sub-keys, leaving only actual sampling params. */
 function cleanSampling(obj) {
-   const KNOWN_USE_CASES = new Set(['triage', 'reasoning', 'toolcalling', 'summarization', 'docqa', 'longctx', 'speed', 'default']);
+   const KNOWN_USE_CASES = new Set([
+      'triage',
+      'reasoning',
+      'toolcalling',
+      'summarization',
+      'docqa',
+      'coding',
+      'longctx',
+      'speed',
+      'default',
+   ]);
    const out = {};
    for (const [k, v] of Object.entries(obj)) {
       if (!KNOWN_USE_CASES.has(k)) {

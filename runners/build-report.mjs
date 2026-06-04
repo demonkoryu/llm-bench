@@ -143,6 +143,9 @@ const report = {
       ttft_ms: { ref: m.ttftRefMs, curve: m.ttftCurve.map((p) => ({ depth: p.depth, ms: p.ms })) },
       // Structured-output reliability: % schema-conformant JSON (unconstrained).
       struct_output_pct: m.structScore,
+      // Coding grade (no_think-primary): 0.3·easy_pass@1 + 0.7·hard_test-rate,
+      // normalized to the fleet's best as a score multiplier.
+      coding_grade: m.codingGrade,
       // Power efficiency: decode tok/s per watt (board power via lm-sensors).
       power_eff_tok_s_per_w: m.powerEff,
       weighted_score: m.score,
@@ -160,6 +163,7 @@ const report = {
       [
          ['reasoning', (m) => m.reasoning],
          ['triage', (m) => m.triage],
+         ['coding_grade', (m) => m.codingGrade],
          ['toolcalling', (m) => m.toolcall],
          ['docqa', (m) => m.docqa],
          ['summarization', (m) => m.summ],

@@ -110,6 +110,9 @@ const toolGrader = (await import('../benchmarks/toolcalling/grader.mjs')).defaul
 const summGrader = (await import('../benchmarks/summarization/grader.mjs')).default;
 const { SUMM_ITEMS } = await import('../benchmarks/summarization/summcases.mjs');
 const { gradeAll: docqaGradeAll } = await import('../benchmarks/docqa/grader.mjs');
+const { CASES: CODING_CASES } = await import('../benchmarks/coding/cases.mjs');
+const { CASES: CODING_HARD_CASES } = await import('../benchmarks/coding/cases-hard.mjs');
+const { gradeCase: codingGradeCase } = await import('../benchmarks/coding/grader.mjs');
 const { makeFillPrompt } = await import('../shared/codebase.mjs');
 const docqaCases = JSON.parse(readFileSync(join(ROOT, 'benchmarks/docqa/cases.json'), 'utf8'));
 
@@ -159,6 +162,10 @@ const MAX_TOKENS = {
    tool: 512, // single tool call response
    instruct: 1024, // non-thinking instruct models
    docqa: 1280, // multi-hop doc-QA with citations
+   coding: 2048, // function implementation — body + edge handling
+   coding_hard: 8192, // multi-method stateful spec (2048) — headroom for always-reasoning models
+   coding_hard_think: 12288, // capped think budget: completes under the 600s client timeout,
+   //                          so a non-converging model hits a clean RUNAWAY, not a silent abort
    longctx: 4096, // long-context comprehension answer
    speed: 150, // speed bench — just want tokens generated
 };
@@ -565,6 +572,91 @@ async function runDocqa(client, model, thinkState) {
    const { mean_score, per_question } = docqaGradeAll(questions ?? [], answers);
    const trapHits = per_question.filter((r) => r.trap_hits?.length > 0).length;
    return { score: mean_score.toFixed(2), halls: trapHits, json_fail: '-', tok_s: '-', wall_s: '-' };
+}
+
+async function runCoding(
+   client,
+   model,
+   thinkState,
+   cases = CODING_CASES,
+   maxTok = MAX_TOKENS.coding,
+   benchName = 'coding',
+   thinkTok = MAX_TOKENS.think,
+) {
+   const sampling = sampleOpts(model, thinkState, 'coding');
+   const thinkControl = model.think_control ?? 'enable_thinking';
+
+   let passAt1 = 0,
+      testsPassed = 0,
+      testsTotal = 0,
+      noCode = 0,
+      totalMs = 0;
+   const tokList = [];
+
+   for (const [caseId, c] of Object.entries(cases)) {
+      const SYSTEM =
+         `You are an expert programmer. Implement the requested function in JavaScript.\n` +
+         `Respond with ONLY one JavaScript code block defining \`${c.entry}\` — no prose, no tests, ` +
+         `no example calls, no console.log. The function must \`return\` its result.`;
+      const messages = [
+         { role: 'system', content: SYSTEM },
+         { role: 'user', content: `${c.prompt}\n\nSignature: ${c.signature}` },
+      ];
+      const t0 = Date.now();
+      let completion;
+      try {
+         const res = await client.chat(messages, {
+            think: thinkState,
+            thinkControl,
+            max_tokens: thinkState === true ? thinkTok : maxTok,
+            ...sampling,
+         });
+         completion = res.completion;
+      } catch {
+         noCode++;
+         continue;
+      }
+      totalMs += Date.now() - t0;
+      const tps = client.tokPerSec();
+      if (tps) {
+         tokList.push(tps);
+      }
+      const raw = completion.choices?.[0]?.message?.content ?? '';
+      warnRunaway(benchName, caseId, completion);
+      const gradingResult = await codingGradeCase(c, raw);
+      if (gradingResult.pass) {
+         passAt1++;
+      }
+      if (gradingResult.reason?.startsWith('no-code')) {
+         noCode++;
+      }
+      testsPassed += gradingResult.passed;
+      testsTotal += gradingResult.total;
+      recordPf({
+         bench: benchName,
+         model,
+         think: thinkState,
+         vars: { case_id: caseId, category: c.category, difficulty: c.difficulty },
+         promptRaw: c.prompt,
+         output: raw,
+         gradingResult,
+         latencyMs: 0,
+         tokS: tps?.toFixed(1),
+      });
+   }
+
+   const total = Object.keys(cases).length;
+   const avgTps = tokList.length ? tokList.reduce((a, b) => a + b, 0) / tokList.length : 0;
+   // score = pass@1 %; notes carries the partial-credit test-pass rate for context.
+   const testRate = testsTotal ? ((testsPassed / testsTotal) * 100).toFixed(1) : '0.0';
+   return {
+      score: ((passAt1 / total) * 100).toFixed(1),
+      halls: '-',
+      json_fail: noCode,
+      tok_s: avgTps.toFixed(1),
+      wall_s: (totalMs / 1000).toFixed(0),
+      notes: `tests ${testRate}%`,
+   };
 }
 
 let _speedNonce = 0; // increments across passes to keep each prefill probe cache-cold
@@ -1146,6 +1238,62 @@ for (const model of models) {
                status: 'ok',
                wall_s: res.wallS,
                notes: '',
+            });
+         }
+      }
+
+      // coding — execution-graded JS code generation; runs in both think and no-think passes
+      {
+         const res = await skipOrRun('coding', () => runCoding(client, model, thinkState));
+         if (res) {
+            console.log(`pass@1=${res.r.score}%  ${res.r.notes}  tok/s=${res.r.tok_s}`);
+            appendTsv({
+               target: TARGET,
+               backend: BACKEND,
+               model: passId,
+               think: tl,
+               bench: 'coding',
+               score: res.r.score,
+               halls: '-',
+               json_fail: res.r.json_fail,
+               tok_s: res.r.tok_s,
+               prefill_tps: '-',
+               vram_mib: vramMib ?? '?',
+               ctx_loaded: ctxLoaded ?? '?',
+               oom_ceiling: oomCeiling ?? '?',
+               coherence_ceiling: coherenceCeiling ?? '?',
+               status: 'ok',
+               wall_s: res.r.wall_s,
+               notes: res.r.notes ?? '',
+            });
+         }
+      }
+
+      // coding_hard — large stateful spec tasks (2048 engine); separate token budget
+      {
+         const res = await skipOrRun('coding_hard', () =>
+            runCoding(client, model, thinkState, CODING_HARD_CASES, MAX_TOKENS.coding_hard, 'coding_hard', MAX_TOKENS.coding_hard_think),
+         );
+         if (res) {
+            console.log(`pass@1=${res.r.score}%  ${res.r.notes}  tok/s=${res.r.tok_s}`);
+            appendTsv({
+               target: TARGET,
+               backend: BACKEND,
+               model: passId,
+               think: tl,
+               bench: 'coding_hard',
+               score: res.r.score,
+               halls: '-',
+               json_fail: res.r.json_fail,
+               tok_s: res.r.tok_s,
+               prefill_tps: '-',
+               vram_mib: vramMib ?? '?',
+               ctx_loaded: ctxLoaded ?? '?',
+               oom_ceiling: oomCeiling ?? '?',
+               coherence_ceiling: coherenceCeiling ?? '?',
+               status: 'ok',
+               wall_s: res.r.wall_s,
+               notes: res.r.notes ?? '',
             });
          }
       }

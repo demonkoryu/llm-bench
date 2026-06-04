@@ -10,6 +10,7 @@
       "dry-run":     "node runners/run-suite.mjs --dry-run",
       "bench":       "node runners/run-suite.mjs",
       "smoke":       "node runners/smoke.mjs",
+      "coding-smoke": "node runners/coding-smoke.mjs",
       "chart":       "node runners/render-chart.mjs",
       "results":     "node runners/results-to-md.mjs",
       "judge-prep":  "node runners/judge-prep.mjs",
