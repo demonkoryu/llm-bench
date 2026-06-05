@@ -157,7 +157,7 @@ const report = {
       ttft_ms: { ref: m.ttftRefMs, curve: m.ttftCurve.map((p) => ({ depth: p.depth, ms: p.ms })) },
       // Structured-output reliability: % schema-conformant JSON (unconstrained).
       struct_output_pct: m.structScore,
-      // Coding grade (no_think-primary): 0.3·easy_pass@1 + 0.7·hard_test-rate,
+      // Coding grade (no_think-primary): 0.4·pass@1 + 0.6·test-rate from coding_multipl,
       // normalized to the fleet's best as a score multiplier.
       coding_grade: m.codingGrade,
       // Power efficiency: decode tok/s per watt (board power via lm-sensors).

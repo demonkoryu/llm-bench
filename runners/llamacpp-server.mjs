@@ -4,7 +4,7 @@
  * Orchestrates the llm2 shell scripts over SSH to:
  *   - Detect available backends (vulkan | rocm)
  *   - Start / stop llama-server with a lockfile + VRAM-clear wait
- *   - Probe the maximum usable context via binary search
+ *   - Probe the maximum usable context via a fixed ctx ladder (128/100/64/32/16k)
  *
  * All system-level operations (process start/stop, VRAM query, health probe)
  * run as shell scripts on llm2 — Node stays on the dev host.
@@ -204,18 +204,30 @@ export function llamacppServer({
    }
 
    /**
-    * Binary-search for the maximum context size that loads AND passes a coherence check.
+    * Fixed-ladder probe for the maximum usable context size.
+    *
+    * Instead of a fine-grained binary search, probe a coarse, predictable ladder
+    * of context sizes — 128k, 100k, 64k, 32k, 16k (KiB tokens) — from largest to
+    * smallest, and take the largest rung that both LOADS and passes the coherence
+    * check. No finer-grained refinement: the reported ceiling is always one of
+    * these fixed rungs, so it's stable across runs and easy to reason about (the
+    * tradeoff is we may report e.g. 64k for a model whose true VRAM-bound limit is
+    * 78k — the next rung up, 100k, didn't fit).
     *
     * The coherence check uses the codebase generator from shared/codebase.mjs:
     * fills ~ctx tokens with synthetic code, plants a needle near the end, asks for it.
-    * Records oom_ceiling (largest that loaded) and coherence_ceiling (largest correct).
+    * Records oom_ceiling (largest that loaded) and coherence_ceiling (the chosen rung).
     *
     * @param {object} modelCfg   model entry from models.yaml
-    * @param {number} freeVram   VRAM free in MiB (used to estimate hi bound)
     * @returns {{ ctxLoaded, oomCeiling, coherenceCeiling, vramMib }}
     */
-   async function binarySearchCtx(modelCfg) {
-      const { hf_repo, hf_file, native_max_ctx, ctx_cap, kv_bytes_per_token = 32768 } = modelCfg;
+   // Coarse ctx ladder (KiB tokens), largest → smallest. The reported max-ctx is
+   // always one of these rungs (see ladderSearchCtx). 128k is the top — models with
+   // a larger native window are not probed above it.
+   const CTX_LADDER = [131072, 102400, 65536, 32768, 16384];
+
+   async function ladderSearchCtx(modelCfg) {
+      const { hf_repo, hf_file, native_max_ctx, ctx_cap } = modelCfg;
       const extra_flags = extraFlagsToString(modelCfg.extra_flags);
 
       // Probe think state: disable thinking on hybrid models so the needle answer
@@ -224,49 +236,41 @@ export function llamacppServer({
       const probeThink = modelCfg.think === 'optional' ? false : null;
       const thinkControl = modelCfg.think_control ?? 'enable_thinking';
 
-      // Estimate hi from VRAM — seed only, not authoritative
-      const vramFree = await snapshotVram().then((mib) => (mib !== null ? 20480 - mib : 16384));
-      const vramEstimate = Math.floor((vramFree * 1024 * 1024) / kv_bytes_per_token);
+      // Cap the ladder by the model's declared limits (native window + optional
+      // ctx_cap). A model that only supports 32k must never claim a higher rung.
+      const cap = Math.min(native_max_ctx ?? Infinity, ctx_cap ?? Infinity);
+      const candidates = CTX_LADDER.filter((c) => c <= cap);
 
-      // Upper bound: documented native window (128k default when unknown), an
-      // optional ctx_cap override, and the VRAM estimate — whichever is smallest.
-      // No arbitrary absolute cap: 200k+ models (Qwen3-30B, Gemma4-12B) must
-      // not be silently clipped to 128k. The empirical search still finds the real
-      // coherent ceiling, which on a 20 GiB card is usually VRAM-bound well below native.
-      let hi = Math.min(native_max_ctx ?? 131072, ctx_cap ?? Infinity, roundTo2k(vramEstimate));
-      let lo = 4096;
-
-      if (hi <= lo) {
-         console.log(`  [maxctx] hi=${hi} ≤ lo=${lo}, skipping search — using ${lo}`);
-         return { ctxLoaded: lo, oomCeiling: lo, coherenceCeiling: lo, vramMib: null };
+      if (!candidates.length) {
+         // The cap is below even the smallest rung — use the cap itself as a floor.
+         const floor = roundTo2k(Number.isFinite(cap) ? cap : 16384);
+         console.log(`  [maxctx] cap ${cap} below ladder floor — using ${floor}`);
+         return { ctxLoaded: floor, oomCeiling: floor, coherenceCeiling: floor, vramMib: null };
       }
 
-      console.log(`  [maxctx] binary search lo=${lo} hi=${hi} native_max=${native_max_ctx ?? 'unknown'}`);
-
-      let oomCeiling = lo;
-      let coherenceCeiling = lo;
-      let lastVram = null;
+      console.log(
+         `  [maxctx] ladder probe [${candidates.map((c) => `${c / 1024}k`).join(', ')}] native_max=${native_max_ctx ?? 'unknown'}`,
+      );
 
       // Lazy-import codebase generator (Node-side, no SSH)
       const { makeFillPrompt } = (await import('../shared/codebase.mjs').catch(() => null)) ?? {};
 
-      while (hi - lo > 2048) {
-         const mid = roundTo2k(Math.floor((lo + hi) / 2));
+      let oomCeiling = null; // largest rung that loaded (even if later incoherent)
+      let lastVram = null;
 
+      for (const ctx of candidates) {
          // 1. Try to load
          await killAll();
          await waitVramClear(30_000);
 
          try {
-            await startServer({ hf_repo, hf_file, ctx: mid, extraFlags: extra_flags });
+            await startServer({ hf_repo, hf_file, ctx, extraFlags: extra_flags });
             // HF download may be needed on first run — give 360s
             await waitHealthy(360_000);
-            oomCeiling = mid;
+            if (oomCeiling == null) oomCeiling = ctx; // first (largest) load that fits
          } catch {
-            // Tailed log for crash patterns
             const crashed = await hasCrashed();
-            console.log(`  [maxctx] ctx=${mid} — load failed (${crashed ? 'crash/OOM' : 'timeout'})`);
-            hi = mid - 2048;
+            console.log(`  [maxctx] ctx=${ctx} — load failed (${crashed ? 'crash/OOM' : 'timeout'})`);
             await killAll();
             continue;
          }
@@ -275,7 +279,7 @@ export function llamacppServer({
          let coherent = true;
          if (makeFillPrompt) {
             try {
-               coherent = await checkCoherence(mid, makeFillPrompt, probeThink, thinkControl);
+               coherent = await checkCoherence(ctx, makeFillPrompt, probeThink, thinkControl);
             } catch (e) {
                console.warn(`  [maxctx] coherence check error: ${e.message}`);
                coherent = false;
@@ -287,20 +291,17 @@ export function llamacppServer({
          await waitVramClear(20_000);
 
          if (coherent) {
-            console.log(`  [maxctx] ctx=${mid} ✓ coherent  vram=${lastVram ?? '?'}MiB`);
-            coherenceCeiling = mid;
-            lo = mid;
-         } else {
-            console.log(`  [maxctx] ctx=${mid} ✗ incoherent (possible RoPE failure or OOM partial)`);
-            hi = mid - 2048;
+            console.log(`  [maxctx] ctx=${ctx} ✓ coherent  vram=${lastVram ?? '?'}MiB`);
+            console.log(`  [maxctx] result: ${ctx.toLocaleString()} tokens  (oom_ceiling=${oomCeiling ?? ctx})`);
+            return { ctxLoaded: ctx, oomCeiling: oomCeiling ?? ctx, coherenceCeiling: ctx, vramMib: lastVram };
          }
+         console.log(`  [maxctx] ctx=${ctx} ✗ incoherent (possible RoPE failure or OOM partial)`);
       }
 
-      const ctxLoaded = coherenceCeiling > lo ? coherenceCeiling : lo;
-      console.log(
-         `  [maxctx] result: ${ctxLoaded.toLocaleString()} tokens  (oom_ceiling=${oomCeiling}, coherence_ceiling=${coherenceCeiling})`,
-      );
-      return { ctxLoaded, oomCeiling, coherenceCeiling, vramMib: lastVram };
+      // No rung was coherent — fall back to the smallest rung as a floor.
+      const floor = candidates[candidates.length - 1];
+      console.log(`  [maxctx] no ladder rung coherent — falling back to ${floor.toLocaleString()}`);
+      return { ctxLoaded: floor, oomCeiling: oomCeiling ?? floor, coherenceCeiling: floor, vramMib: lastVram };
    }
 
    /**
@@ -489,8 +490,8 @@ export function llamacppServer({
       await killAll();
       await waitVramClear(30_000);
 
-      // Run binary search to find max usable ctx
-      const ctxResult = await binarySearchCtx(modelCfg);
+      // Probe the fixed ctx ladder to find max usable ctx
+      const ctxResult = await ladderSearchCtx(modelCfg);
 
       // Now start the real server at discovered ctx
       await startServer({

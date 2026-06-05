@@ -4,8 +4,8 @@
  * Source: nuprl/MultiPL-E / humaneval-js (offset=0, limit=all)
  * Problems: 160   |   asserts dropped (non-pure): 7
  *
- * Each case mirrors benchmarks/coding/cases.mjs: the model implements `entry`,
- * and the grader runs the {args, expected} tests in the vm sandbox. Regenerate
+ * Each case is consumed by benchmarks/coding/grader.mjs: the model implements
+ * `entry`, and the grader runs the {args, expected} tests in the vm sandbox. Regenerate
  * with: node runners/import-multipl.mjs --config humaneval-js --limit 0
  */
 

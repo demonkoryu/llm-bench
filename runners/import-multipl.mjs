@@ -6,8 +6,8 @@
  * Pulls the JavaScript variants of HumanEval / MBPP from the MultiPL-E dataset
  * (nuprl/MultiPL-E on the HF Hub) and emits a `cases-*.mjs` file in the exact
  * shape `benchmarks/coding/grader.mjs` consumes — a `{caseId: {entry, prompt,
- * signature, tests}}` map. The generated file is a drop-in sibling of
- * `cases.mjs` / `cases-hard.mjs` and can be wired into run-suite the same way.
+ * signature, tests}}` map. The generated `cases-multipl.mjs` is the sole coding
+ * source wired into run-suite (the `coding_multipl` bench).
  *
  * Why a converter and not a passthrough: MultiPL-E ships its test suite as a
  * Node `assert` harness —
@@ -272,8 +272,8 @@ const header = `/**
  * Source: ${DATASET} / ${CONFIG} (offset=${OFFSET}, limit=${LIMIT || 'all'})
  * Problems: ${Object.keys(CASES).length}   |   asserts dropped (non-pure): ${totalDropped}
  *
- * Each case mirrors benchmarks/coding/cases.mjs: the model implements \`entry\`,
- * and the grader runs the {args, expected} tests in the vm sandbox. Regenerate
+ * Each case is consumed by benchmarks/coding/grader.mjs: the model implements
+ * \`entry\`, and the grader runs the {args, expected} tests in the vm sandbox. Regenerate
  * with: node runners/import-multipl.mjs --config ${CONFIG} --limit ${LIMIT}
  */
 

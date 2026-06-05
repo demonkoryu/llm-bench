@@ -15,7 +15,7 @@
  *   --backend <vulkan|rocm> Backend to use (default: vulkan)
  *   --models <tag,...>     Restrict to models (substring match on label/hf_file)
  *   --benches <name,...>   Restrict bench names
- *   --skip-maxctx          Skip binary-search ctx probe (use ctx_cap or 8192)
+ *   --skip-maxctx          Skip the ctx-ladder probe (use ctx_cap or 8192)
  *   --dry-run              Print matrix and exit
  *   --resume               Skip combos already present in the results CSV
  *   --out <file>           Append to an existing results CSV (default: new timestamped file)
@@ -88,8 +88,6 @@ const toolGrader = (await import('../benchmarks/toolcalling/grader.mjs')).defaul
 const summGrader = (await import('../benchmarks/summarization/grader.mjs')).default;
 const { SUMM_ITEMS } = await import('../benchmarks/summarization/summcases.mjs');
 const { gradeAll: docqaGradeAll } = await import('../benchmarks/docqa/grader.mjs');
-const { CASES: CODING_CASES } = await import('../benchmarks/coding/cases.mjs');
-const { CASES: CODING_HARD_CASES } = await import('../benchmarks/coding/cases-hard.mjs');
 const { CASES: CODING_MULTIPL_CASES } = await import('../benchmarks/coding/cases-multipl.mjs');
 const { gradeCase: codingGradeCase } = await import('../benchmarks/coding/grader.mjs');
 const { makeFillPrompt } = await import('../shared/codebase.mjs');
@@ -147,17 +145,12 @@ const MAX_TOKENS = {
    tool: 512, // single tool call response
    instruct: 1024, // non-thinking instruct models
    docqa: 1280, // multi-hop doc-QA with citations
-   coding: 16384, // function implementation — body + edge handling. Raised from 2048: verbose /
-   //                always-reasoning models truncated mid-solution at 2048 → empty/partial code →
-   //                false 0%. ~315s worst-case at the slowest ~52 tok/s, safely under the 600s timeout.
-   coding_hard: 16384, // multi-method stateful spec (2048-engine), no_think budget. Raised from 8192
-   //                    to match `coding` — the harder task must never get a smaller budget than the easy one.
-   coding_multipl: 16384, // imported MultiPL-E (HumanEval-JS) function tasks — same budget as `coding`.
+   coding_multipl: 16384, // imported MultiPL-E (HumanEval-JS) function tasks — the sole coding source.
    //                       Function-level, so most finish well under it; the ceiling only guards verbose models.
-   coding_hard_think: 20480, // capped think budget: the 2048-engine task makes verbose reasoners
-   //                          (e.g. Gemma4-26B) spend >12k tokens thinking; at 12288 they truncated
-   //                          mid-thought → empty code → false 0%. 20480 fits their reasoning + code
-   //                          and still completes under the 600s timeout (~394s at the slowest ~52 tok/s).
+   coding_multipl_think: 20480, // capped think budget for the think pass: verbose reasoners
+   //                            (e.g. Gemma4-26B) can spend >12k tokens thinking; at 12288 they truncated
+   //                            mid-thought → empty code → false 0%. 20480 fits reasoning + code and
+   //                            still completes under the 600s timeout (~394s at the slowest ~52 tok/s).
    longctx: 4096, // long-context comprehension answer
    speed: 150, // speed bench — just want tokens generated
 };
@@ -570,9 +563,9 @@ async function runCoding(
    client,
    model,
    thinkState,
-   cases = CODING_CASES,
-   maxTok = MAX_TOKENS.coding,
-   benchName = 'coding',
+   cases = CODING_MULTIPL_CASES,
+   maxTok = MAX_TOKENS.coding_multipl,
+   benchName = 'coding_multipl',
    thinkTok = MAX_TOKENS.think,
 ) {
    const sampling = sampleOpts(model, thinkState, 'coding');
@@ -841,7 +834,9 @@ function dryRun() {
 
    for (const m of models) {
       const b = (m.benches ?? []).filter((x) => !FILTER_BENCHES.length || FILTER_BENCHES.includes(x));
-      const thinkModes = getThinkModes(m).map((t) => (t === null ? 'n/a' : t ? 'think' : 'no_think'));
+      const thinkModes = getThinkModes(m)
+         .filter((t) => !(SKIP_THINK && t === true)) // mirror the real run loop's --skip-think filter
+         .map((t) => (t === null ? 'n/a' : t ? 'think' : 'no_think'));
       console.log(`  ${(m.label ?? modelId(m, null)).padEnd(55)} think=[${thinkModes.join(',')}]  benches=[${b.join(',')}]`);
    }
    console.log(`\nTotal models: ${models.length}`);
@@ -912,8 +907,9 @@ for (const model of models) {
    console.log(`\n${'═'.repeat(70)}`);
    console.log(`  ${model.label ?? modelId(model, null)}`);
    console.log('═'.repeat(70));
+   console.log(`[model-start] ${model.label ?? modelId(model, null)}`);
 
-   // ── Max-ctx binary search ─────────────────────────────────────────────────
+   // ── Max-ctx ladder probe (128/100/64/32/16k) ─────────────────────────────
    let ctxLoaded, oomCeiling, coherenceCeiling, vramMib;
    if (MAXCTX_RECHECK) {
       // Extreme-only re-validation: probe AT the prior ceiling under the current
@@ -1258,66 +1254,11 @@ for (const model of models) {
          }
       }
 
-      // coding — execution-graded JS code generation; runs in both think and no-think passes
-      {
-         const res = await skipOrRun('coding', () => runCoding(client, model, thinkState));
-         if (res) {
-            console.log(`pass@1=${res.r.score}%  ${res.r.notes}  tok/s=${res.r.tok_s}`);
-            appendTsv({
-               target: TARGET,
-               backend: BACKEND,
-               model: passId,
-               think: tl,
-               bench: 'coding',
-               score: res.r.score,
-               halls: '-',
-               json_fail: res.r.json_fail,
-               tok_s: res.r.tok_s,
-               prefill_tps: '-',
-               vram_mib: vramMib ?? '?',
-               ctx_loaded: ctxLoaded ?? '?',
-               oom_ceiling: oomCeiling ?? '?',
-               coherence_ceiling: coherenceCeiling ?? '?',
-               status: 'ok',
-               wall_s: res.r.wall_s,
-               notes: res.r.notes ?? '',
-            });
-         }
-      }
-
-      // coding_hard — large stateful spec tasks (2048 engine); separate token budget
-      {
-         const res = await skipOrRun('coding_hard', () =>
-            runCoding(client, model, thinkState, CODING_HARD_CASES, MAX_TOKENS.coding_hard, 'coding_hard', MAX_TOKENS.coding_hard_think),
-         );
-         if (res) {
-            console.log(`pass@1=${res.r.score}%  ${res.r.notes}  tok/s=${res.r.tok_s}`);
-            appendTsv({
-               target: TARGET,
-               backend: BACKEND,
-               model: passId,
-               think: tl,
-               bench: 'coding_hard',
-               score: res.r.score,
-               halls: '-',
-               json_fail: res.r.json_fail,
-               tok_s: res.r.tok_s,
-               prefill_tps: '-',
-               vram_mib: vramMib ?? '?',
-               ctx_loaded: ctxLoaded ?? '?',
-               oom_ceiling: oomCeiling ?? '?',
-               coherence_ceiling: coherenceCeiling ?? '?',
-               status: 'ok',
-               wall_s: res.r.wall_s,
-               notes: res.r.notes ?? '',
-            });
-         }
-      }
-
-      // coding_multipl — imported MultiPL-E (HumanEval-JS) function tasks; runs in both passes
+      // coding_multipl — execution-graded JS (imported MultiPL-E / HumanEval-JS); the sole
+      // coding source. Runs in both think and no-think passes.
       {
          const res = await skipOrRun('coding_multipl', () =>
-            runCoding(client, model, thinkState, CODING_MULTIPL_CASES, MAX_TOKENS.coding_multipl, 'coding_multipl', MAX_TOKENS.coding_hard_think),
+            runCoding(client, model, thinkState, CODING_MULTIPL_CASES, MAX_TOKENS.coding_multipl, 'coding_multipl', MAX_TOKENS.coding_multipl_think),
          );
          if (res) {
             console.log(`pass@1=${res.r.score}%  ${res.r.notes}  tok/s=${res.r.tok_s}`);
