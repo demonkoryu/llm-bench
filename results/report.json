@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-05T13:23:06.571Z",
+  "generated": "2026-06-05T13:41:09.215Z",
   "sources": [
     "llm-benchmarks-rose-rx7900xt-vulkan-20260605-095301.csv"
   ],
@@ -2118,7 +2118,7 @@
       },
       "decode_decay": {
         "base_tok_s": 174.5,
-        "retention_pct": 140,
+        "retention_pct": 100,
         "ref_depth": 32768,
         "curve": [
           {
@@ -4685,7 +4685,7 @@
         "label": "granite-4.0-h-tiny-Q5_K_M",
         "model": "granite-4.0-h-tiny-Q5_K_M",
         "think": "n/a",
-        "score": 140
+        "score": 100
       },
       {
         "rank": 2,

@@ -410,7 +410,11 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          const refPt = [...decayCurve].filter((x) => x.depth > 0 && x.depth <= 32768).pop() ?? null;
          const decodeRef = refPt?.decode ?? null;
          const decodeRefDepth = refPt?.depth ?? null;
-         const decodeRetentionPct = decodeBase && decodeRef ? Math.round((decodeRef / decodeBase) * 100) : null;
+         // Clamp ≤100%: retention is "fraction of base speed kept under load". Flat-decode
+         // models (mamba/hybrid like Granite, whose state-space layers have no growing KV)
+         // plus sampling noise can read faster at depth than at base — that's no degradation,
+         // i.e. 100%, not a >100% speedup.
+         const decodeRetentionPct = decodeBase && decodeRef ? Math.min(100, Math.round((decodeRef / decodeBase) * 100)) : null;
          // Parallel-generation throughput: aggregate tok/s at K concurrent slots,
          // shared across think variants (measured once per base model).
          const pgMap = pargenByModel.get(baseModel(model));
@@ -425,7 +429,7 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          const qualityCurve = qMap ? [...qMap.entries()].map(([depth, acc]) => ({ depth, acc })).sort((a, b) => a.depth - b.depth) : [];
          const qualityBase = qMap?.get(0) ?? null;
          const qRef = [...qualityCurve].filter((x) => x.depth > 0 && x.depth <= 32768).pop() ?? null;
-         const qualityRetentionPct = qualityBase && qRef?.acc != null ? Math.round((qRef.acc / qualityBase) * 100) : null;
+         const qualityRetentionPct = qualityBase && qRef?.acc != null ? Math.min(100, Math.round((qRef.acc / qualityBase) * 100)) : null;
          // TTFT (prefill latency, ms) at each depth — the latency an agent feels.
          const tMap = ttftByModel.get(baseModel(model));
          const ttftCurve = tMap ? [...tMap.entries()].map(([depth, ms]) => ({ depth, ms })).sort((a, b) => a.depth - b.depth) : [];
