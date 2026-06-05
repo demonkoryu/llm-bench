@@ -245,6 +245,39 @@ models:
      extra_flags: { "no-mmproj": true }   # repo ships gemma-4-26B-it-mmproj.gguf — skip it (text-only)
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
 
+   # ── Gemma4 QAT — Unsloth Dynamic UD-Q4_K_XL (QAT base, unsloth's dynamic quant) ─
+   # Unsloth's quantization-aware-trained GGUFs: same QAT recipe as Google's q4_0
+   # but repacked as the UD-Q4_K_XL dynamic mix (per-tensor bit allocation) for
+   # better accuracy at similar size. Hybrids (think: optional) → disabled like the
+   # rest of the thinking fleet. Both repos ship mmproj vision towers → no-mmproj.
+   - hf_repo: unsloth/gemma-4-12B-it-qat-GGUF
+     hf_file: gemma-4-12B-it-qat-UD-Q4_K_XL.gguf
+     label: "Gemma4-12B QAT UD-Q4_K_XL"
+     family: gemma4
+     type: dense
+     think: optional
+     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
+     think_control: enable_thinking
+     tools: true
+     native_max_ctx: 131072   # same 128k window as the other 12B GGUFs
+     kv_bytes_per_token: 16384
+     extra_flags: { "no-mmproj": true }   # skip gemma4 vision projector (text-only)
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+
+   - hf_repo: unsloth/gemma-4-26B-A4B-it-qat-GGUF
+     hf_file: gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf
+     label: "Gemma4-26B QAT UD-Q4_K_XL"
+     family: gemma4
+     type: moe
+     think: optional
+     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
+     think_control: enable_thinking
+     tools: true
+     native_max_ctx: 131072
+     kv_bytes_per_token: 16384
+     extra_flags: { "no-mmproj": true }   # repo ships mmproj-*.gguf — skip it (text-only)
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+
    # ── LFM2.5-8B-A1B ────────────────────────────────────────────────────────────
    # Always-reasoning: outputs to reasoning_content field, not content.
    # Only 6 of 24 layers are attention → tiny KV footprint.
