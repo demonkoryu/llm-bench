@@ -15,8 +15,8 @@
  */
 
 import { parseArgs } from 'node:util';
-import { llamacppServer } from './llamacpp-server.mjs';
 import { buildCodebase, buildQuestionBlock } from '../shared/codebase.mjs';
+import { llamacppServer } from './llamacpp-server.mjs';
 
 const { values: f } = parseArgs({
    options: {

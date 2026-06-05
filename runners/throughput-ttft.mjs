@@ -36,10 +36,10 @@ import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import { loadHostConfig } from '../shared/hosts-config.mjs';
+import { loadModelsConfig } from '../shared/models-config.mjs';
 import { appendRow, ensureHeader, latestResultsFile, readTable } from '../shared/results-csv.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
-import { loadModelsConfig } from '../shared/models-config.mjs';
-import { loadHostConfig } from '../shared/hosts-config.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const { values: flags } = parseArgs({
@@ -100,11 +100,7 @@ async function measureOnce(depth) {
    const um = built.messages[built.messages.length - 1];
    // Unique nonce → fresh full prefill (defeat the KV prefix cache).
    um.content = `// throughput probe ${++nonce}\n${um.content}`;
-   const { timings } = await client.chat(
-      built.messages,
-      { think: null, max_tokens: GEN, temperature: 0.0, ignore_eos: true },
-      900_000,
-   );
+   const { timings } = await client.chat(built.messages, { think: null, max_tokens: GEN, temperature: 0.0, ignore_eos: true }, 900_000);
    const pn = timings?.prompt_n;
    const pm = timings?.prompt_ms;
    const gn = timings?.predicted_n;
@@ -134,7 +130,9 @@ for (const m of wanted) {
       console.log(`  ${id}: maxctx ${maxctx} too small for any depth — skipping`);
       continue;
    }
-   console.log(`\n══ ${m.label ?? id}  (ctx ${maxctx.toLocaleString()}, depths ${depths.map((d) => Math.round(d / 1024) + 'k').join(',')})`);
+   console.log(
+      `\n══ ${m.label ?? id}  (ctx ${maxctx.toLocaleString()}, depths ${depths.map((d) => Math.round(d / 1024) + 'k').join(',')})`,
+   );
    await srv.killAll();
    await srv.waitVramClear(30_000);
    try {

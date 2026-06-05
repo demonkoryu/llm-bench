@@ -18,10 +18,10 @@ import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import { loadHostConfig } from '../shared/hosts-config.mjs';
+import { loadModelsConfig } from '../shared/models-config.mjs';
 import { appendRow, ensureHeader, latestResultsFile, readTable } from '../shared/results-csv.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
-import { loadModelsConfig } from '../shared/models-config.mjs';
-import { loadHostConfig } from '../shared/hosts-config.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const { values: flags } = parseArgs({
@@ -85,7 +85,9 @@ for (const m of wanted) {
    // budget (think:null would default thinking ON → reasoning eats the budget → 0%).
    const probeThink = m.think === 'optional' ? false : null;
    const thinkControl = m.think_control ?? 'enable_thinking';
-   console.log(`\n══ ${m.label ?? id}  (ctx ${maxctx.toLocaleString()}, depths ${depths.map((d) => Math.round(d / 1024) + 'k').join(',')})`);
+   console.log(
+      `\n══ ${m.label ?? id}  (ctx ${maxctx.toLocaleString()}, depths ${depths.map((d) => Math.round(d / 1024) + 'k').join(',')})`,
+   );
    await srv.killAll();
    await srv.waitVramClear(30_000);
    try {
@@ -102,12 +104,19 @@ for (const m of wanted) {
       const targetChars = Math.max(3000, Math.floor(d * CHARS_PER_TOKEN * 0.82));
       const [codeText, probes] = buildCodebase(targetChars);
       const messages = [
-         { role: 'system', content: 'You are a code analyzer. Answer each question using only the code above. Each answer is a single integer.' },
+         {
+            role: 'system',
+            content: 'You are a code analyzer. Answer each question using only the code above. Each answer is a single integer.',
+         },
          { role: 'user', content: `${codeText}\n\n${buildQuestionBlock(probes)}` },
       ];
       let acc, ttft;
       try {
-         const { completion, timings } = await client.chat(messages, { think: probeThink, thinkControl, max_tokens: 512, temperature: 0.0 }, 900_000);
+         const { completion, timings } = await client.chat(
+            messages,
+            { think: probeThink, thinkControl, max_tokens: 512, temperature: 0.0 },
+            900_000,
+         );
          acc = grade(completion?.choices?.[0]?.message?.content ?? '', probes);
          ttft = timings?.prompt_ms ?? null;
       } catch (e) {
@@ -116,10 +125,34 @@ for (const m of wanted) {
       }
       if (d === 0) base = acc;
       const ret = base ? `${((acc / base) * 100).toFixed(0)}%` : '?';
-      console.log(`  depth ${String(Math.round(d / 1024) + 'k').padStart(4)}: accuracy ${acc.toFixed(0).padStart(3)}%  (ret ${ret})  TTFT ${ttft ? (ttft / 1000).toFixed(1) + 's' : '?'}`);
-      appendRow(input, { target: flags.target, backend: BACKEND, model: id, think: 'n/a', bench: `quality_decay-${Math.round(d / 1024)}k`, score: acc.toFixed(1), vram_mib: '?', ctx_loaded: maxctx, status: 'ok', notes: `acc@${d}` });
+      console.log(
+         `  depth ${String(Math.round(d / 1024) + 'k').padStart(4)}: accuracy ${acc.toFixed(0).padStart(3)}%  (ret ${ret})  TTFT ${ttft ? (ttft / 1000).toFixed(1) + 's' : '?'}`,
+      );
+      appendRow(input, {
+         target: flags.target,
+         backend: BACKEND,
+         model: id,
+         think: 'n/a',
+         bench: `quality_decay-${Math.round(d / 1024)}k`,
+         score: acc.toFixed(1),
+         vram_mib: '?',
+         ctx_loaded: maxctx,
+         status: 'ok',
+         notes: `acc@${d}`,
+      });
       if (ttft != null)
-         appendRow(input, { target: flags.target, backend: BACKEND, model: id, think: 'n/a', bench: `ttft-${Math.round(d / 1024)}k`, score: ttft.toFixed(0), vram_mib: '?', ctx_loaded: maxctx, status: 'ok', notes: `prompt_ms@${d}` });
+         appendRow(input, {
+            target: flags.target,
+            backend: BACKEND,
+            model: id,
+            think: 'n/a',
+            bench: `ttft-${Math.round(d / 1024)}k`,
+            score: ttft.toFixed(0),
+            vram_mib: '?',
+            ctx_loaded: maxctx,
+            status: 'ok',
+            notes: `prompt_ms@${d}`,
+         });
    }
 }
 await srv.stopServer();

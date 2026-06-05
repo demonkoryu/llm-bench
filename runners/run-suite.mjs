@@ -27,9 +27,9 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs, promisify } from 'node:util';
-import { appendRow, csvFilename, ensureHeader, readTable } from '../shared/results-csv.mjs';
-import { loadModelsConfig } from '../shared/models-config.mjs';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
+import { loadModelsConfig } from '../shared/models-config.mjs';
+import { appendRow, csvFilename, ensureHeader, readTable } from '../shared/results-csv.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dir, '..');
@@ -634,7 +634,9 @@ async function runCoding(
          const tr = testsTotal ? ((testsPassed / testsTotal) * 100).toFixed(0) : '0';
          const elapsed = (totalMs / 1000).toFixed(0);
          const eta = caseIdx < totalCases ? ` eta~${(((totalMs / caseIdx) * (totalCases - caseIdx)) / 1000).toFixed(0)}s` : '';
-         console.log(`    [${benchName}] ${caseIdx}/${totalCases}  pass@1=${pa1}%  tests=${tr}%  noCode=${noCode}  elapsed=${elapsed}s${eta}`);
+         console.log(
+            `    [${benchName}] ${caseIdx}/${totalCases}  pass@1=${pa1}%  tests=${tr}%  noCode=${noCode}  elapsed=${elapsed}s${eta}`,
+         );
       }
       recordPf({
          bench: benchName,
@@ -1258,7 +1260,15 @@ for (const model of models) {
       // coding source. Runs in both think and no-think passes.
       {
          const res = await skipOrRun('coding_multipl', () =>
-            runCoding(client, model, thinkState, CODING_MULTIPL_CASES, MAX_TOKENS.coding_multipl, 'coding_multipl', MAX_TOKENS.coding_multipl_think),
+            runCoding(
+               client,
+               model,
+               thinkState,
+               CODING_MULTIPL_CASES,
+               MAX_TOKENS.coding_multipl,
+               'coding_multipl',
+               MAX_TOKENS.coding_multipl_think,
+            ),
          );
          if (res) {
             console.log(`pass@1=${res.r.score}%  ${res.r.notes}  tok/s=${res.r.tok_s}`);

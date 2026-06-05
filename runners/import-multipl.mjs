@@ -132,7 +132,11 @@ function parsePrompt(prompt) {
       return null;
    }
    const entry = m[1];
-   const sigLine = prompt.slice(m.index).split('\n')[0].replace(/\s*\{\s*$/, '').trim();
+   const sigLine = prompt
+      .slice(m.index)
+      .split('\n')[0]
+      .replace(/\s*\{\s*$/, '')
+      .trim();
    // Description = everything before the `function` line, with leading `// ` markers stripped.
    const desc = prompt
       .slice(0, m.index)
@@ -285,7 +289,9 @@ writeFileSync(OUT, header);
 console.log(`\n[import-multipl] wrote ${Object.keys(CASES).length} cases → ${OUT}`);
 console.log(`[import-multipl] asserts dropped as non-pure: ${totalDropped}`);
 if (floaty.length) {
-   console.log(`[import-multipl] ${floaty.length} problem(s) have float expected values (exact-match fragile): ${floaty.slice(0, 8).join(', ')}${floaty.length > 8 ? ' …' : ''}`);
+   console.log(
+      `[import-multipl] ${floaty.length} problem(s) have float expected values (exact-match fragile): ${floaty.slice(0, 8).join(', ')}${floaty.length > 8 ? ' …' : ''}`,
+   );
 }
 if (skipped.length) {
    console.log(`[import-multipl] skipped ${skipped.length} problem(s):`);

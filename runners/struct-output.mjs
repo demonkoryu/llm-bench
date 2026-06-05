@@ -17,10 +17,10 @@ import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs, promisify } from 'node:util';
+import { loadHostConfig } from '../shared/hosts-config.mjs';
+import { loadModelsConfig } from '../shared/models-config.mjs';
 import { appendRow, ensureHeader, latestResultsFile } from '../shared/results-csv.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
-import { loadModelsConfig } from '../shared/models-config.mjs';
-import { loadHostConfig } from '../shared/hosts-config.mjs';
 
 const execP = promisify(execFile);
 
@@ -43,17 +43,44 @@ ensureHeader(input);
 const isType = (v, t) =>
    t === 'array' ? Array.isArray(v) : t === 'object' ? v && typeof v === 'object' && !Array.isArray(v) : typeof v === t;
 const TASKS = [
-   { p: 'Extract the person as JSON with keys name (string), age (number), email (string): "Dana Lee, 34, dana@x.io".', req: { name: 'string', age: 'number', email: 'string' } },
-   { p: 'Classify the sentiment of "this update is fantastic" as JSON with keys sentiment (string) and confidence (number 0-1).', req: { sentiment: 'string', confidence: 'number' } },
-   { p: 'Parse this address into JSON {street, city, zip}: "221B Baker Street, London, NW1 6XE".', req: { street: 'string', city: 'string', zip: 'string' } },
-   { p: 'Emit a tool call as JSON with keys function (string) and arguments (object) to get weather for Tokyo in celsius.', req: { function: 'string', arguments: 'object' } },
+   {
+      p: 'Extract the person as JSON with keys name (string), age (number), email (string): "Dana Lee, 34, dana@x.io".',
+      req: { name: 'string', age: 'number', email: 'string' },
+   },
+   {
+      p: 'Classify the sentiment of "this update is fantastic" as JSON with keys sentiment (string) and confidence (number 0-1).',
+      req: { sentiment: 'string', confidence: 'number' },
+   },
+   {
+      p: 'Parse this address into JSON {street, city, zip}: "221B Baker Street, London, NW1 6XE".',
+      req: { street: 'string', city: 'string', zip: 'string' },
+   },
+   {
+      p: 'Emit a tool call as JSON with keys function (string) and arguments (object) to get weather for Tokyo in celsius.',
+      req: { function: 'string', arguments: 'object' },
+   },
    { p: 'Return JSON {items: [...]} listing the three primary colors as strings.', req: { items: 'array' } },
-   { p: 'Return JSON describing a user: {user: {id (number), name (string)}, active (boolean)} for id 7, name Mia, active.', req: { user: 'object', active: 'boolean' } },
-   { p: 'Convert to JSON {title, year, genres[]}: the film Inception, 2010, sci-fi and thriller.', req: { title: 'string', year: 'number', genres: 'array' } },
+   {
+      p: 'Return JSON describing a user: {user: {id (number), name (string)}, active (boolean)} for id 7, name Mia, active.',
+      req: { user: 'object', active: 'boolean' },
+   },
+   {
+      p: 'Convert to JSON {title, year, genres[]}: the film Inception, 2010, sci-fi and thriller.',
+      req: { title: 'string', year: 'number', genres: 'array' },
+   },
    { p: 'Return JSON {steps: [{n, action}]} for making tea in two steps.', req: { steps: 'array' } },
-   { p: 'Return JSON {ok (boolean), code (number), message (string)} for a successful request, code 200.', req: { ok: 'boolean', code: 'number', message: 'string' } },
-   { p: 'Extract amounts as JSON {currency (string), total (number), items (number)}: "3 items, total $42.50 USD".', req: { currency: 'string', total: 'number', items: 'number' } },
-   { p: 'Return JSON {query (string), filters: {min_price (number), in_stock (boolean)}} for searching laptops under 1000 in stock.', req: { query: 'string', filters: 'object' } },
+   {
+      p: 'Return JSON {ok (boolean), code (number), message (string)} for a successful request, code 200.',
+      req: { ok: 'boolean', code: 'number', message: 'string' },
+   },
+   {
+      p: 'Extract amounts as JSON {currency (string), total (number), items (number)}: "3 items, total $42.50 USD".',
+      req: { currency: 'string', total: 'number', items: 'number' },
+   },
+   {
+      p: 'Return JSON {query (string), filters: {min_price (number), in_stock (boolean)}} for searching laptops under 1000 in stock.',
+      req: { query: 'string', filters: 'object' },
+   },
    { p: 'Return JSON {name, coords: {lat (number), lon (number)}} for Paris (48.85, 2.35).', req: { name: 'string', coords: 'object' } },
 ];
 
@@ -83,7 +110,9 @@ const SYS = 'You output only valid JSON. No prose, no markdown fences — just t
 /** Board power (W) via lm-sensors PPT/power1_average — reads under load on the 7900 XT. */
 async function readPowerW() {
    try {
-      const { stdout } = await execP('ssh', ['-o', 'BatchMode=yes', '-o', 'ConnectTimeout=8', SSH_HOST, 'sensors -j 2>/dev/null'], { timeout: 9000 });
+      const { stdout } = await execP('ssh', ['-o', 'BatchMode=yes', '-o', 'ConnectTimeout=8', SSH_HOST, 'sensors -j 2>/dev/null'], {
+         timeout: 9000,
+      });
       const j = JSON.parse(stdout);
       for (const chip of Object.values(j)) {
          if (chip && typeof chip === 'object') {
@@ -131,7 +160,11 @@ for (const m of wanted) {
    })();
    let decodeTps = null;
    try {
-      const { timings } = await client.chat([{ role: 'user', content: 'Write a long, detailed essay about the history of computing.' }], { think: probeThink, thinkControl, max_tokens: 768, temperature: 0.7 }, 120_000);
+      const { timings } = await client.chat(
+         [{ role: 'user', content: 'Write a long, detailed essay about the history of computing.' }],
+         { think: probeThink, thinkControl, max_tokens: 768, temperature: 0.7 },
+         120_000,
+      );
       decodeTps = timings?.predicted_per_second ?? null;
    } catch {
       /* skip */
@@ -140,16 +173,35 @@ for (const m of wanted) {
    await poller;
    const avgW = pw.length ? pw.reduce((a, b) => a + b, 0) / pw.length : null;
    const tokPerW = decodeTps && avgW ? decodeTps / avgW : null;
-   console.log(`  power: ${avgW ? avgW.toFixed(0) : '?'}W · ${decodeTps ? decodeTps.toFixed(0) : '?'} tok/s → ${tokPerW ? tokPerW.toFixed(2) : '?'} tok/s/W  (${pw.length} samples)`);
+   console.log(
+      `  power: ${avgW ? avgW.toFixed(0) : '?'}W · ${decodeTps ? decodeTps.toFixed(0) : '?'} tok/s → ${tokPerW ? tokPerW.toFixed(2) : '?'} tok/s/W  (${pw.length} samples)`,
+   );
    if (tokPerW != null)
-      appendRow(input, { target: flags.target, backend: 'vulkan', model: id, think: 'n/a', bench: 'power_eff', score: tokPerW.toFixed(3), tok_s: decodeTps.toFixed(1), status: 'ok', notes: `W=${avgW.toFixed(0)} tps=${decodeTps.toFixed(1)} n=${pw.length}` });
+      appendRow(input, {
+         target: flags.target,
+         backend: 'vulkan',
+         model: id,
+         think: 'n/a',
+         bench: 'power_eff',
+         score: tokPerW.toFixed(3),
+         tok_s: decodeTps.toFixed(1),
+         status: 'ok',
+         notes: `W=${avgW.toFixed(0)} tps=${decodeTps.toFixed(1)} n=${pw.length}`,
+      });
 
    let parseOk = 0;
    let schemaOk = 0;
    for (const t of TASKS) {
       let text = '';
       try {
-         const { completion } = await client.chat([{ role: 'system', content: SYS }, { role: 'user', content: t.p }], { think: probeThink, thinkControl, max_tokens: 256, temperature: 0.0 }, 120_000);
+         const { completion } = await client.chat(
+            [
+               { role: 'system', content: SYS },
+               { role: 'user', content: t.p },
+            ],
+            { think: probeThink, thinkControl, max_tokens: 256, temperature: 0.0 },
+            120_000,
+         );
          text = completion?.choices?.[0]?.message?.content ?? '';
       } catch {
          /* request error → counts as failure */
@@ -162,8 +214,20 @@ for (const m of wanted) {
    }
    const parsePct = (parseOk / TASKS.length) * 100;
    const schemaPct = (schemaOk / TASKS.length) * 100;
-   console.log(`  valid JSON ${parseOk}/${TASKS.length} (${parsePct.toFixed(0)}%) · schema-conformant ${schemaOk}/${TASKS.length} (${schemaPct.toFixed(0)}%)`);
-   appendRow(input, { target: flags.target, backend: 'vulkan', model: id, think: 'n/a', bench: 'struct_output', score: schemaPct.toFixed(1), json_fail: TASKS.length - parseOk, status: 'ok', notes: `parse=${parsePct.toFixed(0)}% schema=${schemaPct.toFixed(0)}%` });
+   console.log(
+      `  valid JSON ${parseOk}/${TASKS.length} (${parsePct.toFixed(0)}%) · schema-conformant ${schemaOk}/${TASKS.length} (${schemaPct.toFixed(0)}%)`,
+   );
+   appendRow(input, {
+      target: flags.target,
+      backend: 'vulkan',
+      model: id,
+      think: 'n/a',
+      bench: 'struct_output',
+      score: schemaPct.toFixed(1),
+      json_fail: TASKS.length - parseOk,
+      status: 'ok',
+      notes: `parse=${parsePct.toFixed(0)}% schema=${schemaPct.toFixed(0)}%`,
+   });
 }
 await srv.stopServer();
 await srv.waitVramClear(20_000);

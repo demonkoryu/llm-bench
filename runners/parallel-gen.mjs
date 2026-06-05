@@ -17,10 +17,10 @@ import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import { loadHostConfig } from '../shared/hosts-config.mjs';
+import { loadModelsConfig } from '../shared/models-config.mjs';
 import { appendRow, ensureHeader, latestResultsFile } from '../shared/results-csv.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
-import { loadModelsConfig } from '../shared/models-config.mjs';
-import { loadHostConfig } from '../shared/hosts-config.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const { values: flags } = parseArgs({
@@ -63,7 +63,9 @@ const PROMPTS = [
    'Walk through building a compiler front-end in detail.',
 ];
 
-console.log(`\n[parallel-gen] ${wanted.length} models · concurrency [${CONC.join(', ')}] · gen ${GEN} · --parallel ${MAXP} · ${LLAMA_URL}\n`);
+console.log(
+   `\n[parallel-gen] ${wanted.length} models · concurrency [${CONC.join(', ')}] · gen ${GEN} · --parallel ${MAXP} · ${LLAMA_URL}\n`,
+);
 for (const m of wanted) {
    const id = m.hf_file.replace(/\.gguf$/, '');
    console.log(`\n══ ${m.label ?? id}`);
@@ -85,7 +87,11 @@ for (const m of wanted) {
       const t0 = now();
       const reqs = Array.from({ length: k }, (_, i) =>
          client
-            .chat([{ role: 'user', content: `(${i}-${t0}) ${PROMPTS[i % PROMPTS.length]}` }], { think: null, max_tokens: GEN, temperature: 0.7 }, 300_000)
+            .chat(
+               [{ role: 'user', content: `(${i}-${t0}) ${PROMPTS[i % PROMPTS.length]}` }],
+               { think: null, max_tokens: GEN, temperature: 0.7 },
+               300_000,
+            )
             .then((r) => r.completion?.usage?.completion_tokens ?? 0)
             .catch(() => 0),
       );
@@ -96,7 +102,9 @@ for (const m of wanted) {
       const perSlot = aggTps / k;
       if (k === 1) base = aggTps;
       const speedup = base ? (aggTps / base).toFixed(2) : '?';
-      console.log(`  K=${String(k).padStart(2)}: agg ${aggTps.toFixed(0).padStart(5)} tok/s  (${perSlot.toFixed(0)}/slot · ${speedup}× vs K=1)  [${total} toks / ${wallS.toFixed(1)}s]`);
+      console.log(
+         `  K=${String(k).padStart(2)}: agg ${aggTps.toFixed(0).padStart(5)} tok/s  (${perSlot.toFixed(0)}/slot · ${speedup}× vs K=1)  [${total} toks / ${wallS.toFixed(1)}s]`,
+      );
       appendRow(input, {
          target: flags.target,
          backend: BACKEND,

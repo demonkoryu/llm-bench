@@ -18,10 +18,10 @@ import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import { loadHostConfig } from '../shared/hosts-config.mjs';
+import { loadModelsConfig } from '../shared/models-config.mjs';
 import { appendRow, ensureHeader, latestResultsFile, readTable } from '../shared/results-csv.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
-import { loadModelsConfig } from '../shared/models-config.mjs';
-import { loadHostConfig } from '../shared/hosts-config.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const { values: flags } = parseArgs({
@@ -111,7 +111,9 @@ for (const m of wanted) {
       }
       if (d === 0) base = res.decode;
       const pct = base ? ((res.decode / base) * 100).toFixed(0) : '?';
-      console.log(`  depth ${String(Math.round(d / 1024) + 'k').padStart(4)}: decode ${res.decode?.toFixed(1).padStart(6)} tok/s  (${pct}% of base)  prefill ${res.prefill?.toFixed(0)} t/s`);
+      console.log(
+         `  depth ${String(Math.round(d / 1024) + 'k').padStart(4)}: decode ${res.decode?.toFixed(1).padStart(6)} tok/s  (${pct}% of base)  prefill ${res.prefill?.toFixed(0)} t/s`,
+      );
       appendRow(input, {
          target: flags.target,
          backend: BACKEND,
