@@ -246,7 +246,7 @@ export function loadCapabilities(modelsYamlPath) {
  * think variant inherits it via a base-model lookup. Sibling variants are tagged
  * maxctxSharedFrom so a renderer can show "same as <owner>" instead of a blank.
  *
- * @returns {{ models, ranking, maxCtx, maxSpeed, weights }}
+ * @returns {{ models, ranking, maxCtx, maxE2E, minTtft8k, maxFreeVram, weights }}
  */
 export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
    const data = rows.filter((r) => r.status === 'ok' && r.bench !== 'load' && r.bench !== 'smoke');
@@ -517,8 +517,6 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
 
    const freeVram = (m) => (m.maxctxVram != null ? CARD_TOTAL_MIB - m.maxctxVram : null);
    const maxCtx = Math.max(...models.map((m) => m.maxctx ?? 0)) || 1;
-   const maxSpeed = Math.max(...models.map((m) => m.speedTg ?? 0)) || 1;
-   const maxTotal = Math.max(...models.map((m) => m.totalE2E ?? 0)) || 1;
    const maxE2E = Math.max(...models.map((m) => m.e2eThroughput ?? 0)) || 1;
    // Fleet-fastest first-token latency at the common 8k depth (lower = better), the
    // denominator-flipped reference for the latency half of the performance axis.
@@ -600,5 +598,5 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
    }
    const ranking = [...models].sort((a, b) => b.score - a.score);
 
-   return { models, ranking, maxCtx, maxSpeed, maxTotal, maxE2E, minTtft8k, maxFreeVram, weights };
+   return { models, ranking, maxCtx, maxE2E, minTtft8k, maxFreeVram, weights };
 }

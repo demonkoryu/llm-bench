@@ -29,6 +29,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs, promisify } from 'node:util';
 import { appendRow, csvFilename, ensureHeader, readTable } from '../shared/results-csv.mjs';
 import { loadModelsConfig } from '../shared/models-config.mjs';
+import { loadHostConfig } from '../shared/hosts-config.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dir, '..');
@@ -66,34 +67,8 @@ if (DEBUG) {
 }
 
 // ── Config ─────────────────────────────────────────────────────────────────────
-let yaml;
-try {
-   yaml = (await import('js-yaml')).default;
-} catch {
-   yaml = {
-      load: () => {
-         throw new Error('js-yaml not available — run npm install');
-      },
-   };
-}
-
 const modelsConfig = loadModelsConfig(join(ROOT, 'config/models.yaml'));
-const hostsConfig = yaml.load(readFileSync(join(ROOT, 'config/hosts.yaml'), 'utf8'));
-const hostCfg = hostsConfig[TARGET];
-if (!hostCfg) {
-   throw new Error(`Unknown target: ${TARGET}`);
-}
-
-function resolveEnv(s) {
-   return String(s ?? '').replace(/\$\{([^}]+)\}/g, (_, e) => {
-      const [v, d] = e.split(':-');
-      return process.env[v] ?? d ?? '';
-   });
-}
-
-const LLAMA_URL = resolveEnv(hostCfg.llamacpp);
-const SSH_HOST = resolveEnv(hostCfg.ssh_host);
-const GPU = hostCfg.gpu ?? TARGET;
+const { llamaUrl: LLAMA_URL, sshHost: SSH_HOST, gpu: GPU } = loadHostConfig(join(ROOT, 'config/hosts.yaml'), TARGET, { backend: BACKEND });
 const SAMPLING_MATRIX = modelsConfig.sampling_matrix ?? {};
 
 // ── Shared LLM imports ──────────────────────────────────────────────────────────
@@ -690,7 +665,10 @@ async function runSpeed(client) {
          continue;
       }
       rows.push({ label, decodeTps, prefillTps, wallMs: Date.now() - t0, tokens: completion.usage?.completion_tokens ?? 0 });
-      warnRunaway(`speed/${label}`, label, completion);
+      // No runaway check here: the speed bench intentionally caps at max_tokens (150)
+      // to time a fixed-size decode, and the long probe prompts for 2000 words so the
+      // model fills that budget. finish_reason='length' is the expected stop, not a
+      // divergence — warning on it (as other benches do) is a false positive.
    }
 
    // Real prefill throughput on large prompts. The short/long runs above use tiny
@@ -707,7 +685,8 @@ async function runSpeed(client) {
          // a bogus (tiny-processed) prefill rate. A unique leading nonce forces a
          // full fresh prefill every time.
          const um = built.messages[built.messages.length - 1];
-         um.content = `// prefill probe ${(_speedNonce += 1)}\n${um.content}`;
+         _speedNonce += 1;
+         um.content = `// prefill probe ${_speedNonce}\n${um.content}`;
          await client.chat(built.messages, { think: null, max_tokens: 8, temperature: 0.0 }, 300_000);
          rows.push({ label, decodeTps: client.tokPerSec(), prefillTps: client.prefillTokPerSec() });
       } catch (e) {

@@ -14,13 +14,14 @@
  * Usage: node runners/quality-decay.mjs [--input results/<csv>] [--models a,b]
  */
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { appendRow, ensureHeader, latestResultsFile, readTable } from '../shared/results-csv.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
 import { loadModelsConfig } from '../shared/models-config.mjs';
+import { loadHostConfig } from '../shared/hosts-config.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const { values: flags } = parseArgs({
@@ -32,14 +33,8 @@ const { values: flags } = parseArgs({
    },
 });
 
-const yaml = (await import('js-yaml')).default;
 const modelsCfg = loadModelsConfig(join(ROOT, 'config/models.yaml'));
-const hostsCfg = yaml.load(readFileSync(join(ROOT, 'config/hosts.yaml'), 'utf8'));
-const host = hostsCfg[flags.target];
-const resolveEnv = (s) => String(s ?? '').replace(/\$\{([^}]+)\}/g, (_, e) => process.env[e.split(':-')[0]] ?? e.split(':-')[1] ?? '');
-const LLAMA_URL = resolveEnv(host.llamacpp);
-const SSH_HOST = resolveEnv(host.ssh_host);
-const BACKEND = 'vulkan';
+const { llamaUrl: LLAMA_URL, sshHost: SSH_HOST, backend: BACKEND } = loadHostConfig(join(ROOT, 'config/hosts.yaml'), flags.target);
 const DEPTHS = flags.depths.split(',').map(Number);
 const CHARS_PER_TOKEN = 2.8;
 

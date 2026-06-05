@@ -24,7 +24,7 @@ import { existsSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { aggregateModels, latestResultsFile, readTable } from '../shared/results-csv.mjs';
+import { aggregateModels, CARD_TOTAL_MIB, latestResultsFile, readTable } from '../shared/results-csv.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RESULTS_DIR = join(ROOT, 'results');
@@ -38,7 +38,6 @@ const { values: flags } = parseArgs({
    },
 });
 
-const CARD_TOTAL_MIB = 20464; // RX 7900 XT usable (see config/hosts.yaml)
 const RESERVE = Number(flags.reserve);
 const BUDGET = CARD_TOTAL_MIB - RESERVE;
 

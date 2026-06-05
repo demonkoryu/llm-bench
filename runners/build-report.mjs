@@ -24,16 +24,11 @@ import { existsSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { aggregateModels, latestResultsFile, loadCapabilities, readTable, SCORING } from '../shared/results-csv.mjs';
+import { aggregateModels, CARD_TOTAL_MIB, latestResultsFile, loadCapabilities, readTable, SCORING } from '../shared/results-csv.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dir, '..');
 const RESULTS_DIR = join(ROOT, 'results');
-
-// Usable VRAM on the benchmark card (RX 7900 XT, rocm-reported 21458059264 B).
-// Single-GPU benchmark (the results filename encodes the GPU); also recorded in
-// config/hosts.yaml as vram_total_mib. Used to derive free VRAM at max ctx.
-const CARD_TOTAL_MIB = 20464;
 
 const { values: flags } = parseArgs({
    options: {

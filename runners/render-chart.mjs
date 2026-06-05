@@ -19,7 +19,7 @@ import { existsSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { aggregateModels, latestResultsFile, loadCapabilities, readTable, SCORING } from '../shared/results-csv.mjs';
+import { aggregateModels, CARD_TOTAL_MIB, latestResultsFile, loadCapabilities, readTable, SCORING } from '../shared/results-csv.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dir, '..');
@@ -48,9 +48,8 @@ if (!models.length) {
 
 // Panel scale for the directly-measured end-to-end throughput panel (mean across depths).
 const maxE2E = Math.max(...models.map((m) => m.e2eThroughput ?? 0), 1);
-// Usable VRAM on the benchmark card (RX 7900 XT; see config/hosts.yaml). Free
-// VRAM at max ctx = this − used; high = model/coherence-bound, low = VRAM-bound.
-const CARD_TOTAL_MIB = 20464;
+// Free VRAM at max ctx = CARD_TOTAL_MIB − used; high = model/coherence-bound, low
+// = VRAM-bound. CARD_TOTAL_MIB is the single source in results-csv.mjs.
 const vramFree = (m) => (m.maxctxVram != null ? CARD_TOTAL_MIB - m.maxctxVram : null);
 const maxFreeVram = Math.max(...models.map((m) => vramFree(m) ?? 0), 1);
 // Decode-speed degradation under context load.
@@ -108,7 +107,7 @@ const TITLE_H = 32;
 const N = models.length;
 const PANEL_H = N * ROW_H + 8;
 
-const GRID_PANELS = 13; // one per metric panel — MUST equal METRIC_PANELS.length below
+const GRID_PANELS = 13; // one per metric panel; asserted == METRIC_PANELS.length after the array
 const GRID_ROWS = Math.ceil(GRID_PANELS / 2);
 const GRID_H = GRID_ROWS * (TITLE_H + PANEL_H + 28);
 const TABLE_H = (N + 3) * 22 + 20;
@@ -299,6 +298,13 @@ const METRIC_PANELS = [
       getMax: () => maxPowerEff,
    },
 ];
+
+// GRID_PANELS (used above to size the canvas) must match the panel count. It can't
+// reference METRIC_PANELS.length there (declared later), so catch drift loudly here
+// rather than silently clipping panels or leaving dead canvas space.
+if (METRIC_PANELS.length !== GRID_PANELS) {
+   throw new Error(`GRID_PANELS (${GRID_PANELS}) must equal METRIC_PANELS.length (${METRIC_PANELS.length})`);
+}
 
 const gridStartY = rankY + TITLE_H + N * ROW_H + 8 + 28;
 METRIC_PANELS.forEach((panel, pi) => {
