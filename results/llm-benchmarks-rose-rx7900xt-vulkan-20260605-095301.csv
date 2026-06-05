@@ -498,3 +498,56 @@ rose,vulkan,gemma-4-E4B-it-Q5_K_M--nothi,no_think,coding_hard,0.0,-,0,105.4,-,43
 rose,vulkan,gemma-4-E4B-it-Q5_K_M--think,think,coding_hard,0.0,-,0,103.8,-,4357,32768,32768,32768,ok,32,tests 83.3%
 rose,vulkan,gemma-4-26B-A4B-it-UD-Q4_K_M--nothi,no_think,coding_hard,0.0,-,0,70.2,-,17357,32768,32768,32768,ok,40,tests 0.0%
 rose,vulkan,gemma-4-26B-A4B-it-UD-Q4_K_M--think,think,coding_hard,100.0,-,0,67.1,-,17357,32768,32768,32768,ok,117,tests 100.0%
+rose,vulkan,Qwen3.5-9B-Q5_K_M,-,maxctx,161792,-,-,-,-,10267,161792,161792,161792,ok,-,
+rose,vulkan,Qwen3.5-9B-Q5_K_M--nothi,no_think,triage,86.2,8,0,71.0,-,10274,161792,161792,161792,ok,48,
+rose,vulkan,Qwen3.5-9B-Q5_K_M--nothi,no_think,reasoning,91.7,-,0,87.2,-,10267,161792,161792,161792,ok,3,
+rose,vulkan,Qwen3.5-9B-Q5_K_M--nothi,no_think,toolcalling,100.0,-,-,-,-,10267,161792,161792,161792,ok,9,
+rose,vulkan,Qwen3.5-9B-Q5_K_M--nothi,no_think,docqa,9.42,0,-,-,-,10267,161792,161792,161792,ok,20,
+rose,vulkan,Qwen3.5-9B-Q5_K_M--nothi,no_think,coding,72.2,-,0,80.3,-,10267,161792,161792,161792,ok,34,tests 70.0%
+rose,vulkan,Qwen3.5-9B-Q5_K_M--nothi,no_think,coding_hard,0.0,-,0,78.7,-,10267,161792,161792,161792,ok,48,tests 25.0%
+rose,vulkan,Qwen3.5-9B-Q5_K_M--nothi,no_think,summarization,82.2,-,-,-,-,10267,161792,161792,161792,ok,8,
+rose,vulkan,Qwen3.5-9B-Q5_K_M--nothi,no_think,speed_short,84.9,-,-,84.9,236.2,10267,161792,161792,161792,ok,-,prefill_tps=236.2
+rose,vulkan,Qwen3.5-9B-Q5_K_M--nothi,no_think,speed_long-32k,84.8,-,-,84.8,399.4,10267,161792,161792,161792,ok,-,prefill_tps=399.4
+rose,vulkan,Qwen3.5-9B-Q5_K_M--nothi,no_think,speed_prefill-4k,94.2,-,-,94.2,1892.2,10267,161792,161792,161792,ok,-,prefill_tps=1892.2
+rose,vulkan,Qwen3.5-9B-Q5_K_M--nothi,no_think,speed_prefill-12k,91.0,-,-,91.0,1858.0,10267,161792,161792,161792,ok,-,prefill_tps=1858.0
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,speed_pargen-1,81.2,,,81.2,,7580,16384,,,ok,,parallel=8 conc=1 per_slot=81.2
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,speed_pargen-2,137.0,,,137.0,,7580,16384,,,ok,,parallel=8 conc=2 per_slot=68.5
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,speed_pargen-4,218.3,,,218.3,,7580,16384,,,ok,,parallel=8 conc=4 per_slot=54.6
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,speed_pargen-8,262.8,,,262.8,,7580,16384,,,ok,,parallel=8 conc=8 per_slot=32.9
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,power_eff,0.298,,,83.1,,,,,,ok,,W=279 tps=83.1 n=38
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,struct_output,100.0,,0,,,,,,,ok,,parse=100% schema=100%
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,speed_decay-0k,85.1,,,85.1,281.8,10267,161792,,,ok,,decode@0
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,speed_decay-16k,80.0,,,80.0,1809.4,10267,161792,,,ok,,decode@16384
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,speed_decay-32k,75.4,,,75.4,1606.5,10267,161792,,,ok,,decode@32768
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,speed_decay-64k,67.5,,,67.5,1298.5,10267,161792,,,ok,,decode@65536
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,speed_decay-96k,61.3,,,61.3,1088.6,10267,161792,,,ok,,decode@98304
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,e2e-2k,522.4,,,84.2,1929.4,10267,161792,,,ok,,e2e@2048 gen256 n=3
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,ttft-2k,947,,,,,10267,161792,,,ok,,prompt_ms@2048 n=3
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,e2e-8k,1118.5,,,82.3,1938.9,10267,161792,,,ok,,e2e@8192 gen256 n=3
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,ttft-8k,3927,,,,,10267,161792,,,ok,,prompt_ms@8192 n=3
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,e2e-32k,1384.8,,,75.3,1619.9,10267,161792,,,ok,,e2e@32768 gen256 n=3
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,ttft-32k,18944,,,,,10267,161792,,,ok,,prompt_ms@32768 n=3
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,quality_decay-0k,66.7,,,,,?,161792,,,ok,,acc@0
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,ttft-0k,689,,,,,?,161792,,,ok,,prompt_ms@0
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,quality_decay-16k,66.7,,,,,?,161792,,,ok,,acc@16384
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,ttft-16k,7635,,,,,?,161792,,,ok,,prompt_ms@16384
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,quality_decay-32k,66.7,,,,,?,161792,,,ok,,acc@32768
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,ttft-32k,17013,,,,,?,161792,,,ok,,prompt_ms@32768
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,quality_decay-64k,66.7,,,,,?,161792,,,ok,,acc@65536
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,ttft-64k,41629,,,,,?,161792,,,ok,,prompt_ms@65536
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,quality_decay-96k,66.7,,,,,?,161792,,,ok,,acc@98304
+rose,vulkan,Qwen3.5-9B-Q5_K_M,n/a,ttft-96k,73921,,,,,?,161792,,,ok,,prompt_ms@98304
+rose,vulkan,Qwen3-30B-A3B-Instruct-2507-IQ4_XS,n/a,coding,94.4,-,0,128.8,-,16730,24576,24576,24576,ok,21,tests 98.2%
+rose,vulkan,Qwen3-30B-A3B-Instruct-2507-IQ4_XS,n/a,coding_hard,100.0,-,0,109.6,-,16730,24576,24576,24576,ok,9,tests 100.0%
+rose,vulkan,Qwen3-14B-Q5_K_M--nothi,no_think,coding,100.0,-,0,60.4,-,12175,24576,24576,24576,ok,33,tests 100.0%
+rose,vulkan,Qwen3-14B-Q5_K_M--nothi,no_think,coding_hard,0.0,-,0,58.6,-,12175,24576,24576,24576,ok,22,tests 58.3%
+rose,vulkan,Qwen3.5-9B-Q5_K_M--nothi,no_think,coding,77.8,-,0,80.3,-,7453,24576,24576,24576,ok,33,tests 80.0%
+rose,vulkan,Qwen3.5-9B-Q5_K_M--nothi,no_think,coding_hard,100.0,-,0,79.4,-,7453,24576,24576,24576,ok,13,tests 100.0%
+rose,vulkan,gemma-4-E4B-it-Q5_K_M--nothi,no_think,coding,100.0,-,0,98.4,-,4202,24576,24576,24576,ok,40,tests 100.0%
+rose,vulkan,gemma-4-E4B-it-Q5_K_M--nothi,no_think,coding_hard,0.0,-,0,93.8,-,4202,24576,24576,24576,ok,13,tests 91.7%
+rose,vulkan,gemma-4-26B-A4B-it-UD-Q4_K_M--nothi,no_think,coding,100.0,-,0,97.7,-,16990,24576,24576,24576,ok,30,tests 100.0%
+rose,vulkan,gemma-4-26B-A4B-it-UD-Q4_K_M--nothi,no_think,coding_hard,100.0,-,0,91.9,-,16990,24576,24576,24576,ok,10,tests 100.0%
+rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,coding,77.8,-,0,242.7,-,6231,24576,24576,24576,ok,37,tests 88.2%
+rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,coding_hard,0.0,-,1,234.6,-,6231,24576,24576,24576,ok,70,tests 0.0%
+rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,coding,88.9,-,0,169.4,-,5212,24576,24576,24576,ok,14,tests 94.5%
+rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,coding_hard,0.0,-,0,167.7,-,5212,24576,24576,24576,ok,4,tests 25.0%

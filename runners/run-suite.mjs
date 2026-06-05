@@ -140,8 +140,11 @@ const MAX_TOKENS = {
    tool: 512, // single tool call response
    instruct: 1024, // non-thinking instruct models
    docqa: 1280, // multi-hop doc-QA with citations
-   coding: 2048, // function implementation — body + edge handling
-   coding_hard: 8192, // multi-method stateful spec (2048) — headroom for always-reasoning models
+   coding: 16384, // function implementation — body + edge handling. Raised from 2048: verbose /
+   //                always-reasoning models truncated mid-solution at 2048 → empty/partial code →
+   //                false 0%. ~315s worst-case at the slowest ~52 tok/s, safely under the 600s timeout.
+   coding_hard: 16384, // multi-method stateful spec (2048-engine), no_think budget. Raised from 8192
+   //                    to match `coding` — the harder task must never get a smaller budget than the easy one.
    coding_hard_think: 20480, // capped think budget: the 2048-engine task makes verbose reasoners
    //                          (e.g. Gemma4-26B) spend >12k tokens thinking; at 12288 they truncated
    //                          mid-thought → empty code → false 0%. 20480 fits their reasoning + code
