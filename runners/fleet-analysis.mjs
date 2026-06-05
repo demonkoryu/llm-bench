@@ -2,9 +2,12 @@
 /**
  * Fleet / VRAM-packing analysis for agentic multi-model setups.
  *
- * Each model has two VRAM data points — at ctx=16384 (speed re-run) and at its
- * coherence-verified max ctx — which pin a linear VRAM(ctx) model:
+ * VRAM(ctx) is modeled linearly:
  *   VRAM(c) = weights + kv_per_token · c
+ * The kv/token slope comes from config (kv_bytes_per_token, the physical
+ * whole-model KV size); an empirical slope is used instead only when the dataset
+ * carries a second VRAM measurement at a ctx strictly below maxctx. weights is
+ * then back-solved from the coherence-verified max-ctx VRAM point.
  * From that this reports:
  *   1. Footprint at max ctx as a fraction of the card (how many fit).
  *   2. VRAM-per-ctx-token: gross (vram@maxctx / maxctx) and marginal KV/token.
@@ -24,6 +27,7 @@ import { existsSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import { loadModelsConfig } from '../shared/models-config.mjs';
 import { aggregateModels, CARD_TOTAL_MIB, latestResultsFile, readTable } from '../shared/results-csv.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -49,17 +53,38 @@ if (!existsSync(input)) {
 const rows = readTable(input);
 const { models, ranking } = aggregateModels(rows);
 
-// VRAM used at ctx=16384 by a SINGLE sequence, captured by the speed re-run
-// (ctx_loaded == 16384). speed_pargen rows allocate KV for up to 8 concurrent
-// slots, so their VRAM is inflated and must NOT seed the single-slot baseline —
-// otherwise the KV/token slope (vramMax - v16) can go negative.
-const vram16k = new Map();
+// VRAM(ctx) is modeled linearly as weights + kv·ctx. Fitting kv empirically needs
+// a SECOND VRAM point below maxctx. The speed re-run used to load at a fixed
+// ctx=16384 and supplied that point; it now reuses the maxctx-loaded server, so
+// its VRAM equals the maxctx point and carries no slope. Collect the LOWEST-ctx
+// single-slot speed VRAM point per model and use it only if it sits strictly
+// below maxctx. speed_pargen rows allocate KV for up to 8 slots, so their VRAM is
+// inflated and must NOT seed the single-slot baseline.
+const vramLow = new Map(); // base_model -> { ctx, vram } at the smallest measured ctx
 for (const r of rows) {
    const bench = String(r.bench);
-   if (bench.startsWith('speed') && !bench.startsWith('speed_pargen') && Number(r.ctx_loaded) === 16384) {
-      const v = parseFloat(r.vram_mib);
-      if (Number.isFinite(v)) vram16k.set(r.model.replace(/--(nothi|think)$/, ''), v);
+   if (!bench.startsWith('speed') || bench.startsWith('speed_pargen')) continue;
+   const ctx = Number(r.ctx_loaded);
+   const v = parseFloat(r.vram_mib);
+   if (!Number.isFinite(ctx) || !Number.isFinite(v)) continue;
+   const base = r.model.replace(/--(nothi|think)$/, '');
+   const cur = vramLow.get(base);
+   if (!cur || ctx < cur.ctx) vramLow.set(base, { ctx, vram: v });
+}
+
+// Authoritative per-token KV size (whole-model, all layers) from config — the
+// physical VRAM(ctx) slope. This is the fallback (now the common case) whenever
+// the dataset lacks a second measured VRAM point below maxctx.
+const kvCfgMiB = new Map();
+try {
+   const cfg = loadModelsConfig(join(ROOT, 'config/models.yaml'));
+   for (const cm of cfg.models ?? []) {
+      const base = String(cm.hf_file ?? '').replace(/\.gguf$/i, '');
+      const bpt = Number(cm.kv_bytes_per_token);
+      if (base && Number.isFinite(bpt) && bpt > 0) kvCfgMiB.set(base, bpt / (1024 * 1024));
    }
+} catch {
+   /* fall back to measured slope only */
 }
 
 // Think-state display tag. VRAM, weights, KV and max ctx are QUANT-determined and
@@ -81,18 +106,18 @@ const fleet = [];
 for (const m of models) {
    if (m.maxctx == null || m.maxctxVram == null) continue;
    const vramMax = m.maxctxVram;
-   const v16 = vram16k.get(m.base_model);
-   let kv = 0;
-   let weights = vramMax;
-   if (v16 != null && m.maxctx > 16384) {
-      // A negative slope is never physical — it means the 16k baseline and the
-      // maxctx VRAM were measured under different server configs (e.g. mixing
-      // -ub 512 maxctx rows with -ub 2048 16k rows inflates v16 above vramMax).
-      // Clamp to 0 so a stale/mixed dataset degrades to "no KV growth" rather
-      // than emitting nonsense weights > vramMax.
-      kv = Math.max(0, (vramMax - v16) / (m.maxctx - 16384));
-      weights = vramMax - kv * m.maxctx;
+   const low = vramLow.get(m.base_model);
+   let kv = kvCfgMiB.get(m.base_model) ?? 0; // physical KV/token (MiB) from config
+   // Prefer an empirical slope when a genuine second VRAM point exists below
+   // maxctx (two distinct ctx). A non-positive slope is non-physical — it means
+   // the two points were measured under different server configs (e.g. mixing
+   // -ub 512 maxctx rows with -ub 2048 low-ctx rows inflates the low point) — so
+   // ignore it and keep the config KV size rather than emitting nonsense.
+   if (low != null && low.ctx < m.maxctx) {
+      const measured = (vramMax - low.vram) / (m.maxctx - low.ctx);
+      if (measured > 0) kv = measured;
    }
+   const weights = Math.max(0, vramMax - kv * m.maxctx);
    fleet.push({
       id: m.base_model + thinkTag(m.think),
       base: m.base_model,
@@ -117,7 +142,9 @@ const gb = (mib) => (mib / 1024).toFixed(1);
 // ── 1 & 2: per-model footprint + efficiency (text) ───────────────────────────
 const pad = (s, n) => String(s).padEnd(n);
 console.log(`\nCard: ${CARD_TOTAL_MIB} MiB (${gb(CARD_TOTAL_MIB)} GB) usable\n`);
-console.log(`${pad('model', 42)} ${pad('qual', 5)} ${pad('maxctx', 9)} ${pad('vram@max', 9)} ${pad('%card', 6)} ${pad('KV KiB/t', 9)} fit×`);
+console.log(
+   `${pad('model', 42)} ${pad('qual', 5)} ${pad('maxctx', 9)} ${pad('vram@max', 9)} ${pad('%card', 6)} ${pad('KV KiB/t', 9)} fit×`,
+);
 for (const m of fleet) {
    console.log(
       `${pad(m.id, 42)} ${pad(m.score, 5)} ${pad(r0(m.maxctx), 9)} ${pad(r0(m.vramMax) + 'M', 9)} ${pad(m.footprintPct.toFixed(0) + '%', 6)} ${pad(m.kvPerTokKiB.toFixed(1), 9)} ${(CARD_TOTAL_MIB / m.vramMax).toFixed(1)}`,
@@ -152,9 +179,16 @@ const setups = fleet
 
 console.log(`\nBEST SINGLE-MODEL SETUPS — 1 model, weights paid ONCE, main @ max ctx + scratchpad slot`);
 console.log(`(budget ${gb(BUDGET)} GB after ${RESERVE} MiB reserve; needs --parallel + unified KV; ranked by quality)\n`);
-console.log(`${pad('model', 42)} ${pad('qual', 5)} ${pad('weights', 8)} ${pad('main ctx', 9)} ${pad('scratch', 9)} ${pad('full slots', 11)} note`);
+console.log(
+   `${pad('model', 42)} ${pad('qual', 5)} ${pad('weights', 8)} ${pad('main ctx', 9)} ${pad('scratch', 9)} ${pad('full slots', 11)} note`,
+);
 for (const s of setups) {
-   const note = s.scratch < SCRATCH_MIN ? 'VRAM-bound — no scratchpad' : s.fullSlots >= 3 ? `room for ${s.fullSlots}× full-ctx slots` : 'main + scratchpad';
+   const note =
+      s.scratch < SCRATCH_MIN
+         ? 'VRAM-bound — no scratchpad'
+         : s.fullSlots >= 3
+           ? `room for ${s.fullSlots}× full-ctx slots`
+           : 'main + scratchpad';
    console.log(
       `${pad(s.id, 42)} ${pad(s.score, 5)} ${pad(gb(s.weights) + 'G', 8)} ${pad(r0(s.main), 9)} ${pad(s.scratch < SCRATCH_MIN ? '—' : r0(s.scratch), 9)} ${pad(s.fullSlots >= 99 ? 'many' : s.fullSlots, 11)} ${note}`,
    );
@@ -195,10 +229,15 @@ const H = setupsTop + 28 + setups.length * tableRowH + 50;
 
 let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}"><rect width="${W}" height="${H}" fill="${BG}"/>`;
 svg += T(28, 38, 'LLM Fleet Planner — VRAM @ max ctx (RX 7900 XT · 20 GiB · Vulkan)', { fill: ACCENT, size: 18, w: '700' });
-svg += T(28, 58, `Card ${gb(CARD_TOTAL_MIB)} GB · one row per quant×mode (VRAM/ctx is quant-determined; think vs no-think differ only in quality) · fit× = card ÷ footprint · ★★★★★ = top-5 overall (gold = rank)`, {
-   fill: DIM,
-   size: 11,
-});
+svg += T(
+   28,
+   58,
+   `Card ${gb(CARD_TOTAL_MIB)} GB · one row per quant×mode (VRAM/ctx is quant-determined; think vs no-think differ only in quality) · fit× = card ÷ footprint · ★★★★★ = top-5 overall (gold = rank)`,
+   {
+      fill: DIM,
+      size: 11,
+   },
+);
 
 // ── Table 1: per-model footprint + efficiency ──
 svg += T(28, tableTop - 8, 'Per-model footprint & memory efficiency at max ctx', { fill: '#a0a0c0', size: 13, w: '600' });
@@ -225,11 +264,16 @@ fleet.forEach((m, i) => {
 });
 
 // ── Table 2: best single-model setups (weights once · main + scratchpad) ──
-svg += T(28, setupsTop - 8, 'Best single-model setups — weights ONCE, main @ max ctx + scratchpad (REQUIRES --parallel + --kv-unified; default splits the window)', {
-   fill: '#a0a0c0',
-   size: 13,
-   w: '600',
-});
+svg += T(
+   28,
+   setupsTop - 8,
+   'Best single-model setups — weights ONCE, main @ max ctx + scratchpad (REQUIRES --parallel + --kv-unified; default splits the window)',
+   {
+      fill: '#a0a0c0',
+      size: 13,
+      w: '600',
+   },
+);
 const scols = [
    { x: 28, label: 'Model', get: (s) => s.id, anchor: 'start' },
    { x: 470, label: 'Quality', get: (s) => s.score.toFixed(1), anchor: 'end' },
@@ -237,7 +281,12 @@ const scols = [
    { x: 660, label: 'Main ctx', get: (s) => r0(s.main), anchor: 'end' },
    { x: 765, label: 'Scratchpad', get: (s) => (s.scratch < SCRATCH_MIN ? '—' : r0(s.scratch)), anchor: 'end' },
    { x: 845, label: 'Full slots', get: (s) => (s.fullSlots >= 99 ? 'many' : String(s.fullSlots)), anchor: 'end' },
-   { x: 855, label: 'Note', get: (s) => (s.scratch < SCRATCH_MIN ? 'VRAM-bound' : s.fullSlots >= 3 ? `${s.fullSlots}× full slots` : 'main+scratch'), anchor: 'start' },
+   {
+      x: 855,
+      label: 'Note',
+      get: (s) => (s.scratch < SCRATCH_MIN ? 'VRAM-bound' : s.fullSlots >= 3 ? `${s.fullSlots}× full slots` : 'main+scratch'),
+      anchor: 'start',
+   },
 ];
 svg += R(20, setupsTop, W - 40, 24 + setups.length * tableRowH, PANEL, 8);
 for (const c of scols) svg += T(c.x, setupsTop + 18, c.label, { fill: DIM, size: 10, anchor: c.anchor });
