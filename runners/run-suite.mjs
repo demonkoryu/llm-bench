@@ -17,19 +17,28 @@
  *   --benches <name,...>   Restrict bench names
  *   --skip-maxctx          Skip the ctx-ladder probe (use ctx_cap or 8192)
  *   --dry-run              Print matrix and exit
- *   --resume               Skip combos already present in the results CSV
- *   --out <file>           Append to an existing results CSV (default: new timestamped file)
+ *   --resume               Skip combos already present (from --resume-from, else latest run)
+ *   --resume-from <run_id> Seed --resume done-keys from a specific prior run
  *   --debug                Enable LLM request/response logging (BENCH_DEBUG=1)
+ *
+ * Each invocation writes an immutable run directory: results/runs/<run_id>/run.json
+ * — a single self-describing object holding provenance (host/gpu/backend/config),
+ * lifecycle (started/finished/status: complete | partial | aborted), and this run's
+ * result rows (each stamped with a ts). Runs are never appended to after they finish
+ * — a catch-up run is its own directory, and build-report merges runs
+ * deterministically by ts/status. The status is set to 'aborted' if the process is
+ * killed mid-run, so partial runs are never mistaken for complete ones.
  */
 
 import { execFile } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { createHash } from 'node:crypto';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs, promisify } from 'node:util';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
 import { loadModelsConfig } from '../shared/models-config.mjs';
-import { appendRow, csvFilename, ensureHeader, readTable } from '../shared/results-csv.mjs';
+import { createRun, latestRun, readRun } from '../shared/results-store.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dir, '..');
@@ -49,8 +58,8 @@ const { values: flags } = parseArgs({
       ctx: { type: 'string' }, // with --skip-maxctx: start server at this fixed ctx (skip the search)
       'dry-run': { type: 'boolean', default: false },
       resume: { type: 'boolean', default: false },
+      'resume-from': { type: 'string' }, // run id to seed --resume done-keys from (default: latest run)
       debug: { type: 'boolean', default: false },
-      out: { type: 'string' }, // append to an existing results CSV instead of a new file
    },
 });
 
@@ -201,27 +210,65 @@ export function isDivergent(text, minReps = 5) {
 const RESULTS_DIR = join(ROOT, 'results');
 mkdirSync(RESULTS_DIR, { recursive: true });
 
-// Each run writes to a self-describing CSV (host/gpu/backend/datetime). --out
-// appends to an existing CSV instead — used by resume / follow-up runs.
-const RESULTS_CSV = flags.out
-   ? resolve(flags.out) // relative to CWD, like a normal CLI path
-   : join(RESULTS_DIR, csvFilename({ host: TARGET, gpu: GPU, backend: BACKEND, date: new Date() }));
-ensureHeader(RESULTS_CSV);
+// Config epoch fingerprint: short hash of the inputs that change measured numbers
+// (backend + merged ubatch/extra-flag defaults). Stamped on every row so a report
+// can flag when it's mixing pre/post-config-change measurements.
+const CONFIG_HASH = createHash('sha1')
+   .update(JSON.stringify({ backend: BACKEND, defaults: modelsConfig.defaults?.extra_flags ?? null }))
+   .digest('hex')
+   .slice(0, 8);
 
-// Resume key = the five identity columns (target, backend, model, think, bench).
+// Captured BEFORE we create our own (empty) run dir so --resume seeds from the
+// previous run, not from the directory this invocation is about to write.
+const PRIOR_RUN = latestRun(RESULTS_DIR);
+
+// Each invocation is its own immutable run directory (results/runs/<run_id>/).
+// run.append() stamps run_id/ts/config_hash and mirrors the row into the manifest.
+// Skipped for --dry-run so a discarded invocation never leaves a stray 'running' dir.
+const run = DRY_RUN
+   ? null
+   : createRun(RESULTS_DIR, {
+        host: TARGET,
+        gpu: GPU,
+        backend: BACKEND,
+        date: new Date(),
+        kind: 'suite',
+        config_hash: CONFIG_HASH,
+        extra: {
+           filters: {
+              models: FILTER_MODELS.length ? FILTER_MODELS : null,
+              benches: FILTER_BENCHES.length ? FILTER_BENCHES : null,
+              skip_think: SKIP_THINK,
+              skip_maxctx: SKIP_MAXCTX,
+              maxctx_recheck: MAXCTX_RECHECK,
+           },
+        },
+     });
+
+// Resume key = the row identity (model, think, bench). Each run is single-host/backend,
+// so target/backend don't need to be part of the key.
 function tsvKey(model, think, bench) {
-   return `${TARGET}\t${BACKEND}\t${model}\t${think}\t${bench}`;
+   return `${model}\t${think}\t${bench}`;
 }
 
+// --resume seeds done-keys from a prior run (--resume-from <run_id>, else the latest
+// run) since each invocation now writes a fresh directory rather than appending.
 function loadDoneKeys() {
-   if (!existsSync(RESULTS_CSV)) {
+   const seedId = flags['resume-from'] ?? PRIOR_RUN;
+   if (!seedId) {
       return new Set();
    }
-   return new Set(readTable(RESULTS_CSV).map((r) => `${r.target}\t${r.backend}\t${r.model}\t${r.think}\t${r.bench}`));
+   const seed = readRun(RESULTS_DIR, seedId);
+   if (!seed) {
+      console.warn(`[run-suite] --resume: seed run not found (${seedId}); nothing to skip.`);
+      return new Set();
+   }
+   console.log(`[run-suite] --resume: skipping combos already ok in ${seedId}`);
+   return new Set(seed.results.filter((r) => r.status === 'ok').map((r) => `${r.model}\t${r.think}\t${r.bench}`));
 }
 
 function appendTsv(row) {
-   appendRow(RESULTS_CSV, row);
+   run.append(row);
 }
 
 // promptfoo JSON accumulator (compatible with `npx promptfoo view`)
@@ -858,16 +905,16 @@ const models = filterModels();
 const doneKeys = flags.resume ? loadDoneKeys() : new Set();
 
 // Seed prior max-ctx ceilings for --maxctx-recheck (extreme-only re-validation).
-// Keyed by base model id (hf_file minus .gguf — matches the CSV `model` column).
+// Keyed by base model id (hf_file minus .gguf — matches the row `model` field).
 const recheckSeeds = new Map();
 if (MAXCTX_RECHECK) {
-   const { latestResultsFile } = await import('../shared/results-csv.mjs');
-   const seedPath = flags['recheck-from'] ?? latestResultsFile(join(ROOT, 'results'));
-   if (!seedPath || !existsSync(seedPath)) {
-      console.error(`[run-suite] --maxctx-recheck needs a seed CSV; none found (${seedPath ?? 'no results file'}).`);
+   const seedId = flags['recheck-from'] ?? latestRun(RESULTS_DIR);
+   const seed = seedId ? readRun(RESULTS_DIR, seedId) : null;
+   if (!seed) {
+      console.error(`[run-suite] --maxctx-recheck needs a seed run; none found (${seedId ?? 'no runs'}).`);
       process.exit(1);
    }
-   for (const row of readTable(seedPath)) {
+   for (const row of seed.results) {
       if (row.bench === 'maxctx') {
          const c = Number(row.coherence_ceiling ?? row.ctx_loaded);
          if (Number.isFinite(c) && c > 0) {
@@ -875,7 +922,7 @@ if (MAXCTX_RECHECK) {
          }
       }
    }
-   console.log(`[run-suite] maxctx-recheck: seeded ${recheckSeeds.size} prior ceilings from ${seedPath}`);
+   console.log(`[run-suite] maxctx-recheck: seeded ${recheckSeeds.size} prior ceilings from ${seedId}`);
 }
 
 if (!models.length) {
@@ -890,6 +937,7 @@ await srv.killAll();
 // SIGINT / SIGTERM handler
 async function shutdown(sig) {
    console.log(`\n[run-suite] ${sig} received — stopping remote server...`);
+   run?.finalize('aborted'); // mark the run incomplete so its partial rows aren't taken as a full run
    flushPfJson();
    await srv.killAll().catch(() => {});
    process.exit(1);
@@ -1469,21 +1517,24 @@ for (const model of models) {
 } // end model loop
 
 flushPfJson();
+const finalStatus = run.finalize('complete'); // clean exit — the run covered its full matrix
 
-// Build the summary report (report.json) and SVG chart directly from the CSV.
+// Build the summary report + chart. When resuming, merge this run with the run it
+// resumed from so the report reflects base + catch-up (ts/status arbitrate overlaps).
 const REPORT_JSON = join(RESULTS_DIR, 'report.json');
 const CHART_SVG = join(RESULTS_DIR, 'chart.svg');
+const reportInputs = [run.runId, ...(flags.resume && PRIOR_RUN ? [PRIOR_RUN] : [])].flatMap((id) => ['--input', id]);
 try {
-   await execP('node', [join(ROOT, 'runners/build-report.mjs'), '--input', RESULTS_CSV, '--output', REPORT_JSON]);
+   await execP('node', [join(ROOT, 'runners/build-report.mjs'), ...reportInputs, '--output', REPORT_JSON]);
    console.log(`[run-suite] report → ${REPORT_JSON}`);
 } catch (e) {
    console.warn(`[run-suite] report build failed: ${e.message.slice(0, 120)}`);
 }
 try {
-   await execP('node', [join(ROOT, 'runners/render-chart.mjs'), '--input', RESULTS_CSV, '--output', CHART_SVG]);
+   await execP('node', [join(ROOT, 'runners/render-chart.mjs'), ...reportInputs, '--output', CHART_SVG]);
    console.log(`[run-suite] chart → ${CHART_SVG}`);
 } catch (e) {
    console.warn(`[run-suite] chart render failed: ${e.message.slice(0, 120)}`);
 }
 
-console.log(`\n[run-suite] Done. Results: ${RESULTS_CSV}`);
+console.log(`\n[run-suite] Done (${finalStatus}). Run: ${run.dir}`);

@@ -13,13 +13,12 @@
  */
 
 import { execFile } from 'node:child_process';
-import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs, promisify } from 'node:util';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
 import { loadModelsConfig } from '../shared/models-config.mjs';
-import { appendRow, ensureHeader, latestResultsFile } from '../shared/results-csv.mjs';
+import { openSecondaryRun } from '../shared/results-store.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
 
 const execP = promisify(execFile);
@@ -30,14 +29,10 @@ const { values: flags } = parseArgs({
 });
 
 const modelsCfg = loadModelsConfig(join(ROOT, 'config/models.yaml'));
-const { llamaUrl: LLAMA_URL, sshHost: SSH_HOST } = loadHostConfig(join(ROOT, 'config/hosts.yaml'), flags.target);
+const { llamaUrl: LLAMA_URL, sshHost: SSH_HOST, gpu: GPU } = loadHostConfig(join(ROOT, 'config/hosts.yaml'), flags.target);
 
-const input = flags.input ?? latestResultsFile(join(ROOT, 'results'));
-if (!existsSync(input)) {
-   console.error(`Input not found: ${input}`);
-   process.exit(1);
-}
-ensureHeader(input);
+// Writes its own run directory (struct-output kind); does not mutate any prior run.
+const { run } = openSecondaryRun(join(ROOT, 'results'), { target: flags.target, gpu: GPU, kind: 'struct-output', inputFlag: flags.input });
 
 // Each task: prompt + required {key: type}. type ∈ string|number|boolean|array|object.
 const isType = (v, t) =>
@@ -177,7 +172,7 @@ for (const m of wanted) {
       `  power: ${avgW ? avgW.toFixed(0) : '?'}W · ${decodeTps ? decodeTps.toFixed(0) : '?'} tok/s → ${tokPerW ? tokPerW.toFixed(2) : '?'} tok/s/W  (${pw.length} samples)`,
    );
    if (tokPerW != null)
-      appendRow(input, {
+      run.append({
          target: flags.target,
          backend: 'vulkan',
          model: id,
@@ -217,7 +212,7 @@ for (const m of wanted) {
    console.log(
       `  valid JSON ${parseOk}/${TASKS.length} (${parsePct.toFixed(0)}%) · schema-conformant ${schemaOk}/${TASKS.length} (${schemaPct.toFixed(0)}%)`,
    );
-   appendRow(input, {
+   run.append({
       target: flags.target,
       backend: 'vulkan',
       model: id,
@@ -231,4 +226,5 @@ for (const m of wanted) {
 }
 await srv.stopServer();
 await srv.waitVramClear(20_000);
-console.log(`\n[struct-output] done → rows appended to ${input}`);
+run.finalize('complete');
+console.log(`\n[struct-output] done → ${run.dir}`);

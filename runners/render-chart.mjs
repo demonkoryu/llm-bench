@@ -2,24 +2,24 @@
 /**
  * Data-driven SVG chart renderer for llm-bench results.
  *
- * Reads results/results.tsv and renders:
- *   1. Overall weighted ranking (multiplicative; see SCORING in results-csv.mjs)
+ * Reads one or more runs and renders:
+ *   1. Overall weighted ranking (multiplicative; see SCORING in results-store.mjs)
  *   2. Per-metric bar panels (throughput, TTFT latency, max context, triage, toolcalling, docqa, summarization)
  *   3. Score breakdown table
  *
  * Usage:
  *   node runners/render-chart.mjs
- *   node runners/render-chart.mjs --input results/my-results.tsv --output results/chart.svg
+ *   node runners/render-chart.mjs --input <run-id> --output results/chart.svg
  *
  * Output: results/chart.svg (+ a PNG alongside it, best-effort via sharp, since
  *         many viewers render PNG inline but not SVG)
  */
 
-import { existsSync, writeFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { aggregateModels, CARD_TOTAL_MIB, latestResultsFile, loadCapabilities, readTable, SCORING } from '../shared/results-csv.mjs';
+import { aggregateModels, CARD_TOTAL_MIB, loadCapabilities, loadRuns, mergeResultRows, SCORING } from '../shared/results-store.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dir, '..');
@@ -27,18 +27,21 @@ const RESULTS_DIR = join(ROOT, 'results');
 
 const { values: flags } = parseArgs({
    options: {
-      input: { type: 'string' },
+      input: { type: 'string', multiple: true },
       output: { type: 'string', default: join(RESULTS_DIR, 'chart.svg') },
    },
 });
 
 // ── Read & aggregate ────────────────────────────────────────────────────────────
-const inputPath = flags.input ?? latestResultsFile(RESULTS_DIR);
-if (!existsSync(inputPath)) {
-   console.error(`Results file not found: ${inputPath}`);
-   process.exit(1);
+// Accepts one or more --input (run id | run dir | run.json); rows are merged by
+// ts/status so input order is irrelevant (a base run + a catch-up run chart the
+// same either way). With no --input, the newest run is used.
+const runs = loadRuns(RESULTS_DIR, flags.input);
+if (!runs.length) {
+   console.error('No runs found. Run the benchmark first, or pass --input <run-id>.');
+   process.exit(0);
 }
-const { models, ranking, maxCtx } = aggregateModels(readTable(inputPath));
+const { models, ranking, maxCtx } = aggregateModels(mergeResultRows(runs.flatMap((r) => r.results)));
 const CAPS = loadCapabilities(join(ROOT, 'config/models.yaml'));
 
 if (!models.length) {
@@ -49,7 +52,7 @@ if (!models.length) {
 // Panel scale for the directly-measured end-to-end throughput panel (mean across depths).
 const maxE2E = Math.max(...models.map((m) => m.e2eThroughput ?? 0), 1);
 // Free VRAM at max ctx = CARD_TOTAL_MIB − used; high = model/coherence-bound, low
-// = VRAM-bound. CARD_TOTAL_MIB is the single source in results-csv.mjs.
+// = VRAM-bound. CARD_TOTAL_MIB is the single source in results-store.mjs.
 const vramFree = (m) => (m.maxctxVram != null ? CARD_TOTAL_MIB - m.maxctxVram : null);
 const maxFreeVram = Math.max(...models.map((m) => vramFree(m) ?? 0), 1);
 // Decode-speed degradation under context load.

@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * Build a machine-readable summary (report.json) from one or more results CSVs.
+ * Build a machine-readable summary (report.json) from one or more runs.
  *
  * report.json schema:
  *   {
  *     generated:    ISO timestamp,
- *     sources:      [csv filenames],
+ *     sources:      [run ids (kind/status)],
  *     environment:  { host, gpu, backend },
  *     scoring:      { formula, gates, amplifiers, rest_weights },
  *     models: [{ model, base_model, label, think, maxctx, maxctx_shared_from,
@@ -14,17 +14,23 @@
  *     ranking: [{ rank, label, model, think, weighted_score }]
  *   }
  *
+ * Each --input may be a bare run id, a run directory (results/runs/<id>/), or a
+ * run.json path. Rows from all runs are merged deterministically by mergeResultRows
+ * — a successful measurement beats an error and the newest `ts` wins, so input
+ * ORDER no longer matters (a base run and a catch-up run produce the same report
+ * regardless of which is listed first). With no --input, the newest run is used.
+ *
  * Usage:
- *   node runners/build-report.mjs                          # newest results CSV
- *   node runners/build-report.mjs --input a.csv --input b.csv   # merge multiple
- *   node runners/build-report.mjs --output results/report.json
+ *   node runners/build-report.mjs                                 # newest run
+ *   node runners/build-report.mjs --input <run-id> --input <run-id>   # merge runs
+ *   node runners/build-report.mjs --input <run-id> --output results/report.json
  */
 
-import { existsSync, writeFileSync } from 'node:fs';
-import { basename, dirname, join } from 'node:path';
+import { writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { aggregateModels, CARD_TOTAL_MIB, latestResultsFile, loadCapabilities, readTable, SCORING } from '../shared/results-csv.mjs';
+import { aggregateModels, CARD_TOTAL_MIB, loadCapabilities, loadRuns, mergeResultRows, SCORING } from '../shared/results-store.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dir, '..');
@@ -37,38 +43,33 @@ const { values: flags } = parseArgs({
    },
 });
 
-const inputs = flags.input?.length ? flags.input : [latestResultsFile(RESULTS_DIR)];
-for (const p of inputs) {
-   if (!existsSync(p)) {
-      console.error(`Input not found: ${p}`);
-      process.exit(1);
-   }
+const runs = loadRuns(RESULTS_DIR, flags.input);
+if (!runs.length) {
+   console.error('No runs found. Run the suite first, or pass --input <run-id>.');
+   process.exit(1);
 }
 
-// Merge rows from all inputs; dedup by model|think|bench, later input wins.
-const merged = new Map();
-for (const p of inputs) {
-   for (const row of readTable(p)) {
-      merged.set(`${row.model}|${row.think}|${row.bench}`, row);
-   }
-}
-const rows = [...merged.values()];
+// Merge rows across all runs deterministically (ts + status arbitrate, not order).
+const rows = mergeResultRows(runs.flatMap((r) => r.results));
 if (!rows.length) {
-   console.error('No result rows found in input(s).');
+   console.error('No result rows found in run(s).');
    process.exit(1);
+}
+
+/** Describe a run for report provenance: run id + kind/status (self-describing in run.json). */
+function describeSource(run) {
+   return `${run.run_id} (${run.kind}/${run.status})`;
 }
 
 const { models, ranking } = aggregateModels(rows);
 
-/** Parse environment from the canonical filename llm-benchmarks-<host>-<gpu>-<backend>-<datetime>.csv */
-function envFromName(name) {
-   const m = /^llm-benchmarks-([^-]+)-([^-]+)-([^-]+)-/.exec(basename(name));
-   return m ? { host: m[1], gpu: m[2], backend: m[3] } : {};
-}
-// CSV columns are authoritative for host/backend when present; gpu only lives in the name.
+// host/gpu/backend live on the run object; row fields (target/backend) override when present.
 const sample = rows[0] ?? {};
+const first = runs[0] ?? {};
 const environment = {
-   ...envFromName(inputs[0]),
+   ...(first.host ? { host: first.host } : {}),
+   ...(first.gpu ? { gpu: first.gpu } : {}),
+   ...(first.backend ? { backend: first.backend } : {}),
    ...(sample.target ? { host: sample.target } : {}),
    ...(sample.backend ? { backend: sample.backend } : {}),
 };
@@ -77,10 +78,10 @@ const caps = loadCapabilities(join(ROOT, 'config/models.yaml'));
 
 const report = {
    generated: new Date().toISOString(),
-   sources: inputs.map((p) => basename(p)),
+   sources: runs.map(describeSource),
    environment,
    // Multiplicative scoring: two hard gates × a context/VRAM amplifier × the
-   // weighted "rest" axes. See SCORING in shared/results-csv.mjs.
+   // weighted "rest" axes. See SCORING in shared/results-store.mjs.
    scoring: SCORING,
    models: models.map((m) => ({
       model: m.model,

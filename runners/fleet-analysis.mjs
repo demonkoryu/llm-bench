@@ -20,20 +20,20 @@
  *
  * Emits text + results/fleet.svg + results/fleet.png.
  *
- * Usage: node runners/fleet-analysis.mjs [--input results/<csv>] [--sec-ctx 32768]
+ * Usage: node runners/fleet-analysis.mjs [--input <run-id>] [--sec-ctx 32768]
  */
 
-import { existsSync, writeFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { aggregateModels, CARD_TOTAL_MIB, latestResultsFile, readTable } from '../shared/results-csv.mjs';
+import { aggregateModels, CARD_TOTAL_MIB, loadRuns, mergeResultRows } from '../shared/results-store.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RESULTS_DIR = join(ROOT, 'results');
 const { values: flags } = parseArgs({
    options: {
-      input: { type: 'string' },
+      input: { type: 'string', multiple: true },
       output: { type: 'string', default: join(RESULTS_DIR, 'fleet.svg') },
       'sec-ctx': { type: 'string', default: '32768' },
       reserve: { type: 'string', default: '512' },
@@ -44,12 +44,14 @@ const { values: flags } = parseArgs({
 const RESERVE = Number(flags.reserve);
 const BUDGET = CARD_TOTAL_MIB - RESERVE;
 
-const input = flags.input ?? latestResultsFile(RESULTS_DIR);
-if (!existsSync(input)) {
-   console.error(`Input not found: ${input}`);
+// Accepts one or more --input (run id | run dir | run.json). kv_per_tok now lives in
+// its own kvprobe run, so merging the suite + the kv-probe run is the normal case here.
+const runs = loadRuns(RESULTS_DIR, flags.input);
+if (!runs.length) {
+   console.error('No runs found. Run the suite + kv-probe first, or pass --input <run-id>.');
    process.exit(1);
 }
-const rows = readTable(input);
+const rows = mergeResultRows(runs.flatMap((r) => r.results));
 const { models, ranking } = aggregateModels(rows);
 
 // Directly-measured KV/token slope (MiB/token), from runners/kv-probe.mjs, which

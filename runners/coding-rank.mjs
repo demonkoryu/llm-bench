@@ -9,7 +9,7 @@
  *   • test-rate — per-test pass rate (parsed from `notes` "tests N%"). More
  *                 granular; discriminates partial solutions.
  *
- * Combination (test-rate-weighted — mirrors shared/results-csv.mjs codingGradeOf):
+ * Combination (test-rate-weighted — mirrors shared/results-store.mjs codingGradeOf):
  *
  *     combined(state) = W_PASS1·pass@1 + W_TESTRATE·test_rate
  *
@@ -18,18 +18,17 @@
  *   • cold   : the no_think / null state only — rewards solving WITHOUT thinking
  *              (an efficiency signal; demotes models that need to think).
  *
- * Data: merges every results/llm-benchmarks-*.csv, newest-file-wins per
- * (model, think, bench), so corrected re-runs supersede the originals
- * automatically. Standalone — does NOT feed the multiplicative fleet composite
- * (that normalizes the same grade to a multiplier; this is the raw view).
+ * Data: merges EVERY run under results/runs/ deterministically (ok beats error,
+ * newest ts wins per (model, think, bench)), so corrected re-runs supersede the
+ * originals automatically. Standalone — does NOT feed the multiplicative fleet
+ * composite (that normalizes the same grade to a multiplier; this is the raw view).
  *
  *   node runners/coding-rank.mjs
  */
 
-import { readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readTable } from '../shared/results-csv.mjs';
+import { loadAllRuns, mergeResultRows } from '../shared/results-store.mjs';
 
 const W_PASS1 = 0.4;
 const W_TESTRATE = 0.6;
@@ -45,16 +44,13 @@ const testRate = (notes) => {
    return m ? Number(m[1]) : null;
 };
 
-// ── Merge all coding rows, newest file wins per (base, think) ─────────────────
-const files = readdirSync(RESULTS)
-   .filter((f) => /^llm-benchmarks-.*\.csv$/.test(f))
-   .sort(); // filenames carry a sortable YYYYMMDD-HHMMSS stamp → ascending = oldest first
-const merged = new Map(); // `${base}|${think}` → row (last write = newest file)
-for (const f of files) {
-   for (const r of readTable(join(RESULTS, f))) {
-      if (r.bench === 'coding_multipl') {
-         merged.set(`${baseId(r.model)}|${r.think}`, { ...r, _file: f });
-      }
+// ── Merge all coding rows across every run (ok beats error, newest ts wins) ───
+const runs = loadAllRuns(RESULTS);
+const allRows = mergeResultRows(runs.flatMap((r) => r.results));
+const merged = new Map(); // `${base}|${think}` → authoritative coding row
+for (const r of allRows) {
+   if (r.bench === 'coding_multipl') {
+      merged.set(`${baseId(r.model)}|${r.think}`, r);
    }
 }
 
@@ -106,7 +102,7 @@ rows.sort((a, b) => b.bestScore - a.bestScore);
 
 const pad = (s, n) => String(s).padEnd(n);
 const num = (v, n = 5) => (v == null || !Number.isFinite(v) ? '—'.padStart(n) : v.toFixed(1).padStart(n));
-console.log(`\nCoding score = ${W_PASS1}·pass@1 + ${W_TESTRATE}·test-rate   (${files.length} result files merged)\n`);
+console.log(`\nCoding score = ${W_PASS1}·pass@1 + ${W_TESTRATE}·test-rate   (${runs.length} runs merged)\n`);
 console.log(pad('model', 34), pad('best', 6), pad('via', 9), pad('pass@1', 7), pad('tests', 6), pad('cold(no-think)', 14));
 console.log('─'.repeat(83));
 for (const r of rows) {

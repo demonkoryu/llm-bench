@@ -1,13 +1,13 @@
 /**
- * Convert a results CSV (or legacy TSV) to a consolidated markdown report.
- * Usage: node runners/results-to-md.mjs [--input <file>] [--output results/report.md]
+ * Convert one or more runs to a consolidated markdown report.
+ * Usage: node runners/results-to-md.mjs [--input <run-id>] [--output results/report.md]
  */
 
-import { existsSync, writeFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { latestResultsFile, readTable } from '../shared/results-csv.mjs';
+import { loadRuns, mergeResultRows } from '../shared/results-store.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dir, '..');
@@ -15,17 +15,18 @@ const RESULTS_DIR = join(ROOT, 'results');
 
 const { values: flags } = parseArgs({
    options: {
-      input: { type: 'string' },
+      input: { type: 'string', multiple: true },
       output: { type: 'string', default: join(RESULTS_DIR, 'report.md') },
    },
 });
 
-const inputPath = flags.input ?? latestResultsFile(RESULTS_DIR);
-if (!existsSync(inputPath)) {
-   console.error(`Results file not found: ${inputPath}`);
+// Accepts one or more --input (run id | run dir | run.json); rows merged by ts/status.
+const runs = loadRuns(RESULTS_DIR, flags.input);
+if (!runs.length) {
+   console.error('No runs found. Run the suite first, or pass --input <run-id>.');
    process.exit(1);
 }
-const rows = readTable(inputPath);
+const rows = mergeResultRows(runs.flatMap((r) => r.results));
 
 // Group by bench type
 const byBench = {};
@@ -39,7 +40,7 @@ for (const r of rows) {
 const lines_out = [
    '# LLM Benchmark Report',
    '',
-   `Generated from \`${inputPath.split(/[\\/]/).pop()}\` — ${rows.length} result rows across ${Object.keys(byBench).length} bench types.`,
+   `Generated from ${runs.map((r) => `\`${r.run_id}\``).join(', ')} — ${rows.length} result rows across ${Object.keys(byBench).length} bench types.`,
    '',
 ];
 

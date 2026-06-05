@@ -14,13 +14,12 @@
  * Usage: node runners/quality-decay.mjs [--input results/<csv>] [--models a,b]
  */
 
-import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
 import { loadModelsConfig } from '../shared/models-config.mjs';
-import { appendRow, ensureHeader, latestResultsFile, readTable } from '../shared/results-csv.mjs';
+import { openSecondaryRun } from '../shared/results-store.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -34,19 +33,30 @@ const { values: flags } = parseArgs({
 });
 
 const modelsCfg = loadModelsConfig(join(ROOT, 'config/models.yaml'));
-const { llamaUrl: LLAMA_URL, sshHost: SSH_HOST, backend: BACKEND } = loadHostConfig(join(ROOT, 'config/hosts.yaml'), flags.target);
+const {
+   llamaUrl: LLAMA_URL,
+   sshHost: SSH_HOST,
+   backend: BACKEND,
+   gpu: GPU,
+} = loadHostConfig(join(ROOT, 'config/hosts.yaml'), flags.target);
 const DEPTHS = flags.depths.split(',').map(Number);
 const CHARS_PER_TOKEN = 2.8;
 
-const input = flags.input ?? latestResultsFile(join(ROOT, 'results'));
-if (!existsSync(input)) {
-   console.error(`Input not found: ${input}`);
+// Writes its own run directory (quality-decay kind); reads maxctx from the seed but never mutates it.
+const { run, seedRows } = openSecondaryRun(join(ROOT, 'results'), {
+   target: flags.target,
+   gpu: GPU,
+   backend: BACKEND,
+   kind: 'quality-decay',
+   inputFlag: flags.input,
+});
+if (!seedRows.length) {
+   console.error('Seed run has no result rows — run the suite (maxctx ladder) first.');
    process.exit(1);
 }
-ensureHeader(input);
 
 const maxctxByModel = new Map();
-for (const r of readTable(input)) {
+for (const r of seedRows) {
    if (r.bench === 'maxctx' && Number.isFinite(parseFloat(r.score))) maxctxByModel.set(r.model, parseFloat(r.score));
 }
 
@@ -128,7 +138,7 @@ for (const m of wanted) {
       console.log(
          `  depth ${String(Math.round(d / 1024) + 'k').padStart(4)}: accuracy ${acc.toFixed(0).padStart(3)}%  (ret ${ret})  TTFT ${ttft ? (ttft / 1000).toFixed(1) + 's' : '?'}`,
       );
-      appendRow(input, {
+      run.append({
          target: flags.target,
          backend: BACKEND,
          model: id,
@@ -141,7 +151,7 @@ for (const m of wanted) {
          notes: `acc@${d}`,
       });
       if (ttft != null)
-         appendRow(input, {
+         run.append({
             target: flags.target,
             backend: BACKEND,
             model: id,
@@ -157,4 +167,5 @@ for (const m of wanted) {
 }
 await srv.stopServer();
 await srv.waitVramClear(20_000);
-console.log(`\n[quality-decay] done → rows appended to ${input}`);
+run.finalize('complete');
+console.log(`\n[quality-decay] done → ${run.dir}`);

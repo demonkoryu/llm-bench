@@ -32,13 +32,12 @@
  *                                         [--depths 2048,8192,32768] [--gen 256] [--reps 3]
  */
 
-import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
 import { loadModelsConfig } from '../shared/models-config.mjs';
-import { appendRow, ensureHeader, latestResultsFile, readTable } from '../shared/results-csv.mjs';
+import { openSecondaryRun } from '../shared/results-store.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -54,22 +53,33 @@ const { values: flags } = parseArgs({
 });
 
 const modelsCfg = loadModelsConfig(join(ROOT, 'config/models.yaml'));
-const { llamaUrl: LLAMA_URL, sshHost: SSH_HOST, backend: BACKEND } = loadHostConfig(join(ROOT, 'config/hosts.yaml'), flags.target);
+const {
+   llamaUrl: LLAMA_URL,
+   sshHost: SSH_HOST,
+   backend: BACKEND,
+   gpu: GPU,
+} = loadHostConfig(join(ROOT, 'config/hosts.yaml'), flags.target);
 const GEN = Number(flags.gen);
 const REPS = Math.max(1, Number(flags.reps));
 const DEPTHS = flags.depths.split(',').map(Number);
 
-const input = flags.input ?? latestResultsFile(join(ROOT, 'results'));
-if (!existsSync(input)) {
-   console.error(`Input not found: ${input}`);
+// Writes its own run directory (throughput-ttft kind); reads maxctx from the seed but never mutates it.
+const { run, seedRows } = openSecondaryRun(join(ROOT, 'results'), {
+   target: flags.target,
+   gpu: GPU,
+   backend: BACKEND,
+   kind: 'throughput-ttft',
+   inputFlag: flags.input,
+});
+if (!seedRows.length) {
+   console.error('Seed run has no result rows — run the suite (maxctx ladder) first.');
    process.exit(1);
 }
-ensureHeader(input);
 
 // Per-model measured max ctx from the maxctx rows (used to start the server and
 // to drop depths that wouldn't fit).
 const maxctxByModel = new Map();
-for (const r of readTable(input)) {
+for (const r of seedRows) {
    if (r.bench === 'maxctx' && Number.isFinite(parseFloat(r.score))) maxctxByModel.set(r.model, parseFloat(r.score));
 }
 
@@ -122,7 +132,7 @@ for (const m of wanted) {
    const id = m.hf_file.replace(/\.gguf$/, '');
    const maxctx = maxctxByModel.get(id);
    if (!maxctx) {
-      console.log(`  ${id}: no maxctx in CSV — skipping`);
+      console.log(`  ${id}: no maxctx in seed — skipping`);
       continue;
    }
    const depths = DEPTHS.filter((d) => d + GEN + 512 < maxctx);
@@ -164,7 +174,7 @@ for (const m of wanted) {
          `  depth ${kLabel.padStart(4)}: e2e ${e2e.toFixed(1).padStart(6)} tok/s` +
             `  TTFT ${(ttft / 1000).toFixed(2)}s  (decode ${decode.toFixed(0)} · prefill ${prefill.toFixed(0)} t/s · n=${samples.length})`,
       );
-      appendRow(input, {
+      run.append({
          target: flags.target,
          backend: BACKEND,
          model: id,
@@ -178,7 +188,7 @@ for (const m of wanted) {
          status: 'ok',
          notes: `e2e@${d} gen${GEN} n=${samples.length}`,
       });
-      appendRow(input, {
+      run.append({
          target: flags.target,
          backend: BACKEND,
          model: id,
@@ -194,4 +204,5 @@ for (const m of wanted) {
 }
 await srv.stopServer();
 await srv.waitVramClear(20_000);
-console.log(`\n[throughput-ttft] done → rows appended to ${input}`);
+run.finalize('complete');
+console.log(`\n[throughput-ttft] done → ${run.dir}`);

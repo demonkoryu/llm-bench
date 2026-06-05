@@ -1,10 +1,8 @@
 node_modules/
-results/*.tsv
-results/*.csv
-results/*.md
-results/*.json
-results/*.svg
-results/*.png
+# Result store is local-only: run dirs, reports, charts all live under results/.
+# Everything is ignored except the .gitkeep that preserves the directory.
+results/*
+!results/.gitkeep
 *.out
 nohup.log
 .claude/scheduled_tasks.lock

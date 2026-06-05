@@ -23,7 +23,7 @@
  *   }
  *
  * After judge subagents write results/judge/<modelId>.verdict.json, run judge-merge.mjs
- * to fold the scores back into results/results.tsv.
+ * to record the scores as their own judge-kind run.
  *
  * Usage:
  *   node runners/judge-prep.mjs
@@ -132,4 +132,4 @@ for (const [modelId, bundle] of byModel) {
 
 console.log(`\njudge-prep: ${written} bundle(s) written to ${flags.outdir}`);
 console.log('Next: spawn one Claude Code Agent subagent per bundle with JUDGE_RUBRIC, write verdict JSON.');
-console.log('Then: node runners/judge-merge.mjs  to fold scores into results.tsv');
+console.log('Then: node runners/judge-merge.mjs  to record scores as a judge-kind run');

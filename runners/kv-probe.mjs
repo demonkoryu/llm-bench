@@ -23,13 +23,12 @@
  * Usage: node runners/kv-probe.mjs [--input results/<csv>] [--models a,b] [--low 8192]
  */
 
-import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
 import { loadModelsConfig } from '../shared/models-config.mjs';
-import { aggregateModels, appendRow, ensureHeader, latestResultsFile, readTable } from '../shared/results-csv.mjs';
+import { aggregateModels, openSecondaryRun } from '../shared/results-store.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -44,17 +43,22 @@ const { values: flags } = parseArgs({
 
 const C_LOW = Number(flags.low);
 const modelsCfg = loadModelsConfig(join(ROOT, 'config/models.yaml'));
-const { llamaUrl: LLAMA_URL, sshHost: SSH_HOST } = loadHostConfig(join(ROOT, 'config/hosts.yaml'), flags.target);
+const { llamaUrl: LLAMA_URL, sshHost: SSH_HOST, gpu: GPU } = loadHostConfig(join(ROOT, 'config/hosts.yaml'), flags.target);
 
-const input = flags.input ?? latestResultsFile(join(ROOT, 'results'));
-if (!existsSync(input)) {
-   console.error(`Input not found: ${input}`);
+// Writes its own run directory (kvprobe kind); reads maxctx from the seed but never mutates it.
+const { run, seedRows } = openSecondaryRun(join(ROOT, 'results'), {
+   target: flags.target,
+   gpu: GPU,
+   kind: 'kvprobe',
+   inputFlag: flags.input,
+});
+if (!seedRows.length) {
+   console.error('Seed run has no result rows — run the suite (maxctx ladder) first.');
    process.exit(1);
 }
-ensureHeader(input);
 
-// maxctx (cHigh) + base_model come from the already-probed ladder rows in the CSV.
-const { models: aggregated } = aggregateModels(readTable(input));
+// maxctx (cHigh) + base_model come from the already-probed ladder rows in the seed.
+const { models: aggregated } = aggregateModels(seedRows);
 const maxctxByBase = new Map();
 for (const m of aggregated) {
    if (m.maxctx != null) maxctxByBase.set(m.base_model, m.maxctx);
@@ -84,7 +88,7 @@ for (const m of wanted) {
    const cHigh = maxctxByBase.get(id);
    console.log(`\n══ ${m.label ?? id}`);
    if (cHigh == null) {
-      console.log(`  no maxctx in CSV — run the ladder first; skipping`);
+      console.log(`  no maxctx in seed — run the ladder first; skipping`);
       continue;
    }
    if (cHigh <= C_LOW) {
@@ -105,7 +109,7 @@ for (const m of wanted) {
          console.log(`  non-positive slope — not physical, not recording`);
          continue;
       }
-      appendRow(input, {
+      run.append({
          target: flags.target,
          backend: 'vulkan',
          model: id,
@@ -123,4 +127,5 @@ for (const m of wanted) {
 }
 await srv.stopServer();
 await srv.waitVramClear(20_000);
-console.log(`\n[kv-probe] done → rows appended to ${input}`);
+run.finalize('complete');
+console.log(`\n[kv-probe] done → ${run.dir}`);

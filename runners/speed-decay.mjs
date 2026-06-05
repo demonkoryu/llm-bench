@@ -14,13 +14,12 @@
  * Usage: node runners/speed-decay.mjs [--input results/<csv>] [--models a,b]
  */
 
-import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
 import { loadModelsConfig } from '../shared/models-config.mjs';
-import { appendRow, ensureHeader, latestResultsFile, readTable } from '../shared/results-csv.mjs';
+import { openSecondaryRun } from '../shared/results-store.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -35,20 +34,31 @@ const { values: flags } = parseArgs({
 });
 
 const modelsCfg = loadModelsConfig(join(ROOT, 'config/models.yaml'));
-const { llamaUrl: LLAMA_URL, sshHost: SSH_HOST, backend: BACKEND } = loadHostConfig(join(ROOT, 'config/hosts.yaml'), flags.target);
+const {
+   llamaUrl: LLAMA_URL,
+   sshHost: SSH_HOST,
+   backend: BACKEND,
+   gpu: GPU,
+} = loadHostConfig(join(ROOT, 'config/hosts.yaml'), flags.target);
 const GEN = Number(flags.gen);
 const DEPTHS = flags.depths.split(',').map(Number);
 
-const input = flags.input ?? latestResultsFile(join(ROOT, 'results'));
-if (!existsSync(input)) {
-   console.error(`Input not found: ${input}`);
+// Writes its own run directory (speed-decay kind); reads maxctx from the seed but never mutates it.
+const { run, seedRows } = openSecondaryRun(join(ROOT, 'results'), {
+   target: flags.target,
+   gpu: GPU,
+   backend: BACKEND,
+   kind: 'speed-decay',
+   inputFlag: flags.input,
+});
+if (!seedRows.length) {
+   console.error('Seed run has no result rows — run the suite (maxctx ladder) first.');
    process.exit(1);
 }
-ensureHeader(input);
 
 // Per-model measured max ctx (and vram) from the maxctx rows.
 const maxctxByModel = new Map();
-for (const r of readTable(input)) {
+for (const r of seedRows) {
    if (r.bench === 'maxctx' && Number.isFinite(parseFloat(r.score))) maxctxByModel.set(r.model, parseFloat(r.score));
 }
 
@@ -84,7 +94,7 @@ for (const m of wanted) {
    const id = m.hf_file.replace(/\.gguf$/, '');
    const maxctx = maxctxByModel.get(id);
    if (!maxctx) {
-      console.log(`  ${id}: no maxctx in CSV — skipping`);
+      console.log(`  ${id}: no maxctx in seed — skipping`);
       continue;
    }
    const ctx = maxctx; // known to load (it's the coherence ceiling)
@@ -114,7 +124,7 @@ for (const m of wanted) {
       console.log(
          `  depth ${String(Math.round(d / 1024) + 'k').padStart(4)}: decode ${res.decode?.toFixed(1).padStart(6)} tok/s  (${pct}% of base)  prefill ${res.prefill?.toFixed(0)} t/s`,
       );
-      appendRow(input, {
+      run.append({
          target: flags.target,
          backend: BACKEND,
          model: id,
@@ -132,4 +142,5 @@ for (const m of wanted) {
 }
 await srv.stopServer();
 await srv.waitVramClear(20_000);
-console.log(`\n[speed-decay] done → rows appended to ${input}`);
+run.finalize('complete');
+console.log(`\n[speed-decay] done → ${run.dir}`);

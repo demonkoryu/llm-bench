@@ -1,43 +1,52 @@
 /**
- * Reporting core for llm-bench: the CSV result format + the aggregation that
- * turns raw per-bench rows into ranked model summaries.
+ * Result store for llm-bench — a clean, JSON-native run format.
  *
- * One run writes rows during execution to a self-describing file named
- *   llm-benchmarks-<host>-<gpu>-<backend>-<YYYYMMDD-HHMMSS>.csv
- * Follow-up runs can append to an existing CSV (run-suite --out).
+ * Every runner invocation writes ONE immutable run directory:
  *
- * Consumers: run-suite (write + resume-read), build-report (→ report.json),
- * render-chart (→ chart.svg), results-to-md (→ report.md), judge-merge (rewrite).
- * All read via readTable(), which auto-detects tab vs comma so the legacy
- * results.tsv still parses during the transition.
+ *   results/runs/<run_id>/run.json
+ *
+ * run.json is fully self-describing — provenance (host/gpu/backend/config),
+ * lifecycle (started/finished/status), the planned work matrix, and the measured
+ * result rows all live in a single object:
+ *
+ *   {
+ *     run_id, kind,                       // identity + which runner produced it
+ *     host, gpu, backend, config_hash,    // provenance / config epoch
+ *     started, finished, status,          // lifecycle: running|complete|partial|aborted
+ *     seed,                               // run_id this secondary run read maxctx etc. from
+ *     planned: [{ model, think, bench }], // the matrix this run intended to cover
+ *     results: [{ model, think, bench, status, ts, ...measurements }],
+ *   }
+ *
+ * Merging partial / catch-up runs is deterministic: each result row carries a `ts`
+ * and a `status`, so dedup arbitrates by (status, timestamp) — a successful
+ * measurement always beats an error, and the newest measurement wins — NOT by file
+ * or command-line order. A base run and a catch-up run produce the same report
+ * regardless of which is listed first.
+ *
+ * Consumers (build-report, render-chart, results-to-md, fleet-analysis,
+ * coding-rank) load runs via loadRuns()/readRun() and merge with mergeResultRows().
+ * Writers (run-suite + the secondary runners) use createRun()/openSecondaryRun().
+ * There is no CSV/TSV anywhere — this is the single source of truth for the format.
  */
 
-import { appendFileSync, existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import yaml from 'js-yaml';
 
-/** Canonical column order. Header-driven readers tolerate extra columns (e.g. judge_score). */
-export const COLUMNS = [
-   'target',
-   'backend',
-   'model',
-   'think',
-   'bench',
-   'score',
-   'halls',
-   'json_fail',
-   'tok_s',
-   'prefill_tps',
-   'vram_mib',
-   'ctx_loaded',
-   'oom_ceiling',
-   'coherence_ceiling',
-   'status',
-   'wall_s',
-   'notes',
-];
+// ── Result row shape (documented, not enforced) ──────────────────────────────────
+//
+// A result row is a plain object identified by (model, think, bench). It always
+// carries `status` ('ok' | 'error' | …) and a `ts` (ISO 8601, stamped on append),
+// plus whichever measurement fields the bench produces:
+//
+//   score, halls, json_fail, tok_s, prefill_tps, vram_mib, ctx_loaded,
+//   oom_ceiling, coherence_ceiling, wall_s, notes
+//
+// Provenance (host/gpu/backend/config_hash/run_id) lives on the RUN, not the row,
+// so rows stay lean and the run object is the single place identity is recorded.
 
-// RX 7900 XT usable VRAM (MiB). Mirrors build-report.mjs / config/hosts.yaml.
+// RX 7900 XT usable VRAM (MiB). Mirrors config/hosts.yaml.
 // Used to turn "VRAM used at max ctx" into reported free headroom (no longer scored).
 export const CARD_TOTAL_MIB = 20464;
 
@@ -69,8 +78,7 @@ export const CARD_TOTAL_MIB = 20464;
 // `performance` is a composite (NOT a hard multiplier — significant but bounded by its
 // 0.25 rest-weight): 0.4·throughput + 0.6·latency, latency-favored. Throughput =
 // directly-measured E2E tok/s ÷ fleet best; latency = fleet-min TTFT ÷ this model's
-// TTFT at the common 8k depth (lower TTFT → closer to 1). It replaces the old `speed`
-// axis (which scored throughput alone at 0.15) so first-token latency now counts too.
+// TTFT at the common 8k depth (lower TTFT → closer to 1).
 export const DEFAULT_WEIGHTS = {
    reasoning: 0.2,
    triage: 0.18,
@@ -89,7 +97,7 @@ export const SCORING = {
    rest_weights: DEFAULT_WEIGHTS,
 };
 
-// ── Filename ─────────────────────────────────────────────────────────────────
+// ── Identity ─────────────────────────────────────────────────────────────────
 
 /** Lowercase, strip everything but [a-z0-9] so the slug can't introduce extra '-' separators. */
 export function slugify(s) {
@@ -108,107 +116,248 @@ export function timestamp(date) {
    );
 }
 
-/** llm-benchmarks-rose-rx7900xt-vulkan-20260603-153012.csv */
-export function csvFilename({ host, gpu, backend, date }) {
-   return `llm-benchmarks-${slugify(host)}-${slugify(gpu)}-${slugify(backend)}-${timestamp(date)}.csv`;
+/**
+ * Build a run id: <host>-<gpu>-<backend>-<datetime>, suffixed with the runner kind
+ * for non-suite runs so secondary catch-up runs (kv-probe, struct-output, …) get
+ * distinct, self-describing directories. Sorts chronologically (embedded datetime).
+ */
+export function runIdFrom({ host, gpu, backend, date, kind }) {
+   const base = `${slugify(host)}-${slugify(gpu)}-${slugify(backend)}-${timestamp(date)}`;
+   return kind && kind !== 'suite' ? `${base}-${slugify(kind)}` : base;
 }
 
-/** Newest llm-benchmarks-*.csv in resultsDir, else the legacy results.tsv. */
-export function latestResultsFile(resultsDir) {
-   const csvs = existsSync(resultsDir)
-      ? readdirSync(resultsDir)
-           .filter((f) => f.startsWith('llm-benchmarks-') && f.endsWith('.csv'))
-           .sort()
-      : [];
-   return csvs.length ? join(resultsDir, csvs[csvs.length - 1]) : join(resultsDir, 'results.tsv');
+// ── Shared (base-model-keyed) benches ────────────────────────────────────────────
+
+/**
+ * Benches recorded ONCE per base model (think-independent), keyed by base id. They
+ * do not spawn (model × think) rows in aggregation — every think variant inherits
+ * them via a base-model lookup (like maxctx). Single source of truth so the
+ * aggregation enumeration skip and any row classifier can't drift apart.
+ */
+const SHARED_BENCH_EXACT = new Set(['maxctx', 'struct_output', 'power_eff', 'kv_per_tok', 'judge']);
+const SHARED_BENCH_PREFIXES = ['speed_decay-', 'speed_pargen-', 'quality_decay-', 'ttft-', 'e2e-'];
+
+/** True for a base-model-keyed bench (see SHARED_BENCH_*). */
+export function isSharedBench(bench) {
+   const b = String(bench);
+   return SHARED_BENCH_EXACT.has(b) || SHARED_BENCH_PREFIXES.some((p) => b.startsWith(p));
 }
 
-// ── CSV read / write ───────────────────────────────────────────────────────────
+// ── Deterministic merge across runs ──────────────────────────────────────────────
 
-/** RFC-4180: quote when the field contains a comma, quote, or newline; double embedded quotes. */
-export function csvEscape(v) {
-   const s = v == null ? '' : String(v);
-   return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+/** ok beats everything; a measured error beats a blank/unknown status. */
+function statusRank(s) {
+   return s === 'ok' ? 2 : s ? 1 : 0;
 }
 
-export function headerLine(columns = COLUMNS) {
-   return columns.join(',');
-}
-
-export function formatRow(rowObj, columns = COLUMNS) {
-   return columns.map((c) => csvEscape(rowObj[c] ?? '')).join(',');
-}
-
-/** Tokenize delimited text, honoring quoted fields (only meaningful for CSV). */
-function parseDelimited(text, delim) {
-   const rows = [];
-   let row = [];
-   let field = '';
-   let inQuote = false;
-   for (let i = 0; i < text.length; i++) {
-      const ch = text[i];
-      if (inQuote) {
-         if (ch === '"') {
-            if (text[i + 1] === '"') {
-               field += '"';
-               i++;
-            } else {
-               inQuote = false;
-            }
-         } else {
-            field += ch;
-         }
-         continue;
-      }
-      if (ch === '"') {
-         inQuote = true;
-      } else if (ch === delim) {
-         row.push(field);
-         field = '';
-      } else if (ch === '\n') {
-         row.push(field);
-         rows.push(row);
-         row = [];
-         field = '';
-      } else if (ch !== '\r') {
-         field += ch;
-      }
+/** Does row `a` supersede row `b` for the same identity key? */
+function supersedes(a, b) {
+   const ra = statusRank(a.status);
+   const rb = statusRank(b.status);
+   if (ra !== rb) {
+      return ra > rb; // a successful measurement always wins over an error
    }
-   if (field.length || row.length) {
-      row.push(field);
-      rows.push(row);
+   const ta = a.ts ?? '';
+   const tb = b.ts ?? '';
+   if (ta !== tb) {
+      return ta > tb; // among same status, newest ISO ts wins
    }
-   return rows;
+   return true; // equal/absent ts → later-seen wins (append-order fallback)
 }
 
 /**
- * Read a results table into an array of row objects keyed by header.
- * Delimiter auto-detected: a tab in the header line → TSV, else CSV.
+ * Dedup rows across one or more runs by identity (model|think|bench), choosing the
+ * authoritative row per key: a successful measurement always beats an error, and
+ * among rows of equal status the newest `ts` wins. ORDER-INDEPENDENT — merging a
+ * base run and a catch-up run gives the same result regardless of order. Returns a
+ * fresh array in first-seen key order.
  */
-export function readTable(path) {
-   const text = readFileSync(path, 'utf8');
-   if (!text.trim()) {
-      return [];
+export function mergeResultRows(rows) {
+   const best = new Map();
+   const order = [];
+   for (const r of rows) {
+      const key = `${r.model}|${r.think}|${r.bench}`;
+      const prev = best.get(key);
+      if (!prev) {
+         best.set(key, r);
+         order.push(key);
+      } else if (supersedes(r, prev)) {
+         best.set(key, r);
+      }
    }
-   const nl = text.indexOf('\n');
-   const firstLine = nl < 0 ? text : text.slice(0, nl);
-   const delim = firstLine.includes('\t') ? '\t' : ',';
-   const rows = parseDelimited(text, delim).filter((r) => r.length > 1 || (r.length === 1 && r[0] !== ''));
-   if (!rows.length) {
-      return [];
-   }
-   const header = rows[0];
-   return rows.slice(1).map((cells) => Object.fromEntries(header.map((h, i) => [h, cells[i] ?? ''])));
+   return order.map((k) => best.get(k));
 }
 
-export function ensureHeader(path, columns = COLUMNS) {
-   if (!existsSync(path)) {
-      appendFileSync(path, `${headerLine(columns)}\n`);
+// ── Run-scoped layout (results/runs/<run_id>/run.json) ───────────────────────────
+
+export const RUNS_DIRNAME = 'runs';
+
+/** results/runs/<run_id>/ — one immutable directory per runner invocation. */
+export function runDir(resultsDir, runId) {
+   return join(resultsDir, RUNS_DIRNAME, runId);
+}
+
+/** results/runs/<run_id>/run.json */
+export function runJsonPath(resultsDir, runId) {
+   return join(runDir(resultsDir, runId), 'run.json');
+}
+
+/** Parse a run.json into a run object (results[] guaranteed), or null if unreadable. */
+function parseRun(path) {
+   try {
+      const run = JSON.parse(readFileSync(path, 'utf8'));
+      if (!Array.isArray(run.results)) {
+         run.results = [];
+      }
+      return run;
+   } catch {
+      return null;
    }
 }
 
-export function appendRow(path, rowObj, columns = COLUMNS) {
-   appendFileSync(path, `${formatRow(rowObj, columns)}\n`);
+/** Read a run by id, or null if absent/unparseable. */
+export function readRun(resultsDir, runId) {
+   const p = runJsonPath(resultsDir, runId);
+   return existsSync(p) ? parseRun(p) : null;
+}
+
+/** Run ids present under results/runs/ (those with a run.json), oldest → newest. */
+export function listRuns(resultsDir) {
+   const dir = join(resultsDir, RUNS_DIRNAME);
+   if (!existsSync(dir)) {
+      return [];
+   }
+   return readdirSync(dir, { withFileTypes: true })
+      .filter((d) => d.isDirectory() && existsSync(join(dir, d.name, 'run.json')))
+      .map((d) => d.name)
+      .sort(); // run ids embed a sortable timestamp
+}
+
+/** Newest run id, optionally filtered by run kind (e.g. 'suite'). */
+export function latestRun(resultsDir, { kind } = {}) {
+   const runs = listRuns(resultsDir);
+   for (let i = runs.length - 1; i >= 0; i--) {
+      if (!kind || readRun(resultsDir, runs[i])?.kind === kind) {
+         return runs[i];
+      }
+   }
+   return null;
+}
+
+/** Resolve a single --input token (run id | run dir | run.json path) to a run object. */
+function loadRunFromToken(resultsDir, token) {
+   if (existsSync(token)) {
+      const p = statSync(token).isDirectory() ? join(token, 'run.json') : token;
+      return existsSync(p) ? parseRun(p) : null;
+   }
+   return readRun(resultsDir, token); // a bare run id
+}
+
+/**
+ * Resolve the --input tokens shared by every consumer (build-report, render-chart,
+ * results-to-md, fleet-analysis) to a list of run objects. With no tokens it
+ * defaults to the single newest run. Unresolvable tokens are dropped. Feed the
+ * merged `results` through mergeResultRows so input ORDER never affects the result.
+ */
+export function loadRuns(resultsDir, tokens) {
+   if (tokens?.length) {
+      return tokens.map((t) => loadRunFromToken(resultsDir, t)).filter(Boolean);
+   }
+   const latest = latestRun(resultsDir);
+   return latest ? [readRun(resultsDir, latest)] : [];
+}
+
+/** All runs under results/runs/, oldest → newest (used by coding-rank's full merge). */
+export function loadAllRuns(resultsDir) {
+   return listRuns(resultsDir)
+      .map((id) => readRun(resultsDir, id))
+      .filter(Boolean);
+}
+
+/** complete = every planned (model|think|bench) has a successful result; else partial. */
+function deriveStatus(run) {
+   if (!run.planned?.length) {
+      return run.results.length ? 'complete' : 'partial';
+   }
+   const ok = new Set(run.results.filter((r) => r.status === 'ok').map((r) => `${r.model}|${r.think}|${r.bench}`));
+   return run.planned.every((p) => ok.has(`${p.model}|${p.think}|${p.bench}`)) ? 'complete' : 'partial';
+}
+
+/**
+ * Create a run directory and return a small recorder. The run.json is rewritten on
+ * every append and on finalize, so a crash leaves a readable `running` run with all
+ * rows collected so far (resumable). Call finalize() on a clean exit and
+ * finalize('aborted') from a signal handler.
+ *
+ * @param resultsDir  results/ root
+ * @param meta { host, gpu, backend, date, kind, planned?, config_hash?, seed?, run_id?, started?, extra? }
+ */
+export function createRun(resultsDir, meta) {
+   const runId = meta.run_id ?? runIdFrom(meta);
+   const dir = runDir(resultsDir, runId);
+   mkdirSync(dir, { recursive: true });
+   const jsonPath = join(dir, 'run.json');
+
+   const run = {
+      run_id: runId,
+      kind: meta.kind ?? 'suite',
+      host: meta.host ?? null,
+      gpu: meta.gpu ?? null,
+      backend: meta.backend ?? null,
+      config_hash: meta.config_hash ?? null,
+      started: meta.started ?? new Date().toISOString(),
+      finished: null,
+      status: 'running',
+      seed: meta.seed ?? null,
+      planned: meta.planned ?? [],
+      results: [],
+      ...(meta.extra ?? {}), // run-specific fields (e.g. filters) merged into the run
+   };
+   const write = () => writeFileSync(jsonPath, `${JSON.stringify(run, null, 2)}\n`, 'utf8');
+   write();
+
+   return {
+      runId,
+      dir,
+      jsonPath,
+      run,
+      /** Append a result row (auto-stamped with `ts`) and persist. */
+      append(row) {
+         run.results.push({ ...row, ts: row.ts ?? new Date().toISOString() });
+         write();
+      },
+      /** Set finished + terminal status ('complete'|'partial'|'aborted'); defaults to derived. */
+      finalize(status) {
+         run.finished = new Date().toISOString();
+         run.status = status ?? deriveStatus(run);
+         write();
+         return run.status;
+      },
+   };
+}
+
+/**
+ * Open a write run for a single-purpose secondary runner (kv-probe, struct-output,
+ * ttft, …) and return the merged result rows it should pull prior data (maxctx,
+ * etc.) from. Secondary runners never mutate the run they read — each writes its own
+ * immutable run directory, and build-report merges them. The seed is the newest
+ * existing run, overridable via --input (a run id / dir / run.json path).
+ *
+ * @returns {{ run, seedRows }}
+ */
+export function openSecondaryRun(resultsDir, { target, gpu, backend = 'vulkan', kind, inputFlag, config_hash }) {
+   const seedRuns = loadRuns(resultsDir, inputFlag ? [inputFlag] : undefined);
+   const seedRows = mergeResultRows(seedRuns.flatMap((r) => r.results));
+   const run = createRun(resultsDir, {
+      host: target,
+      gpu,
+      backend,
+      date: new Date(),
+      kind,
+      config_hash: config_hash ?? null,
+      seed: seedRuns[0]?.run_id ?? null,
+   });
+   return { run, seedRows };
 }
 
 // ── Aggregation ────────────────────────────────────────────────────────────────
@@ -250,7 +399,10 @@ export function loadCapabilities(modelsYamlPath) {
  * @returns {{ models, ranking, maxCtx, maxE2E, minTtft8k, weights }}
  */
 export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
-   const data = rows.filter((r) => r.status === 'ok' && r.bench !== 'load' && r.bench !== 'smoke');
+   // Collapse to one authoritative row per identity first (ok over error, newest ts
+   // wins) so aggregation is order-independent whether it's handed a single run's
+   // rows or several runs concatenated. Then keep only successful measurements.
+   const data = mergeResultRows(rows).filter((r) => r.status === 'ok' && r.bench !== 'load' && r.bench !== 'smoke');
 
    const maxctxByModel = new Map();
    const maxctxVramByModel = new Map(); // VRAM (MiB) used at the coherence ceiling
@@ -288,7 +440,7 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          if (Number.isFinite(v)) powerEffByModel.set(baseModel(r.model), v);
       } else if (bench === 'coding_multipl') {
          // Sole coding source (imported MultiPL-E / HumanEval-JS). pass@1 is the
-         // `score` column; the more granular per-test rate lives in notes as "tests N%".
+         // `score` field; the more granular per-test rate lives in notes as "tests N%".
          const tr = /tests\s+([\d.]+)%/.exec(r.notes ?? '');
          if (Number.isFinite(v) || tr) {
             codingByMT.set(`${baseModel(r.model)}|${r.think}`, {
@@ -298,7 +450,6 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          }
       }
       if (r.bench === 'maxctx') {
-         const v = parseFloat(r.score);
          if (Number.isFinite(v)) {
             maxctxByModel.set(baseModel(r.model), v);
          }
@@ -306,30 +457,19 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          if (Number.isFinite(vram)) {
             maxctxVramByModel.set(baseModel(r.model), vram);
          }
-      } else if (String(r.bench).startsWith('speed_decay-')) {
-         const depth = Number(r.bench.replace('speed_decay-', '').replace('k', '')) * 1024;
-         const dec = parseFloat(r.score);
-         if (Number.isFinite(dec)) {
-            if (!decayByModel.has(baseModel(r.model))) decayByModel.set(baseModel(r.model), new Map());
-            decayByModel.get(baseModel(r.model)).set(depth, dec); // later row wins
+      } else if (bench.startsWith('speed_decay-')) {
+         const depth = Number(bench.replace('speed_decay-', '').replace('k', '')) * 1024;
+         if (Number.isFinite(v)) {
+            setDepth(decayByModel, baseModel(r.model), depth, v); // later row wins
          }
       }
    }
 
    const modelMap = new Map();
    for (const r of data) {
-      const b = String(r.bench);
-      if (
-         b === 'maxctx' ||
-         b === 'struct_output' ||
-         b === 'power_eff' ||
-         b === 'kv_per_tok' ||
-         b.startsWith('speed_decay-') ||
-         b.startsWith('speed_pargen-') ||
-         b.startsWith('quality_decay-') ||
-         b.startsWith('ttft-') ||
-         b.startsWith('e2e-')
-      ) {
+      // Shared (base-model-keyed) benches don't spawn (model × think) groups —
+      // they attach to every think variant via base-model lookup above.
+      if (isSharedBench(r.bench)) {
          continue;
       }
       const key = `${r.model}|${r.think}`;
@@ -340,10 +480,9 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
    }
 
    // Newest row wins: a re-run supersedes the prior value for the same
-   // model/think/bench, regardless of whether it's higher or lower. `rs` is in
-   // CSV append order (chronological), and error rows were filtered out above,
-   // so the last finite score is the most recent successful measurement. This
-   // matches maxctxByModel's last-write-wins and build-report's merge dedup.
+   // model/think/bench. `rs` is in append order (chronological), and error rows
+   // were filtered out above, so the last finite score is the most recent
+   // successful measurement.
    const latestScore = (rs, bench) => {
       const m = rs
          .filter((r) => r.bench === bench)
@@ -355,8 +494,8 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
    // Coding grade — no_think-primary policy. Computed from the single coding source
    // (coding_multipl, imported MultiPL-E / HumanEval-JS) by blending its two metrics:
    // pass@1 (strict, all-or-nothing per problem — a competence floor) and the per-test
-   // rate (granular, discriminates). Test-rate-weighted, mirroring the prior easy/hard
-   // split. Prefer no_think, then the null (n/a) state of non-hybrid models.
+   // rate (granular, discriminates). Test-rate-weighted. Prefer no_think, then the
+   // null (n/a) state of non-hybrid models.
    const W_CODE_PASS1 = 0.4;
    const W_CODE_TESTRATE = 0.6;
    const codingGradeOf = (base) => {
@@ -383,7 +522,7 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          const speedTg =
             Math.max(latestScore(rs, 'speed_short') ?? 0, latestScore(rs, 'speed_long-32k') ?? 0, latestScore(rs, 'speed') ?? 0) || null;
          // Real prefill throughput (prompt processing) from large-prompt probes —
-         // newest value of the prefill_tps column for each probe bench.
+         // newest value of the prefill_tps field for each probe bench.
          const latestField = (bench, field) => {
             const m = rs
                .filter((r) => r.bench === bench)
@@ -398,12 +537,12 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          const endToEnd = (P, pf) => (pf && speedTg ? (P + 512) / (P / pf + 512 / speedTg) : null);
          const total4k = endToEnd(4096, prefill4k);
          const total12k = endToEnd(12288, prefill12k);
-         // Single end-to-end throughput number that feeds the score's `speed` axis:
-         // mean of the 4k/12k totals (whichever exist), falling back to raw decode.
+         // Single end-to-end throughput number (mean of the 4k/12k totals), kept for
+         // reference; the score's performance axis uses the directly-measured e2e below.
          const e2e = [total4k, total12k].filter(Number.isFinite);
          const totalE2E = e2e.length ? e2e.reduce((a, b) => a + b, 0) / e2e.length : speedTg;
          // Decode-speed degradation under context load: decode tok/s at depths,
-         // shared across think variants (measured once per base model, think-independent).
+         // shared across think variants (measured once per base model).
          // Reference = the deepest measured depth ≤ 32k for cross-model comparison.
          const decayMap = decayByModel.get(baseModel(model));
          const decayCurve = decayMap
@@ -414,9 +553,8 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          const decodeRef = refPt?.decode ?? null;
          const decodeRefDepth = refPt?.depth ?? null;
          // Clamp ≤100%: retention is "fraction of base speed kept under load". Flat-decode
-         // models (mamba/hybrid like Granite, whose state-space layers have no growing KV)
-         // plus sampling noise can read faster at depth than at base — that's no degradation,
-         // i.e. 100%, not a >100% speedup.
+         // models (mamba/hybrid like Granite) plus sampling noise can read faster at depth
+         // than at base — that's no degradation, i.e. 100%, not a >100% speedup.
          const decodeRetentionPct = decodeBase && decodeRef ? Math.min(100, Math.round((decodeRef / decodeBase) * 100)) : null;
          // Parallel-generation throughput: aggregate tok/s at K concurrent slots,
          // shared across think variants (measured once per base model).
@@ -440,15 +578,12 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          const ttftRefMs = ttftRefPt?.ms ?? null;
          // TTFT at the common 8k depth — used for the latency half of the performance
          // axis. 8k is measured by every model (even the small-ctx ones that can't
-         // reach 32k), so latency is compared apples-to-apples; ttftRefMs (deepest
-         // ≤32k) stays for display only.
+         // reach 32k), so latency is compared apples-to-apples; ttftRefMs stays for display.
          const ttft8kMs = tMap?.get(8192) ?? null;
          // Directly-measured end-to-end throughput (tok/s): one real request per
          // operating-point depth — prefill + a fixed ignore_eos decode — with tok/s
-         // read from the server's own timings as (prompt_n+predicted_n)÷(prompt_ms+
-         // predicted_ms). No formula combining separate runs, no decode fallback.
-         // The headline `e2eThroughput` is the mean across measured depths; this is
-         // what feeds the score's speed axis (replacing the synthetic totalE2E).
+         // read from the server's own timings. The headline `e2eThroughput` is the
+         // mean across measured depths; this feeds the score's performance axis.
          const e2eMap = e2eByModel.get(baseModel(model));
          const e2eCurve = e2eMap ? [...e2eMap.entries()].map(([depth, tps]) => ({ depth, tps })).sort((a, b) => a.depth - b.depth) : [];
          const e2eThroughput = e2eCurve.length ? e2eCurve.reduce((a, b) => a + b.tps, 0) / e2eCurve.length : null;
@@ -458,7 +593,7 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          const structScore = structByModel.get(baseModel(model)) ?? null;
          // Coding grade (no_think-primary): pass@1 + test-rate from coding_multipl in
          // the no_think / null state — a base-model property shared across think
-         // variants (like struct/maxctx). Normalized to a multiplier below.
+         // variants. Normalized to a multiplier below.
          const codingGrade = codingGradeOf(baseModel(model));
          // Power efficiency: decode tok/s per watt (board power via lm-sensors).
          const powerEff = powerEffByModel.get(baseModel(model)) ?? null;
@@ -529,21 +664,15 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
    const minTtft8k = Math.min(...models.map((m) => m.ttft8kMs ?? Infinity));
 
    // ── Multiplicative score (see SCORING / DEFAULT_WEIGHTS comment above) ─────────
-   // restScore: additive weighted sum of capability axes. maxctx is NOT here (it's an
-   // amplifier). `performance` blends measured throughput + TTFT (see its normalizer).
-   // Quality benches are absolute (0-100, docqa 0-10); degradation is retention.
    const REST_NORMALIZE = {
       reasoning: (m) => (m.reasoning != null ? m.reasoning / 100 : null),
       triage: (m) => (m.triage != null ? m.triage / 100 : null),
       summarization: (m) => (m.summ != null ? m.summ / 100 : null),
       docqa: (m) => (m.docqa != null ? m.docqa / 10 : null),
       // Performance composite: 0.4·throughput + 0.6·latency, latency-favored, in 0..1.
-      //   throughput = directly-measured E2E tok/s ÷ fleet best (no decode fallback —
-      //                a model with no e2e measurement just omits this component)
+      //   throughput = directly-measured E2E tok/s ÷ fleet best (no decode fallback)
       //   latency    = fleet-min TTFT@8k ÷ this model's TTFT@8k (lower TTFT → ~1)
-      // Weighted-averaged over whichever components exist, so a model missing one
-      // sub-metric is scored on the other rather than zeroed outright; missing BOTH
-      // contributes 0 to the axis (fixed-denominator rule).
+      // Weighted-averaged over whichever components exist; missing BOTH contributes 0.
       performance: (m) => {
          let num = 0;
          let den = 0;
@@ -582,8 +711,7 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
    // Amplifier: max-ctx as % of fleet best. 0 if the model has no maxctx data.
    const ctxAmp = (m) => (m.maxctx != null ? m.maxctx / maxCtx : 0);
    // Coding multiplier: the no_think-primary coding grade normalized to the fleet's
-   // best (0..1), multiplied into the score like the gates. A model with no coding
-   // data is 0 (same convention as toolGate/structGate). NOT a rest-axis weight.
+   // best (0..1), multiplied into the score like the gates. NOT a rest-axis weight.
    const maxCoding = Math.max(...models.map((m) => m.codingGrade ?? 0)) || 1;
    const codingMult = (m) => (m.codingGrade != null ? m.codingGrade / maxCoding : 0);
    const finalScore = (m) => codingMult(m) * toolGate(m) * structGate(m) * ctxAmp(m) * restScore(m);

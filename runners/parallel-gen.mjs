@@ -13,13 +13,12 @@
  * Usage: node runners/parallel-gen.mjs [--input results/<csv>] [--models a,b] [--conc 1,2,4,8]
  */
 
-import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
 import { loadModelsConfig } from '../shared/models-config.mjs';
-import { appendRow, ensureHeader, latestResultsFile } from '../shared/results-csv.mjs';
+import { openSecondaryRun } from '../shared/results-store.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -34,17 +33,24 @@ const { values: flags } = parseArgs({
 });
 
 const modelsCfg = loadModelsConfig(join(ROOT, 'config/models.yaml'));
-const { llamaUrl: LLAMA_URL, sshHost: SSH_HOST, backend: BACKEND } = loadHostConfig(join(ROOT, 'config/hosts.yaml'), flags.target);
+const {
+   llamaUrl: LLAMA_URL,
+   sshHost: SSH_HOST,
+   backend: BACKEND,
+   gpu: GPU,
+} = loadHostConfig(join(ROOT, 'config/hosts.yaml'), flags.target);
 const GEN = Number(flags.gen);
 const CONC = flags.conc.split(',').map(Number);
 const MAXP = Math.max(...CONC);
 
-const input = flags.input ?? latestResultsFile(join(ROOT, 'results'));
-if (!existsSync(input)) {
-   console.error(`Input not found: ${input}`);
-   process.exit(1);
-}
-ensureHeader(input);
+// Writes its own run directory (parallel-gen kind); does not mutate any prior run.
+const { run } = openSecondaryRun(join(ROOT, 'results'), {
+   target: flags.target,
+   gpu: GPU,
+   backend: BACKEND,
+   kind: 'parallel-gen',
+   inputFlag: flags.input,
+});
 
 const filter = flags.models ? flags.models.split(',').map((s) => s.trim()) : [];
 const wanted = modelsCfg.models.filter((m) => {
@@ -105,7 +111,7 @@ for (const m of wanted) {
       console.log(
          `  K=${String(k).padStart(2)}: agg ${aggTps.toFixed(0).padStart(5)} tok/s  (${perSlot.toFixed(0)}/slot · ${speedup}× vs K=1)  [${total} toks / ${wallS.toFixed(1)}s]`,
       );
-      appendRow(input, {
+      run.append({
          target: flags.target,
          backend: BACKEND,
          model: id,
@@ -122,4 +128,5 @@ for (const m of wanted) {
 }
 await srv.stopServer();
 await srv.waitVramClear(20_000);
-console.log(`\n[parallel-gen] done → rows appended to ${input}`);
+run.finalize('complete');
+console.log(`\n[parallel-gen] done → ${run.dir}`);
