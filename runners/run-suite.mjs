@@ -43,6 +43,7 @@ const { values: flags } = parseArgs({
       models: { type: 'string', default: '' },
       benches: { type: 'string', default: '' },
       'skip-maxctx': { type: 'boolean', default: false },
+      'skip-think': { type: 'boolean', default: false }, // drop the think=true pass (no_think only) — fast partial run; do the full think-inclusive pass separately
       'maxctx-recheck': { type: 'boolean', default: false }, // re-validate prior ceiling at current config (extreme-only, no full search)
       'recheck-from': { type: 'string' }, // CSV to seed prior ceilings from (default: latest results file)
       ctx: { type: 'string' }, // with --skip-maxctx: start server at this fixed ctx (skip the search)
@@ -59,6 +60,7 @@ const BACKEND = flags.backend;
 const FILTER_MODELS = flags.models ? flags.models.split(',').map((s) => s.trim()) : [];
 const FILTER_BENCHES = flags.benches ? flags.benches.split(',').map((s) => s.trim()) : [];
 const SKIP_MAXCTX = flags['skip-maxctx'];
+const SKIP_THINK = flags['skip-think'];
 const MAXCTX_RECHECK = flags['maxctx-recheck'];
 const DEBUG = flags.debug || !!process.env.BENCH_DEBUG;
 
@@ -140,8 +142,10 @@ const MAX_TOKENS = {
    docqa: 1280, // multi-hop doc-QA with citations
    coding: 2048, // function implementation — body + edge handling
    coding_hard: 8192, // multi-method stateful spec (2048) — headroom for always-reasoning models
-   coding_hard_think: 12288, // capped think budget: completes under the 600s client timeout,
-   //                          so a non-converging model hits a clean RUNAWAY, not a silent abort
+   coding_hard_think: 20480, // capped think budget: the 2048-engine task makes verbose reasoners
+   //                          (e.g. Gemma4-26B) spend >12k tokens thinking; at 12288 they truncated
+   //                          mid-thought → empty code → false 0%. 20480 fits their reasoning + code
+   //                          and still completes under the 600s timeout (~394s at the slowest ~52 tok/s).
    longctx: 4096, // long-context comprehension answer
    speed: 150, // speed bench — just want tokens generated
 };
@@ -870,7 +874,8 @@ console.log(`\n[run-suite] ${models.length} models  target=${TARGET}  backend=${
 // ─────────────────────────────────────────────────────────────────────────────
 for (const model of models) {
    const mid = modelId(model, null); // base ID (used for load/OOM error rows)
-   const thinkModes = getThinkModes(model);
+   // --skip-think drops the think=true pass (keeps no_think/null) for a fast partial run.
+   const thinkModes = getThinkModes(model).filter((t) => !(SKIP_THINK && t === true));
    const benches = (model.benches ?? []).filter((b) => !FILTER_BENCHES.length || FILTER_BENCHES.includes(b));
 
    console.log(`\n${'═'.repeat(70)}`);

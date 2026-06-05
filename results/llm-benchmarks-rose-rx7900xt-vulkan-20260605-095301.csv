@@ -479,3 +479,22 @@ rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0,n/a,e2e-2k,826.1,,,130.2,3434.5,4370,
 rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0,n/a,ttft-2k,525,,,,,4370,18432,,,ok,,prompt_ms@2048 n=3
 rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0,n/a,e2e-8k,1898.9,,,127.9,3617.1,4370,18432,,,ok,,e2e@8192 gen256 n=3
 rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0,n/a,ttft-8k,2064,,,,,4370,18432,,,ok,,prompt_ms@8192 n=3
+rose,vulkan,Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL,-,maxctx,63488,-,-,-,-,19877,63488,63488,63488,ok,-,
+rose,vulkan,granite-4.0-h-tiny-Q5_K_M,-,maxctx,126976,-,-,-,-,6039,126976,126976,126976,ok,-,
+rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0,-,maxctx,14336,-,-,-,-,4320,14336,14336,14336,ok,-,
+rose,vulkan,Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL,n/a,speed_pargen-1,119.3,,,119.3,,17871,16384,,,ok,,parallel=8 conc=1 per_slot=119.3
+rose,vulkan,Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL,n/a,speed_pargen-2,173.4,,,173.4,,17871,16384,,,ok,,parallel=8 conc=2 per_slot=86.7
+rose,vulkan,Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL,n/a,speed_pargen-4,252.2,,,252.2,,17871,16384,,,ok,,parallel=8 conc=4 per_slot=63.0
+rose,vulkan,Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL,n/a,speed_pargen-8,320.9,,,320.9,,17871,16384,,,ok,,parallel=8 conc=8 per_slot=40.1
+rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,speed_pargen-1,88.7,,,88.7,,5284,16384,,,ok,,parallel=8 conc=1 per_slot=88.7
+rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,speed_pargen-2,106.0,,,106.0,,5284,16384,,,ok,,parallel=8 conc=2 per_slot=53.0
+rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,speed_pargen-4,125.5,,,125.5,,5284,16384,,,ok,,parallel=8 conc=4 per_slot=31.4
+rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,speed_pargen-8,138.8,,,138.8,,5284,16384,,,ok,,parallel=8 conc=8 per_slot=17.4
+rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0,n/a,speed_pargen-1,124.6,,,124.6,,4888,16384,,,ok,,parallel=8 conc=1 per_slot=124.6
+rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0,n/a,speed_pargen-2,189.9,,,189.9,,4888,16384,,,ok,,parallel=8 conc=2 per_slot=95.0
+rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0,n/a,speed_pargen-4,264.3,,,264.3,,4888,16384,,,ok,,parallel=8 conc=4 per_slot=66.1
+rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0,n/a,speed_pargen-8,308.2,,,308.2,,4888,16384,,,ok,,parallel=8 conc=8 per_slot=38.5
+rose,vulkan,gemma-4-E4B-it-Q5_K_M--nothi,no_think,coding_hard,0.0,-,0,105.4,-,4357,32768,32768,32768,ok,13,tests 58.3%
+rose,vulkan,gemma-4-E4B-it-Q5_K_M--think,think,coding_hard,0.0,-,0,103.8,-,4357,32768,32768,32768,ok,32,tests 83.3%
+rose,vulkan,gemma-4-26B-A4B-it-UD-Q4_K_M--nothi,no_think,coding_hard,0.0,-,0,70.2,-,17357,32768,32768,32768,ok,40,tests 0.0%
+rose,vulkan,gemma-4-26B-A4B-it-UD-Q4_K_M--think,think,coding_hard,100.0,-,0,67.1,-,17357,32768,32768,32768,ok,117,tests 100.0%

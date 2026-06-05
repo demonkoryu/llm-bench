@@ -1,6 +1,6 @@
 # LLM Benchmark Report
 
-Generated from `llm-benchmarks-rose-rx7900xt-vulkan-20260605-095301.csv` — 480 result rows across 31 bench types.
+Generated from `llm-benchmarks-rose-rx7900xt-vulkan-20260605-095301.csv` — 499 result rows across 31 bench types.
 
 ## triage
 
@@ -121,9 +121,12 @@ Generated from `llm-benchmarks-rose-rx7900xt-vulkan-20260605-095301.csv` — 480
 | gemma-4-E4B-it-Q5_K_M | 126976 | 507,904 | 5505 |
 | gemma-4-26B-A4B-it-UD-Q4_K_M | 126976 | 507,904 | 18710 |
 | granite-4.0-h-tiny-Q5_K_M | 126976 | 507,904 | 6039 |
+| granite-4.0-h-tiny-Q5_K_M | 126976 | 507,904 | 6039 |
 | LFM2.5-8B-A1B-Q5_K_M | 108544 | 434,176 | 7083 |
 | Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL | 79872 | 319,488 | 20371 |
 | Qwen3-30B-A3B-Instruct-2507-IQ4_XS | 79872 | 319,488 | 20109 |
 | Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL | 63488 | 253,952 | 19877 |
+| Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL | 63488 | 253,952 | 19877 |
 | Qwen3-14B-Q5_K_M | 30720 | 122,880 | 12709 |
+| nvidia_Nemotron-3-Nano-4B-Q8_0 | 14336 | 57,344 | 4320 |
 | nvidia_Nemotron-3-Nano-4B-Q8_0 | 14336 | 57,344 | 4320 |
