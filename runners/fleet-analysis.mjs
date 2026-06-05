@@ -4,10 +4,10 @@
  *
  * VRAM(ctx) is modeled linearly:
  *   VRAM(c) = weights + kv_per_token · c
- * The kv/token slope comes from config (kv_bytes_per_token, the physical
- * whole-model KV size); an empirical slope is used instead only when the dataset
- * carries a second VRAM measurement at a ctx strictly below maxctx. weights is
- * then back-solved from the coherence-verified max-ctx VRAM point.
+ * The kv/token slope is MEASURED directly by runners/kv-probe.mjs (kv_per_tok
+ * rows, KiB/token) — config kv_bytes_per_token estimates are not trusted. weights
+ * is back-solved from the coherence-verified max-ctx VRAM point. A model with no
+ * measured slope is omitted from the packing tables rather than guessed.
  * From that this reports:
  *   1. Footprint at max ctx as a fraction of the card (how many fit).
  *   2. VRAM-per-ctx-token: gross (vram@maxctx / maxctx) and marginal KV/token.
@@ -27,7 +27,6 @@ import { existsSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { loadModelsConfig } from '../shared/models-config.mjs';
 import { aggregateModels, CARD_TOTAL_MIB, latestResultsFile, readTable } from '../shared/results-csv.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -53,38 +52,15 @@ if (!existsSync(input)) {
 const rows = readTable(input);
 const { models, ranking } = aggregateModels(rows);
 
-// VRAM(ctx) is modeled linearly as weights + kv·ctx. Fitting kv empirically needs
-// a SECOND VRAM point below maxctx. The speed re-run used to load at a fixed
-// ctx=16384 and supplied that point; it now reuses the maxctx-loaded server, so
-// its VRAM equals the maxctx point and carries no slope. Collect the LOWEST-ctx
-// single-slot speed VRAM point per model and use it only if it sits strictly
-// below maxctx. speed_pargen rows allocate KV for up to 8 slots, so their VRAM is
-// inflated and must NOT seed the single-slot baseline.
-const vramLow = new Map(); // base_model -> { ctx, vram } at the smallest measured ctx
+// Directly-measured KV/token slope (MiB/token), from runners/kv-probe.mjs, which
+// loads each model at two ctx sizes and differences the board VRAM. The CSV row
+// stores KiB/token in `score`. No config fallback — a model without a measured
+// slope is dropped from the packing analysis below rather than guessed.
+const kvMeasMiB = new Map(); // base_model -> kv MiB/token
 for (const r of rows) {
-   const bench = String(r.bench);
-   if (!bench.startsWith('speed') || bench.startsWith('speed_pargen')) continue;
-   const ctx = Number(r.ctx_loaded);
-   const v = parseFloat(r.vram_mib);
-   if (!Number.isFinite(ctx) || !Number.isFinite(v)) continue;
-   const base = r.model.replace(/--(nothi|think)$/, '');
-   const cur = vramLow.get(base);
-   if (!cur || ctx < cur.ctx) vramLow.set(base, { ctx, vram: v });
-}
-
-// Authoritative per-token KV size (whole-model, all layers) from config — the
-// physical VRAM(ctx) slope. This is the fallback (now the common case) whenever
-// the dataset lacks a second measured VRAM point below maxctx.
-const kvCfgMiB = new Map();
-try {
-   const cfg = loadModelsConfig(join(ROOT, 'config/models.yaml'));
-   for (const cm of cfg.models ?? []) {
-      const base = String(cm.hf_file ?? '').replace(/\.gguf$/i, '');
-      const bpt = Number(cm.kv_bytes_per_token);
-      if (base && Number.isFinite(bpt) && bpt > 0) kvCfgMiB.set(base, bpt / (1024 * 1024));
-   }
-} catch {
-   /* fall back to measured slope only */
+   if (String(r.bench) !== 'kv_per_tok') continue;
+   const kib = parseFloat(r.score);
+   if (Number.isFinite(kib) && kib > 0) kvMeasMiB.set(r.model.replace(/--(nothi|think)$/, ''), kib / 1024);
 }
 
 // Think-state display tag. VRAM, weights, KV and max ctx are QUANT-determined and
@@ -106,16 +82,10 @@ const fleet = [];
 for (const m of models) {
    if (m.maxctx == null || m.maxctxVram == null) continue;
    const vramMax = m.maxctxVram;
-   const low = vramLow.get(m.base_model);
-   let kv = kvCfgMiB.get(m.base_model) ?? 0; // physical KV/token (MiB) from config
-   // Prefer an empirical slope when a genuine second VRAM point exists below
-   // maxctx (two distinct ctx). A non-positive slope is non-physical — it means
-   // the two points were measured under different server configs (e.g. mixing
-   // -ub 512 maxctx rows with -ub 2048 low-ctx rows inflates the low point) — so
-   // ignore it and keep the config KV size rather than emitting nonsense.
-   if (low != null && low.ctx < m.maxctx) {
-      const measured = (vramMax - low.vram) / (m.maxctx - low.ctx);
-      if (measured > 0) kv = measured;
+   const kv = kvMeasMiB.get(m.base_model); // measured KV/token (MiB); no fallback
+   if (kv == null) {
+      console.warn(`[fleet] no measured kv_per_tok for ${m.base_model} — run kv-probe; omitting from packing tables`);
+      continue;
    }
    const weights = Math.max(0, vramMax - kv * m.maxctx);
    fleet.push({
@@ -167,11 +137,12 @@ const SCRATCH_MIN = 4096; // a scratchpad smaller than this isn't worth a slot
 const PARALLEL_OH = 512; // MiB extra overhead for running 2 slots (measured ~0.45 GB)
 const setups = fleet
    .map((m) => {
-      const tokenBudget = m.kv > 0 ? (BUDGET - PARALLEL_OH - m.weights) / m.kv : Infinity; // total KV tokens that fit (2 slots)
+      // kv is a measured positive slope (models without one were dropped above).
+      const tokenBudget = (BUDGET - PARALLEL_OH - m.weights) / m.kv; // total KV tokens that fit (2 slots)
       const main = m.maxctx; // the "1 max ctx" slot
       const leftover = Math.max(0, tokenBudget - main);
       const scratch = Math.min(m.maxctx, leftover); // 2nd slot, capped at coherence ceiling
-      const fullSlots = m.kv > 0 ? Math.floor(tokenBudget / m.maxctx) : 99; // how many full-ctx slots fit
+      const fullSlots = Math.floor(tokenBudget / m.maxctx); // how many full-ctx slots fit
       const vramUsed = m.weights + m.kv * (main + scratch);
       return { ...m, tokenBudget, main, scratch, fullSlots, vramUsed };
    })
@@ -190,7 +161,7 @@ for (const s of setups) {
            ? `room for ${s.fullSlots}× full-ctx slots`
            : 'main + scratchpad';
    console.log(
-      `${pad(s.id, 42)} ${pad(s.score, 5)} ${pad(gb(s.weights) + 'G', 8)} ${pad(r0(s.main), 9)} ${pad(s.scratch < SCRATCH_MIN ? '—' : r0(s.scratch), 9)} ${pad(s.fullSlots >= 99 ? 'many' : s.fullSlots, 11)} ${note}`,
+      `${pad(s.id, 42)} ${pad(s.score, 5)} ${pad(gb(s.weights) + 'G', 8)} ${pad(r0(s.main), 9)} ${pad(s.scratch < SCRATCH_MIN ? '—' : r0(s.scratch), 9)} ${pad(s.fullSlots, 11)} ${note}`,
    );
 }
 
@@ -280,7 +251,7 @@ const scols = [
    { x: 560, label: 'Weights', get: (s) => `${gb(s.weights)}G`, anchor: 'end' },
    { x: 660, label: 'Main ctx', get: (s) => r0(s.main), anchor: 'end' },
    { x: 765, label: 'Scratchpad', get: (s) => (s.scratch < SCRATCH_MIN ? '—' : r0(s.scratch)), anchor: 'end' },
-   { x: 845, label: 'Full slots', get: (s) => (s.fullSlots >= 99 ? 'many' : String(s.fullSlots)), anchor: 'end' },
+   { x: 845, label: 'Full slots', get: (s) => String(s.fullSlots), anchor: 'end' },
    {
       x: 855,
       label: 'Note',

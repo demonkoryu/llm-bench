@@ -323,6 +323,7 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          b === 'maxctx' ||
          b === 'struct_output' ||
          b === 'power_eff' ||
+         b === 'kv_per_tok' ||
          b.startsWith('speed_decay-') ||
          b.startsWith('speed_pargen-') ||
          b.startsWith('quality_decay-') ||

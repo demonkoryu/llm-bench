@@ -1,6 +1,6 @@
 # LLM Benchmark Report
 
-Generated from `llm-benchmarks-rose-rx7900xt-vulkan-20260605-203524.csv` — 92 result rows across 13 bench types.
+Generated from `llm-benchmarks-rose-rx7900xt-vulkan-20260605-203524.csv` — 99 result rows across 14 bench types.
 
 ## triage
 

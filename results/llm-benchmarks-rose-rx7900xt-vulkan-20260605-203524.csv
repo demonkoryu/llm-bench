@@ -91,3 +91,10 @@ rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,power_eff,1.058,,,260.2,,,,,,ok,,W=246 tps=
 rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,struct_output,75.0,,3,,,,,,,ok,,parse=75% schema=75%
 rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,power_eff,0.482,,,91.3,,,,,,ok,,W=189 tps=91.3 n=34
 rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,struct_output,100.0,,0,,,,,,,ok,,parse=100% schema=100%
+rose,vulkan,Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL,n/a,kv_per_tok,51.393,,,,,20365,65536,,,ok,,lo=8192:17487MiB hi=65536:20365MiB
+rose,vulkan,Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL,n/a,kv_per_tok,51.393,,,,,20389,65536,,,ok,,lo=8192:17511MiB hi=65536:20389MiB
+rose,vulkan,Qwen3-30B-A3B-Instruct-2507-IQ4_XS,n/a,kv_per_tok,55.018,,,,,19135,65536,,,ok,,lo=8192:16054MiB hi=65536:19135MiB
+rose,vulkan,gemma-4-12b-it-qat-q4_0,n/a,kv_per_tok,12.500,,,,,8936,102400,,,ok,,lo=8192:7786MiB hi=102400:8936MiB
+rose,vulkan,gemma-4-26B_q4_0-it,n/a,kv_per_tok,14.625,,,,,16376,131072,,,ok,,lo=8192:14621MiB hi=131072:16376MiB
+rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,kv_per_tok,12.325,,,,,7311,131072,,,ok,,lo=8192:5832MiB hi=131072:7311MiB
+rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,kv_per_tok,10.075,,,,,6072,131072,,,ok,,lo=8192:4863MiB hi=131072:6072MiB
