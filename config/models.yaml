@@ -58,7 +58,7 @@ models:
      tools: true
      native_max_ctx: 262144
      kv_bytes_per_token: 49152
-     benches: [triage, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
+     benches: [triage, toolcalling, summarization, docqa, coding, coding_hard, coding_multipl, speed, maxctx]
      notes: "No think mode. repeat_penalty in sampling_matrix. If ub2048 OOMs at max ctx, set ubatch-size: 1024."
 
    # ── Qwen3-30B-A3B-Instruct-2507 ──────────────────────────────────────────────
@@ -73,7 +73,7 @@ models:
      tools: true
      native_max_ctx: 262144
      kv_bytes_per_token: 49152
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, coding_multipl, speed, maxctx]
      notes: "If ub2048 OOMs at max ctx, set ubatch-size: 1024."
 
    - hf_repo: unsloth/Qwen3-30B-A3B-Instruct-2507-GGUF
@@ -86,7 +86,7 @@ models:
      native_max_ctx: 262144
      ctx_cap: 81920
      kv_bytes_per_token: 49152
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, coding_multipl, speed, maxctx]
 
    # ── Qwen3-14B Q5_K_M ────────────────────────────────────────────────────────
    # Hybrid: runs both nothi and think passes.
@@ -97,11 +97,12 @@ models:
      family: qwen3
      type: dense
      think: optional
+     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
      tools: true
      native_max_ctx: 32768
      ctx_cap: 40960
      kv_bytes_per_token: 24576
-     benches: [triage, reasoning, toolcalling, toolcalling_decay, summarization, docqa, coding, coding_hard, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, toolcalling_decay, summarization, docqa, coding, coding_hard, coding_multipl, speed, maxctx]
 
    # ── Qwen3.5-9B (hybrid GatedDeltaNet + sparse MoE) ───────────────────────────
    # Hybrid: runs both nothi and think passes. ~6.6 GB at Q5_K_M → big KV headroom.
@@ -114,10 +115,11 @@ models:
      family: qwen3.5
      type: moe
      think: optional
+     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
      tools: true
      native_max_ctx: 262144
      kv_bytes_per_token: 8192
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, coding_multipl, speed, maxctx]
      notes: "Hybrid GatedDeltaNet+MoE; linear-attn layers → small KV. Unsloth Q5_K_M."
 
    # ── Qwen3.6-35B-A3B IQ4_XS ──────────────────────────────────────────────────
@@ -130,13 +132,14 @@ models:
      family: qwen3.6
      type: moe
      think: optional
+     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
      tools: true
      native_max_ctx: 262144
      kv_bytes_per_token: 49152
      extra_flags:
         spec-type: draft-mtp
         spec-draft-n-max: 4
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, coding_multipl, speed, maxctx]
      notes: "MTP speculative draft; smoke will catch if Vulkan build lacks support."
 
    # ── Gemma4-E4B ───────────────────────────────────────────────────────────────
@@ -149,6 +152,7 @@ models:
      family: gemma4
      type: moe
      think: optional
+     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
      think_control: enable_thinking
      tools: true   # native function-calling (Google docs list gemma-4-E4B-it)
      native_max_ctx: 128000
@@ -156,7 +160,7 @@ models:
      # b9496 auto-loads a vision projector for gemma4 → clip.cpp "Unknown projector
      # type" abort on load. We benchmark text-only, so disable it.
      extra_flags: { "no-mmproj": true }
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, coding_multipl, speed, maxctx]
 
    - hf_repo: unsloth/gemma-4-E4B-it-GGUF
      hf_file: gemma-4-E4B-it-Q5_K_M.gguf
@@ -164,12 +168,13 @@ models:
      family: gemma4
      type: moe
      think: optional
+     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
      think_control: enable_thinking
      tools: true
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
      extra_flags: { "no-mmproj": true }   # see Q8 note: skip gemma4 vision projector (text-only)
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, coding_multipl, speed, maxctx]
 
    # ── Gemma4-26B-A4B ───────────────────────────────────────────────────────────
    # Hybrid: runs both nothi and think passes. ~16.9 GB weights.
@@ -180,12 +185,13 @@ models:
      family: gemma4
      type: moe
      think: optional
+     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
      think_control: enable_thinking
      tools: true
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
      extra_flags: { "no-mmproj": true }   # see E4B Q8 note: skip gemma4 vision projector (text-only)
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, coding_multipl, speed, maxctx]
 
    # ── Gemma4-12B (dense "unified" — encoder-free multimodal, run text-only) ──────
    # Released 2026-06-02. Dense 12B, hybrid think, native FC; ~8.4 GB at Q5_K_M.
@@ -196,6 +202,7 @@ models:
      family: gemma4
      type: dense
      think: optional
+     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
      think_control: enable_thinking
      tools: true
      # GGUF declares n_ctx_train=131072. Google advertises 256k, but this Q5 GGUF
@@ -204,7 +211,7 @@ models:
      native_max_ctx: 131072
      kv_bytes_per_token: 16384
      extra_flags: { "no-mmproj": true }   # see E4B Q8 note: skip gemma4 vision projector (text-only)
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding, coding_hard, coding_multipl, speed, maxctx]
 
    # ── LFM2.5-8B-A1B ────────────────────────────────────────────────────────────
    # Always-reasoning: outputs to reasoning_content field, not content.
@@ -219,7 +226,7 @@ models:
      native_max_ctx: 128000
      ctx_cap: 131072
      kv_bytes_per_token: 8192
-     benches: [reasoning, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
+     benches: [reasoning, toolcalling, summarization, docqa, coding, coding_hard, coding_multipl, speed, maxctx]
      notes: "reasoning_content merged by llm client. repeat_penalty in sampling_matrix."
 
    # ── Granite-4.0-H-Tiny (MoE 7B-A1B, mamba-hybrid) ─────────────────────────────
@@ -233,7 +240,7 @@ models:
      tools: true
      native_max_ctx: 128000
      kv_bytes_per_token: 8192
-     benches: [triage, toolcalling, summarization, docqa, coding, coding_hard, speed, maxctx]
+     benches: [triage, toolcalling, summarization, docqa, coding, coding_hard, coding_multipl, speed, maxctx]
 
    # ── Nemotron-3-Nano-4B (mamba-hybrid) ─────────────────────────────────────────
    # Small v3 Nemotron; Q8_0 ≈4.3GB → big KV headroom for long context. Same bug
@@ -245,13 +252,14 @@ models:
      family: nemotron3
      type: dense
      think: optional
+     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
      think_control: system_keyword
      tools: false
      capability_note: "tool-calling + json_schema blocked by llama.cpp#24081 class; mamba assert risk #20570"
      no_schema: true
      native_max_ctx: 128000
      kv_bytes_per_token: 16384
-     benches: [triage, reasoning, summarization, docqa, coding, coding_hard, speed, maxctx]
+     benches: [triage, reasoning, summarization, docqa, coding, coding_hard, coding_multipl, speed, maxctx]
 
 
 # ── Sampling matrix ───────────────────────────────────────────────────────────────

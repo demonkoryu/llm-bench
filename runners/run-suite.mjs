@@ -90,6 +90,7 @@ const { SUMM_ITEMS } = await import('../benchmarks/summarization/summcases.mjs')
 const { gradeAll: docqaGradeAll } = await import('../benchmarks/docqa/grader.mjs');
 const { CASES: CODING_CASES } = await import('../benchmarks/coding/cases.mjs');
 const { CASES: CODING_HARD_CASES } = await import('../benchmarks/coding/cases-hard.mjs');
+const { CASES: CODING_MULTIPL_CASES } = await import('../benchmarks/coding/cases-multipl.mjs');
 const { gradeCase: codingGradeCase } = await import('../benchmarks/coding/grader.mjs');
 const { makeFillPrompt } = await import('../shared/codebase.mjs');
 const docqaCases = JSON.parse(readFileSync(join(ROOT, 'benchmarks/docqa/cases.json'), 'utf8'));
@@ -115,6 +116,12 @@ function modelId(m, thinkState) {
 
 function filterModels() {
    return allModels.filter((m) => {
+      // `disabled: true` in models.yaml keeps the entry in config but excludes it
+      // from runs (reversible — remove the flag to re-enable). An explicit --models
+      // filter overrides this, so you can still target a disabled model by name.
+      if (m.disabled && !FILTER_MODELS.length) {
+         return false;
+      }
       if (FILTER_MODELS.length && !FILTER_MODELS.some((f) => modelId(m, null).includes(f) || (m.label ?? '').includes(f))) {
          return false;
       }
@@ -145,6 +152,8 @@ const MAX_TOKENS = {
    //                false 0%. ~315s worst-case at the slowest ~52 tok/s, safely under the 600s timeout.
    coding_hard: 16384, // multi-method stateful spec (2048-engine), no_think budget. Raised from 8192
    //                    to match `coding` — the harder task must never get a smaller budget than the easy one.
+   coding_multipl: 16384, // imported MultiPL-E (HumanEval-JS) function tasks — same budget as `coding`.
+   //                       Function-level, so most finish well under it; the ceiling only guards verbose models.
    coding_hard_think: 20480, // capped think budget: the 2048-engine task makes verbose reasoners
    //                          (e.g. Gemma4-26B) spend >12k tokens thinking; at 12288 they truncated
    //                          mid-thought → empty code → false 0%. 20480 fits their reasoning + code
@@ -576,6 +585,17 @@ async function runCoding(
       totalMs = 0;
    const tokList = [];
 
+   // Periodic progress for large imported sets (e.g. the 160-case MultiPL-E run),
+   // which would otherwise sit silent for many minutes. Quiet for the small
+   // hand-authored sets (≤ PROGRESS_EVERY cases → no interim lines).
+   const totalCases = Object.keys(cases).length;
+   const PROGRESS_EVERY = 20;
+   const PROGRESS = totalCases > 30;
+   if (PROGRESS) {
+      console.log(`(${totalCases} cases — progress every ${PROGRESS_EVERY})`);
+   }
+   let caseIdx = 0;
+
    for (const [caseId, c] of Object.entries(cases)) {
       const SYSTEM =
          `You are an expert programmer. Implement the requested function in JavaScript.\n` +
@@ -615,6 +635,14 @@ async function runCoding(
       }
       testsPassed += gradingResult.passed;
       testsTotal += gradingResult.total;
+      caseIdx++;
+      if (PROGRESS && (caseIdx % PROGRESS_EVERY === 0 || caseIdx === totalCases)) {
+         const pa1 = ((passAt1 / caseIdx) * 100).toFixed(0);
+         const tr = testsTotal ? ((testsPassed / testsTotal) * 100).toFixed(0) : '0';
+         const elapsed = (totalMs / 1000).toFixed(0);
+         const eta = caseIdx < totalCases ? ` eta~${(((totalMs / caseIdx) * (totalCases - caseIdx)) / 1000).toFixed(0)}s` : '';
+         console.log(`    [${benchName}] ${caseIdx}/${totalCases}  pass@1=${pa1}%  tests=${tr}%  noCode=${noCode}  elapsed=${elapsed}s${eta}`);
+      }
       recordPf({
          bench: benchName,
          model,
@@ -1270,6 +1298,35 @@ for (const model of models) {
                model: passId,
                think: tl,
                bench: 'coding_hard',
+               score: res.r.score,
+               halls: '-',
+               json_fail: res.r.json_fail,
+               tok_s: res.r.tok_s,
+               prefill_tps: '-',
+               vram_mib: vramMib ?? '?',
+               ctx_loaded: ctxLoaded ?? '?',
+               oom_ceiling: oomCeiling ?? '?',
+               coherence_ceiling: coherenceCeiling ?? '?',
+               status: 'ok',
+               wall_s: res.r.wall_s,
+               notes: res.r.notes ?? '',
+            });
+         }
+      }
+
+      // coding_multipl — imported MultiPL-E (HumanEval-JS) function tasks; runs in both passes
+      {
+         const res = await skipOrRun('coding_multipl', () =>
+            runCoding(client, model, thinkState, CODING_MULTIPL_CASES, MAX_TOKENS.coding_multipl, 'coding_multipl', MAX_TOKENS.coding_hard_think),
+         );
+         if (res) {
+            console.log(`pass@1=${res.r.score}%  ${res.r.notes}  tok/s=${res.r.tok_s}`);
+            appendTsv({
+               target: TARGET,
+               backend: BACKEND,
+               model: passId,
+               think: tl,
+               bench: 'coding_multipl',
                score: res.r.score,
                halls: '-',
                json_fail: res.r.json_fail,
