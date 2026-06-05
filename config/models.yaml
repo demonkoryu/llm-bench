@@ -97,7 +97,6 @@ models:
      family: qwen3
      type: dense
      think: optional
-     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
      tools: true
      native_max_ctx: 32768
      ctx_cap: 40960
@@ -115,7 +114,6 @@ models:
      family: qwen3.5
      type: moe
      think: optional
-     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
      tools: true
      native_max_ctx: 262144
      kv_bytes_per_token: 8192
@@ -132,7 +130,6 @@ models:
      family: qwen3.6
      type: moe
      think: optional
-     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
      tools: true
      native_max_ctx: 262144
      kv_bytes_per_token: 49152
@@ -152,7 +149,6 @@ models:
      family: gemma4
      type: moe
      think: optional
-     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
      think_control: enable_thinking
      tools: true   # native function-calling (Google docs list gemma-4-E4B-it)
      native_max_ctx: 131072
@@ -168,7 +164,6 @@ models:
      family: gemma4
      type: moe
      think: optional
-     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
      think_control: enable_thinking
      tools: true
      native_max_ctx: 131072
@@ -185,7 +180,6 @@ models:
      family: gemma4
      type: moe
      think: optional
-     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
      think_control: enable_thinking
      tools: true
      native_max_ctx: 131072
@@ -202,7 +196,6 @@ models:
      family: gemma4
      type: dense
      think: optional
-     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
      think_control: enable_thinking
      tools: true
      # GGUF declares n_ctx_train=131072. Google advertises 256k, but this Q5 GGUF
@@ -223,7 +216,6 @@ models:
      family: gemma4
      type: dense
      think: optional
-     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
      think_control: enable_thinking
      tools: true
      native_max_ctx: 131072   # same 128k window as the unsloth 12B GGUF
@@ -237,7 +229,6 @@ models:
      family: gemma4
      type: moe
      think: optional
-     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
      think_control: enable_thinking
      tools: true
      native_max_ctx: 131072
@@ -248,15 +239,15 @@ models:
    # ── Gemma4 QAT — Unsloth Dynamic UD-Q4_K_XL (QAT base, unsloth's dynamic quant) ─
    # Unsloth's quantization-aware-trained GGUFs: same QAT recipe as Google's q4_0
    # but repacked as the UD-Q4_K_XL dynamic mix (per-tensor bit allocation) for
-   # better accuracy at similar size. Hybrids (think: optional) → disabled like the
-   # rest of the thinking fleet. Both repos ship mmproj vision towers → no-mmproj.
+   # better accuracy at similar size. Hybrids (think: optional) → run no-think-only
+   # via --skip-think, like the rest of the run series. Both repos ship mmproj
+   # vision towers → no-mmproj.
    - hf_repo: unsloth/gemma-4-12B-it-qat-GGUF
      hf_file: gemma-4-12B-it-qat-UD-Q4_K_XL.gguf
      label: "Gemma4-12B QAT UD-Q4_K_XL"
      family: gemma4
      type: dense
      think: optional
-     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
      think_control: enable_thinking
      tools: true
      native_max_ctx: 131072   # same 128k window as the other 12B GGUFs
@@ -270,7 +261,6 @@ models:
      family: gemma4
      type: moe
      think: optional
-     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
      think_control: enable_thinking
      tools: true
      native_max_ctx: 131072
@@ -317,7 +307,6 @@ models:
      family: nemotron3
      type: dense
      think: optional
-     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
      think_control: system_keyword
      tools: false
      capability_note: "tool-calling + json_schema blocked by llama.cpp#24081 class; mamba assert risk #20570"
