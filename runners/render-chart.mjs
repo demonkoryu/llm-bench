@@ -193,7 +193,7 @@ const restLabels = {
 const restStr = Object.entries(SCORING.rest_weights)
    .map(([k, w]) => `${restLabels[k] ?? k} ${w.toFixed(2).replace(/^0/, '')}`)
    .join(' · ');
-const scoreSubtitle = `score = coding × toolcalling × struct-output × (maxctx% + vram-headroom%)/2 × Σ(${restStr})`;
+const scoreSubtitle = `score = coding × toolcalling × struct-output × maxctx% × Σ(${restStr})`;
 svg += barPanel(PAD.left, rankY, WIDE_W, 'Overall Ranking', scoreSubtitle, rankItems);
 
 // ── Per-metric grid (one panel per scored metric — no blending) ──────────────────
@@ -274,7 +274,7 @@ const METRIC_PANELS = [
       formatVal: (v) => (v != null ? `${v.toFixed(0)}%` : '?'),
       getMax: () => 100,
    },
-   // ── Context/VRAM amplifier (averaged, % of fleet best) ──
+   // ── Context amplifier (% of fleet best) ──
    {
       title: 'Max Context (tokens, coherence-verified)',
       weight: '×amp',
@@ -282,14 +282,14 @@ const METRIC_PANELS = [
       formatVal: (v) => (v != null ? (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)) : '?'),
       getMax: () => maxCtx,
    },
+   // ── Reported-only (not in the score) ──
    {
       title: 'Free VRAM at max ctx (headroom)',
-      weight: '×amp',
+      weight: 'reported',
       getValue: (m) => vramFree(m),
       formatVal: (v) => (v != null ? `${(v / 1024).toFixed(1)} GB` : '?'),
       getMax: () => maxFreeVram,
    },
-   // ── Reported-only (not in the score) ──
    {
       title: 'Power efficiency (decode tok/s per watt)',
       weight: 'reported',

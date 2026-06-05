@@ -38,12 +38,12 @@ export const COLUMNS = [
 ];
 
 // RX 7900 XT usable VRAM (MiB). Mirrors build-report.mjs / config/hosts.yaml.
-// Used to turn "VRAM used at max ctx" into free headroom for the score's amplifier.
+// Used to turn "VRAM used at max ctx" into reported free headroom (no longer scored).
 export const CARD_TOTAL_MIB = 20464;
 
 // The composite score is MULTIPLICATIVE, not a flat weighted sum:
 //
-//   score = codingMult × toolGate × structGate × ((maxctx% + vramHeadroom%) / 2) × restScore
+//   score = codingMult × toolGate × structGate × maxctx% × restScore
 //
 //   • codingMult — the no_think-primary coding grade (0.3·easy_pass@1 +
 //                  0.7·hard_test-rate), normalized to the fleet's best (0..1) and
@@ -54,15 +54,16 @@ export const CARD_TOTAL_MIB = 20464;
 //                              Either at 0 (or absent) zeroes the whole score: a model
 //                              that can't tool-call or can't emit valid structured
 //                              output is unusable for this agentic use case.
-//   • amplifier  — average of max-ctx and free-VRAM-headroom, each as a % of the
-//                  fleet's best (0..1). Rewards long usable windows AND idle headroom.
+//   • amplifier  — max-ctx as a % of the fleet's best (0..1). Rewards long usable
+//                  windows. (Free-VRAM headroom is measured and reported but no
+//                  longer scored — it double-counted what maxctx already captures.)
 //   • restScore  — additive weighted sum of the remaining capability axes (below),
 //                  weights sum to 1.0, each normalized to 0..1.
 //
 // restScore keeps the FIXED-denominator rule: an axis a model didn't run contributes 0,
 // so breadth counts and a narrow model can't win by being scored on fewer axes.
 // DEFAULT_WEIGHTS holds ONLY the rest axes — toolcalling, struct_output, maxctx and
-// vram are structural multipliers, not entries here.
+// is a structural multiplier, not an entry here.
 //   reasoning 20 · triage 18 · summarization 16 · docqa 13 · performance 25 · degradation 8
 //
 // `performance` is a composite (NOT a hard multiplier — significant but bounded by its
@@ -82,9 +83,9 @@ export const DEFAULT_WEIGHTS = {
 // Self-describing scoring shape for report.json + the chart subtitle (so the
 // displayed formula can never drift from the code).
 export const SCORING = {
-   formula: 'coding × toolcalling × struct_output × (maxctx% + vram_headroom%)/2 × Σ(rest)',
+   formula: 'coding × toolcalling × struct_output × maxctx% × Σ(rest)',
    gates: ['coding', 'toolcalling', 'struct_output'],
-   amplifiers: ['maxctx', 'vram_headroom'],
+   amplifiers: ['maxctx'],
    rest_weights: DEFAULT_WEIGHTS,
 };
 
@@ -246,7 +247,7 @@ export function loadCapabilities(modelsYamlPath) {
  * think variant inherits it via a base-model lookup. Sibling variants are tagged
  * maxctxSharedFrom so a renderer can show "same as <owner>" instead of a blank.
  *
- * @returns {{ models, ranking, maxCtx, maxE2E, minTtft8k, maxFreeVram, weights }}
+ * @returns {{ models, ranking, maxCtx, maxE2E, minTtft8k, weights }}
  */
 export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
    const data = rows.filter((r) => r.status === 'ok' && r.bench !== 'load' && r.bench !== 'smoke');
@@ -519,13 +520,11 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
       }
    }
 
-   const freeVram = (m) => (m.maxctxVram != null ? CARD_TOTAL_MIB - m.maxctxVram : null);
    const maxCtx = Math.max(...models.map((m) => m.maxctx ?? 0)) || 1;
    const maxE2E = Math.max(...models.map((m) => m.e2eThroughput ?? 0)) || 1;
    // Fleet-fastest first-token latency at the common 8k depth (lower = better), the
    // denominator-flipped reference for the latency half of the performance axis.
    const minTtft8k = Math.min(...models.map((m) => m.ttft8kMs ?? Infinity));
-   const maxFreeVram = Math.max(...models.map((m) => freeVram(m) ?? 0)) || 1;
 
    // ── Multiplicative score (see SCORING / DEFAULT_WEIGHTS comment above) ─────────
    // restScore: additive weighted sum of capability axes. maxctx is NOT here (it's an
@@ -578,15 +577,8 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
    // genuine 0, is zeroed — unusable as an agent regardless of other strengths.
    const toolGate = (m) => (m.toolcall != null ? m.toolcall / 100 : 0);
    const structGate = (m) => (m.structScore != null ? m.structScore / 100 : 0);
-   // Amplifier: average of max-ctx and free-VRAM headroom, each as % of fleet best.
-   // Average only over whichever of the two the model actually measured; 0 if neither.
-   const ctxAmp = (m) => {
-      const parts = [];
-      if (m.maxctx != null) parts.push(m.maxctx / maxCtx);
-      const fv = freeVram(m);
-      if (fv != null) parts.push(fv / maxFreeVram);
-      return parts.length ? parts.reduce((a, b) => a + b, 0) / parts.length : 0;
-   };
+   // Amplifier: max-ctx as % of fleet best. 0 if the model has no maxctx data.
+   const ctxAmp = (m) => (m.maxctx != null ? m.maxctx / maxCtx : 0);
    // Coding multiplier: the no_think-primary coding grade normalized to the fleet's
    // best (0..1), multiplied into the score like the gates. A model with no coding
    // data is 0 (same convention as toolGate/structGate). NOT a rest-axis weight.
@@ -602,5 +594,5 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
    }
    const ranking = [...models].sort((a, b) => b.score - a.score);
 
-   return { models, ranking, maxCtx, maxE2E, minTtft8k, maxFreeVram, weights };
+   return { models, ranking, maxCtx, maxE2E, minTtft8k, weights };
 }
