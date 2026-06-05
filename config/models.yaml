@@ -223,6 +223,7 @@ models:
      family: gemma4
      type: dense
      think: optional
+     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
      think_control: enable_thinking
      tools: true
      native_max_ctx: 131072   # same 128k window as the unsloth 12B GGUF
@@ -236,6 +237,7 @@ models:
      family: gemma4
      type: moe
      think: optional
+     disabled: true   # thinking model — temporarily excluded from runs (see filterModels)
      think_control: enable_thinking
      tools: true
      native_max_ctx: 131072
