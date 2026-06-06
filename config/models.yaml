@@ -58,7 +58,7 @@ models:
      tools: true
      native_max_ctx: 262144
      kv_bytes_per_token: 49152
-     benches: [triage, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
      notes: "No think mode. repeat_penalty in sampling_matrix. If ub2048 OOMs at max ctx, set ubatch-size: 1024."
 
    # ── Qwen3-30B-A3B-Instruct-2507 ──────────────────────────────────────────────
@@ -281,7 +281,11 @@ models:
      native_max_ctx: 131072
      ctx_cap: 131072
      kv_bytes_per_token: 8192
+     # NO triage: always-reasoning model spends the smoke triage-JSON probe's token
+     # budget on reasoning_content before emitting proposed_action → smoke FAILs
+     # (triage-json:no-action) → ALL benches skip. Capability limit, like Nemotron+tools.
      benches: [reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     capability_note: "triage excluded: always-reasoning output can't emit triage-JSON action within the smoke probe budget"
      notes: "reasoning_content merged by llm client. repeat_penalty in sampling_matrix."
 
    # ── Granite-4.0-H-Tiny (MoE 7B-A1B, mamba-hybrid) ─────────────────────────────
@@ -295,7 +299,7 @@ models:
      tools: true
      native_max_ctx: 131072
      kv_bytes_per_token: 8192
-     benches: [triage, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
 
    # ── Nemotron-3-Nano-4B (mamba-hybrid) ─────────────────────────────────────────
    # Small v3 Nemotron; Q8_0 ≈4.3GB → big KV headroom for long context. Same bug
