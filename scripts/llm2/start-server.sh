@@ -47,6 +47,15 @@ case "$backend" in
    vulkan) BIN="$VK_BIN"    ;;
    *)      echo "ERROR: unknown backend '$backend'" >&2; exit 1 ;;
 esac
+
+# Vulkan int8 dot-product: measured neutral-to-NEGATIVE for decode on this host
+# (RX 7900 XT / RADV / KHR_coopmat) — 0%…−7.4% tg, prefill unaffected. Disable it at
+# runtime to recover up to ~7% decode on the MoE models. Override with LLAMA_VK_INT_DOT=1
+# to A/B. See results/int-dot-impact.md.
+vk_env=""
+if [ "$backend" = vulkan ] && [ "${LLAMA_VK_INT_DOT:-0}" != "1" ]; then
+   vk_env="env GGML_VK_DISABLE_INTEGER_DOT_PRODUCT=1 "
+fi
 if [ ! -f "$BIN" ]; then
    echo "ERROR: backend binary not found: $BIN" >&2
    exit 1
@@ -113,7 +122,7 @@ fi
 # from config/models.yaml extra_flags (every entry carries batch-size:2048
 # ubatch-size:2048). Without it llama.cpp defaults to -ub 512, which throttles Vulkan
 # prefill ~6x. See models.yaml.
-cmd="nohup $BIN $model_args \
+cmd="nohup ${vk_env}$BIN $model_args \
    -c $ctx \
    -ngl $ngl \
    --cache-type-k q8_0 --cache-type-v q8_0 \

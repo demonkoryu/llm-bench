@@ -120,6 +120,93 @@ panel, the environment header + comparability banner, and a tidy-CSV export.
 
 ---
 
+## GPU host: building `llama.cpp` (ROCm + Vulkan)
+
+The orchestrator drives a `llama.cpp` server on the GPU host over SSH; the host carries
+**two** builds, switched with `run-suite --backend <vulkan|rocm>`. This section is the
+source of truth for reproducing them (e.g. in Docker). Reference hardware: **AMD RX 7900
+XT** (`gfx1100`, RDNA3, 20 GiB), Ubuntu 24.04, ROCm 7.2.3, Mesa/RADV 25.2. Tested against
+llama.cpp `ggml-org/llama.cpp` @ commit **`a121232fd`**.
+
+```bash
+git clone https://github.com/ggml-org/llama.cpp && cd llama.cpp
+```
+
+### ROCm build (`build-rocm/`)
+
+```bash
+export PATH=/opt/rocm/bin:$PATH
+HIPCXX=/opt/rocm/bin/amdclang++ cmake -S . -B build-rocm \
+  -DGGML_HIP=ON -DAMDGPU_TARGETS=gfx1100 -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=ON
+cmake --build build-rocm --config Release -j"$(nproc)" --target llama-server llama-bench llama-cli
+```
+
+For `gfx1100`, `-DGGML_HIP=ON` **auto-enables** the RDNA3 fast paths — you do not pass them
+explicitly, but verify they landed in `build-rocm/CMakeCache.txt`:
+`GGML_HIP_ROCWMMA_FATTN=ON` (WMMA flash-attention), `GGML_HIP_GRAPHS=ON`,
+`GGML_HIP_MMQ_MFMA=ON` (native int8 MMQ). Runtime needs the **ROCm 7.x** stack.
+
+### Vulkan build (`build-vulkan/`) — ⚠️ needs a modern `glslc`
+
+```bash
+cmake -S . -B build-vulkan \
+  -DGGML_VULKAN=ON -DGGML_NATIVE=ON -DCMAKE_BUILD_TYPE=Release \
+  -DVulkan_GLSLC_EXECUTABLE=/opt/vulkan-sdk/x86_64/bin/glslc      # ← see below, do NOT omit
+cmake --build build-vulkan -j"$(nproc)" --target llama-server llama-bench
+```
+
+**The `glslc` version is load-bearing for whether int-dot is even *available*.**
+llama.cpp's int8 dot-product path is gated at *build time* on a CMake feature-test that
+tries to compile a `GL_EXT_integer_dot_product` shader. The **stock Ubuntu 24.04 `glslc`
+(shaderc 2023.8 / glslang 14) cannot compile it**, so the macro
+`GGML_VULKAN_INTEGER_DOT_GLSLC_SUPPORT` is silently left undefined and the int8 path is
+compiled out — the device reports `int dot: 0`, with **no error**. Use a `glslc` from a
+recent **Vulkan SDK ≥ 1.3.290** (we used LunarG **1.4.350.1** → shaderc v2026.2) to get
+`int dot: 1`:
+
+> **Measured caveat — int-dot is *off* at runtime on this host.** Having `int dot: 1`
+> available let us A/B it rigorously (runtime toggle `GGML_VK_DISABLE_INTEGER_DOT_PRODUCT`).
+> On this RX 7900 XT + RADV + KHR_coopmat build it is **neutral-to-negative for decode**
+> (0% … −7.4% tg; prefill unaffected) — it only swaps the decode GEMV kernel, and that
+> kernel is slower than the coopmat path for our quants. So we **disable it at runtime**.
+> Still build with the modern glslc (a different GPU/driver may flip the sign). Full data
+> + the warmup-confound that earlier faked a "+37% win": [`results/int-dot-impact.md`](results/int-dot-impact.md).
+
+```bash
+VER=$(curl -s https://vulkan.lunarg.com/sdk/latest/linux.txt)        # e.g. 1.4.350.1
+curl -s -o sdk.tar.xz "https://sdk.lunarg.com/sdk/download/$VER/linux/vulkansdk-linux-x86_64-$VER.tar.xz"
+mkdir -p /opt/vulkan-sdk && tar -xJf sdk.tar.xz -C /opt/vulkan-sdk --strip-components=1
+# glslc is the prebuilt /opt/vulkan-sdk/x86_64/bin/glslc — point -DVulkan_GLSLC_EXECUTABLE at it
+```
+
+Runtime needs **Mesa/RADV ≥ 24.x** (exposes `VK_KHR_cooperative_matrix` and accelerated
+integer dot for `gfx1100`). The build only needs the modern `glslc`; the Vulkan headers
+and loader can stay at the distro version.
+
+### Verify the build is optimal
+
+A correct Vulkan build prints this device line on load (any `llama-bench`/server start):
+
+```
+ggml_vulkan: 0 = Radeon RX 7900 XT (RADV NAVI31) | fp16: 1 | int dot: 1 | matrix cores: KHR_coopmat
+```
+
+`int dot: 1` **and** `matrix cores: KHR_coopmat` must both be present — `int dot: 0` means
+the glslc was too old (rebuild with a newer SDK). For ROCm, confirm
+`GGML_HIP_ROCWMMA_FATTN=ON` in its CMakeCache.
+
+### Server launch flags
+
+The server is launched by [`scripts/llm2/start-server.sh`](scripts/llm2/start-server.sh):
+`-fa on`, `--cache-type-k/v q8_0` (quantized KV), `--jinja`, `--reasoning-format auto`,
+`-np 1`. Batch sizing (`-b 2048 -ub 2048`, the Vulkan prefill-throttle fix) is **not** in
+the script — it is injected per-model from `config/models.yaml` `defaults.extra_flags`. See
+that file's header for the rationale. For the **vulkan** backend the script also exports
+`GGML_VK_DISABLE_INTEGER_DOT_PRODUCT=1` (int-dot measured net-negative for decode here —
+override with `LLAMA_VK_INT_DOT=1`; see [`results/int-dot-impact.md`](results/int-dot-impact.md)).
+
+---
+
 ## Scoring model (summary)
 
 Defined in `shared/scoring.mjs` (pure module, shared by Node and the dashboard). Structure
