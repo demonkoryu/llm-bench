@@ -1,0 +1,33 @@
+# Publishes the self-contained benchmark dashboard to Forgejo Pages.
+# On every push to main, copies results/dashboard.html -> index.html and
+# force-pushes it to the `pages` branch, which the pages-server serves at
+# https://llm-bench.demonkoryu.pages.xor0.de
+name: pages
+on:
+  push:
+    branches: [main]
+    paths: [results/dashboard.html, .forgejo/workflows/pages.yml]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Build & push pages branch
+        run: |
+          set -euo pipefail
+          test -f results/dashboard.html
+          work="$(mktemp -d)"
+          cp results/dashboard.html "$work/index.html"
+          cd "$work"
+          git init -q -b pages
+          git config user.name  "forgejo-actions"
+          git config user.email "actions@git.xor0.de"
+          git add index.html
+          git commit -q -m "Deploy dashboard ($GITHUB_SHA)"
+          git push -q --force \
+            "https://forgejo-actions:${{ secrets.PAGES_TOKEN }}@git.xor0.de/${{ github.repository }}.git" \
+            pages
