@@ -137,6 +137,7 @@ for (const m of fleet) {
 //   recipe: llama-server --hf-repo … -c <main+scratch> --parallel 2 --kv-unified --no-mmproj
 const SCRATCH_MIN = 4096; // a scratchpad smaller than this isn't worth a slot
 const PARALLEL_OH = 512; // MiB extra overhead for running 2 slots (measured ~0.45 GB)
+const WORKER_CTX = 65536; // "1 full + N×64k" layout: each worker slot gets a 64k window
 const setups = fleet
    .map((m) => {
       // kv is a measured positive slope (models without one were dropped above).
@@ -145,15 +146,20 @@ const setups = fleet
       const leftover = Math.max(0, tokenBudget - main);
       const scratch = Math.min(m.maxctx, leftover); // 2nd slot, capped at coherence ceiling
       const fullSlots = Math.floor(tokenBudget / m.maxctx); // how many full-ctx slots fit
+      // Agentic layout: ONE main slot at full ctx (the long-context lead) + as many
+      // 64k worker slots as the remaining VRAM holds. Worker ctx is capped at the
+      // model's coherence ceiling, so a model whose maxctx < 64k gets maxctx workers.
+      const workerCtx = Math.min(WORKER_CTX, m.maxctx);
+      const workers64 = Math.max(0, Math.floor((tokenBudget - main) / workerCtx));
       const vramUsed = m.weights + m.kv * (main + scratch);
-      return { ...m, tokenBudget, main, scratch, fullSlots, vramUsed };
+      return { ...m, tokenBudget, main, scratch, fullSlots, workerCtx, workers64, vramUsed };
    })
    .sort((a, b) => b.score - a.score);
 
 console.log(`\nBEST SINGLE-MODEL SETUPS — 1 model, weights paid ONCE, main @ max ctx + scratchpad slot`);
 console.log(`(budget ${gb(BUDGET)} GB after ${RESERVE} MiB reserve; needs --parallel + unified KV; ranked by quality)\n`);
 console.log(
-   `${pad('model', 42)} ${pad('qual', 5)} ${pad('weights', 8)} ${pad('main ctx', 9)} ${pad('scratch', 9)} ${pad('full slots', 11)} note`,
+   `${pad('model', 42)} ${pad('qual', 5)} ${pad('weights', 8)} ${pad('main ctx', 9)} ${pad('scratch', 9)} ${pad('full slots', 11)} ${pad('1full+64k', 11)} note`,
 );
 for (const s of setups) {
    const note =
@@ -162,8 +168,9 @@ for (const s of setups) {
          : s.fullSlots >= 3
            ? `room for ${s.fullSlots}× full-ctx slots`
            : 'main + scratchpad';
+   const w64 = s.workerCtx < WORKER_CTX ? `1+${s.workers64}×${r0(s.workerCtx / 1024)}k` : `1+${s.workers64}×64k`;
    console.log(
-      `${pad(s.id, 42)} ${pad(s.score, 5)} ${pad(gb(s.weights) + 'G', 8)} ${pad(r0(s.main), 9)} ${pad(s.scratch < SCRATCH_MIN ? '—' : r0(s.scratch), 9)} ${pad(s.fullSlots, 11)} ${note}`,
+      `${pad(s.id, 42)} ${pad(s.score, 5)} ${pad(gb(s.weights) + 'G', 8)} ${pad(r0(s.main), 9)} ${pad(s.scratch < SCRATCH_MIN ? '—' : r0(s.scratch), 9)} ${pad(s.fullSlots, 11)} ${pad(w64, 11)} ${note}`,
    );
 }
 
@@ -240,7 +247,7 @@ fleet.forEach((m, i) => {
 svg += T(
    28,
    setupsTop - 8,
-   'Best single-model setups — weights ONCE, main @ max ctx + scratchpad (REQUIRES --parallel + --kv-unified; default splits the window)',
+   'Best single-model setups — weights ONCE, main @ max ctx + scratchpad · 1full+64k = 1 lead @max + N×64k workers (REQUIRES --parallel + --kv-unified)',
    {
       fill: '#a0a0c0',
       size: 13,
@@ -249,13 +256,19 @@ svg += T(
 );
 const scols = [
    { x: 28, label: 'Model', get: (s) => s.id, anchor: 'start' },
-   { x: 470, label: 'Quality', get: (s) => s.score.toFixed(1), anchor: 'end' },
-   { x: 560, label: 'Weights', get: (s) => `${gb(s.weights)}G`, anchor: 'end' },
-   { x: 660, label: 'Main ctx', get: (s) => r0(s.main), anchor: 'end' },
-   { x: 765, label: 'Scratchpad', get: (s) => (s.scratch < SCRATCH_MIN ? '—' : r0(s.scratch)), anchor: 'end' },
-   { x: 845, label: 'Full slots', get: (s) => String(s.fullSlots), anchor: 'end' },
+   { x: 440, label: 'Quality', get: (s) => s.score.toFixed(1), anchor: 'end' },
+   { x: 525, label: 'Weights', get: (s) => `${gb(s.weights)}G`, anchor: 'end' },
+   { x: 615, label: 'Main ctx', get: (s) => r0(s.main), anchor: 'end' },
+   { x: 705, label: 'Scratchpad', get: (s) => (s.scratch < SCRATCH_MIN ? '—' : r0(s.scratch)), anchor: 'end' },
+   { x: 775, label: 'Full slots', get: (s) => String(s.fullSlots), anchor: 'end' },
    {
-      x: 855,
+      x: 885,
+      label: '1full+64k',
+      get: (s) => (s.workerCtx < WORKER_CTX ? `1+${s.workers64}×${r0(s.workerCtx / 1024)}k` : `1+${s.workers64}×64k`),
+      anchor: 'end',
+   },
+   {
+      x: 897,
       label: 'Note',
       get: (s) => (s.scratch < SCRATCH_MIN ? 'VRAM-bound' : s.fullSlots >= 3 ? `${s.fullSlots}× full slots` : 'main+scratch'),
       anchor: 'start',
@@ -271,6 +284,7 @@ setups.forEach((s, i) => {
       let fill = TEXT;
       if (c.label === 'Quality') fill = ACCENT;
       else if (c.label === 'Scratchpad') fill = scratchOK ? GOOD : WARN;
+      else if (c.label === '1full+64k') fill = s.workers64 > 0 ? GOOD : WARN;
       else if (c.label === 'Note') fill = scratchOK ? DIM : WARN;
       svg += T(c.x, y, c.get(s), { fill, size: 11, anchor: c.anchor, mono: c.label !== 'Model' && c.label !== 'Note' });
    }
