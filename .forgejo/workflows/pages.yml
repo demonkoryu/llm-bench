@@ -1,25 +1,40 @@
-# Publishes the self-contained benchmark dashboard to Forgejo Pages.
-# On every push to main that touches the dashboard, copy results/dashboard.html
-# to index.html and force-push it to the `pages` branch, which the pages-server
-# serves at https://llm-bench.demonkoryu.pages.xor0.de
+# Publishes the self-contained benchmark dashboard — GitHub Pages-style.
 #
-# Self-contained: clones via PAGES_TOKEN in a plain run step rather than using
-# actions/checkout, so the job has no dependency on an external action registry.
+# Flow (mirrors GitHub Pages + a publish action):
+#   1. push to main touching results/dashboard.html triggers this workflow ("build"),
+#   2. it copies results/dashboard.html -> index.html and FORCE-PUSHES the `pages`
+#      branch — the published artifact, exactly like a gh-pages branch,
+#   3. it rsyncs that same tree over SSH to the Caddy static server, so what is
+#      served at https://pages.xor0.de/llm-bench/ is byte-identical to the `pages`
+#      branch. Caddy just hosts a mirror of the branch.
+#
+# Self-contained: clones the source via PAGES_TOKEN in a plain run step (no external
+# action), and deploys with a restricted SSH key (PAGES_DEPLOY_KEY) whose authorized
+# command is `rrsync -wo /srv/pages` — write-only, scoped to the pages root.
 name: pages
 on:
   push:
     branches: [main]
-    paths: [results/dashboard.html, .forgejo/workflows/pages.yml]
+    paths:
+      - results/dashboard.html
+      - .forgejo/workflows/pages.yml
   workflow_dispatch:
 
 jobs:
-  deploy:
+  publish:
     runs-on: ubuntu-latest
     env:
       TOKEN: ${{ secrets.PAGES_TOKEN }}
       REPO: ${{ github.repository }}
+      DEPLOY_KEY: ${{ secrets.PAGES_DEPLOY_KEY }}
     steps:
-      - name: Build & push pages branch
+      - name: Install ssh + rsync
+        run: |
+          set -eu
+          apt-get update -qq
+          DEBIAN_FRONTEND=noninteractive apt-get install -y -qq openssh-client rsync >/dev/null
+
+      - name: Build site + publish pages branch
         run: |
           set -euo pipefail
           remote="https://forgejo-actions:${TOKEN}@git.xor0.de/${REPO}.git"
@@ -31,6 +46,23 @@ jobs:
           git init -q -b pages
           git config user.name  "forgejo-actions"
           git config user.email "actions@git.xor0.de"
-          git add index.html
+          git add -A
           git commit -q -m "Deploy dashboard"
           git push -q --force "$remote" pages
+
+      - name: Deploy pages branch to Caddy (rsync over SSH)
+        run: |
+          set -euo pipefail
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          # Pinned host key for llm2 (192.168.1.120) — no TOFU.
+          printf '%s\n' \
+            "192.168.1.120 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHRU9Tgc2aRGFZ24l/xIoc6vczxrjNuUUo2wgghZU81H" \
+            > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+          # The deploy key's forced command is `rrsync -wo /srv/pages`, so the remote
+          # path is RELATIVE to /srv/pages -> this writes /srv/pages/llm-bench/.
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes" \
+            site/ demonkoryu@192.168.1.120:llm-bench/
