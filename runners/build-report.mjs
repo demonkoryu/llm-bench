@@ -158,6 +158,12 @@ const report = {
       ttft_ms: { ref: m.ttftRefMs, curve: m.ttftCurve.map((p) => ({ depth: p.depth, ms: p.ms })) },
       // Structured-output reliability: % schema-conformant JSON (unconstrained).
       struct_output_pct: m.structScore,
+      // Instruction-following (IFEval-lite): % of verifiable prose constraints obeyed.
+      instruction_following_pct: m.ifScore,
+      // Multi-turn agentic tool loop: % task completion + mean steps taken.
+      agentic_loop: { completion_pct: m.agenticScore, mean_steps: m.agenticSteps },
+      // Prompt-cache prefix reuse: cold vs warm TTFT (ms) and the warm speedup ratio.
+      prefix_cache: m.prefixCache ? { cold_ms: m.prefixCache.cold, warm_ms: m.prefixCache.warm, speedup: m.prefixCache.speedup } : null,
       // Coding grade (no_think-primary): 0.4·pass@1 + 0.6·test-rate from coding_multipl,
       // normalized to the fleet's best as a score multiplier.
       coding_grade: m.codingGrade,
@@ -198,6 +204,9 @@ const report = {
          ['parallel_speedup', (m) => m.pargenSpeedup], // batching multiplier vs single slot
          ['quality_retention_pct', (m) => m.qualityRetentionPct], // accuracy held at ~32k vs 0
          ['struct_output_pct', (m) => m.structScore], // schema-conformant JSON rate
+         ['instruction_following_pct', (m) => m.ifScore], // verifiable prose-constraint obedience
+         ['agentic_loop_pct', (m) => m.agenticScore], // multi-turn tool-loop task completion
+         ['prefix_cache_speedup', (m) => m.prefixCache?.speedup ?? null], // warm-prefix TTFT speedup
          ['power_eff_tok_s_per_w', (m) => m.powerEff], // decode tok/s per watt
          // (TTFT is lower-is-better — kept as per-model ttft_ms, not a descending ranking.)
       ].map(([category, get]) => [

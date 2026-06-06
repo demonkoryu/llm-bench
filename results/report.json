@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-06T09:01:32.021Z",
+  "generated": "2026-06-06T10:03:58.924Z",
   "sources": [
     "rose-rx7900xt-vulkan-20260606-004710 (suite/complete)",
     "rose-rx7900xt-vulkan-20260606-045445-kvprobe (kvprobe/complete)",
@@ -158,6 +158,12 @@
         ]
       },
       "struct_output_pct": 100,
+      "instruction_following_pct": null,
+      "agentic_loop": {
+        "completion_pct": null,
+        "mean_steps": null
+      },
+      "prefix_cache": null,
       "coding_grade": 92.88,
       "power_eff_tok_s_per_w": 0.538,
       "weighted_score": 23.1
@@ -286,6 +292,12 @@
         ]
       },
       "struct_output_pct": 100,
+      "instruction_following_pct": null,
+      "agentic_loop": {
+        "completion_pct": null,
+        "mean_steps": null
+      },
+      "prefix_cache": null,
       "coding_grade": 91.12,
       "power_eff_tok_s_per_w": 0.534,
       "weighted_score": 33.2
@@ -414,6 +426,12 @@
         ]
       },
       "struct_output_pct": 100,
+      "instruction_following_pct": null,
+      "agentic_loop": {
+        "completion_pct": null,
+        "mean_steps": null
+      },
+      "prefix_cache": null,
       "coding_grade": 92.60000000000001,
       "power_eff_tok_s_per_w": 0.486,
       "weighted_score": 33.3
@@ -526,6 +544,12 @@
         ]
       },
       "struct_output_pct": 100,
+      "instruction_following_pct": null,
+      "agentic_loop": {
+        "completion_pct": null,
+        "mean_steps": null
+      },
+      "prefix_cache": null,
       "coding_grade": 87.32,
       "power_eff_tok_s_per_w": 0.216,
       "weighted_score": 16.1
@@ -678,6 +702,12 @@
         ]
       },
       "struct_output_pct": 91.7,
+      "instruction_following_pct": null,
+      "agentic_loop": {
+        "completion_pct": null,
+        "mean_steps": null
+      },
+      "prefix_cache": null,
       "coding_grade": 82.56,
       "power_eff_tok_s_per_w": 0.301,
       "weighted_score": 59.3
@@ -830,6 +860,12 @@
         ]
       },
       "struct_output_pct": 100,
+      "instruction_following_pct": null,
+      "agentic_loop": {
+        "completion_pct": null,
+        "mean_steps": null
+      },
+      "prefix_cache": null,
       "coding_grade": 95.08,
       "power_eff_tok_s_per_w": 0.386,
       "weighted_score": 53.1
@@ -982,6 +1018,12 @@
         ]
       },
       "struct_output_pct": 100,
+      "instruction_following_pct": null,
+      "agentic_loop": {
+        "completion_pct": null,
+        "mean_steps": null
+      },
+      "prefix_cache": null,
       "coding_grade": 87.66,
       "power_eff_tok_s_per_w": 0.321,
       "weighted_score": 63.2
@@ -1134,6 +1176,12 @@
         ]
       },
       "struct_output_pct": 100,
+      "instruction_following_pct": null,
+      "agentic_loop": {
+        "completion_pct": null,
+        "mean_steps": null
+      },
+      "prefix_cache": null,
       "coding_grade": 91.36,
       "power_eff_tok_s_per_w": 0.391,
       "weighted_score": 61.1
@@ -1286,6 +1334,12 @@
         ]
       },
       "struct_output_pct": 100,
+      "instruction_following_pct": null,
+      "agentic_loop": {
+        "completion_pct": null,
+        "mean_steps": null
+      },
+      "prefix_cache": null,
       "coding_grade": 96.74000000000001,
       "power_eff_tok_s_per_w": 0.313,
       "weighted_score": 73.5
@@ -1438,6 +1492,12 @@
         ]
       },
       "struct_output_pct": 100,
+      "instruction_following_pct": null,
+      "agentic_loop": {
+        "completion_pct": null,
+        "mean_steps": null
+      },
+      "prefix_cache": null,
       "coding_grade": 94.25999999999999,
       "power_eff_tok_s_per_w": 0.196,
       "weighted_score": 67.6
@@ -1590,6 +1650,12 @@
         ]
       },
       "struct_output_pct": 100,
+      "instruction_following_pct": null,
+      "agentic_loop": {
+        "completion_pct": null,
+        "mean_steps": null
+      },
+      "prefix_cache": null,
       "coding_grade": 93.66,
       "power_eff_tok_s_per_w": 0.216,
       "weighted_score": 68.1
@@ -1742,6 +1808,12 @@
         ]
       },
       "struct_output_pct": 100,
+      "instruction_following_pct": null,
+      "agentic_loop": {
+        "completion_pct": null,
+        "mean_steps": null
+      },
+      "prefix_cache": null,
       "coding_grade": 95.9,
       "power_eff_tok_s_per_w": 0.475,
       "weighted_score": 72.5
@@ -1894,6 +1966,12 @@
         ]
       },
       "struct_output_pct": 100,
+      "instruction_following_pct": null,
+      "agentic_loop": {
+        "completion_pct": null,
+        "mean_steps": null
+      },
+      "prefix_cache": null,
       "coding_grade": 93.78,
       "power_eff_tok_s_per_w": 0.222,
       "weighted_score": 54.6
@@ -2046,6 +2124,12 @@
         ]
       },
       "struct_output_pct": 100,
+      "instruction_following_pct": null,
+      "agentic_loop": {
+        "completion_pct": null,
+        "mean_steps": null
+      },
+      "prefix_cache": null,
       "coding_grade": 95.56,
       "power_eff_tok_s_per_w": 0.395,
       "weighted_score": 72.4
@@ -2198,6 +2282,12 @@
         ]
       },
       "struct_output_pct": 75,
+      "instruction_following_pct": null,
+      "agentic_loop": {
+        "completion_pct": null,
+        "mean_steps": null
+      },
+      "prefix_cache": null,
       "coding_grade": 72.58000000000001,
       "power_eff_tok_s_per_w": 1.08,
       "weighted_score": 32.6
@@ -2350,6 +2440,12 @@
         ]
       },
       "struct_output_pct": 100,
+      "instruction_following_pct": null,
+      "agentic_loop": {
+        "completion_pct": null,
+        "mean_steps": null
+      },
+      "prefix_cache": null,
       "coding_grade": 81.47999999999999,
       "power_eff_tok_s_per_w": 0.482,
       "weighted_score": 52.6
@@ -2450,6 +2546,12 @@
         ]
       },
       "struct_output_pct": 83.3,
+      "instruction_following_pct": null,
+      "agentic_loop": {
+        "completion_pct": null,
+        "mean_steps": null
+      },
+      "prefix_cache": null,
       "coding_grade": 84.08,
       "power_eff_tok_s_per_w": 0.479,
       "weighted_score": 0
@@ -4950,6 +5052,9 @@
         "score": 75
       }
     ],
+    "instruction_following_pct": [],
+    "agentic_loop_pct": [],
+    "prefix_cache_speedup": [],
     "power_eff_tok_s_per_w": [
       {
         "rank": 1,

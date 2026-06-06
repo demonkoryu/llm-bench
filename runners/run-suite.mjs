@@ -1541,6 +1541,9 @@ if (FULL) {
       ['throughput-ttft', 'runners/throughput-ttft.mjs'],
       ['speed-decay', 'runners/speed-decay.mjs'],
       ['quality-decay', 'runners/quality-decay.mjs'],
+      ['instruction-following', 'runners/instruction-following.mjs'],
+      ['prompt-cache', 'runners/prompt-cache.mjs'],
+      ['agentic-loop', 'runners/agentic-loop.mjs'],
    ];
    console.log(`\n[run-suite] --full: chaining ${secondaries.length} secondary runners against ${run.runId}\n`);
    for (const [kind, script] of secondaries) {

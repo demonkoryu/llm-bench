@@ -134,7 +134,18 @@ export function runIdFrom({ host, gpu, backend, date, kind }) {
  * them via a base-model lookup (like maxctx). Single source of truth so the
  * aggregation enumeration skip and any row classifier can't drift apart.
  */
-const SHARED_BENCH_EXACT = new Set(['maxctx', 'struct_output', 'power_eff', 'kv_per_tok', 'judge']);
+const SHARED_BENCH_EXACT = new Set([
+   'maxctx',
+   'struct_output',
+   'power_eff',
+   'kv_per_tok',
+   'judge',
+   'instruction_following',
+   'agentic_loop',
+   'prefix_cache_cold_ms',
+   'prefix_cache_warm_ms',
+   'prefix_cache_speedup',
+]);
 const SHARED_BENCH_PREFIXES = ['speed_decay-', 'speed_pargen-', 'quality_decay-', 'ttft-', 'e2e-'];
 
 /** True for a base-model-keyed bench (see SHARED_BENCH_*). */
@@ -415,6 +426,10 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
    const ttftByModel = new Map(); // base model → Map(depth → prefill ms)
    const e2eByModel = new Map(); // base model → Map(depth → end-to-end tok/s, directly measured)
    const structByModel = new Map(); // base model → schema-conformance %
+   const ifByModel = new Map(); // base model → instruction-following check-pass %
+   const agenticByModel = new Map(); // base model → multi-turn tool-loop completion %
+   const agenticStepsByModel = new Map(); // base model → mean steps per agentic task
+   const prefixCacheByModel = new Map(); // base model → { cold, warm, speedup } prefix-reuse TTFT
    const powerEffByModel = new Map(); // base model → decode tok/s per watt
    const codingByMT = new Map(); // `${base}|${think}` → { pass1, testRate } from coding_multipl
    // Helper: set base→Map(key→val), later row wins.
@@ -436,6 +451,26 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          if (Number.isFinite(v)) setDepth(e2eByModel, baseModel(r.model), depthOf(bench, 'e2e-'), v);
       } else if (bench === 'struct_output') {
          if (Number.isFinite(v)) structByModel.set(baseModel(r.model), v);
+      } else if (bench === 'instruction_following') {
+         if (Number.isFinite(v)) ifByModel.set(baseModel(r.model), v);
+      } else if (bench === 'agentic_loop') {
+         if (Number.isFinite(v)) {
+            agenticByModel.set(baseModel(r.model), v);
+            const sm = /steps\s+([\d.]+)/.exec(r.notes ?? '');
+            if (sm) agenticStepsByModel.set(baseModel(r.model), Number(sm[1]));
+         }
+      } else if (bench === 'prefix_cache_warm_ms') {
+         // Prompt-cache prefix-reuse: cold vs warm TTFT. The warm-ms row carries
+         // cold and speedup in its notes ("cold N speedup Nx") — one row, all three.
+         if (Number.isFinite(v)) {
+            const cm = /cold\s+([\d.]+)/.exec(r.notes ?? '');
+            const sm = /speedup\s+([\d.]+)/.exec(r.notes ?? '');
+            prefixCacheByModel.set(baseModel(r.model), {
+               warm: v,
+               cold: cm ? Number(cm[1]) : null,
+               speedup: sm ? Number(sm[1]) : null,
+            });
+         }
       } else if (bench === 'power_eff') {
          if (Number.isFinite(v)) powerEffByModel.set(baseModel(r.model), v);
       } else if (bench === 'coding_multipl') {
@@ -597,6 +632,13 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
          const codingGrade = codingGradeOf(baseModel(model));
          // Power efficiency: decode tok/s per watt (board power via lm-sensors).
          const powerEff = powerEffByModel.get(baseModel(model)) ?? null;
+         // Report-only quality secondaries (do not enter the composite score):
+         // instruction-following check-pass %, multi-turn agentic completion %, and
+         // prompt-cache prefix-reuse TTFT (cold vs warm).
+         const ifScore = ifByModel.get(baseModel(model)) ?? null;
+         const agenticScore = agenticByModel.get(baseModel(model)) ?? null;
+         const agenticSteps = agenticStepsByModel.get(baseModel(model)) ?? null;
+         const prefixCache = prefixCacheByModel.get(baseModel(model)) ?? null;
          return {
             label: `${model}${think !== 'n/a' ? ` [${think}]` : ''}`,
             model,
@@ -635,6 +677,10 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
             e2eThroughput,
             e2eRef,
             structScore,
+            ifScore,
+            agenticScore,
+            agenticSteps,
+            prefixCache,
             powerEff,
             codingGrade,
          };
