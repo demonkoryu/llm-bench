@@ -5,9 +5,6 @@ each model on document comprehension, coding/tool-use, speed, context length and
 footprint, then ranks them by a **capability** score and a **fleet-suitability** score,
 and renders an interactive, self-contained dashboard.
 
-**▶ Live dashboard: https://demonkoryu.github.io/llm-bench/** — auto-published from
-`results/dashboard.html` on every push to `main`.
-
 - **Orchestrator** — Node, runs on your dev host (benches, graders, scoring, charts).
 - **Inference** — a `llama.cpp` server on a GPU host, driven over SSH; system concerns
   (start/stop, VRAM, health) are shell scripts in `scripts/llm2/`.
