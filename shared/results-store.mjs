@@ -73,35 +73,39 @@ export const CARD_TOTAL_MIB = 20464;
 // so breadth counts and a narrow model can't win by being scored on fewer axes.
 // DEFAULT_WEIGHTS holds ONLY the rest axes — toolcalling, struct_output, maxctx and
 // coding are structural multipliers, not entries here.
-//   performance 20 · reasoning 17 · triage 14 · agentic_loop 13 · summarization 12 ·
-//   docqa 10 · instruction_following 8 · degradation 6
+//   performance 25 · reasoning 21 · triage 18 · summarization 15 · docqa 13 ·
+//   degradation 6  (sum = 1.0)
 //
 // agentic_loop (multi-turn ReAct tool use) + instruction_following (IFEval-lite
-// constraint obedience) were added as rest axes (~21% combined) — bounded, additive
-// quality axes rather than hard gates so a weak result can't zero a model on a
-// brand-new metric. prefix-cache speedup is deliberately NOT scored: a higher
+// constraint obedience) are NOT rest axes — they feed the CODING multiplier alongside
+// the raw coding grade (see codingMult below). All three measure "can this model do
+// real coding work": write correct code, drive a tool loop, obey literal task
+// constraints. Folding them into the coding multiplier means a weak agent/IF result
+// scales the whole score down (as coding competence should), rather than just forgoing
+// an additive slice. prefix-cache speedup is deliberately NOT scored: a higher
 // cold/warm ratio reflects slow cold prefill vs a near-instant cache hit (it would
-// perversely reward slow prefill), and TTFT already lives in the performance axis.
+// perversely reward slow prefill); warm TTFT itself lives in the performance axis.
 //
 // `performance` is a composite (NOT a hard multiplier — significant but bounded by its
-// 0.20 rest-weight): 0.4·throughput + 0.6·latency, latency-favored. Throughput =
-// directly-measured E2E tok/s ÷ fleet best; latency = fleet-min TTFT ÷ this model's
-// TTFT at the common 8k depth (lower TTFT → closer to 1).
+// 0.25 rest-weight): 0.4·throughput + 0.45·cold-latency + 0.15·warm-latency,
+// latency-favored. Throughput = directly-measured E2E tok/s ÷ fleet best; cold-latency
+// = fleet-min TTFT ÷ this model's TTFT at the common 8k depth; warm-latency folds in
+// the prompt-cache bench's warm (prefix-reused) TTFT (lower TTFT → closer to 1).
 export const DEFAULT_WEIGHTS = {
-   performance: 0.2,
-   reasoning: 0.17,
-   triage: 0.14,
-   agentic_loop: 0.13,
-   summarization: 0.12,
-   docqa: 0.1,
-   instruction_following: 0.08,
-   degradation: 0.06,
+   performance: 0.25,
+   reasoning: 0.21,
+   triage: 0.18,
+   summarization: 0.15,
+   docqa: 0.13,
+   degradation: 0.08,
 };
 
 // Self-describing scoring shape for report.json + the chart subtitle (so the
 // displayed formula can never drift from the code).
 export const SCORING = {
    formula: 'coding × toolcalling × struct_output × maxctx% × Σ(rest)',
+   // `coding` is itself a composite multiplier: 0.6·grade + 0.25·agentic + 0.15·IFEval.
+   coding_mult: { grade: 0.6, agentic_loop: 0.25, instruction_following: 0.15 },
    gates: ['coding', 'toolcalling', 'struct_output'],
    amplifiers: ['maxctx'],
    rest_weights: DEFAULT_WEIGHTS,
@@ -728,9 +732,7 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
       triage: (m) => (m.triage != null ? m.triage / 100 : null),
       summarization: (m) => (m.summ != null ? m.summ / 100 : null),
       docqa: (m) => (m.docqa != null ? m.docqa / 10 : null),
-      // Multi-turn agentic tool loop + IFEval-lite: both reported as 0..100 %.
-      agentic_loop: (m) => (m.agenticScore != null ? m.agenticScore / 100 : null),
-      instruction_following: (m) => (m.ifScore != null ? m.ifScore / 100 : null),
+      // (agentic_loop + instruction_following are NOT rest axes — they feed codingMult.)
       // Performance composite: 0.4·throughput + 0.45·cold-latency + 0.15·warm-latency,
       // latency-favored (0.6 of the weight is latency), in 0..1.
       //   throughput   = directly-measured E2E tok/s ÷ fleet best (no decode fallback)
@@ -782,10 +784,29 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
    const structGate = (m) => (m.structScore != null ? m.structScore / 100 : 0);
    // Amplifier: max-ctx as % of fleet best. 0 if the model has no maxctx data.
    const ctxAmp = (m) => (m.maxctx != null ? m.maxctx / maxCtx : 0);
-   // Coding multiplier: the no_think-primary coding grade normalized to the fleet's
-   // best (0..1), multiplied into the score like the gates. NOT a rest-axis weight.
+   // Coding multiplier: a coding-COMPETENCE composite multiplied into the score like the
+   // gates (NOT a rest-axis weight). Blends three signals that all measure "can this
+   // model do real coding work": the no_think-primary coding grade (0.6, normalized to
+   // the fleet's best), the multi-turn agentic tool loop (0.25), and IFEval-lite literal
+   // instruction following (0.15). Coding grade is the anchor — a model with no coding
+   // data is an unusable coder and is zeroed, exactly as before. The agentic/IF terms
+   // renormalize over whichever are present (same pattern as the performance composite),
+   // so a missing one shifts weight to the others rather than tanking the multiplier.
    const maxCoding = Math.max(...models.map((m) => m.codingGrade ?? 0)) || 1;
-   const codingMult = (m) => (m.codingGrade != null ? m.codingGrade / maxCoding : 0);
+   const codingMult = (m) => {
+      if (m.codingGrade == null) return 0;
+      let num = 0.6 * (m.codingGrade / maxCoding);
+      let den = 0.6;
+      if (m.agenticScore != null) {
+         num += 0.25 * (m.agenticScore / 100);
+         den += 0.25;
+      }
+      if (m.ifScore != null) {
+         num += 0.15 * (m.ifScore / 100);
+         den += 0.15;
+      }
+      return num / den;
+   };
    const finalScore = (m) => codingMult(m) * toolGate(m) * structGate(m) * ctxAmp(m) * restScore(m);
    for (const m of models) {
       // Expose the performance-axis breakdown for the report/chart (transparency).
@@ -793,6 +814,9 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
       m.latencyNorm = m.ttft8kMs != null && Number.isFinite(minTtft8k) ? minTtft8k / m.ttft8kMs : null;
       m.warmLatencyNorm = m.prefixCache?.warm != null && Number.isFinite(minWarm) ? minWarm / m.prefixCache.warm : null;
       m.performance = REST_NORMALIZE.performance(m);
+      // Expose the coding-competence multiplier + its fleet-relative grade component.
+      m.codingGradeNorm = m.codingGrade != null ? m.codingGrade / maxCoding : null;
+      m.codingMult = codingMult(m);
       m.score = Math.round(finalScore(m) * 1000) / 10;
    }
    const ranking = [...models].sort((a, b) => b.score - a.score);

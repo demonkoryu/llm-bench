@@ -113,7 +113,7 @@ const report = {
          ref: m.e2eRef,
          curve: m.e2eCurve.map((p) => ({ depth: p.depth, tok_s: p.tps })),
       },
-      // Performance axis (rest-weight 0.20): blends throughput + cold/warm first-token
+      // Performance axis (rest-weight 0.25): blends throughput + cold/warm first-token
       // latency (0.4·throughput + 0.45·cold-latency + 0.15·warm-latency). Each component
       // is fleet-relative 0..1; `axis` is the value that enters restScore. ttft_8k_ms is
       // the absolute cold latency the cold-latency component is computed from (common 8k
@@ -163,14 +163,20 @@ const report = {
       // Structured-output reliability: % schema-conformant JSON (unconstrained).
       struct_output_pct: m.structScore,
       // Instruction-following (IFEval-lite): % of verifiable prose constraints obeyed.
+      // Raw metric is surfaced here, but it is NOT a rest axis — it feeds coding_mult.
       instruction_following_pct: m.ifScore,
-      // Multi-turn agentic tool loop: % task completion + mean steps taken.
+      // Multi-turn agentic tool loop: % task completion + mean steps taken. Like
+      // instruction_following, the completion_pct feeds coding_mult, not a rest axis.
       agentic_loop: { completion_pct: m.agenticScore, mean_steps: m.agenticSteps },
       // Prompt-cache prefix reuse: cold vs warm TTFT (ms) and the warm speedup ratio.
       prefix_cache: m.prefixCache ? { cold_ms: m.prefixCache.cold, warm_ms: m.prefixCache.warm, speedup: m.prefixCache.speedup } : null,
-      // Coding grade (no_think-primary): 0.4·pass@1 + 0.6·test-rate from coding_multipl,
-      // normalized to the fleet's best as a score multiplier.
+      // Coding-competence multiplier (no_think-primary): blends the raw coding grade
+      // (0.6·[0.4·pass@1 + 0.6·test-rate from coding_multipl], fleet-normalized) with the
+      // agentic tool-loop (0.25) and instruction-following (0.15) benches — all three
+      // measure real coding capability. `mult` (0..1) is what multiplies into the score;
+      // grade_norm is just the coding-grade component for reference.
       coding_grade: m.codingGrade,
+      coding_mult: { mult: m.codingMult, grade_norm: m.codingGradeNorm, agentic_pct: m.agenticScore, instruction_following_pct: m.ifScore },
       // Power efficiency: decode tok/s per watt (board power via lm-sensors).
       power_eff_tok_s_per_w: m.powerEff,
       weighted_score: m.score,

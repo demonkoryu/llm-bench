@@ -110,7 +110,7 @@ const TITLE_H = 32;
 const N = models.length;
 const PANEL_H = N * ROW_H + 8;
 
-const GRID_PANELS = 13; // one per metric panel; asserted == METRIC_PANELS.length after the array
+const GRID_PANELS = 15; // one per metric panel; asserted == METRIC_PANELS.length after the array
 const GRID_ROWS = Math.ceil(GRID_PANELS / 2);
 const GRID_H = GRID_ROWS * (TITLE_H + PANEL_H + 28);
 const TABLE_H = (N + 3) * 22 + 20;
@@ -204,7 +204,7 @@ const METRIC_PANELS = [
    // ── Rest axes (additive weighted sum, weights sum to 1.0) ──
    {
       title: 'Reasoning accuracy',
-      weight: '×0.20 (rest)',
+      weight: '×0.21 (rest)',
       getValue: (m) => m.reasoning,
       formatVal: (v) => (v != null ? `${v.toFixed(0)}%` : '–'),
       getMax: () => 100,
@@ -218,7 +218,7 @@ const METRIC_PANELS = [
    },
    {
       title: 'Summarization score (/100)',
-      weight: '×0.16 (rest)',
+      weight: '×0.15 (rest)',
       getValue: (m) => m.summ,
       formatVal: (v) => (v != null ? v.toFixed(0) : '–'),
       getMax: () => 100,
@@ -258,9 +258,23 @@ const METRIC_PANELS = [
    // ── Hard gates (0 → total score 0) ──
    {
       title: 'Coding grade (no_think: .3·easy + .7·hard)',
-      weight: '×gate (norm)',
+      weight: '×coding · 60%',
       getValue: (m) => m.codingGrade,
       formatVal: (v) => (v != null ? v.toFixed(0) : 'n/a'),
+      getMax: () => 100,
+   },
+   {
+      title: 'Agentic tool-loop (% task completion)',
+      weight: '×coding · 25%',
+      getValue: (m) => m.agenticScore,
+      formatVal: (v) => (v != null ? `${v.toFixed(0)}%` : '–'),
+      getMax: () => 100,
+   },
+   {
+      title: 'Instruction following (IFEval-lite, % obeyed)',
+      weight: '×coding · 15%',
+      getValue: (m) => m.ifScore,
+      formatVal: (v) => (v != null ? `${v.toFixed(0)}%` : '–'),
       getMax: () => 100,
    },
    {
