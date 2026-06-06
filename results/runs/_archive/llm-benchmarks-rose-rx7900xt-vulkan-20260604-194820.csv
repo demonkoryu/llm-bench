@@ -1,9 +1,0 @@
-target,backend,model,think,bench,score,halls,json_fail,tok_s,prefill_tps,vram_mib,ctx_loaded,oom_ceiling,coherence_ceiling,status,wall_s,notes
-rose,vulkan,gemma-4-E4B-it-Q8_0--nothi,no_think,coding,100.0,-,0,80.0,-,6910,128000,128000,128000,ok,52,tests 100.0%
-rose,vulkan,gemma-4-E4B-it-Q8_0--nothi,no_think,coding_hard,0.0,-,0,72.0,-,6910,128000,128000,128000,ok,21,tests 91.7%
-rose,vulkan,gemma-4-E4B-it-Q8_0--think,think,coding,100.0,-,0,77.0,-,6910,128000,128000,128000,ok,193,tests 100.0%
-rose,vulkan,gemma-4-E4B-it-Q8_0--think,think,coding_hard,100.0,-,0,66.5,-,6910,128000,128000,128000,ok,82,tests 100.0%
-rose,vulkan,gemma-4-E4B-it-Q5_K_M--nothi,no_think,coding,100.0,-,0,102.0,-,5518,128000,128000,128000,ok,37,tests 100.0%
-rose,vulkan,gemma-4-E4B-it-Q5_K_M--nothi,no_think,coding_hard,100.0,-,0,99.2,-,5518,128000,128000,128000,ok,20,tests 100.0%
-rose,vulkan,gemma-4-E4B-it-Q5_K_M--think,think,coding,100.0,-,0,101.0,-,5518,128000,128000,128000,ok,123,tests 100.0%
-rose,vulkan,gemma-4-E4B-it-Q5_K_M--think,think,coding_hard,0.0,-,0,98.5,-,5518,128000,128000,128000,ok,36,tests 91.7%

@@ -1,5 +1,0 @@
-target,backend,model,think,bench,score,halls,json_fail,tok_s,prefill_tps,vram_mib,ctx_loaded,oom_ceiling,coherence_ceiling,status,wall_s,notes
-rose,vulkan,gemma-4-26B-A4B-it-UD-Q4_K_M--nothi,no_think,coding_hard,100.0,-,0,85.3,-,18718,128000,128000,128000,ok,12,tests 100.0%
-rose,vulkan,gemma-4-26B-A4B-it-UD-Q4_K_M--think,think,coding_hard,100.0,-,0,78.4,-,18718,128000,128000,128000,ok,97,tests 100.0%
-rose,vulkan,gemma-4-12b-it-Q5_K_M--nothi,no_think,coding_hard,100.0,-,0,53.7,-,10657,131072,131072,131072,ok,17,tests 100.0%
-rose,vulkan,gemma-4-12b-it-Q5_K_M--think,think,coding_hard,100.0,-,0,51.7,-,10657,131072,131072,131072,ok,188,tests 100.0%

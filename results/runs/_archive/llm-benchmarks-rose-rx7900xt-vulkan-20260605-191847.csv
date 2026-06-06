@@ -1,2 +1,0 @@
-target,backend,model,think,bench,score,halls,json_fail,tok_s,prefill_tps,vram_mib,ctx_loaded,oom_ceiling,coherence_ceiling,status,wall_s,notes
-rose,vulkan,Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL,n/a,coding_multipl,89.4,-,0,119.7,-,18146,20480,20480,20480,ok,198,tests 95.4%
