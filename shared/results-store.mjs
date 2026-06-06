@@ -72,20 +72,30 @@ export const CARD_TOTAL_MIB = 20464;
 // restScore keeps the FIXED-denominator rule: an axis a model didn't run contributes 0,
 // so breadth counts and a narrow model can't win by being scored on fewer axes.
 // DEFAULT_WEIGHTS holds ONLY the rest axes — toolcalling, struct_output, maxctx and
-// is a structural multiplier, not an entry here.
-//   reasoning 20 · triage 18 · summarization 16 · docqa 13 · performance 25 · degradation 8
+// coding are structural multipliers, not entries here.
+//   performance 20 · reasoning 17 · triage 14 · agentic_loop 13 · summarization 12 ·
+//   docqa 10 · instruction_following 8 · degradation 6
+//
+// agentic_loop (multi-turn ReAct tool use) + instruction_following (IFEval-lite
+// constraint obedience) were added as rest axes (~21% combined) — bounded, additive
+// quality axes rather than hard gates so a weak result can't zero a model on a
+// brand-new metric. prefix-cache speedup is deliberately NOT scored: a higher
+// cold/warm ratio reflects slow cold prefill vs a near-instant cache hit (it would
+// perversely reward slow prefill), and TTFT already lives in the performance axis.
 //
 // `performance` is a composite (NOT a hard multiplier — significant but bounded by its
-// 0.25 rest-weight): 0.4·throughput + 0.6·latency, latency-favored. Throughput =
+// 0.20 rest-weight): 0.4·throughput + 0.6·latency, latency-favored. Throughput =
 // directly-measured E2E tok/s ÷ fleet best; latency = fleet-min TTFT ÷ this model's
 // TTFT at the common 8k depth (lower TTFT → closer to 1).
 export const DEFAULT_WEIGHTS = {
-   reasoning: 0.2,
-   triage: 0.18,
-   summarization: 0.16,
-   docqa: 0.13,
-   performance: 0.25,
-   degradation: 0.08,
+   performance: 0.2,
+   reasoning: 0.17,
+   triage: 0.14,
+   agentic_loop: 0.13,
+   summarization: 0.12,
+   docqa: 0.1,
+   instruction_following: 0.08,
+   degradation: 0.06,
 };
 
 // Self-describing scoring shape for report.json + the chart subtitle (so the
@@ -706,8 +716,11 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
    const maxCtx = Math.max(...models.map((m) => m.maxctx ?? 0)) || 1;
    const maxE2E = Math.max(...models.map((m) => m.e2eThroughput ?? 0)) || 1;
    // Fleet-fastest first-token latency at the common 8k depth (lower = better), the
-   // denominator-flipped reference for the latency half of the performance axis.
+   // denominator-flipped reference for the cold-latency part of the performance axis.
    const minTtft8k = Math.min(...models.map((m) => m.ttft8kMs ?? Infinity));
+   // Fleet-fastest WARM-prefix TTFT (prompt-cache bench): the steady-state per-turn
+   // first-token latency an agent feels once the slot KV cache holds the prefix.
+   const minWarm = Math.min(...models.map((m) => m.prefixCache?.warm ?? Infinity));
 
    // ── Multiplicative score (see SCORING / DEFAULT_WEIGHTS comment above) ─────────
    const REST_NORMALIZE = {
@@ -715,10 +728,19 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
       triage: (m) => (m.triage != null ? m.triage / 100 : null),
       summarization: (m) => (m.summ != null ? m.summ / 100 : null),
       docqa: (m) => (m.docqa != null ? m.docqa / 10 : null),
-      // Performance composite: 0.4·throughput + 0.6·latency, latency-favored, in 0..1.
-      //   throughput = directly-measured E2E tok/s ÷ fleet best (no decode fallback)
-      //   latency    = fleet-min TTFT@8k ÷ this model's TTFT@8k (lower TTFT → ~1)
-      // Weighted-averaged over whichever components exist; missing BOTH contributes 0.
+      // Multi-turn agentic tool loop + IFEval-lite: both reported as 0..100 %.
+      agentic_loop: (m) => (m.agenticScore != null ? m.agenticScore / 100 : null),
+      instruction_following: (m) => (m.ifScore != null ? m.ifScore / 100 : null),
+      // Performance composite: 0.4·throughput + 0.45·cold-latency + 0.15·warm-latency,
+      // latency-favored (0.6 of the weight is latency), in 0..1.
+      //   throughput   = directly-measured E2E tok/s ÷ fleet best (no decode fallback)
+      //   cold-latency = fleet-min TTFT@8k ÷ this model's cold TTFT@8k (lower → ~1)
+      //   warm-latency = fleet-min warm TTFT ÷ this model's warm TTFT (prompt-cache);
+      //                  the realistic per-turn first-token cost in a warmed agent loop.
+      // We fold in WARM TTFT, not the cache speedup ratio: speedup is perverse for a
+      // performance score (a slow cold prefill inflates the ratio and would rank a
+      // slower model higher); warm TTFT rewards genuinely fast cached prefill.
+      // Weighted-averaged over whichever components exist; missing ALL contributes 0.
       performance: (m) => {
          let num = 0;
          let den = 0;
@@ -727,8 +749,12 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
             den += 0.4;
          }
          if (m.ttft8kMs != null && Number.isFinite(minTtft8k)) {
-            num += 0.6 * (minTtft8k / m.ttft8kMs);
-            den += 0.6;
+            num += 0.45 * (minTtft8k / m.ttft8kMs);
+            den += 0.45;
+         }
+         if (m.prefixCache?.warm != null && Number.isFinite(minWarm)) {
+            num += 0.15 * (minWarm / m.prefixCache.warm);
+            den += 0.15;
          }
          return den ? num / den : null;
       },
@@ -765,6 +791,7 @@ export function aggregateModels(rows, weights = DEFAULT_WEIGHTS) {
       // Expose the performance-axis breakdown for the report/chart (transparency).
       m.throughputNorm = m.e2eThroughput != null ? m.e2eThroughput / maxE2E : null;
       m.latencyNorm = m.ttft8kMs != null && Number.isFinite(minTtft8k) ? minTtft8k / m.ttft8kMs : null;
+      m.warmLatencyNorm = m.prefixCache?.warm != null && Number.isFinite(minWarm) ? minWarm / m.prefixCache.warm : null;
       m.performance = REST_NORMALIZE.performance(m);
       m.score = Math.round(finalScore(m) * 1000) / 10;
    }

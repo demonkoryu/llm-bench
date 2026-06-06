@@ -113,16 +113,20 @@ const report = {
          ref: m.e2eRef,
          curve: m.e2eCurve.map((p) => ({ depth: p.depth, tok_s: p.tps })),
       },
-      // Performance axis (rest-weight 0.25): blends throughput + first-token latency,
-      // latency-favored (0.4·throughput + 0.6·latency). Each component is fleet-relative
-      // 0..1; `axis` is the value that enters restScore. ttft_8k_ms is the absolute
-      // latency the latency component is computed from (common 8k depth, fair across
-      // models that can't reach 32k).
+      // Performance axis (rest-weight 0.20): blends throughput + cold/warm first-token
+      // latency (0.4·throughput + 0.45·cold-latency + 0.15·warm-latency). Each component
+      // is fleet-relative 0..1; `axis` is the value that enters restScore. ttft_8k_ms is
+      // the absolute cold latency the cold-latency component is computed from (common 8k
+      // depth, fair across models that can't reach 32k). warm_latency_norm folds in the
+      // prompt-cache bench's warm (prefix-reused) TTFT — a fast cache hit is a real
+      // serving-latency win, so prefix_cache is part of the performance rating.
       performance: {
          axis: m.performance,
          throughput_norm: m.throughputNorm,
          latency_norm: m.latencyNorm,
+         warm_latency_norm: m.warmLatencyNorm,
          ttft_8k_ms: m.ttft8kMs,
+         warm_ttft_ms: m.prefixCache?.warm ?? null,
       },
       // VRAM used (MiB) at the coherence ceiling, and the free headroom on the
       // card — low free = VRAM-bound (more VRAM → more ctx); high free = the model
