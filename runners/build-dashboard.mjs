@@ -34,27 +34,36 @@ const { values: flags } = parseArgs({
 const CSS = `
 :root{--bg:#0f0f13;--panel:#18181f;--text:#e0e0e0;--dim:#888;--accent:#c8b6ff;--good:#82dc82;--warn:#ffc850}
 *{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden}
 body{margin:0;background:var(--bg);color:var(--text);font:13px/1.4 'Segoe UI',Arial,sans-serif}
 header{padding:12px 18px;border-bottom:1px solid #26262f}
 h1{font-size:18px;margin:0 0 4px;color:var(--accent)}
 #env{color:var(--dim);font-size:11px}
 .warn{margin-top:6px;color:#1a1a1a;background:var(--warn);padding:4px 8px;border-radius:4px;display:inline-block}
-main{display:flex;align-items:flex-start;gap:16px;padding:16px}
-#controls{flex:0 0 290px;position:sticky;top:8px}
-.ctl-head{display:flex;gap:8px;align-items:center;margin-bottom:6px}
-button{background:#26262f;color:var(--text);border:1px solid #3a3a47;border-radius:4px;padding:3px 10px;cursor:pointer}
+/* Single column: no sidebar. Controls live above the section they drive. */
+main{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:16px;padding:16px}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+button{background:#26262f;color:var(--text);border:1px solid #3a3a47;border-radius:4px;padding:4px 12px;cursor:pointer}
 button:hover{border-color:var(--accent)}
-.note{color:var(--dim);font-size:11px}
-fieldset{border:1px solid #2a2a35;border-radius:6px;margin:8px 0;padding:6px 10px}
-legend{color:var(--accent);font-size:11px;text-transform:capitalize}
-.dial-row{display:grid;grid-template-columns:1fr 96px 40px;gap:6px;align-items:center;margin:3px 0;font-size:11px}
-.dial-name{color:var(--dim);text-transform:capitalize}
-input[type=range]{width:100%}
-input[type=number]{width:96px;background:#0f0f13;color:var(--text);border:1px solid #3a3a47;border-radius:3px}
-output{color:var(--accent);text-align:right;font-variant-numeric:tabular-nums}
-#panels{flex:1;min-width:0;display:flex;flex-direction:column;gap:16px}
-.panel{background:var(--panel);border:1px solid #26262f;border-radius:8px;padding:10px 14px;overflow-x:auto}
+.note{color:var(--dim);font-size:11px;margin:0;flex-basis:100%}
+.panel{background:var(--panel);border:1px solid #26262f;border-radius:8px;padding:10px 14px;min-width:0}
 h2{font-size:14px;margin:0 0 8px;color:#a0a0c0}
+/* Collapsible per-section controls (replaces the sidebar). */
+details.controls{margin:0 0 10px;border:1px solid #2a2a35;border-radius:6px;background:#14141a;padding:2px 10px}
+details.controls>summary{cursor:pointer;color:var(--accent);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:5px 0;list-style:none}
+details.controls>summary::-webkit-details-marker{display:none}
+details.controls>summary::before{content:'▸ ';color:var(--dim)}
+details.controls[open]>summary::before{content:'▾ '}
+.dials{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:0 18px;padding-bottom:4px}
+fieldset{border:1px solid #2a2a35;border-radius:6px;margin:6px 0;padding:6px 10px;min-width:0}
+legend{color:var(--accent);font-size:11px;text-transform:capitalize}
+.dial-row{display:grid;grid-template-columns:1fr 84px 38px;gap:6px;align-items:center;margin:3px 0;font-size:11px}
+.dial-name{color:var(--dim);text-transform:capitalize}
+input[type=range]{width:100%;min-width:0}
+input[type=number]{width:84px;min-width:0;background:#0f0f13;color:var(--text);border:1px solid #3a3a47;border-radius:3px}
+output{color:var(--accent);text-align:right;font-variant-numeric:tabular-nums}
+/* Wide tables scroll WITHIN their panel so the page itself never scrolls sideways. */
+.tbl{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th,td{text-align:left;padding:3px 8px;border-bottom:1px solid #23232c;font-variant-numeric:tabular-nums;white-space:nowrap}
 th{color:var(--dim);font-weight:600;font-size:10px;text-transform:uppercase}
@@ -62,6 +71,13 @@ code{color:#9fe7d6;font-size:11px}
 .dim{color:var(--dim)} .warn-t{color:var(--warn)} .ok-t{color:var(--good)}
 .stars{color:#ffd54a;letter-spacing:1px;white-space:nowrap}
 tr.top5 td{background:rgba(255,213,74,0.06)}
+@media(max-width:640px){
+  header{padding:10px 12px}
+  h1{font-size:16px}
+  main{padding:10px;gap:12px}
+  .panel{padding:8px 10px}
+  .dials{grid-template-columns:1fr}
+}
 `;
 
 const UI_JS = `
@@ -116,7 +132,7 @@ function renderFleet(res){
   // Ranked by the blended fleet_suitability score: capability^w_cap × ctx_norm^w_ctx ×
   // slots_norm^w_slots × throughput^w_thru. Capability dominates (w_cap=2 default) so
   // capable all-rounders rise, while context reach (ctx clamped at the 100k tier) and
-  // slot count strongly modulate. Tune the exponents in the fleet dials at left.
+  // slot count strongly modulate. Tune the exponents in the fleet controls above.
   const fv=(p)=>p.fleet_suitability==null?-Infinity:p.fleet_suitability;
   const sorted=res.fleet.slice().sort((a,b)=>fv(b)-fv(a));
   const mainCtx=(p)=>p.main_ctx==null?'–':p.main_ctx.toLocaleString();
@@ -260,18 +276,20 @@ const fleetControls = (() => {
    h += numField('d_fleet_parallel_overhead', f.parallel_overhead, 64);
    h += numField('d_fleet_reserve', f.reserve, 64);
    h += slider('d_fleet_w_thru', f.w_thru);
-   h += slider('d_fleet_w_lat', f.w_lat);
    h += '</fieldset>';
    return h;
 })();
-const controlsHtml = groupControls('comprehension') + groupControls('coding') + groupControls('speed') + fleetControls;
+// Controls are split by the section they drive: capability weights above the capability
+// ranking; speed + fleet-memory dials above the fleet table.
+const capControls = groupControls('comprehension') + groupControls('coding');
+const fleetControlsHtml = groupControls('speed') + fleetControls;
 
-const html = buildHtml({ data, scoringSrc, controlsHtml });
+const html = buildHtml({ data, scoringSrc, capControls, fleetControlsHtml });
 writeFileSync(flags.output, html, 'utf8');
 console.log(`Dashboard written: ${flags.output}  (${(html.length / 1024).toFixed(1)} KB, ${models.length} model variants)`);
 
 // ── HTML assembly ────────────────────────────────────────────────────────────────
-function buildHtml({ data, scoringSrc, controlsHtml }) {
+function buildHtml({ data, scoringSrc, capControls, fleetControlsHtml }) {
    return [
       '<!doctype html><html lang="en"><head><meta charset="utf-8">',
       '<meta name="viewport" content="width=device-width, initial-scale=1">',
@@ -279,17 +297,20 @@ function buildHtml({ data, scoringSrc, controlsHtml }) {
       `<style>${CSS}</style></head><body>`,
       '<header><h1>llm-bench dashboard</h1><div id="env"></div><div id="banner"></div></header>',
       '<main>',
-      '<aside id="controls"><div class="ctl-head"><strong>Dials</strong><button id="reset">reset</button><button id="csv">CSV</button></div>',
-      `<p class="note">Structure is fixed: <code>capability = coding × comprehension</code>; fleet = capability × speed_term. Dials only.</p>`,
-      controlsHtml,
-      '</aside>',
-      '<section id="panels">',
-      '<div class="panel"><h2>Capability ranking</h2><div id="cap"></div></div>',
-      '<div class="panel"><h2>Fleet suitability</h2><div id="fleet"></div></div>',
-      '<div class="panel"><h2>Context size</h2><div id="ctx"></div></div>',
-      '<div class="panel"><h2>Per-model breakdown</h2><div id="breakdown"></div></div>',
-      '<div class="panel"><h2>Data sources / required runs</h2><div id="required"></div></div>',
-      '</section></main>',
+      '<div class="toolbar"><button id="reset">reset dials</button><button id="csv">CSV</button>',
+      `<p class="note">Structure is fixed: <code>capability = coding × comprehension</code>; fleet = capability × speed_term. Dials only re-rank — nothing is written back.</p></div>`,
+      // Capability ranking + the weights that drive it (collapsible, above the table).
+      '<section class="panel"><h2>Capability ranking</h2>',
+      `<details class="controls" open><summary>Adjust capability weights</summary><div class="dials">${capControls}</div></details>`,
+      '<div id="cap" class="tbl"></div></section>',
+      // Fleet suitability + the speed / fleet-memory dials that drive it.
+      '<section class="panel"><h2>Fleet suitability</h2>',
+      `<details class="controls" open><summary>Adjust fleet &amp; speed weights</summary><div class="dials">${fleetControlsHtml}</div></details>`,
+      '<div id="fleet" class="tbl"></div></section>',
+      '<section class="panel"><h2>Context size</h2><div id="ctx" class="tbl"></div></section>',
+      '<section class="panel"><h2>Per-model breakdown</h2><div id="breakdown" class="tbl"></div></section>',
+      '<section class="panel"><h2>Data sources / required runs</h2><div id="required" class="tbl"></div></section>',
+      '</main>',
       `<script type="module">`,
       scoringSrc,
       `\nconst DATA = ${JSON.stringify(data)};\n`,
