@@ -15,7 +15,7 @@
  * Usage: node runners/build-dashboard.mjs [--input <run-id>...] [--output results/dashboard.html]
  */
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -149,6 +149,27 @@ function renderCtx(){
   const rows=list.map(m=>[stars(CAPRANK[mkey(m)]), esc(m.label), m.maxctx.toLocaleString(), m.maxctxVram==null?'–':Math.round(m.maxctxVram)+'M', m.kvPerTokMiB==null?'–':(m.kvPerTokMiB*1024).toFixed(1)]);
   $('ctx').innerHTML=table(['★','model','max ctx','vram@max','KV KiB/tok'], rows, list.map(topClass));
 }
+// Backend A/B (vulkan vs rocm, llama-bench microbench). Static — rendered once, no dials.
+// Δ = rocm relative to vulkan: negative ⇒ vulkan faster (green), positive ⇒ rocm faster (yellow).
+function renderBackendAb(){
+  const ab=DATA.backendAb; if(!ab||!ab.models||!ab.models.length){ const el=$('backendab-sec'); if(el) el.style.display='none'; return; }
+  const dcell=(vk,rc)=>{ if(vk==null||rc==null||!vk) return '<span class="dim">–</span>';
+    const d=(rc-vk)/vk; const c=d<0?'ok-t':(d>0?'warn-t':'dim');
+    return '<span class="'+c+'">'+(d>=0?'+':'')+(d*100).toFixed(1)+'%</span>'; };
+  const g=(m,b,k)=>m.byBackend&&m.byBackend[b]&&m.byBackend[b][k]?m.byBackend[b][k].avg:null;
+  const rows=ab.models.map(m=>{
+    const vp5=g(m,'vulkan','pp512'),rp5=g(m,'rocm','pp512');
+    const vp4=g(m,'vulkan','pp4096'),rp4=g(m,'rocm','pp4096');
+    const vt=g(m,'vulkan','tg128'),rt=g(m,'rocm','tg128');
+    return [esc(m.label), fmt(vp5,0), fmt(rp5,0), dcell(vp5,rp5),
+      fmt(vp4,0), fmt(rp4,0), dcell(vp4,rp4),
+      fmt(vt,0), fmt(rt,0), dcell(vt,rt)];
+  });
+  $('backendab').innerHTML=table(
+    ['model','pp512 vk','pp512 rocm','Δ','pp4096 vk','pp4096 rocm','Δ','tg128 vk','tg128 rocm','Δ'], rows);
+  const meta='host '+esc(ab.host)+' · kv '+esc(ab.kv)+' · reps '+esc(ab.reps)+' · p='+esc(ab.p)+' · n='+esc(ab.n)+' · vulkan int-dot '+esc(ab.vulkan_int_dot)+' · warmup discarded';
+  const cap=$('backendab-meta'); if(cap) cap.textContent=meta;
+}
 const BKEYS=['triage','summarization','docqa','reasoning','grade','agentic_loop','instruction_following','toolcalling','struct_output','e2e_throughput','cold_ttft','warm_ttft'];
 function renderBreakdown(){
   const list=DATA.models.slice().sort((a,b)=>(b.capability==null?-1:b.capability)-(a.capability==null?-1:a.capability));
@@ -187,7 +208,7 @@ function wire(){
   $('reset').addEventListener('click', ()=>{ resetDials(); recompute(); });
   $('csv').addEventListener('click', exportCSV);
 }
-renderEnv(); wire(); recompute();
+renderEnv(); renderBackendAb(); wire(); recompute();
 `;
 
 const runs = loadRuns(RESULTS_DIR, flags.input);
@@ -230,9 +251,14 @@ for (const m of models) {
    m.capability_note = c?.note ?? null;
 }
 
+// Optional backend A/B (vulkan vs rocm). Inlined as static data if results/backend-ab.json exists.
+const backendAbPath = join(RESULTS_DIR, 'backend-ab.json');
+const backendAb = existsSync(backendAbPath) ? JSON.parse(readFileSync(backendAbPath, 'utf8')) : null;
+
 const data = {
    generated: new Date().toISOString(),
    sources: runs.map((r) => `${r.run_id} (${r.kind}/${r.status})`),
+   backendAb,
    environment: runs[0]?.environment ?? null,
    environments: runs.map((r) => r.environment ?? null),
    models,
@@ -308,6 +334,11 @@ function buildHtml({ data, scoringSrc, capControls, fleetControlsHtml }) {
       `<details class="controls" open><summary>Adjust fleet &amp; speed weights</summary><div class="dials">${fleetControlsHtml}</div></details>`,
       '<div id="fleet" class="tbl"></div></section>',
       '<section class="panel"><h2>Context size</h2><div id="ctx" class="tbl"></div></section>',
+      // Backend A/B: vulkan vs rocm microbench. Hidden if results/backend-ab.json is absent.
+      '<section class="panel" id="backendab-sec"><h2>Backend A/B — vulkan vs rocm</h2>',
+      '<p class="note" id="backendab-meta"></p>',
+      '<p class="note">Δ = rocm relative to vulkan: <span class="ok-t">green</span> ⇒ vulkan faster, <span class="warn-t">yellow</span> ⇒ rocm faster. Vulkan (int-dot off) is the suite default. <code>llama-bench -fa1 -ngl99 -ctk/v q8_0</code>.</p>',
+      '<div id="backendab" class="tbl"></div></section>',
       '<section class="panel"><h2>Per-model breakdown</h2><div id="breakdown" class="tbl"></div></section>',
       '<section class="panel"><h2>Data sources / required runs</h2><div id="required" class="tbl"></div></section>',
       '</main>',

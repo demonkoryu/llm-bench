@@ -94,12 +94,14 @@ async function findGguf(hf_file) {
  * clock ramp outlasts llama-bench's own internal warmup — the first invocation per model
  * reads ~15–19% low. Without a discarded warmup, running vulkan-then-rocm would measure
  * vulkan cold and rocm warm, faking a rocm win. So we fire one throwaway run (same shapes,
- * -r 1) to ramp clocks + populate the shader cache, then the real -r REPS run.
- * See the warmup-confound writeup in results/int-dot-impact.md.
+ * full -r REPS) to ramp clocks + populate the shader cache, then the real -r REPS run.
+ * A single -r 1 warmup proved insufficient for slow-ramping big models (Nemotron, the 30B
+ * Qwen MoEs read ~15–45% low); a full -r REPS warmup reaches steady state. See the
+ * warmup-confound writeup in results/int-dot-impact.md.
  */
 async function bench(bin, ggufPath, env = '') {
    const base = [bin, `-m '${ggufPath}'`, `-fa 1`, `-ngl 99`, `-ctk ${KV}`, `-ctv ${KV}`, `-p ${PP}`, `-n ${TG}`];
-   const warmupCmd = `${env}${[...base, `-r 1`, `-o json`].join(' ')}`;
+   const warmupCmd = `${env}${[...base, `-r ${REPS}`, `-o json`].join(' ')}`;
    const cmd = `${env}${[...base, `-r ${REPS}`, `-o json`].join(' ')}`;
    await ssh(`${warmupCmd} 2>/dev/null`, 600_000); // discard — ramps GPU clocks
    const stdout = await ssh(`${cmd} 2>/dev/null`, 600_000);
