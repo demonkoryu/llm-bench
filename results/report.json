@@ -1,0 +1,3107 @@
+{
+  "generated": "2026-06-06T03:08:09.932Z",
+  "sources": [
+    "rose-rx7900xt-vulkan-20260606-004710 (suite/complete)",
+    "rose-rx7900xt-vulkan-20260606-050038-structoutput (struct-output/complete)"
+  ],
+  "environment": {
+    "host": "rose",
+    "gpu": "RX 7900 XT",
+    "backend": "vulkan"
+  },
+  "scoring": {
+    "formula": "coding × toolcalling × struct_output × maxctx% × Σ(rest)",
+    "gates": [
+      "coding",
+      "toolcalling",
+      "struct_output"
+    ],
+    "amplifiers": [
+      "maxctx"
+    ],
+    "rest_weights": {
+      "reasoning": 0.2,
+      "triage": 0.18,
+      "summarization": 0.16,
+      "docqa": 0.13,
+      "performance": 0.25,
+      "degradation": 0.08
+    }
+  },
+  "models": [
+    {
+      "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+      "base_model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+      "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+      "think": "n/a",
+      "maxctx": 65536,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 87.8,
+        "reasoning": null,
+        "toolcalling": 90,
+        "docqa": 9.75,
+        "summarization": 75.6
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 141.3,
+      "prefill_tok_s": {
+        "4k": 306.6,
+        "12k": 286.8
+      },
+      "total_tok_s": {
+        "4k": 271.3313987473904,
+        "12k": 275.45432300163134
+      },
+      "e2e_throughput_tok_s": {
+        "mean": null,
+        "ref": null,
+        "curve": []
+      },
+      "performance": {
+        "axis": null,
+        "throughput_norm": null,
+        "latency_norm": null,
+        "ttft_8k_ms": null
+      },
+      "vram_at_maxctx_mib": {
+        "used": 19977,
+        "free": 487
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": null,
+        "max_slots": null,
+        "speedup": null,
+        "curve": []
+      },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "coding_grade": 92.88,
+      "power_eff_tok_s_per_w": 0.538,
+      "weighted_score": 17.5
+    },
+    {
+      "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+      "base_model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+      "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+      "think": "n/a",
+      "maxctx": 65536,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 85.3,
+        "reasoning": 91.7,
+        "toolcalling": 100,
+        "docqa": 8.67,
+        "summarization": 80
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 145.7,
+      "prefill_tok_s": {
+        "4k": 313.3,
+        "12k": 306.3
+      },
+      "total_tok_s": {
+        "4k": 277.7945026709041,
+        "12k": 293.36534669085745
+      },
+      "e2e_throughput_tok_s": {
+        "mean": null,
+        "ref": null,
+        "curve": []
+      },
+      "performance": {
+        "axis": null,
+        "throughput_norm": null,
+        "latency_norm": null,
+        "ttft_8k_ms": null
+      },
+      "vram_at_maxctx_mib": {
+        "used": 20001,
+        "free": 463
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": null,
+        "max_slots": null,
+        "speedup": null,
+        "curve": []
+      },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "coding_grade": 91.12,
+      "power_eff_tok_s_per_w": 0.534,
+      "weighted_score": 27.2
+    },
+    {
+      "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+      "base_model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+      "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+      "think": "n/a",
+      "maxctx": 65536,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 85.3,
+        "reasoning": 83.3,
+        "toolcalling": 100,
+        "docqa": 9.25,
+        "summarization": 80
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 151.3,
+      "prefill_tok_s": {
+        "4k": 2253,
+        "12k": 1583.4
+      },
+      "total_tok_s": {
+        "4k": 885.8087717272045,
+        "12k": 1148.5464848694053
+      },
+      "e2e_throughput_tok_s": {
+        "mean": null,
+        "ref": null,
+        "curve": []
+      },
+      "performance": {
+        "axis": null,
+        "throughput_norm": null,
+        "latency_norm": null,
+        "ttft_8k_ms": null
+      },
+      "vram_at_maxctx_mib": {
+        "used": 19135,
+        "free": 1329
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": null,
+        "max_slots": null,
+        "speedup": null,
+        "curve": []
+      },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "coding_grade": 92.60000000000001,
+      "power_eff_tok_s_per_w": 0.486,
+      "weighted_score": 27.2
+    },
+    {
+      "model": "Qwen3-14B-Q5_K_M--nothi",
+      "base_model": "Qwen3-14B-Q5_K_M",
+      "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+      "think": "no_think",
+      "maxctx": 32768,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 85.9,
+        "reasoning": 100,
+        "toolcalling": 100,
+        "docqa": 8.67,
+        "summarization": 92.2
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 60,
+      "prefill_tok_s": {
+        "4k": 1045,
+        "12k": 870.8
+      },
+      "total_tok_s": {
+        "4k": 370.0327868852459,
+        "12k": 565.2587848364203
+      },
+      "e2e_throughput_tok_s": {
+        "mean": null,
+        "ref": null,
+        "curve": []
+      },
+      "performance": {
+        "axis": null,
+        "throughput_norm": null,
+        "latency_norm": null,
+        "ttft_8k_ms": null
+      },
+      "vram_at_maxctx_mib": {
+        "used": 12887,
+        "free": 7577
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": null,
+        "max_slots": null,
+        "speedup": null,
+        "curve": []
+      },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "coding_grade": 87.32,
+      "power_eff_tok_s_per_w": 0.216,
+      "weighted_score": 13.9
+    },
+    {
+      "model": "Qwen3.5-9B-Q5_K_M--nothi",
+      "base_model": "Qwen3.5-9B-Q5_K_M",
+      "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+      "think": "no_think",
+      "maxctx": 131072,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 87.1,
+        "reasoning": 91.7,
+        "toolcalling": 100,
+        "docqa": 10,
+        "summarization": 88.9
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 85.7,
+      "prefill_tok_s": {
+        "4k": 1895.7,
+        "12k": 1860.8
+      },
+      "total_tok_s": {
+        "4k": 566.4407120443188,
+        "12k": 1017.6546865427813
+      },
+      "e2e_throughput_tok_s": {
+        "mean": null,
+        "ref": null,
+        "curve": []
+      },
+      "performance": {
+        "axis": null,
+        "throughput_norm": null,
+        "latency_norm": null,
+        "ttft_8k_ms": null
+      },
+      "vram_at_maxctx_mib": {
+        "used": 9637,
+        "free": 10827
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": null,
+        "max_slots": null,
+        "speedup": null,
+        "curve": []
+      },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 91.7,
+      "coding_grade": 82.56,
+      "power_eff_tok_s_per_w": 0.301,
+      "weighted_score": 47.9
+    },
+    {
+      "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+      "base_model": "Qwen3.6-35B-A3B-UD-IQ4_XS",
+      "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+      "think": "no_think",
+      "maxctx": 102400,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 87.2,
+        "reasoning": 83.3,
+        "toolcalling": 100,
+        "docqa": 9.25,
+        "summarization": 71.1
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 143.5,
+      "prefill_tok_s": {
+        "4k": 1881.4,
+        "12k": 1654.9
+      },
+      "total_tok_s": {
+        "4k": 802.0822935234701,
+        "12k": 1164.3597148404558
+      },
+      "e2e_throughput_tok_s": {
+        "mean": null,
+        "ref": null,
+        "curve": []
+      },
+      "performance": {
+        "axis": null,
+        "throughput_norm": null,
+        "latency_norm": null,
+        "ttft_8k_ms": null
+      },
+      "vram_at_maxctx_mib": {
+        "used": 19793,
+        "free": 671
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": null,
+        "max_slots": null,
+        "speedup": null,
+        "curve": []
+      },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "coding_grade": 95.08,
+      "power_eff_tok_s_per_w": 0.386,
+      "weighted_score": 42.8
+    },
+    {
+      "model": "gemma-4-E4B-it-Q8_0--nothi",
+      "base_model": "gemma-4-E4B-it-Q8_0",
+      "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+      "think": "no_think",
+      "maxctx": 131072,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 88,
+        "reasoning": 75,
+        "toolcalling": 100,
+        "docqa": 8.08,
+        "summarization": 68.9
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 90,
+      "prefill_tok_s": {
+        "4k": 3117.3,
+        "12k": 3029.1
+      },
+      "total_tok_s": {
+        "4k": 658.0181377531076,
+        "12k": 1313.4214025553563
+      },
+      "e2e_throughput_tok_s": {
+        "mean": null,
+        "ref": null,
+        "curve": []
+      },
+      "performance": {
+        "axis": null,
+        "throughput_norm": null,
+        "latency_norm": null,
+        "ttft_8k_ms": null
+      },
+      "vram_at_maxctx_mib": {
+        "used": 7133,
+        "free": 13331
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": null,
+        "max_slots": null,
+        "speedup": null,
+        "curve": []
+      },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "coding_grade": 87.66,
+      "power_eff_tok_s_per_w": 0.321,
+      "weighted_score": 47.5
+    },
+    {
+      "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+      "base_model": "gemma-4-E4B-it-Q5_K_M",
+      "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+      "think": "no_think",
+      "maxctx": 131072,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 87.8,
+        "reasoning": 91.7,
+        "toolcalling": 90,
+        "docqa": 7.5,
+        "summarization": 66.9
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 109.4,
+      "prefill_tok_s": {
+        "4k": 3020.5,
+        "12k": 2927.7
+      },
+      "total_tok_s": {
+        "4k": 763.4017763174782,
+        "12k": 1441.8921181999892
+      },
+      "e2e_throughput_tok_s": {
+        "mean": null,
+        "ref": null,
+        "curve": []
+      },
+      "performance": {
+        "axis": null,
+        "throughput_norm": null,
+        "latency_norm": null,
+        "ttft_8k_ms": null
+      },
+      "vram_at_maxctx_mib": {
+        "used": 5555,
+        "free": 14909
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": null,
+        "max_slots": null,
+        "speedup": null,
+        "curve": []
+      },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "coding_grade": 91.36,
+      "power_eff_tok_s_per_w": 0.391,
+      "weighted_score": 46.4
+    },
+    {
+      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+      "base_model": "gemma-4-26B-A4B-it-UD-Q4_K_M",
+      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+      "think": "no_think",
+      "maxctx": 131072,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 86.2,
+        "reasoning": 100,
+        "toolcalling": 100,
+        "docqa": 8.25,
+        "summarization": 78.9
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 102.8,
+      "prefill_tok_s": {
+        "4k": 2438.9,
+        "12k": 2324
+      },
+      "total_tok_s": {
+        "4k": 691.8928893386073,
+        "12k": 1246.5937552178993
+      },
+      "e2e_throughput_tok_s": {
+        "mean": null,
+        "ref": null,
+        "curve": []
+      },
+      "performance": {
+        "axis": null,
+        "throughput_norm": null,
+        "latency_norm": null,
+        "ttft_8k_ms": null
+      },
+      "vram_at_maxctx_mib": {
+        "used": 18768,
+        "free": 1696
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": null,
+        "max_slots": null,
+        "speedup": null,
+        "curve": []
+      },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "coding_grade": 96.74000000000001,
+      "power_eff_tok_s_per_w": 0.313,
+      "weighted_score": 58.9
+    },
+    {
+      "model": "gemma-4-12b-it-Q5_K_M--nothi",
+      "base_model": "gemma-4-12b-it-Q5_K_M",
+      "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+      "think": "no_think",
+      "maxctx": 131072,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 85.4,
+        "reasoning": 100,
+        "toolcalling": 100,
+        "docqa": 9.42,
+        "summarization": 67.8
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 55.2,
+      "prefill_tok_s": {
+        "4k": 1188,
+        "12k": 1131.7
+      },
+      "total_tok_s": {
+        "4k": 362.17378497790867,
+        "12k": 635.7606350498677
+      },
+      "e2e_throughput_tok_s": {
+        "mean": null,
+        "ref": null,
+        "curve": []
+      },
+      "performance": {
+        "axis": null,
+        "throughput_norm": null,
+        "latency_norm": null,
+        "ttft_8k_ms": null
+      },
+      "vram_at_maxctx_mib": {
+        "used": 10657,
+        "free": 9807
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": null,
+        "max_slots": null,
+        "speedup": null,
+        "curve": []
+      },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "coding_grade": 94.25999999999999,
+      "power_eff_tok_s_per_w": 0.196,
+      "weighted_score": 57
+    },
+    {
+      "model": "gemma-4-12b-it-qat-q4_0--nothi",
+      "base_model": "gemma-4-12b-it-qat-q4_0",
+      "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+      "think": "no_think",
+      "maxctx": 131072,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 82.4,
+        "reasoning": 100,
+        "toolcalling": 100,
+        "docqa": 8.67,
+        "summarization": 81.1
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 61.1,
+      "prefill_tok_s": {
+        "4k": 1289.6,
+        "12k": 1227.9
+      },
+      "total_tok_s": {
+        "4k": 398.7578947368421,
+        "12k": 696.1426901235943
+      },
+      "e2e_throughput_tok_s": {
+        "mean": null,
+        "ref": null,
+        "curve": []
+      },
+      "performance": {
+        "axis": null,
+        "throughput_norm": null,
+        "latency_norm": null,
+        "ttft_8k_ms": null
+      },
+      "vram_at_maxctx_mib": {
+        "used": 9286,
+        "free": 11178
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": null,
+        "max_slots": null,
+        "speedup": null,
+        "curve": []
+      },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "coding_grade": 93.66,
+      "power_eff_tok_s_per_w": 0.216,
+      "weighted_score": 57.2
+    },
+    {
+      "model": "gemma-4-26B_q4_0-it--nothi",
+      "base_model": "gemma-4-26B_q4_0-it",
+      "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+      "think": "no_think",
+      "maxctx": 131072,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 86.6,
+        "reasoning": 100,
+        "toolcalling": 100,
+        "docqa": 8.08,
+        "summarization": 80
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 123.1,
+      "prefill_tok_s": {
+        "4k": 2450.3,
+        "12k": 2355.3
+      },
+      "total_tok_s": {
+        "4k": 790.2789933335274,
+        "12k": 1365.1309396011077
+      },
+      "e2e_throughput_tok_s": {
+        "mean": null,
+        "ref": null,
+        "curve": []
+      },
+      "performance": {
+        "axis": null,
+        "throughput_norm": null,
+        "latency_norm": null,
+        "ttft_8k_ms": null
+      },
+      "vram_at_maxctx_mib": {
+        "used": 16376,
+        "free": 4088
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": null,
+        "max_slots": null,
+        "speedup": null,
+        "curve": []
+      },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "coding_grade": 95.9,
+      "power_eff_tok_s_per_w": 0.475,
+      "weighted_score": 58.4
+    },
+    {
+      "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+      "base_model": "gemma-4-12B-it-qat-UD-Q4_K_XL",
+      "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+      "think": "no_think",
+      "maxctx": 102400,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 84.4,
+        "reasoning": 100,
+        "toolcalling": 100,
+        "docqa": 10,
+        "summarization": 74.4
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 63,
+      "prefill_tok_s": {
+        "4k": 1285.1,
+        "12k": 1226.4
+      },
+      "total_tok_s": {
+        "4k": 407.27276284165225,
+        "12k": 705.3680981595093
+      },
+      "e2e_throughput_tok_s": {
+        "mean": null,
+        "ref": null,
+        "curve": []
+      },
+      "performance": {
+        "axis": null,
+        "throughput_norm": null,
+        "latency_norm": null,
+        "ttft_8k_ms": null
+      },
+      "vram_at_maxctx_mib": {
+        "used": 8688,
+        "free": 11776
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": null,
+        "max_slots": null,
+        "speedup": null,
+        "curve": []
+      },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "coding_grade": 93.78,
+      "power_eff_tok_s_per_w": 0.222,
+      "weighted_score": 45.5
+    },
+    {
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+      "base_model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL",
+      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+      "think": "no_think",
+      "maxctx": 131072,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 85.9,
+        "reasoning": 100,
+        "toolcalling": 100,
+        "docqa": 8.08,
+        "summarization": 80
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 127.1,
+      "prefill_tok_s": {
+        "4k": 2461.4,
+        "12k": 2352.2
+      },
+      "total_tok_s": {
+        "4k": 809.4978609625668,
+        "12k": 1383.4293673416503
+      },
+      "e2e_throughput_tok_s": {
+        "mean": null,
+        "ref": null,
+        "curve": []
+      },
+      "performance": {
+        "axis": null,
+        "throughput_norm": null,
+        "latency_norm": null,
+        "ttft_8k_ms": null
+      },
+      "vram_at_maxctx_mib": {
+        "used": 16194,
+        "free": 4270
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": null,
+        "max_slots": null,
+        "speedup": null,
+        "curve": []
+      },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "coding_grade": 95.56,
+      "power_eff_tok_s_per_w": 0.395,
+      "weighted_score": 58
+    },
+    {
+      "model": "LFM2.5-8B-A1B-Q5_K_M",
+      "base_model": "LFM2.5-8B-A1B-Q5_K_M",
+      "label": "LFM2.5-8B-A1B-Q5_K_M",
+      "think": "n/a",
+      "maxctx": 131072,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": null,
+        "reasoning": 100,
+        "toolcalling": 80,
+        "docqa": 7.5,
+        "summarization": 62.5
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 287.3,
+      "prefill_tok_s": {
+        "4k": 6776,
+        "12k": 6505.2
+      },
+      "total_tok_s": {
+        "4k": 1930.7836551176938,
+        "12k": 3486.731664726426
+      },
+      "e2e_throughput_tok_s": {
+        "mean": null,
+        "ref": null,
+        "curve": []
+      },
+      "performance": {
+        "axis": null,
+        "throughput_norm": null,
+        "latency_norm": null,
+        "ttft_8k_ms": null
+      },
+      "vram_at_maxctx_mib": {
+        "used": 7311,
+        "free": 13153
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": null,
+        "max_slots": null,
+        "speedup": null,
+        "curve": []
+      },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 75,
+      "coding_grade": 72.58000000000001,
+      "power_eff_tok_s_per_w": 1.08,
+      "weighted_score": 17.9
+    },
+    {
+      "model": "granite-4.0-h-tiny-Q5_K_M",
+      "base_model": "granite-4.0-h-tiny-Q5_K_M",
+      "label": "granite-4.0-h-tiny-Q5_K_M",
+      "think": "n/a",
+      "maxctx": 131072,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 73.8,
+        "reasoning": null,
+        "toolcalling": 100,
+        "docqa": 7.83,
+        "summarization": 64.2
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 179.2,
+      "prefill_tok_s": {
+        "4k": 4904.6,
+        "12k": 5632.3
+      },
+      "total_tok_s": {
+        "4k": 1248.0102994541037,
+        "12k": 2540.264771320132
+      },
+      "e2e_throughput_tok_s": {
+        "mean": null,
+        "ref": null,
+        "curve": []
+      },
+      "performance": {
+        "axis": null,
+        "throughput_norm": null,
+        "latency_norm": null,
+        "ttft_8k_ms": null
+      },
+      "vram_at_maxctx_mib": {
+        "used": 6072,
+        "free": 14392
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": null,
+        "max_slots": null,
+        "speedup": null,
+        "curve": []
+      },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 100,
+      "coding_grade": 81.47999999999999,
+      "power_eff_tok_s_per_w": 0.482,
+      "weighted_score": 28.4
+    },
+    {
+      "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+      "base_model": "nvidia_Nemotron-3-Nano-4B-Q8_0",
+      "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+      "think": "no_think",
+      "maxctx": 16384,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 68.4,
+        "reasoning": 100,
+        "toolcalling": null,
+        "docqa": 7.5,
+        "summarization": 11.1
+      },
+      "capabilities": {
+        "tools": false
+      },
+      "capability_note": "tool-calling + json_schema blocked by llama.cpp#24081 class; mamba assert risk #20570",
+      "speed_tok_s": 131.9,
+      "prefill_tok_s": {
+        "4k": 3424.1,
+        "12k": 3456.7
+      },
+      "total_tok_s": {
+        "4k": 907.451858549327,
+        "12k": 1721.2249898071666
+      },
+      "e2e_throughput_tok_s": {
+        "mean": null,
+        "ref": null,
+        "curve": []
+      },
+      "performance": {
+        "axis": null,
+        "throughput_norm": null,
+        "latency_norm": null,
+        "ttft_8k_ms": null
+      },
+      "vram_at_maxctx_mib": {
+        "used": 4345,
+        "free": 16119
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": null,
+        "max_slots": null,
+        "speedup": null,
+        "curve": []
+      },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": 83.3,
+      "coding_grade": 84.08,
+      "power_eff_tok_s_per_w": 0.479,
+      "weighted_score": 0
+    }
+  ],
+  "ranking": [
+    {
+      "rank": 1,
+      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+      "think": "no_think",
+      "weighted_score": 58.9
+    },
+    {
+      "rank": 2,
+      "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+      "model": "gemma-4-26B_q4_0-it--nothi",
+      "think": "no_think",
+      "weighted_score": 58.4
+    },
+    {
+      "rank": 3,
+      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+      "think": "no_think",
+      "weighted_score": 58
+    },
+    {
+      "rank": 4,
+      "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+      "model": "gemma-4-12b-it-qat-q4_0--nothi",
+      "think": "no_think",
+      "weighted_score": 57.2
+    },
+    {
+      "rank": 5,
+      "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+      "model": "gemma-4-12b-it-Q5_K_M--nothi",
+      "think": "no_think",
+      "weighted_score": 57
+    },
+    {
+      "rank": 6,
+      "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+      "model": "Qwen3.5-9B-Q5_K_M--nothi",
+      "think": "no_think",
+      "weighted_score": 47.9
+    },
+    {
+      "rank": 7,
+      "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+      "model": "gemma-4-E4B-it-Q8_0--nothi",
+      "think": "no_think",
+      "weighted_score": 47.5
+    },
+    {
+      "rank": 8,
+      "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+      "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+      "think": "no_think",
+      "weighted_score": 46.4
+    },
+    {
+      "rank": 9,
+      "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+      "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+      "think": "no_think",
+      "weighted_score": 45.5
+    },
+    {
+      "rank": 10,
+      "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+      "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+      "think": "no_think",
+      "weighted_score": 42.8
+    },
+    {
+      "rank": 11,
+      "label": "granite-4.0-h-tiny-Q5_K_M",
+      "model": "granite-4.0-h-tiny-Q5_K_M",
+      "think": "n/a",
+      "weighted_score": 28.4
+    },
+    {
+      "rank": 12,
+      "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+      "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+      "think": "n/a",
+      "weighted_score": 27.2
+    },
+    {
+      "rank": 13,
+      "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+      "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+      "think": "n/a",
+      "weighted_score": 27.2
+    },
+    {
+      "rank": 14,
+      "label": "LFM2.5-8B-A1B-Q5_K_M",
+      "model": "LFM2.5-8B-A1B-Q5_K_M",
+      "think": "n/a",
+      "weighted_score": 17.9
+    },
+    {
+      "rank": 15,
+      "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+      "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+      "think": "n/a",
+      "weighted_score": 17.5
+    },
+    {
+      "rank": 16,
+      "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+      "model": "Qwen3-14B-Q5_K_M--nothi",
+      "think": "no_think",
+      "weighted_score": 13.9
+    },
+    {
+      "rank": 17,
+      "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+      "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+      "think": "no_think",
+      "weighted_score": 0
+    }
+  ],
+  "category_rankings": {
+    "reasoning": [
+      {
+        "rank": 1,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 2,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 3,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 4,
+        "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+        "model": "gemma-4-12b-it-qat-q4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 5,
+        "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 6,
+        "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 8,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 100
+      },
+      {
+        "rank": 9,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 10,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 91.7
+      },
+      {
+        "rank": 11,
+        "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3.5-9B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 91.7
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 91.7
+      },
+      {
+        "rank": 13,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 83.3
+      },
+      {
+        "rank": 14,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 83.3
+      },
+      {
+        "rank": 15,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 75
+      }
+    ],
+    "triage": [
+      {
+        "rank": 1,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 88
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 87.8
+      },
+      {
+        "rank": 3,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 87.8
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 87.2
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3.5-9B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 87.1
+      },
+      {
+        "rank": 6,
+        "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--nothi",
+        "think": "no_think",
+        "score": 86.6
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 86.2
+      },
+      {
+        "rank": 8,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 85.9
+      },
+      {
+        "rank": 9,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 85.9
+      },
+      {
+        "rank": 10,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 85.4
+      },
+      {
+        "rank": 11,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 85.3
+      },
+      {
+        "rank": 12,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 85.3
+      },
+      {
+        "rank": 13,
+        "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 84.4
+      },
+      {
+        "rank": 14,
+        "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+        "model": "gemma-4-12b-it-qat-q4_0--nothi",
+        "think": "no_think",
+        "score": 82.4
+      },
+      {
+        "rank": 15,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 73.8
+      },
+      {
+        "rank": 16,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 68.4
+      }
+    ],
+    "coding_grade": [
+      {
+        "rank": 1,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 96.74000000000001
+      },
+      {
+        "rank": 2,
+        "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--nothi",
+        "think": "no_think",
+        "score": 95.9
+      },
+      {
+        "rank": 3,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 95.56
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 95.08
+      },
+      {
+        "rank": 5,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 94.25999999999999
+      },
+      {
+        "rank": 6,
+        "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 93.78
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+        "model": "gemma-4-12b-it-qat-q4_0--nothi",
+        "think": "no_think",
+        "score": 93.66
+      },
+      {
+        "rank": 8,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 92.88
+      },
+      {
+        "rank": 9,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 92.60000000000001
+      },
+      {
+        "rank": 10,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 91.36
+      },
+      {
+        "rank": 11,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 91.12
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 87.66
+      },
+      {
+        "rank": 13,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 87.32
+      },
+      {
+        "rank": 14,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 84.08
+      },
+      {
+        "rank": 15,
+        "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3.5-9B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 82.56
+      },
+      {
+        "rank": 16,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 81.47999999999999
+      },
+      {
+        "rank": 17,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 72.58000000000001
+      }
+    ],
+    "toolcalling": [
+      {
+        "rank": 1,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 100
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 100
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3.5-9B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 6,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 8,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 9,
+        "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+        "model": "gemma-4-12b-it-qat-q4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 10,
+        "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 11,
+        "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 13,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 100
+      },
+      {
+        "rank": 14,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 90
+      },
+      {
+        "rank": 15,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 90
+      },
+      {
+        "rank": 16,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 80
+      }
+    ],
+    "docqa": [
+      {
+        "rank": 1,
+        "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3.5-9B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 10
+      },
+      {
+        "rank": 2,
+        "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 10
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 9.75
+      },
+      {
+        "rank": 4,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 9.42
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 9.25
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 9.25
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 8.67
+      },
+      {
+        "rank": 8,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 8.67
+      },
+      {
+        "rank": 9,
+        "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+        "model": "gemma-4-12b-it-qat-q4_0--nothi",
+        "think": "no_think",
+        "score": 8.67
+      },
+      {
+        "rank": 10,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 8.25
+      },
+      {
+        "rank": 11,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 8.08
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--nothi",
+        "think": "no_think",
+        "score": 8.08
+      },
+      {
+        "rank": 13,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 8.08
+      },
+      {
+        "rank": 14,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 7.83
+      },
+      {
+        "rank": 15,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 7.5
+      },
+      {
+        "rank": 16,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 7.5
+      },
+      {
+        "rank": 17,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 7.5
+      }
+    ],
+    "summarization": [
+      {
+        "rank": 1,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 92.2
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3.5-9B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 88.9
+      },
+      {
+        "rank": 3,
+        "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+        "model": "gemma-4-12b-it-qat-q4_0--nothi",
+        "think": "no_think",
+        "score": 81.1
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 80
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 80
+      },
+      {
+        "rank": 6,
+        "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--nothi",
+        "think": "no_think",
+        "score": 80
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 80
+      },
+      {
+        "rank": 8,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 78.9
+      },
+      {
+        "rank": 9,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 75.6
+      },
+      {
+        "rank": 10,
+        "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 74.4
+      },
+      {
+        "rank": 11,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 71.1
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 68.9
+      },
+      {
+        "rank": 13,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 67.8
+      },
+      {
+        "rank": 14,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 66.9
+      },
+      {
+        "rank": 15,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 64.2
+      },
+      {
+        "rank": 16,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 62.5
+      },
+      {
+        "rank": 17,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 11.1
+      }
+    ],
+    "maxctx": [
+      {
+        "rank": 1,
+        "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3.5-9B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 131072
+      },
+      {
+        "rank": 2,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 131072
+      },
+      {
+        "rank": 3,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 131072
+      },
+      {
+        "rank": 4,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 131072
+      },
+      {
+        "rank": 5,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 131072
+      },
+      {
+        "rank": 6,
+        "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+        "model": "gemma-4-12b-it-qat-q4_0--nothi",
+        "think": "no_think",
+        "score": 131072
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--nothi",
+        "think": "no_think",
+        "score": 131072
+      },
+      {
+        "rank": 8,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 131072
+      },
+      {
+        "rank": 9,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 131072
+      },
+      {
+        "rank": 10,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 131072
+      },
+      {
+        "rank": 11,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 102400
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 102400
+      },
+      {
+        "rank": 13,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 65536
+      },
+      {
+        "rank": 14,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 65536
+      },
+      {
+        "rank": 15,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 65536
+      },
+      {
+        "rank": 16,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 32768
+      },
+      {
+        "rank": 17,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 16384
+      }
+    ],
+    "generation_tok_s": [
+      {
+        "rank": 1,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 287.3
+      },
+      {
+        "rank": 2,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 179.2
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 151.3
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 145.7
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 143.5
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 141.3
+      },
+      {
+        "rank": 7,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 131.9
+      },
+      {
+        "rank": 8,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 127.1
+      },
+      {
+        "rank": 9,
+        "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--nothi",
+        "think": "no_think",
+        "score": 123.1
+      },
+      {
+        "rank": 10,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 109.4
+      },
+      {
+        "rank": 11,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 102.8
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 90
+      },
+      {
+        "rank": 13,
+        "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3.5-9B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 85.7
+      },
+      {
+        "rank": 14,
+        "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 63
+      },
+      {
+        "rank": 15,
+        "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+        "model": "gemma-4-12b-it-qat-q4_0--nothi",
+        "think": "no_think",
+        "score": 61.1
+      },
+      {
+        "rank": 16,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 60
+      },
+      {
+        "rank": 17,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 55.2
+      }
+    ],
+    "prefill_tok_s_4k": [
+      {
+        "rank": 1,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 6776
+      },
+      {
+        "rank": 2,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 4904.6
+      },
+      {
+        "rank": 3,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 3424.1
+      },
+      {
+        "rank": 4,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 3117.3
+      },
+      {
+        "rank": 5,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 3020.5
+      },
+      {
+        "rank": 6,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 2461.4
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--nothi",
+        "think": "no_think",
+        "score": 2450.3
+      },
+      {
+        "rank": 8,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 2438.9
+      },
+      {
+        "rank": 9,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 2253
+      },
+      {
+        "rank": 10,
+        "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3.5-9B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 1895.7
+      },
+      {
+        "rank": 11,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 1881.4
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+        "model": "gemma-4-12b-it-qat-q4_0--nothi",
+        "think": "no_think",
+        "score": 1289.6
+      },
+      {
+        "rank": 13,
+        "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 1285.1
+      },
+      {
+        "rank": 14,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 1188
+      },
+      {
+        "rank": 15,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 1045
+      },
+      {
+        "rank": 16,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 313.3
+      },
+      {
+        "rank": 17,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 306.6
+      }
+    ],
+    "prefill_tok_s_12k": [
+      {
+        "rank": 1,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 6505.2
+      },
+      {
+        "rank": 2,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 5632.3
+      },
+      {
+        "rank": 3,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 3456.7
+      },
+      {
+        "rank": 4,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 3029.1
+      },
+      {
+        "rank": 5,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 2927.7
+      },
+      {
+        "rank": 6,
+        "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--nothi",
+        "think": "no_think",
+        "score": 2355.3
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 2352.2
+      },
+      {
+        "rank": 8,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 2324
+      },
+      {
+        "rank": 9,
+        "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3.5-9B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 1860.8
+      },
+      {
+        "rank": 10,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 1654.9
+      },
+      {
+        "rank": 11,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 1583.4
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+        "model": "gemma-4-12b-it-qat-q4_0--nothi",
+        "think": "no_think",
+        "score": 1227.9
+      },
+      {
+        "rank": 13,
+        "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 1226.4
+      },
+      {
+        "rank": 14,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 1131.7
+      },
+      {
+        "rank": 15,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 870.8
+      },
+      {
+        "rank": 16,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 306.3
+      },
+      {
+        "rank": 17,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 286.8
+      }
+    ],
+    "total_tok_s_4k": [
+      {
+        "rank": 1,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 1930.7836551176938
+      },
+      {
+        "rank": 2,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 1248.0102994541037
+      },
+      {
+        "rank": 3,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 907.451858549327
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 885.8087717272045
+      },
+      {
+        "rank": 5,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 809.4978609625668
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 802.0822935234701
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--nothi",
+        "think": "no_think",
+        "score": 790.2789933335274
+      },
+      {
+        "rank": 8,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 763.4017763174782
+      },
+      {
+        "rank": 9,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 691.8928893386073
+      },
+      {
+        "rank": 10,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 658.0181377531076
+      },
+      {
+        "rank": 11,
+        "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3.5-9B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 566.4407120443188
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 407.27276284165225
+      },
+      {
+        "rank": 13,
+        "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+        "model": "gemma-4-12b-it-qat-q4_0--nothi",
+        "think": "no_think",
+        "score": 398.7578947368421
+      },
+      {
+        "rank": 14,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 370.0327868852459
+      },
+      {
+        "rank": 15,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 362.17378497790867
+      },
+      {
+        "rank": 16,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 277.7945026709041
+      },
+      {
+        "rank": 17,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 271.3313987473904
+      }
+    ],
+    "total_tok_s_12k": [
+      {
+        "rank": 1,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 3486.731664726426
+      },
+      {
+        "rank": 2,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 2540.264771320132
+      },
+      {
+        "rank": 3,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 1721.2249898071666
+      },
+      {
+        "rank": 4,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 1441.8921181999892
+      },
+      {
+        "rank": 5,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 1383.4293673416503
+      },
+      {
+        "rank": 6,
+        "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--nothi",
+        "think": "no_think",
+        "score": 1365.1309396011077
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 1313.4214025553563
+      },
+      {
+        "rank": 8,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 1246.5937552178993
+      },
+      {
+        "rank": 9,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 1164.3597148404558
+      },
+      {
+        "rank": 10,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 1148.5464848694053
+      },
+      {
+        "rank": 11,
+        "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3.5-9B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 1017.6546865427813
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 705.3680981595093
+      },
+      {
+        "rank": 13,
+        "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+        "model": "gemma-4-12b-it-qat-q4_0--nothi",
+        "think": "no_think",
+        "score": 696.1426901235943
+      },
+      {
+        "rank": 14,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 635.7606350498677
+      },
+      {
+        "rank": 15,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 565.2587848364203
+      },
+      {
+        "rank": 16,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 293.36534669085745
+      },
+      {
+        "rank": 17,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 275.45432300163134
+      }
+    ],
+    "e2e_throughput_tok_s": [],
+    "performance_axis": [],
+    "latency_rel_8k": [],
+    "vram_free_at_maxctx_mib": [
+      {
+        "rank": 1,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 16119
+      },
+      {
+        "rank": 2,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 14909
+      },
+      {
+        "rank": 3,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 14392
+      },
+      {
+        "rank": 4,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 13331
+      },
+      {
+        "rank": 5,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 13153
+      },
+      {
+        "rank": 6,
+        "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 11776
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+        "model": "gemma-4-12b-it-qat-q4_0--nothi",
+        "think": "no_think",
+        "score": 11178
+      },
+      {
+        "rank": 8,
+        "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3.5-9B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 10827
+      },
+      {
+        "rank": 9,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 9807
+      },
+      {
+        "rank": 10,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 7577
+      },
+      {
+        "rank": 11,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 4270
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--nothi",
+        "think": "no_think",
+        "score": 4088
+      },
+      {
+        "rank": 13,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 1696
+      },
+      {
+        "rank": 14,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 1329
+      },
+      {
+        "rank": 15,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 671
+      },
+      {
+        "rank": 16,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 487
+      },
+      {
+        "rank": 17,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 463
+      }
+    ],
+    "decode_retention_pct": [],
+    "decode_tok_s_at_ref": [],
+    "parallel_agg_tok_s_8slots": [],
+    "parallel_speedup": [],
+    "quality_retention_pct": [],
+    "struct_output_pct": [
+      {
+        "rank": 1,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 100
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 100
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 100
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 6,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 8,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 9,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 10,
+        "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+        "model": "gemma-4-12b-it-qat-q4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 11,
+        "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 13,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 14,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 100
+      },
+      {
+        "rank": 15,
+        "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3.5-9B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 91.7
+      },
+      {
+        "rank": 16,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 83.3
+      },
+      {
+        "rank": 17,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 75
+      }
+    ],
+    "power_eff_tok_s_per_w": [
+      {
+        "rank": 1,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 1.08
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 0.538
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 0.534
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 0.486
+      },
+      {
+        "rank": 5,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 0.482
+      },
+      {
+        "rank": 6,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 0.479
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--nothi",
+        "think": "no_think",
+        "score": 0.475
+      },
+      {
+        "rank": 8,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 0.395
+      },
+      {
+        "rank": 9,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 0.391
+      },
+      {
+        "rank": 10,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 0.386
+      },
+      {
+        "rank": 11,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 0.321
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 0.313
+      },
+      {
+        "rank": 13,
+        "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3.5-9B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 0.301
+      },
+      {
+        "rank": 14,
+        "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 0.222
+      },
+      {
+        "rank": 15,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 0.216
+      },
+      {
+        "rank": 16,
+        "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+        "model": "gemma-4-12b-it-qat-q4_0--nothi",
+        "think": "no_think",
+        "score": 0.216
+      },
+      {
+        "rank": 17,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 0.196
+      }
+    ]
+  }
+}
