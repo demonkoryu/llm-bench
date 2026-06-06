@@ -95,6 +95,12 @@ for (const m of wanted) {
    // budget (think:null would default thinking ON → reasoning eats the budget → 0%).
    const probeThink = m.think === 'optional' ? false : null;
    const thinkControl = m.think_control ?? 'enable_thinking';
+   // Always-reasoning / always-think models (LFM2.5, R1-distill) can't toggle thinking
+   // off: the server emits reasoning_content first and it counts against the token
+   // budget. 512 tokens gets fully consumed by reasoning → empty `content` → 0%. Give
+   // them a much larger budget so they finish reasoning AND emit the A1: answers.
+   const reasons = m.think === 'reasoning' || m.think === 'required';
+   const maxTokens = reasons ? 8192 : 512;
    console.log(
       `\n══ ${m.label ?? id}  (ctx ${maxctx.toLocaleString()}, depths ${depths.map((d) => Math.round(d / 1024) + 'k').join(',')})`,
    );
@@ -124,7 +130,7 @@ for (const m of wanted) {
       try {
          const { completion, timings } = await client.chat(
             messages,
-            { think: probeThink, thinkControl, max_tokens: 512, temperature: 0.0 },
+            { think: probeThink, thinkControl, max_tokens: maxTokens, temperature: 0.0 },
             900_000,
          );
          acc = grade(completion?.choices?.[0]?.message?.content ?? '', probes);

@@ -52,6 +52,7 @@ const { values: flags } = parseArgs({
       models: { type: 'string', default: '' },
       benches: { type: 'string', default: '' },
       'skip-maxctx': { type: 'boolean', default: false },
+      full: { type: 'boolean', default: false }, // after the core suite, chain ALL secondary runners (kv-probe, struct-output, throughput-ttft, speed-decay, quality-decay) and rebuild every chart. A "full run" is not full without these — the depth/perf + struct/kv benches feed the fleet chart and the e2e/ttft/retention sections.
       'skip-think': { type: 'boolean', default: false }, // drop the think=true pass (no_think only) — fast partial run; do the full think-inclusive pass separately
       'maxctx-recheck': { type: 'boolean', default: false }, // re-validate prior ceiling at current config (extreme-only, no full search)
       'recheck-from': { type: 'string' }, // CSV to seed prior ceilings from (default: latest results file)
@@ -69,6 +70,7 @@ const BACKEND = flags.backend;
 const FILTER_MODELS = flags.models ? flags.models.split(',').map((s) => s.trim()) : [];
 const FILTER_BENCHES = flags.benches ? flags.benches.split(',').map((s) => s.trim()) : [];
 const SKIP_MAXCTX = flags['skip-maxctx'];
+const FULL = flags.full;
 const SKIP_THINK = flags['skip-think'];
 const MAXCTX_RECHECK = flags['maxctx-recheck'];
 const DEBUG = flags.debug || !!process.env.BENCH_DEBUG;
@@ -1523,7 +1525,45 @@ const finalStatus = run.finalize('complete'); // clean exit — the run covered 
 // resumed from so the report reflects base + catch-up (ts/status arbitrate overlaps).
 const REPORT_JSON = join(RESULTS_DIR, 'report.json');
 const CHART_SVG = join(RESULTS_DIR, 'chart.svg');
-const reportInputs = [run.runId, ...(flags.resume && PRIOR_RUN ? [PRIOR_RUN] : [])].flatMap((id) => ['--input', id]);
+
+// --full: a "full run" is not full without the secondaries. The core suite alone
+// leaves the fleet (VRAM-packing) chart and the e2e/ttft/decode+quality-retention
+// chart sections empty, and zeroes every composite score (structGate=0). Chain all
+// five secondary runners against THIS run, then rebuild every chart merging them in.
+// Each secondary writes its own run dir and prints `[<kind>] done → <dir>`; we parse
+// that line to collect the dirs. A failure in one secondary is logged, not fatal —
+// the rebuild proceeds with whatever completed.
+const secondaryInputs = [];
+if (FULL) {
+   const secondaries = [
+      ['kv-probe', 'runners/kv-probe.mjs'],
+      ['struct-output', 'runners/struct-output.mjs'],
+      ['throughput-ttft', 'runners/throughput-ttft.mjs'],
+      ['speed-decay', 'runners/speed-decay.mjs'],
+      ['quality-decay', 'runners/quality-decay.mjs'],
+   ];
+   console.log(`\n[run-suite] --full: chaining ${secondaries.length} secondary runners against ${run.runId}\n`);
+   for (const [kind, script] of secondaries) {
+      try {
+         console.log(`[run-suite] ▸ ${kind} …`);
+         const { stdout } = await execP('node', [join(ROOT, script), '--input', run.runId], {
+            timeout: 6 * 60 * 60 * 1000, // depth sweeps are slow; 6h ceiling per runner
+            maxBuffer: 64 * 1024 * 1024,
+         });
+         process.stdout.write(stdout);
+         const m = stdout.match(/done → (.+)\s*$/m);
+         if (m) secondaryInputs.push(m[1].trim());
+         else console.warn(`[run-suite] ${kind}: could not parse output run dir — chart may miss its rows`);
+      } catch (e) {
+         console.warn(`[run-suite] ${kind} failed: ${e.message.slice(0, 160)}`);
+      }
+   }
+}
+
+// report/main chart merge suite + struct + depth runs; fleet additionally needs kv-probe.
+const baseIds = [run.runId, ...(flags.resume && PRIOR_RUN ? [PRIOR_RUN] : [])];
+const allIds = [...baseIds, ...secondaryInputs];
+const reportInputs = allIds.flatMap((id) => ['--input', id]);
 try {
    await execP('node', [join(ROOT, 'runners/build-report.mjs'), ...reportInputs, '--output', REPORT_JSON]);
    console.log(`[run-suite] report → ${REPORT_JSON}`);
@@ -1535,6 +1575,14 @@ try {
    console.log(`[run-suite] chart → ${CHART_SVG}`);
 } catch (e) {
    console.warn(`[run-suite] chart render failed: ${e.message.slice(0, 120)}`);
+}
+if (FULL) {
+   try {
+      await execP('node', [join(ROOT, 'runners/fleet-analysis.mjs'), ...reportInputs]);
+      console.log('[run-suite] fleet chart rebuilt');
+   } catch (e) {
+      console.warn(`[run-suite] fleet-analysis failed: ${e.message.slice(0, 120)}`);
+   }
 }
 
 console.log(`\n[run-suite] Done (${finalStatus}). Run: ${run.dir}`);
