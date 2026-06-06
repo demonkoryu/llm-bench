@@ -1,0 +1,2 @@
+target,backend,model,think,bench,score,halls,json_fail,tok_s,prefill_tps,vram_mib,ctx_loaded,oom_ceiling,coherence_ceiling,status,wall_s,notes
+rose,vulkan,Qwen3-14B-Q5_K_M--nothi,no_think,coding_hard,0.0,-,0,51.2,-,13596,40960,40960,40960,ok,26,tests 0.0%

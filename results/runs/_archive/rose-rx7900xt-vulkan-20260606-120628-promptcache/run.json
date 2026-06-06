@@ -1,0 +1,54 @@
+{
+  "run_id": "rose-rx7900xt-vulkan-20260606-120628-promptcache",
+  "kind": "prompt-cache",
+  "host": "rose",
+  "gpu": "RX 7900 XT",
+  "backend": "vulkan",
+  "config_hash": null,
+  "started": "2026-06-06T10:06:28.013Z",
+  "finished": "2026-06-06T10:06:41.719Z",
+  "status": "complete",
+  "seed": "rose-rx7900xt-vulkan-20260606-004710",
+  "planned": [],
+  "results": [
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-E4B-it-Q5_K_M",
+      "think": "n/a",
+      "vram_mib": "?",
+      "ctx_loaded": 131072,
+      "status": "ok",
+      "bench": "prefix_cache_cold_ms",
+      "score": "2656",
+      "notes": "cold prompt_ms@8192 n=2",
+      "ts": "2026-06-06T10:06:38.081Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-E4B-it-Q5_K_M",
+      "think": "n/a",
+      "vram_mib": "?",
+      "ctx_loaded": 131072,
+      "status": "ok",
+      "bench": "prefix_cache_warm_ms",
+      "score": "17",
+      "notes": "warm prompt_ms@8192 cold 2656 speedup 155.20 n=2",
+      "ts": "2026-06-06T10:06:38.086Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-E4B-it-Q5_K_M",
+      "think": "n/a",
+      "vram_mib": "?",
+      "ctx_loaded": 131072,
+      "status": "ok",
+      "bench": "prefix_cache_speedup",
+      "score": "155.20",
+      "notes": "cold÷warm@8192",
+      "ts": "2026-06-06T10:06:38.090Z"
+    }
+  ]
+}

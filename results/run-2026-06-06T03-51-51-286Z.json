@@ -1,0 +1,2056 @@
+{
+  "results": {
+    "version": 3,
+    "timestamp": "2026-06-06T03:51:51.286Z",
+    "results": [
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Agentic RAG whitepaper\nContent preview:\nWhitepaper on Agentic Retrieval-Augmented Generation. Covers multi-step reasoning with retrieval, tool use, and LLM orchestration.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-ai-rag"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Agentic RAG whitepaper\",\n  \"suggested_summary\": \"Whitepaper on Agentic Retrieval-Augmented Generation covering multi-step reasoning with retrieval, tool use, and LLM orchestration.\",\n  \"suggested_tags\": [\n    \"craft/ai\",\n    \"craft/software\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"_AI.md\",\n  \"confidence\": 0.92\n  ,\n  \"reasoning\": \"The content is clearly about AI/LLM technology, specifically Agentic RAG which falls under the AI sub-topic anchor _AI.md in the craft area. It's a technical whitepaper with research value.\"\n}",
+          "metadata": {
+            "tok_per_sec": "92.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 1899
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: How to profile Python and Rust programs\nContent preview:\nA guide to profiling CPU-bound Python code with cProfile and Rust with cargo flamegraph. Includes tips for reading flamegraphs.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-software-howto"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"How to profile Python and Rust programs\",\n  \"suggested_summary\": \"A guide to profiling CPU-bound Python code with cProfile and Rust with cargo flamegraph, including tips for reading flamegraphs.\",\n  \"suggested_tags\": [\n    \"craft/software\",\n    \"craft/ai\",\n    \"craft/hardware\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"_Software.md\",\n  \"confidence\": 0.90\n  ,\n  \"reasoning\": \"The content is clearly about software development tools and techniques, specifically profiling Python and Rust programs. It belongs in the 'craft' area under '_Software.md' which covers programming and dev tools. The title and preview are unambiguous.\"\n}",
+          "metadata": {
+            "tok_per_sec": "94.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 2026
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Analyze premarket direction reversal\nContent preview:\nStrategy for identifying when premarket direction is likely to reverse at the open. Uses volume delta and level 2 tape reading.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "finance-trading"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Premarket Direction Reversal Strategy\",\n  \"suggested_summary\": \"Strategy for identifying when premarket direction is likely to reverse at the open using volume delta and level 2 tape reading.\",\n  \"suggested_tags\": [\n    \"finance/trading\"\n  ],\n  \"target_area\": \"finance\",\n  \"target_anchor\": \"_Trading.md\",\n  \"confidence\": 0.90\n  ,\n  \"reasoning\": \"The content is clearly about trading strategies, specifically premarket analysis and reversal patterns, which fits perfectly under the finance/Trading area with its existing anchor file _Trading.md.\"\n}",
+          "metadata": {
+            "tok_per_sec": "94.1"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 1800
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Access Virus KB Get sound A77\nContent preview:\nReference for getting the A77 patch sound from the Access Virus KB synthesizer. Includes parameter settings and MIDI CC map.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "music-no-anchor"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Access Virus KB A77 Patch Settings\",\n  \"suggested_summary\": \"Reference guide for accessing the A77 patch sound on the Access Virus KB synthesizer with parameter settings and MIDI CC map.\",\n  \"suggested_tags\": [\n    \"music/synthesis\",\n    \"music/patch\",\n    \"music/midi\"\n  ],\n  \"target_area\": \"music\",\n  \"target_anchor\": \"_Music.md\",\n  \"confidence\": 0.85\n  ,\n  \"reasoning\": \"This is a web clipping containing technical reference information about synthesizer patches, which clearly belongs to the music area. It's not a general article but specific technical content about a particular synthesizer patch. The content would be best categorized under the music area with no specific anchor needed as it's a technical reference rather than a project or task.\"\n}",
+          "metadata": {
+            "tok_per_sec": "96.5"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.64,
+          "reason": "score=64.0/100 | ANCHOR_HALL | failed=[R4,R5]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 0,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.64,
+        "latencyMs": 2236
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Keyboard debouncing algorithms for custom firmware\nContent preview:\nOverview of keyboard debounce algorithms: eager, defer-until-idle, and Roland eager-pr. Relevant for QMK and ZMK custom keyboard firmware.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-hardware"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Keyboard debouncing algorithms for custom firmware\",\n  \"suggested_summary\": \"Overview of keyboard debounce algorithms including eager, defer-until-idle, and Roland eager-pr relevant for QMK and ZMK custom keyboard firmware.\",\n  \"suggested_tags\": [\n    \"craft/hardware\",\n    \"craft/software\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"_Hardware.md\",\n  \"confidence\": 0.95\n  ,\n  \"reasoning\": \"The content is clearly about hardware (keyboard) and software (firmware) aspects of custom keyboard development, fitting well under the Hardware anchor in the craft area. The technical nature and specific mention of QMK and ZMK firmware makes this a valuable resource for custom keyboard enthusiasts.\"\n}",
+          "metadata": {
+            "tok_per_sec": "95.7"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 2093
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: A Three-Level System for Organizing Information in PKM\nContent preview:\nIntroduces a three-level hierarchy (Topics, Classes, Tags) for personal knowledge management. Contrasts with flat tag systems and PARA.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-mind"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"A Three-Level System for Organizing Information in PKM\",\n  \"suggested_summary\": \"Introduces a three-level hierarchy (Topics, Classes, Tags) for personal knowledge management, contrasting it with flat tag systems and PARA.\",\n  \"suggested_tags\": [\n    \"craft/pkm\",\n    \"craft/mind\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"_Mind.md\",\n  \"confidence\": 0.85\n,\n  \"reasoning\": \"The content is about personal knowledge management (PKM) which clearly falls under the 'craft' area. The focus on organizational systems and productivity philosophy places it within the '_Mind.md' anchor, which covers productivity philosophy and PKM. The content type is web-clipping with sufficient descriptive preview to make a confident classification.\"\n}",
+          "metadata": {
+            "tok_per_sec": "90.6"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 2450
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: test123\nContent preview:\nasdf test note ignore",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "dismiss-stub"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"dismiss\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"test123\",\n  \"suggested_summary\": \"Test note for ignoring.\",\n  \"suggested_tags\": [],\n  \"target_area\": null,\n  \"target_anchor\": \"\",\n  \"confidence\": 0.95\n  ,\n  \"reasoning\": \"The item is clearly marked as a test note and explicitly instructs to ignore it, making it obvious clutter.\"\n}",
+          "metadata": {
+            "tok_per_sec": "85.6"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.8,
+          "reason": "score=80.0/100 | ANCHOR_HALL | failed=[R4]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.8,
+        "latencyMs": 1341
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: 2026-05-24\nContent preview:\nhttps://example.com/some-article-2024",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "ambiguous-url"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"2026-05-24\",\n  \"suggested_summary\": \"A link to an article from example.com, dated 2024.\",\n  \"suggested_tags\": [],\n  \"target_area\": null,\n  \"target_anchor\": \"null\",\n  \"confidence\": 0.65\n  , \"reasoning\": \"The item is a bare URL with no descriptive content or title to indicate its topic or purpose, making it difficult to determine the appropriate area or anchor for classification.\"\n}",
+          "metadata": {
+            "tok_per_sec": "91.7"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.8,
+          "reason": "score=80.0/100 | ANCHOR_HALL | failed=[R4]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.8,
+        "latencyMs": 1604
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Q3 performance review template\nContent preview:\nTemplate for writing the self-assessment section of a Q3 performance review. Covers achievements, growth areas, and OKR alignment.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "work-no-anchor"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Q3 performance review template\",\n  \"suggested_summary\": \"A template for writing self-assessment sections in Q3 performance reviews covering achievements, growth areas, and OKR alignment.\",\n  \"suggested_tags\": [\n    \"work/performance-review\",\n    \"work/career-development\"\n  ],\n  \"target_area\": \"work\",\n  \"target_anchor\": \"_Performance.md\",\n  \"confidence\": 0.85\n  ,\n  \"reasoning\": \"The item is a template for performance reviews, which clearly falls under work/career development content. It's a resource worth keeping that would be useful for career planning and self-assessment documentation.\"\n}",
+          "metadata": {
+            "tok_per_sec": "91.5"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.64,
+          "reason": "score=64.0/100 | ANCHOR_HALL | failed=[R4,R5]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 0,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.64,
+        "latencyMs": 1998
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Model Context Protocol server design patterns\nContent preview:\nPatterns for building MCP servers: tool granularity, structured output via JSON schema, OAuth + PKCE auth, and stateless HTTP transport.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-ai-mcp"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Model Context Protocol server design patterns\",\n  \"suggested_summary\": \"Overview of design patterns for building MCP servers including tool granularity, structured output via JSON schema, OAuth + PKCE auth, and stateless HTTP transport.\",\n  \"suggested_tags\": [\n    \"craft/ai\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"_AI.md\",\n  \"confidence\": 0.92\n  ,\n  \"reasoning\": \"The content is clearly about Model Context Protocol (MCP), which falls under AI/MCP domain. The preview mentions 'MCP servers' and 'structured output via JSON schema' which are specific to LLM infrastructure patterns. This matches the '_AI.md' anchor in the craft area, making it a clear fit for promotion as a resource.\"\n}",
+          "metadata": {
+            "tok_per_sec": "95.3"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 2188
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: 0DTE options theta decay curve\nContent preview:\nHow theta decay accelerates intraday for zero-days-to-expiry SPX options, and why selling premium after 2pm has a different risk profile.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "finance-options"
+        },
+        "response": {
+          "output": "{\n    \"proposed_action\": \"promote_resource\",\n    \"suggested_type\": \"resource\",\n    \"suggested_title\": \"0DTE options theta decay curve\",\n    \"suggested_summary\": \"Explains how theta decay accelerates intraday for zero-days-to-expiry SPX options and why selling premium after 2pm presents a different risk profile.\",\n    \"suggested_tags\": [\n        \"finance/trading\"\n    ],\n    \"target_area\": \"finance\",\n    \"target_anchor\": \"_Trading.md\",\n    \"confidence\": 0.95\n  , \"reasoning\": \"The content is clearly about options trading and theta decay, which are core topics in trading strategies and financial instruments. It's a web clipping with substantial content that fits perfectly under the existing _Trading.md anchor in the finance area.\"}",
+          "metadata": {
+            "tok_per_sec": "94.2"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 1964
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Sidechain compression for trance pumping\nContent preview:\nTechnique for the classic trance pumping effect: sidechain a compressor on the bass and pads keyed to the kick. Covers attack/release tuning.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "music-production"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Sidechain compression for trance pumping\",\n  \"suggested_summary\": \"Explains the sidechain compression technique used to create the classic trance pumping effect by keying a compressor on bass and pads to the kick drum.\",\n  \"suggested_tags\": [\n    \"music/djing\",\n    \"music/production\"\n  ],\n  \"target_area\": \"music\",\n  \"target_anchor\": \"_DJing.md\",\n  \"confidence\": 0.95\n  , \"reasoning\": \"This is clearly a music production technique related to DJing and sound engineering, fitting perfectly under the music category with a focus on production techniques.\"\n}",
+          "metadata": {
+            "tok_per_sec": "91.9"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.64,
+          "reason": "score=64.0/100 | ANCHOR_HALL | failed=[R4,R5]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 0,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.64,
+        "latencyMs": 1895
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Negotiating a senior engineer offer\nContent preview:\nNotes on negotiating a senior software engineer offer: anchoring on total comp, equity refresh, competing offers, and the recruiter call script.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "work-career"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Negotiating a senior engineer offer\",\n  \"suggested_summary\": \"Notes on negotiating a senior software engineer offer, covering total compensation, equity refresh, competing offers, and recruiter call scripts.\",\n  \"suggested_tags\": [\n    \"craft/software\",\n    \"work/career\"\n  ],\n  \"target_area\": \"work\",\n  \"target_anchor\": \"_Career.md\",\n  \"confidence\": 0.85\n  ,\n  \"reasoning\": \"The content is about negotiating a senior engineer offer, which falls under career development and work-related topics. It's a practical guide for software engineers, making it relevant to the 'work' area. The content type is freeform-text with substantial information.\"\n}",
+          "metadata": {
+            "tok_per_sec": "92.5"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.56,
+          "reason": "score=56.0/100 | ANCHOR_HALL | failed=[R4,R5,R6]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 0,
+            "rule_R6": 0,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.56,
+        "latencyMs": 2048
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: CNC feeds and speeds for 6061 aluminum\nContent preview:\nCalculating feeds and speeds for milling 6061 aluminum: chip load per tooth, surface speed, and avoiding recutting chips with proper coolant.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-hardware-cnc"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"CNC feeds and speeds for 6061 aluminum\",\n  \"suggested_summary\": \"A guide to calculating proper CNC machining parameters for 6061 aluminum, including chip load, surface speed, and coolant considerations.\",\n  \"suggested_tags\": [\n    \"craft/hardware\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"_Hardware.md\",\n  \"confidence\": 0.95\n  ,\n  \"reasoning\": \"The content is clearly about CNC machining parameters for aluminum, which falls under the 'hardware/making' sub-topic. The title and preview unambiguously identify this as a technical resource for manufacturing/production processes, making it a clear fit for the _Hardware.md anchor.\"\n}",
+          "metadata": {
+            "tok_per_sec": "96.3"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 2061
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Zettelkasten linking vs folder hierarchies\nContent preview:\nArgues that dense bidirectional links between atomic notes outperform deep folder hierarchies for knowledge retrieval and serendipitous connection.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-mind-zettel"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Zettelkasten linking vs folder hierarchies\",\n  \"suggested_summary\": \"Compares Zettelkasten's bidirectional linking approach to traditional folder hierarchies for knowledge management.\",\n  \"suggested_tags\": [\n    \"craft/pkm\",\n    \"craft/mind\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"_Mind.md\",\n  \"confidence\": 0.85\n  ,\n  \"reasoning\": \"The content discusses knowledge management and PKM (Personal Knowledge Management) concepts, which aligns with the Mind.md anchor in the craft area. While it could also fit software or productivity philosophy, the core focus on note-linking systems and retrieval makes Mind.md the most appropriate anchor.\"\n}",
+          "metadata": {
+            "tok_per_sec": "94.6"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 2103
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Renew xor0.de domain before it expires\nContent preview:\nAction: renew the xor0.de domain registration and verify the Cloudflare Tunnel cert before the 2026-07-15 expiry, or obsidian-mcp goes down.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "spawn-task-domain"
+        },
+        "response": {
+          "output": "{\n    \"proposed_action\": \"spawn_task\",\n    \"suggested_type\": \"task\",\n    \"suggested_title\": \"Renew xor0.de domain before it expires\",\n    \"suggested_summary\": \"Spawn a task to renew the xor0.de domain registration and verify the Cloudflare Tunnel certificate before the 2026-07-15 expiry to prevent obsidian-mcp from going down.\",\n    \"suggested_tags\": [\n        \"craft/software\",\n        \"craft/hardware\"\n    ],\n    \"target_area\": \"craft\",\n    \"target_anchor\": \"_Software.md\",\n    \"confidence\": 0.90\n  ,\n  \"reasoning\": \"The item is a single actionable task related to domain renewal and infrastructure maintenance. It clearly belongs to the craft area under software/hardware management, specifically the _Software.md anchor since it involves domain registration and Cloudflare Tunnel configuration.\"\n}",
+          "metadata": {
+            "tok_per_sec": "94.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 2157
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Build a local RAG pipeline over the vault\nContent preview:\nPlan: index all Obsidian notes with nomic-embed, store vectors locally, and answer questions over the vault via qwen3.5 with retrieval. Multi-week build.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-project-rag"
+        },
+        "response": {
+          "output": "{\n    \"proposed_action\": \"promote_project\",\n    \"suggested_type\": \"project\",\n    \"suggested_title\": \"Local RAG Pipeline for Vault Indexing\",\n    \"suggested_summary\": \"A multi-week project to build a local Retrieval-Augmented Generation pipeline that indexes Obsidian notes with nomic-embed, stores vectors locally, and answers questions via qwen3.5 with retrieval.\",\n    \"suggested_tags\": [\"craft/ai\", \"craft/software\"],\n    \"target_area\": \"craft\",\n    \"target_anchor\": \"_AI.md\",\n    \"confidence\": 0.92\n  , \"reasoning\": \"This is clearly a multi-week software project involving AI/ML components (RAG, embeddings) and local infrastructure. The content explicitly mentions technical tools like nomic-embed, qwen3.5, and Obsidian, placing it squarely in the craft/AI domain. The 'multi-week build' designation indicates it's not just a quick task but a substantive initiative requiring ongoing effort.\"\n}",
+          "metadata": {
+            "tok_per_sec": "97.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 2380
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Untitled 3\nContent preview:\naaa\n\nnote to self lorem ipsum placeholder do not keep",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "dismiss-dup"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"dismiss\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Untitled 3\",\n  \"suggested_summary\": \"Placeholder note to self with no valuable content.\",\n  \"suggested_tags\": [],\n  \"target_area\": null,\n  \"target_anchor\": \"\",\n  \"confidence\": 0.95\n  ,\n  \"reasoning\": \"The content is explicitly described as a 'note to self lorem ipsum placeholder do not keep', making it clear that this is test content with no value for the knowledge vault.\"\n}",
+          "metadata": {
+            "tok_per_sec": "88.9"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.8,
+          "reason": "score=80.0/100 | ANCHOR_HALL | failed=[R4]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.8,
+        "latencyMs": 1495
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How many cents does the ball cost?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "bat-and-ball",
+          "question": "A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How many cents does the ball cost?"
+        },
+        "response": {
+          "output": "{\"answer\": \"5\"}",
+          "metadata": {
+            "tok_per_sec": "123.4"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"5\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "If 5 machines take 5 minutes to make 5 widgets, how many minutes do 100 machines take to make 100 widgets?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "widgets",
+          "question": "If 5 machines take 5 minutes to make 5 widgets, how many minutes do 100 machines take to make 100 widgets?"
+        },
+        "response": {
+          "output": "{\"answer\": \"5\"}",
+          "metadata": {
+            "tok_per_sec": "122.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"5\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "A patch of lily pads doubles in size every day. It takes 48 days to cover the whole lake. On what day number was the lake half covered?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "lily-pad",
+          "question": "A patch of lily pads doubles in size every day. It takes 48 days to cover the whole lake. On what day number was the lake half covered?"
+        },
+        "response": {
+          "output": "{\"answer\": \"47\"}",
+          "metadata": {
+            "tok_per_sec": "103.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"47\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "A farmer has 17 sheep. All but 9 die. How many sheep are left alive?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "all-but-9",
+          "question": "A farmer has 17 sheep. All but 9 die. How many sheep are left alive?"
+        },
+        "response": {
+          "output": "{\"answer\": \"9\"}",
+          "metadata": {
+            "tok_per_sec": "90.2"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"9\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "A store starts with 120 apples. It sells one third of them in the morning, then one quarter of the REMAINING apples in the afternoon. How many apples are left at the end of the day?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "apples-fractions",
+          "question": "A store starts with 120 apples. It sells one third of them in the morning, then one quarter of the REMAINING apples in the afternoon. How many apples are left at the end of the day?"
+        },
+        "response": {
+          "output": "{\"answer\": \"60\"}",
+          "metadata": {
+            "tok_per_sec": "132.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"60\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "Alice is older than Bob. Carol is younger than Bob. Dave is older than Alice. Among Alice, Bob, Carol, and Dave, who is the oldest? Give the single name.",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "age-order",
+          "question": "Alice is older than Bob. Carol is younger than Bob. Dave is older than Alice. Among Alice, Bob, Carol, and Dave, who is the oldest? Give the single name."
+        },
+        "response": {
+          "output": "{\"answer\": \"Dave\"}",
+          "metadata": {
+            "tok_per_sec": "115.1"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"Dave\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "Today is Wednesday. What day of the week will it be exactly 100 days from now? Give the weekday name.",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "days-100",
+          "question": "Today is Wednesday. What day of the week will it be exactly 100 days from now? Give the weekday name."
+        },
+        "response": {
+          "output": "{\"answer\": \"Friday\"}",
+          "metadata": {
+            "tok_per_sec": "112.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"Friday\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "Counting through the whole numbers from 1 to 100 inclusive, how many times does the digit 7 appear in total (e.g. 77 contains the digit 7 twice)?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "count-sevens",
+          "question": "Counting through the whole numbers from 1 to 100 inclusive, how many times does the digit 7 appear in total (e.g. 77 contains the digit 7 twice)?"
+        },
+        "response": {
+          "output": "{\"answer\": \"20\"}",
+          "metadata": {
+            "tok_per_sec": "102.4"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"20\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "What is the next number in this sequence: 2, 6, 12, 20, 30, ? Give just the number.",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "next-in-sequence",
+          "question": "What is the next number in this sequence: 2, 6, 12, 20, 30, ? Give just the number."
+        },
+        "response": {
+          "output": "{\"answer\": \"42\"}",
+          "metadata": {
+            "tok_per_sec": "105.1"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"42\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "Rule: If it is raining, then the ground is wet. Observation: the ground is NOT wet. Based only on this, is it raining? Answer yes or no.",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "modus-tollens",
+          "question": "Rule: If it is raining, then the ground is wet. Observation: the ground is NOT wet. Based only on this, is it raining? Answer yes or no."
+        },
+        "response": {
+          "output": "{\"answer\": \"no\"}",
+          "metadata": {
+            "tok_per_sec": "135.1"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"no\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "A drawer has 10 red socks and 10 blue socks mixed together in the dark. How many socks must you pull out, at minimum, to be GUARANTEED a matching pair?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "socks",
+          "question": "A drawer has 10 red socks and 10 blue socks mixed together in the dark. How many socks must you pull out, at minimum, to be GUARANTEED a matching pair?"
+        },
+        "response": {
+          "output": "{\"answer\": \"3\"}",
+          "metadata": {
+            "tok_per_sec": "120.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"3\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+          "label": "Qwen3-Coder-30B Q4_K_XL [n/a]"
+        },
+        "prompt": {
+          "raw": "In a race, you overtake the runner in second place. What position are you in now? Give the ordinal (e.g. first, second).",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "overtaking",
+          "question": "In a race, you overtake the runner in second place. What position are you in now? Give the ordinal (e.g. first, second)."
+        },
+        "response": {
+          "output": "{\"answer\": \"second\"}",
+          "metadata": {
+            "tok_per_sec": "134.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"second\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Agentic RAG whitepaper\nContent preview:\nWhitepaper on Agentic Retrieval-Augmented Generation. Covers multi-step reasoning with retrieval, tool use, and LLM orchestration.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-ai-rag"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Agentic RAG Whitepaper\",\n  \"suggested_summary\": \"A whitepaper exploring Agentic Retrieval-Augmented Generation for multi-step reasoning with retrieval, tool use, and LLM orchestration.\",\n  \"suggested_tags\": [\n    \"craft/ai\",\n    \"craft/rag\",\n    \"craft/large-language-models\",\n    \"craft/orchestration\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"_AI.md\",\n  \"confidence\": 0.92\n  ,\"reasoning\": \"The item is a whitepaper on a specific AI technique (Agentic RAG) which belongs in the AI area of the craft vault. It does not fit a specific anchor yet, so the proposed anchor is _AI.md with a new filename and title.\"\n}",
+          "metadata": {
+            "tok_per_sec": "86.1"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 2495
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: How to profile Python and Rust programs\nContent preview:\nA guide to profiling CPU-bound Python code with cProfile and Rust with cargo flamegraph. Includes tips for reading flamegraphs.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-software-howto"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"How to profile Python and Rust programs\",\n  \"suggested_summary\": \"A guide to profiling CPU-bound Python code with cProfile and Rust with cargo flamegraph, including tips for reading flamegraphs.\",\n  \"suggested_tags\": [\n    \"craft/software\",\n    \"craft/python\",\n    \"craft/rust\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"Software.md\",\n  \"confidence\": 0.95\n  ,\"reasoning\": \"The item is a guide/tutorial about profiling tools for Python and Rust, fitting under the software category of the personal knowledge vault.\"\n}",
+          "metadata": {
+            "tok_per_sec": "84.2"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.8,
+          "reason": "score=80.0/100 | ANCHOR_HALL | failed=[R4]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.8,
+        "latencyMs": 1997
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Analyze premarket direction reversal\nContent preview:\nStrategy for identifying when premarket direction is likely to reverse at the open. Uses volume delta and level 2 tape reading.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "finance-trading"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"project\",\n  \"suggested_title\": \"Premarket Direction Reversal Strategy\",\n  \"suggested_summary\": \"A method to identify potential premarket direction reversals using volume delta and level 2 tape reading.\",\n  \"suggested_tags\": [\n    \"craft/software\",\n    \"finance/trading\",\n    \"craft/ai\"\n  ],\n  \"target_area\": \"finance\",\n  \"target_anchor\": \"_Trading.md\",\n  \"confidence\": 0.85\n  ,\"reasoning\": \"The content describes a specific trading strategy for identifying premarket direction reversals, which fits best under the finance/trading anchor.\"\n}",
+          "metadata": {
+            "tok_per_sec": "83.1"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 0.92,
+          "reason": "score=92.0/100 | failed=[R6]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 0,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 0.92,
+        "latencyMs": 2011
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Access Virus KB Get sound A77\nContent preview:\nReference for getting the A77 patch sound from the Access Virus KB synthesizer. Includes parameter settings and MIDI CC map.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "music-no-anchor"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Access Virus KB Get sound A77\",\n  \"suggested_summary\": \"Reference for obtaining the A77 patch sound from the Access Virus KB synthesizer.\",\n  \"suggested_tags\": [\n    \"craft/software\",\n    \"music/virus\",\n    \"music/patch\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"Software.md\",\n  \"confidence\": 0.95\n  ,\"reasoning\": \"The item is a link to a specific sound patch for the Access Virus KB synthesizer, which falls under software-related content in the craft area. The title and preview clearly indicate it is a reference for a software tool.\"\n}",
+          "metadata": {
+            "tok_per_sec": "84.8"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.62,
+          "reason": "score=62.0/100 | ANCHOR_HALL | failed=[R4,R6,C2]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 1,
+            "rule_R6": 0,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 0
+          }
+        },
+        "success": false,
+        "score": 0.62,
+        "latencyMs": 2112
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Keyboard debouncing algorithms for custom firmware\nContent preview:\nOverview of keyboard debounce algorithms: eager, defer-until-idle, and Roland eager-pr. Relevant for QMK and ZMK custom keyboard firmware.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-hardware"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Keyboard Debouncing Algorithms for Custom Firmware\",\n  \"suggested_summary\": \"Explains eager, defer-until-idle, and Roland eager-pr debounce algorithms for QMK and ZMK custom keyboard firmware.\",\n  \"suggested_tags\": [\n    \"craft/hardware\",\n    \"craft/software\",\n    \"craft/ai\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"Hardware.md\",\n  \"confidence\": 0.85\n  ,\"reasoning\": \"The item is a link to an overview of keyboard debounce algorithms relevant to custom firmware projects, fitting under the hardware and software categories.\"\n}",
+          "metadata": {
+            "tok_per_sec": "84.8"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.8,
+          "reason": "score=80.0/100 | ANCHOR_HALL | failed=[R4]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.8,
+        "latencyMs": 2012
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: A Three-Level System for Organizing Information in PKM\nContent preview:\nIntroduces a three-level hierarchy (Topics, Classes, Tags) for personal knowledge management. Contrasts with flat tag systems and PARA.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-mind"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"A Three-Level System for Organizing Information in PKM\",\n  \"suggested_summary\": \"Introduces a three-level hierarchy (Topics, Classes, Tags) for personal knowledge management.\",\n  \"suggested_tags\": [\n    \"craft/pkm\",\n    \"craft/organization\",\n    \"craft/hierarchy\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"Mind.md\",\n  \"confidence\": 0.85\n  ,\"reasoning\": \"The content describes a conceptual framework for organizing knowledge, fitting under the PKM (craft) area. The three-level system (Topics, Classes, Tags) aligns with PKM principles and would be best placed under the Mind.md anchor, which covers productivity philosophy and PKM.\"\n}",
+          "metadata": {
+            "tok_per_sec": "85.9"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.8,
+          "reason": "score=80.0/100 | ANCHOR_HALL | failed=[R4]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.8,
+        "latencyMs": 2329
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: test123\nContent preview:\nasdf test note ignore",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "dismiss-stub"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"dismiss\",\n  \"suggested_type\": \"project\",\n  \"suggested_title\": \"test123\",\n  \"suggested_summary\": \"Test note to be ignored\",\n  \"suggested_tags\": [],\n  \"target_area\": null,\n  \"target_anchor\": \"test123\",\n  \"confidence\": 0.10\n  ,\"reasoning\": \"The content is a generic title and preview without any clear context or substance. It appears to be a placeholder or test note that should be dismissed.\"\n}",
+          "metadata": {
+            "tok_per_sec": "82.4"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.8,
+          "reason": "score=80.0/100 | ANCHOR_HALL | failed=[R4]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.8,
+        "latencyMs": 1451
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: 2026-05-24\nContent preview:\nhttps://example.com/some-article-2024",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "ambiguous-url"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"2024 Article\",\n  \"suggested_summary\": \"Link to an article from 2024\",\n  \"suggested_tags\": [\n    \"link\",\n    \"article\",\n    \"2024\"\n  ],\n  \"target_area\": null,\n  \"target_anchor\": \"https://example.com/some-article-2024\",\n  \"confidence\": 0.50\n  ,\"reasoning\": \"The content preview is a bare URL with no additional context. The title provides a vague date reference but no clear topic. This is a link-only item that requires guessing the area based on the title only.\"\n}",
+          "metadata": {
+            "tok_per_sec": "85.1"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.8,
+          "reason": "score=80.0/100 | ANCHOR_HALL | failed=[R4]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.8,
+        "latencyMs": 1926
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Q3 performance review template\nContent preview:\nTemplate for writing the self-assessment section of a Q3 performance review. Covers achievements, growth areas, and OKR alignment.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "work-no-anchor"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Q3 Performance Review Template\",\n  \"suggested_summary\": \"A template to help write the self-assessment section of a Q3 performance review, covering achievements, growth areas, and OKR alignment.\",\n  \"suggested_tags\": [\n    \"work/performance\",\n    \"work/review\",\n    \"work/okr\"\n  ],\n  \"target_area\": \"work\",\n  \"target_anchor\": \"Performance.md\",\n  \"confidence\": 0.95\n  ,\"reasoning\": \"The content preview clearly describes a template for a work-related performance review section, indicating it belongs in the work area with an anchor for performance reviews.\"\n}",
+          "metadata": {
+            "tok_per_sec": "84.2"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.64,
+          "reason": "score=64.0/100 | ANCHOR_HALL | failed=[R4,R5]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 0,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.64,
+        "latencyMs": 2078
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Model Context Protocol server design patterns\nContent preview:\nPatterns for building MCP servers: tool granularity, structured output via JSON schema, OAuth + PKCE auth, and stateless HTTP transport.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-ai-mcp"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Model Context Protocol server design patterns\",\n  \"suggested_summary\": \"Design patterns for building Model Context Protocol (MCP) servers\",\n  \"suggested_tags\": [\n    \"craft/mcp\",\n    \"craft/server-design\",\n    \"craft/ai\",\n    \"craft/protocol\",\n    \"craft/authentication\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"_Model_Context_Protocol.md\",\n  \"confidence\": 0.92\n  ,\"reasoning\": \"The content describes design patterns for building an MCP server, which fits under the 'craft' area related to AI infrastructure and protocol design.\"\n}",
+          "metadata": {
+            "tok_per_sec": "84.8"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.8,
+          "reason": "score=80.0/100 | ANCHOR_HALL | failed=[R4]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.8,
+        "latencyMs": 2054
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: 0DTE options theta decay curve\nContent preview:\nHow theta decay accelerates intraday for zero-days-to-expiry SPX options, and why selling premium after 2pm has a different risk profile.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "finance-options"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"0DTE Options Theta Decay Curve\",\n  \"suggested_summary\": \"Explains the accelerated theta decay of zero-days-to-expiry SPX options and the different risk profile of selling premium after 2pm.\",\n  \"suggested_tags\": [\n    \"craft/software\",\n    \"finance/options\",\n    \"trading/theta-decay\"\n  ],\n  \"target_area\": \"finance\",\n  \"target_anchor\": \"_Trading.md\",\n  \"confidence\": 0.92\n  ,\"reasoning\": \"The item is a link to a specific content piece about options trading, focusing on theta decay and risk profile. It clearly belongs to the finance area, and the most relevant anchor is _Trading.md which covers trading strategies, instruments, and analysis.\"\n}",
+          "metadata": {
+            "tok_per_sec": "86.6"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 0.92,
+          "reason": "score=92.0/100 | failed=[R6]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 0,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 0.92,
+        "latencyMs": 2288
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Sidechain compression for trance pumping\nContent preview:\nTechnique for the classic trance pumping effect: sidechain a compressor on the bass and pads keyed to the kick. Covers attack/release tuning.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "music-production"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Sidechain Compression for Trance Pumping\",\n  \"suggested_summary\": \"Learn the sidechain compression technique for achieving the classic trance pumping effect.\",\n  \"suggested_tags\": [\n    \"craft/synth\",\n    \"craft/production\",\n    \"music/trance\"\n  ],\n  \"target_area\": \"music\",\n  \"target_anchor\": \"Music.md\",\n  \"confidence\": 0.95\n  ,\"reasoning\": \"The content describes a specific music production technique (sidechain compression) used in trance music, fitting under the music production area.\"\n}",
+          "metadata": {
+            "tok_per_sec": "84.3"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.56,
+          "reason": "score=56.0/100 | ANCHOR_HALL | failed=[R4,R5,R6]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 0,
+            "rule_R6": 0,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.56,
+        "latencyMs": 1890
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Negotiating a senior engineer offer\nContent preview:\nNotes on negotiating a senior software engineer offer: anchoring on total comp, equity refresh, competing offers, and the recruiter call script.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "work-career"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Negotiating a Senior Software Engineer Offer\",\n  \"suggested_summary\": \"Key strategies for negotiating a senior software engineer job offer, including total compensation, equity refresh, handling competing offers, and preparing a recruiter call script.\",\n  \"suggested_tags\": [\n    \"work/career\",\n    \"work/negotiation\",\n    \"work/senior-engineer\"\n  ],\n  \"target_area\": \"work\",\n  \"target_anchor\": \"Negotiating-a-Senior-Software-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engineer-Engine",
+          "metadata": {
+            "tok_per_sec": "90.2"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0,
+          "reason": "score=0.0/100 | JSON_FAIL: JSON parse failed | failed=[R1,R2,R3,R4,R5,R6,R7,C1,C2]",
+          "namedScores": {
+            "rule_R1": 0,
+            "rule_R2": 0,
+            "rule_R3": 0,
+            "rule_R4": 0,
+            "rule_R5": 0,
+            "rule_R6": 0,
+            "rule_R7": 0,
+            "rule_C1": 0,
+            "rule_C2": 0
+          }
+        },
+        "success": false,
+        "score": 0,
+        "latencyMs": 11479
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: CNC feeds and speeds for 6061 aluminum\nContent preview:\nCalculating feeds and speeds for milling 6061 aluminum: chip load per tooth, surface speed, and avoiding recutting chips with proper coolant.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-hardware-cnc"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"CNC Feeds and Speeds for 6061 Aluminum\",\n  \"suggested_summary\": \"Optimal cutting parameters for milling 6061 aluminum on a CNC machine\",\n  \"suggested_tags\": [\n    \"craft/hardware\",\n    \"craft/ai\",\n    \"craft/software\",\n    \"craft/making\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"Hardware.md\",\n  \"confidence\": 0.92\n  ,\"reasoning\": \"The content is a technical guide for CNC machining 6061 aluminum, fitting under the hardware making category. It provides specific parameters (chip load, surface speed, coolant) relevant to that domain.\"\n}",
+          "metadata": {
+            "tok_per_sec": "85.0"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.8,
+          "reason": "score=80.0/100 | ANCHOR_HALL | failed=[R4]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.8,
+        "latencyMs": 2245
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Zettelkasten linking vs folder hierarchies\nContent preview:\nArgues that dense bidirectional links between atomic notes outperform deep folder hierarchies for knowledge retrieval and serendipitous connection.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-mind-zettel"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Zettelkasten linking vs folder hierarchies\",\n  \"suggested_summary\": \"Explores the benefits of dense bidirectional linking over deep folder hierarchies for knowledge management.\",\n  \"suggested_tags\": [\n    \"craft/pkm\",\n    \"craft/ai\",\n    \"craft/mental-models\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"Mind.md\",\n  \"confidence\": 0.85\n  ,\"reasoning\": \"The content discusses a knowledge management technique (Zettelkasten) and compares it to traditional folder hierarchies, fitting under the craft/mental-models area.\"\n}",
+          "metadata": {
+            "tok_per_sec": "84.4"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.8,
+          "reason": "score=80.0/100 | ANCHOR_HALL | failed=[R4]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.8,
+        "latencyMs": 2131
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Renew xor0.de domain before it expires\nContent preview:\nAction: renew the xor0.de domain registration and verify the Cloudflare Tunnel cert before the 2026-07-15 expiry, or obsidian-mcp goes down.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "spawn-task-domain"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Renew xor0.de Domain\",\n  \"suggested_summary\": \"Renew xor0.de domain before expiration to maintain access to Cloudflare Tunnel and Obsidian-MCP.\",\n  \"suggested_tags\": [\n    \"craft/software\",\n    \"work/personal\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"Software.md\",\n  \"confidence\": 0.95\n  ,\"reasoning\": \"The item is a single actionable task related to renewing a domain name, which fits under the craft/software anchor for software tools and infrastructure.\"\n}",
+          "metadata": {
+            "tok_per_sec": "82.0"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.57,
+          "reason": "score=57.0/100 | ANCHOR_HALL | failed=[R4,R6,C1]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 1,
+            "rule_R6": 0,
+            "rule_R7": 1,
+            "rule_C1": 0,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.57,
+        "latencyMs": 2010
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Build a local RAG pipeline over the vault\nContent preview:\nPlan: index all Obsidian notes with nomic-embed, store vectors locally, and answer questions over the vault via qwen3.5 with retrieval. Multi-week build.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-project-rag"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Build a local RAG pipeline over the vault\",\n  \"suggested_summary\": \"Plan to index Obsidian notes, store vectors locally, and answer questions via Qwen3.5 with retrieval.\",\n  \"suggested_tags\": [\n    \"craft/ai\",\n    \"craft/pkm\",\n    \"craft/rag\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"_AI.md\",\n  \"confidence\": 0.85\n  ,\"reasoning\": \"The item describes a technical project involving AI and PKM tools, fitting under the craft area's AI sub-topic.\"\n}",
+          "metadata": {
+            "tok_per_sec": "84.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 0.85,
+          "reason": "score=85.0/100 | failed=[C1]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 0,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 0.85,
+        "latencyMs": 1997
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "Title: Untitled 3\nContent preview:\naaa\n\nnote to self lorem ipsum placeholder do not keep",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "dismiss-dup"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"dismiss\",\n  \"suggested_type\": \"project\",\n  \"suggested_title\": \"Untitled 3\",\n  \"suggested_summary\": \"Note to self placeholder content\",\n  \"suggested_tags\": [],\n  \"target_area\": null,\n  \"target_anchor\": \"Untitled 3\",\n  \"confidence\": 0.05\n  ,\"reasoning\": \"The content preview is empty and the title is placeholder text. This appears to be a test note or placeholder and should be dismissed.\"\n}",
+          "metadata": {
+            "tok_per_sec": "82.3"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.8,
+          "reason": "score=80.0/100 | ANCHOR_HALL | failed=[R4]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.8,
+        "latencyMs": 1452
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How many cents does the ball cost?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "bat-and-ball",
+          "question": "A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How many cents does the ball cost?"
+        },
+        "response": {
+          "output": "{\"answer\": \"10\"}",
+          "metadata": {
+            "tok_per_sec": "103.2"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0,
+          "reason": "trap: got \"10\" (trap=10)"
+        },
+        "success": false,
+        "score": 0,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "If 5 machines take 5 minutes to make 5 widgets, how many minutes do 100 machines take to make 100 widgets?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "widgets",
+          "question": "If 5 machines take 5 minutes to make 5 widgets, how many minutes do 100 machines take to make 100 widgets?"
+        },
+        "response": {
+          "output": "{\"answer\": \"5\"}",
+          "metadata": {
+            "tok_per_sec": "103.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"5\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "A patch of lily pads doubles in size every day. It takes 48 days to cover the whole lake. On what day number was the lake half covered?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "lily-pad",
+          "question": "A patch of lily pads doubles in size every day. It takes 48 days to cover the whole lake. On what day number was the lake half covered?"
+        },
+        "response": {
+          "output": "{\"answer\": \"47\"}",
+          "metadata": {
+            "tok_per_sec": "94.1"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"47\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "A farmer has 17 sheep. All but 9 die. How many sheep are left alive?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "all-but-9",
+          "question": "A farmer has 17 sheep. All but 9 die. How many sheep are left alive?"
+        },
+        "response": {
+          "output": "{\"answer\": \"9\"}",
+          "metadata": {
+            "tok_per_sec": "102.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"9\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "A store starts with 120 apples. It sells one third of them in the morning, then one quarter of the REMAINING apples in the afternoon. How many apples are left at the end of the day?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "apples-fractions",
+          "question": "A store starts with 120 apples. It sells one third of them in the morning, then one quarter of the REMAINING apples in the afternoon. How many apples are left at the end of the day?"
+        },
+        "response": {
+          "output": "{\"answer\": \"60\"}",
+          "metadata": {
+            "tok_per_sec": "94.2"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"60\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "Alice is older than Bob. Carol is younger than Bob. Dave is older than Alice. Among Alice, Bob, Carol, and Dave, who is the oldest? Give the single name.",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "age-order",
+          "question": "Alice is older than Bob. Carol is younger than Bob. Dave is older than Alice. Among Alice, Bob, Carol, and Dave, who is the oldest? Give the single name."
+        },
+        "response": {
+          "output": "{\"answer\": \"Dave\"}",
+          "metadata": {
+            "tok_per_sec": "103.2"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"Dave\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "Today is Wednesday. What day of the week will it be exactly 100 days from now? Give the weekday name.",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "days-100",
+          "question": "Today is Wednesday. What day of the week will it be exactly 100 days from now? Give the weekday name."
+        },
+        "response": {
+          "output": "{\"answer\": \"Sunday\"}",
+          "metadata": {
+            "tok_per_sec": "102.9"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0,
+          "reason": "wrong: got \"Sunday\", expected one of [friday]"
+        },
+        "success": false,
+        "score": 0,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "Counting through the whole numbers from 1 to 100 inclusive, how many times does the digit 7 appear in total (e.g. 77 contains the digit 7 twice)?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "count-sevens",
+          "question": "Counting through the whole numbers from 1 to 100 inclusive, how many times does the digit 7 appear in total (e.g. 77 contains the digit 7 twice)?"
+        },
+        "response": {
+          "output": "{\"answer\": \"20\"}",
+          "metadata": {
+            "tok_per_sec": "103.3"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"20\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "What is the next number in this sequence: 2, 6, 12, 20, 30, ? Give just the number.",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "next-in-sequence",
+          "question": "What is the next number in this sequence: 2, 6, 12, 20, 30, ? Give just the number."
+        },
+        "response": {
+          "output": "{\"answer\": \"42\"}",
+          "metadata": {
+            "tok_per_sec": "94.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"42\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "Rule: If it is raining, then the ground is wet. Observation: the ground is NOT wet. Based only on this, is it raining? Answer yes or no.",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "modus-tollens",
+          "question": "Rule: If it is raining, then the ground is wet. Observation: the ground is NOT wet. Based only on this, is it raining? Answer yes or no."
+        },
+        "response": {
+          "output": "{\"answer\": \"no\"}",
+          "metadata": {
+            "tok_per_sec": "103.3"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"no\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "A drawer has 10 red socks and 10 blue socks mixed together in the dark. How many socks must you pull out, at minimum, to be GUARANTEED a matching pair?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "socks",
+          "question": "A drawer has 10 red socks and 10 blue socks mixed together in the dark. How many socks must you pull out, at minimum, to be GUARANTEED a matching pair?"
+        },
+        "response": {
+          "output": "{\"answer\": \"3\"}",
+          "metadata": {
+            "tok_per_sec": "103.3"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"3\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:granite-4.0-h-tiny-Q5_K_M",
+          "label": "Granite-4-H-Tiny Q5_K_M [n/a]"
+        },
+        "prompt": {
+          "raw": "In a race, you overtake the runner in second place. What position are you in now? Give the ordinal (e.g. first, second).",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "overtaking",
+          "question": "In a race, you overtake the runner in second place. What position are you in now? Give the ordinal (e.g. first, second)."
+        },
+        "response": {
+          "output": "{\"answer\": \"second\"}",
+          "metadata": {
+            "tok_per_sec": "103.3"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"second\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      }
+    ],
+    "stats": {
+      "successes": 37,
+      "failures": 23,
+      "errors": 0
+    }
+  },
+  "config": {
+    "description": "llm-bench target=rose backend=vulkan"
+  }
+}

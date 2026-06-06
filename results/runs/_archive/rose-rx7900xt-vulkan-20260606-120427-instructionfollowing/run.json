@@ -1,0 +1,26 @@
+{
+  "run_id": "rose-rx7900xt-vulkan-20260606-120427-instructionfollowing",
+  "kind": "instruction-following",
+  "host": "rose",
+  "gpu": "RX 7900 XT",
+  "backend": "vulkan",
+  "config_hash": null,
+  "started": "2026-06-06T10:04:27.693Z",
+  "finished": "2026-06-06T10:04:45.258Z",
+  "status": "complete",
+  "seed": "rose-rx7900xt-vulkan-20260606-004710",
+  "planned": [],
+  "results": [
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-E4B-it-Q5_K_M",
+      "think": "n/a",
+      "bench": "instruction_following",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "28/28 checks · 20/20 full",
+      "ts": "2026-06-06T10:04:41.617Z"
+    }
+  ]
+}

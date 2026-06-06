@@ -1,0 +1,67 @@
+{
+  "run_id": "rose-rx7900xt-vulkan-20260606-105601-qualitydecay",
+  "kind": "quality-decay",
+  "host": "rose",
+  "gpu": "RX 7900 XT",
+  "backend": "vulkan",
+  "config_hash": null,
+  "started": "2026-06-06T08:56:01.913Z",
+  "finished": "2026-06-06T08:56:26.585Z",
+  "status": "complete",
+  "seed": "rose-rx7900xt-vulkan-20260606-004710",
+  "planned": [],
+  "results": [
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "LFM2.5-8B-A1B-Q5_K_M",
+      "think": "n/a",
+      "bench": "quality_decay-0k",
+      "score": "100.0",
+      "vram_mib": "?",
+      "ctx_loaded": 131072,
+      "status": "ok",
+      "notes": "acc@0",
+      "ts": "2026-06-06T08:56:14.195Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "LFM2.5-8B-A1B-Q5_K_M",
+      "think": "n/a",
+      "bench": "ttft-0k",
+      "score": "192",
+      "vram_mib": "?",
+      "ctx_loaded": 131072,
+      "status": "ok",
+      "notes": "prompt_ms@0",
+      "ts": "2026-06-06T08:56:14.199Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "LFM2.5-8B-A1B-Q5_K_M",
+      "think": "n/a",
+      "bench": "quality_decay-16k",
+      "score": "83.3",
+      "vram_mib": "?",
+      "ctx_loaded": 131072,
+      "status": "ok",
+      "notes": "acc@16384",
+      "ts": "2026-06-06T08:56:22.976Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "LFM2.5-8B-A1B-Q5_K_M",
+      "think": "n/a",
+      "bench": "ttft-16k",
+      "score": "1981",
+      "vram_mib": "?",
+      "ctx_loaded": 131072,
+      "status": "ok",
+      "notes": "prompt_ms@16384",
+      "ts": "2026-06-06T08:56:22.981Z"
+    }
+  ]
+}

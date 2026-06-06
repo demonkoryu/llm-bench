@@ -1,0 +1,2057 @@
+{
+  "results": {
+    "version": 3,
+    "timestamp": "2026-06-05T15:52:14.491Z",
+    "results": [
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Agentic RAG whitepaper\nContent preview:\nWhitepaper on Agentic Retrieval-Augmented Generation. Covers multi-step reasoning with retrieval, tool use, and LLM orchestration.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-ai-rag"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Agentic RAG Whitepaper\",\n  \"suggested_summary\": \"A whitepaper detailing Agentic Retrieval-Augmented Generation, covering multi-step reasoning, tool use, and LLM orchestration.\",\n  \"suggested_tags\": [\n    \"craft/ai\",\n    \"craft/software\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"_AI.md\",\n  \"confidence\": 0.92\n, \"reasoning\": \"The content explicitly discusses Agentic RAG, which is a core sub-topic of LLM and AI infrastructure defined under craft/_AI.md.\",\n  \"propose_new_anchor\": null\n}",
+          "metadata": {
+            "tok_per_sec": "72.2"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 2587
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: How to profile Python and Rust programs\nContent preview:\nA guide to profiling CPU-bound Python code with cProfile and Rust with cargo flamegraph. Includes tips for reading flamegraphs.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-software-howto"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Guide to profiling CPU-bound Python code with cProfile and Rust with cargo flamegraph.\",\n  \"suggested_summary\": \"A practical guide on using cProfile for Python and cargo flamegraph for Rust to analyze CPU-bound program performance.\",\n  \"suggested_tags\": [\n    \"craft/software\",\n    \"craft/ai\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"_Software.md\",\n  \"confidence\": 0.92\n,\n  \"reasoning\": \"The content is a technical guide focused on software engineering tools (cProfile, cargo flamegraph) for profiling code in Python and Rust, which aligns perfectly with the 'craft' area's '_Software.md' anchor.\"\n}",
+          "metadata": {
+            "tok_per_sec": "70.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 2777
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Analyze premarket direction reversal\nContent preview:\nStrategy for identifying when premarket direction is likely to reverse at the open. Uses volume delta and level 2 tape reading.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "finance-trading"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Strategy for identifying premarket reversal using volume delta and tape reading\",\n  \"suggested_summary\": \"A trading strategy focusing on detecting premarket direction reversals at the open via volume delta and level 2 analysis.\",\n  \"suggested_tags\": [\n    \"finance/trading\"\n  ],\n  \"target_area\": \"finance\",\n  \"target_anchor\": \"_Trading.md\",\n  \"confidence\": 0.95\n, \"reasoning\": \"The content explicitly describes a trading strategy involving market microstructure (volume delta, level 2 tape) and timing (premarket/open), which fits the finance/trading domain perfectly.\",\n  \"propose_new_anchor\": null\n}",
+          "metadata": {
+            "tok_per_sec": "71.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 2600
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Access Virus KB Get sound A77\nContent preview:\nReference for getting the A77 patch sound from the Access Virus KB synthesizer. Includes parameter settings and MIDI CC map.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "music-no-anchor"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Access Virus A77 Patch Sound Reference\",\n  \"suggested_summary\": \"A technical reference guide for reproducing the A77 patch sound on an Access Virus synthesizer, including parameter settings and MIDI CC mappings.\",\n  \"suggested_tags\": [\n    \"music/synthesis\",\n    \"music/hardware\"\n  ],\n  \"target_area\": \"music\",\n  \"target_anchor\": \"null\",\n  \"confidence\": 0.92\n,\n  \"reasoning\": \"The content is a technical reference for a specific synthesizer (Access Virus), which clearly belongs to the 'music' area. Since the 'music' area has no anchors listed and this is a specific hardware/patch reference rather than a general theory or production concept warranting a new anchor, the target_anchor should be null.\"\n}",
+          "metadata": {
+            "tok_per_sec": "71.5"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.64,
+          "reason": "score=64.0/100 | ANCHOR_HALL | failed=[R4,R5]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 0,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.64,
+        "latencyMs": 3012
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Keyboard debouncing algorithms for custom firmware\nContent preview:\nOverview of keyboard debounce algorithms: eager, defer-until-idle, and Roland eager-pr. Relevant for QMK and ZMK custom keyboard firmware.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-hardware"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Keyboard Debouncing Algorithms\",\n  \"suggested_summary\": \"An overview of three keyboard debouncing algorithms (eager, defer-until-idle, Roland eager-pr) relevant to QMK and ZMK custom firmware.\",\n  \"suggested_tags\": [\n    \"craft/hardware\",\n    \"craft/software\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"_Hardware.md\",\n  \"confidence\": 0.92\n, \"reasoning\": \"The content discusses hardware interaction algorithms (debouncing) specifically for custom keyboard firmware (QMK/ZMK), which aligns best with the Hardware anchor under craft, though it also touches on software implementation.\"\n}",
+          "metadata": {
+            "tok_per_sec": "72.2"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 2587
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: A Three-Level System for Organizing Information in PKM\nContent preview:\nIntroduces a three-level hierarchy (Topics, Classes, Tags) for personal knowledge management. Contrasts with flat tag systems and PARA.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-mind"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"A Three-Level System for Organizing Information in PKM\",\n  \"suggested_summary\": \"This article proposes a three-level hierarchy (Topics, Classes, Tags) as an alternative to flat tagging and PARA systems.\",\n  \"suggested_tags\": [\"craft/mind\", \"craft/pkm\"],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"_Mind.md\",\n  \"confidence\": 0.92\n  ,\n  \"reasoning\": \"The content explicitly discusses PKM hierarchy and contrasts with PARA, which is a core topic of the craft/Mind area.\"\n}",
+          "metadata": {
+            "tok_per_sec": "71.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 2305
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: test123\nContent preview:\nasdf test note ignore",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "dismiss-stub"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"dismiss\",\n  \"suggested_type\": \"task\",\n  \"suggested_title\": \"Discard test stub\",\n  \"suggested_summary\": \"This is a clearly labeled test stub containing only random characters and an explicit instruction to ignore it.\",\n  \"suggested_tags\": [],\n  \"target_area\": null,\n  \"target_anchor\": \"null\",\n  \"confidence\": 0.95\n  ,\n  \"reasoning\": \"The content explicitly states 'test note ignore' and consists of random text ('asdf'), indicating it is a temporary artifact to be discarded rather than kept.\"\n}",
+          "metadata": {
+            "tok_per_sec": "66.4"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.8,
+          "reason": "score=80.0/100 | ANCHOR_HALL | failed=[R4]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.8,
+        "latencyMs": 2209
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: 2026-05-24\nContent preview:\nhttps://example.com/some-article-2024",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "ambiguous-url"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"skip\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Example Article (2026-05-24)\",\n  \"suggested_summary\": \"A dated link to an example article with no specific area context.\",\n  \"suggested_tags\": [],\n  \"target_area\": null,\n  \"target_anchor\": \"_Mind.md\",\n  \"confidence\": 0.30,\n  \"reasoning\": \"The item is a bare URL with a future date (2026) and generic content ('some-article-2024'). Without explicit keywords or context in the title or preview, it is impossible to determine which of the five vault areas (craft, finance, music, work, or a new one) this resource belongs to. Per the instructions, 'skip' is used only when you genuinely cannot determine the area.\"\n}",
+          "metadata": {
+            "tok_per_sec": "71.7"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.8,
+          "reason": "score=80.0/100 | ANCHOR_HALL | failed=[R4]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.8,
+        "latencyMs": 2908
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Q3 performance review template\nContent preview:\nTemplate for writing the self-assessment section of a Q3 performance review. Covers achievements, growth areas, and OKR alignment.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "work-no-anchor"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Q3 Performance Review Template\",\n  \"suggested_summary\": \"A structured template for completing self-assessment sections in Q3 performance reviews, covering achievements, growth areas, and OKR alignment.\",\n  \"suggested_tags\": [\n    \"work/performance-review\",\n    \"work/planning\"\n  ],\n  \"target_area\": \"work\",\n  \"target_anchor\": \"_Q3-Review.md\",\n  \"confidence\": 0.92,\n  \"reasoning\": \"The content is explicitly about a performance review template for work evaluation (achievements, OKRs), fitting the 'work' area perfectly. Since 'work' has no predefined anchors and this is a specific quarterly document, a new anchor file is warranted to store it.\"\n}",
+          "metadata": {
+            "tok_per_sec": "73.6"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.64,
+          "reason": "score=64.0/100 | ANCHOR_HALL | failed=[R4,R5]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 0,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.64,
+        "latencyMs": 2728
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Model Context Protocol server design patterns\nContent preview:\nPatterns for building MCP servers: tool granularity, structured output via JSON schema, OAuth + PKCE auth, and stateless HTTP transport.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-ai-mcp"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"MCP Server Design Patterns\",\n  \"suggested_summary\": \"A resource outlining architectural patterns for building Model Context Protocol servers, including tool granularity and authentication methods.\",\n  \"suggested_tags\": [\n    \"craft/ai\",\n    \"craft/software\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"_AI.md\",\n  \"confidence\": 0.92\n, \"reasoning\": \"The content explicitly discusses the Model Context Protocol (MCP), which is categorized under AI/MCP infrastructure in the 'craft' area, and fits the existing '_AI.md' anchor.\"\n}",
+          "metadata": {
+            "tok_per_sec": "72.4"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 2389
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: 0DTE options theta decay curve\nContent preview:\nHow theta decay accelerates intraday for zero-days-to-expiry SPX options, and why selling premium after 2pm has a different risk profile.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "finance-options"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"0DTE options theta decay curve analysis\",\n  \"suggested_summary\": \"An article analyzing the acceleration of theta decay in zero-days-to-expiry SPX options and associated intraday risk profiles.\",\n  \"suggested_tags\": [\n    \"finance/trading\",\n    \"finance/options\"\n  ],\n  \"target_area\": \"finance\",\n  \"target_anchor\": \"_Trading.md\",\n  \"confidence\": 0.95,\n  \"reasoning\": \"The content explicitly discusses options trading strategies (selling premium) and theta decay in SPX options, which fits the 'finance/trading' topic and existing '_Trading.md' anchor.\"\n}",
+          "metadata": {
+            "tok_per_sec": "72.3"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 2498
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Sidechain compression for trance pumping\nContent preview:\nTechnique for the classic trance pumping effect: sidechain a compressor on the bass and pads keyed to the kick. Covers attack/release tuning.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "music-production"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Sidechain Compression for Trance Pumping\",\n  \"suggested_summary\": \"A technique guide on using sidechain compression on bass and pads keyed to a kick drum to achieve the classic trance pumping effect, including advice on attack and release tuning.\",\n  \"suggested_tags\": [\n    \"music/production\",\n    \"music/theory\"\n  ],\n  \"target_area\": \"music\",\n  \"target_anchor\": \"_Production.md\",\n  \"confidence\": 0.92\n, \"reasoning\": \"The content is a specific production technique for music (trance genre), fitting the 'music' area. The anchor '_Production.md' is the appropriate place for production techniques as per the area description.\",\n  \"propose_new_anchor\": null\n}",
+          "metadata": {
+            "tok_per_sec": "70.5"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.64,
+          "reason": "score=64.0/100 | ANCHOR_HALL | failed=[R4,R5]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 0,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.64,
+        "latencyMs": 2873
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Negotiating a senior engineer offer\nContent preview:\nNotes on negotiating a senior software engineer offer: anchoring on total comp, equity refresh, competing offers, and the recruiter call script.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "work-career"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Notes on negotiating a senior software engineer offer\",\n  \"suggested_summary\": \"Strategic notes covering compensation anchoring, equity refresh tactics, and recruiter scripts for senior software engineering offers.\",\n  \"suggested_tags\": [\n    \"work/career\"\n  ],\n  \"target_area\": \"work\",\n  \"target_anchor\": \"null\",\n  \"confidence\": 0.92\n,\n  \"reasoning\": \"The content explicitly discusses negotiating a software engineering offer, which falls under career strategy within the 'work' area. The 'work' area has no sub-anchors defined in the schema, so target_anchor must be null.\"\n}",
+          "metadata": {
+            "tok_per_sec": "69.6"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.64,
+          "reason": "score=64.0/100 | ANCHOR_HALL | failed=[R4,R5]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 0,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.64,
+        "latencyMs": 2613
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: CNC feeds and speeds for 6061 aluminum\nContent preview:\nCalculating feeds and speeds for milling 6061 aluminum: chip load per tooth, surface speed, and avoiding recutting chips with proper coolant.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-hardware-cnc"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"CNC Feeds and Speeds Guide for 6061 Aluminum\",\n  \"suggested_summary\": \"A technical guide detailing the calculation of feeds, speeds, and coolant usage for milling 6061 aluminum to prevent recutting chips.\",\n  \"suggested_tags\": [\n    \"craft/hardware\",\n    \"craft/making\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"_Hardware.md\",\n  \"confidence\": 0.95\n,\n  \"reasoning\": \"The content is a technical resource about CNC machining parameters (feeds/speeds) for a specific material (6061 aluminum), which aligns perfectly with the craft area's _Hardware.md anchor focused on electronics and making.\"\n}",
+          "metadata": {
+            "tok_per_sec": "71.4"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 2868
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Zettelkasten linking vs folder hierarchies\nContent preview:\nArgues that dense bidirectional links between atomic notes outperform deep folder hierarchies for knowledge retrieval and serendipitous connection.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-mind-zettel"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Zettelkasten linking vs folder hierarchies\",\n  \"suggested_summary\": \"An argument favoring dense bidirectional links over deep folder hierarchies for knowledge retrieval.\",\n  \"suggested_tags\": [\n    \"craft/mind\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"_Mind.md\",\n  \"confidence\": 0.92\n,\n  \"reasoning\": \"The content explicitly discusses PKM methodologies (Zettelkasten) and mental models regarding note organization, which aligns perfectly with the 'mind' sub-topic of the craft area.\"\n}",
+          "metadata": {
+            "tok_per_sec": "71.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 2386
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Renew xor0.de domain before it expires\nContent preview:\nAction: renew the xor0.de domain registration and verify the Cloudflare Tunnel cert before the 2026-07-15 expiry, or obsidian-mcp goes down.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "spawn-task-domain"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"spawn_task\",\n  \"suggested_type\": \"task\",\n  \"suggested_title\": \"Renew xor0.de domain and verify Cloudflare Tunnel cert before 2026-07-15\",\n  \"suggested_summary\": \"Task to renew the xor0.de domain registration and verify the Cloudflare Tunnel certificate to prevent Obsidian-MCP downtime.\",\n  \"suggested_tags\": [\n    \"craft/software\",\n    \"work\"\n  ],\n  \"target_area\": null,\n  \"target_anchor\": \"xor0_de_domain_renewal.md\",\n  \"confidence\": 0.85\n,\n  \"reasoning\": \"The content is a single actionable item with a clear deadline and next steps (renew domain, verify cert), fitting the spawn_task action rather than promote_resource. It relates to software infrastructure (Obsidian-MCP) and work operations.\",\n  \"propose_new_anchor\": null\n}",
+          "metadata": {
+            "tok_per_sec": "70.3"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.7,
+          "reason": "score=70.0/100 | ANCHOR_HALL | failed=[R4,C2]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 0
+          }
+        },
+        "success": false,
+        "score": 0.7,
+        "latencyMs": 3155
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Build a local RAG pipeline over the vault\nContent preview:\nPlan: index all Obsidian notes with nomic-embed, store vectors locally, and answer questions over the vault via qwen3.5 with retrieval. Multi-week build.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-project-rag"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"project\",\n  \"suggested_title\": \"Local RAG Pipeline for Vault\",\n  \"suggested_summary\": \"A multi-week initiative to build a local Retrieval Augmented Generation pipeline indexing Obsidian notes with nomic-embed and querying them via Qwen3.5.\",\n  \"suggested_tags\": [\n    \"craft/ai\",\n    \"craft/software\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"_AI.md\",\n  \"confidence\": 0.92,\n  \"reasoning\": \"The content explicitly discusses building a RAG pipeline using AI tools (nomic-embed, Qwen3.5) over the user's vault notes, which aligns perfectly with the 'craft' area and specifically the '_AI.md' anchor for LLM, MCP, and wisp infrastructure.\",\n  \"propose_new_anchor\": null\n}",
+          "metadata": {
+            "tok_per_sec": "72.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 0.85,
+          "reason": "score=85.0/100 | failed=[C1]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 0,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 0.85,
+        "latencyMs": 3036
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Untitled 3\nContent preview:\naaa\n\nnote to self lorem ipsum placeholder do not keep",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "dismiss-dup"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"dismiss\",\n  \"suggested_type\": \"task\",\n  \"suggested_title\": \"delete placeholder stub\",\n  \"suggested_summary\": \"This is an empty placeholder note explicitly marked for deletion and contains no substantive content.\",\n  \"suggested_tags\": [\n    \"misc/deleted\"\n  ],\n  \"target_area\": null,\n  \"target_anchor\": \"delete_this_stub.md\",\n  \"confidence\": 0.1\n  ,\n  \"reasoning\": \"The item is an empty stub with a 'do not keep' instruction; it should be dismissed rather than promoted to any area.\"\n}",
+          "metadata": {
+            "tok_per_sec": "66.9"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.8,
+          "reason": "score=80.0/100 | ANCHOR_HALL | failed=[R4]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.8,
+        "latencyMs": 2269
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How many cents does the ball cost?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "bat-and-ball",
+          "question": "A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How many cents does the ball cost?"
+        },
+        "response": {
+          "output": "{\n\"answer\": \"5\"\n}",
+          "metadata": {
+            "tok_per_sec": "86.6"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"5\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "If 5 machines take 5 minutes to make 5 widgets, how many minutes do 100 machines take to make 100 widgets?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "widgets",
+          "question": "If 5 machines take 5 minutes to make 5 widgets, how many minutes do 100 machines take to make 100 widgets?"
+        },
+        "response": {
+          "output": "{\"answer\": \"5\"}",
+          "metadata": {
+            "tok_per_sec": "91.3"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"5\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "A patch of lily pads doubles in size every day. It takes 48 days to cover the whole lake. On what day number was the lake half covered?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "lily-pad",
+          "question": "A patch of lily pads doubles in size every day. It takes 48 days to cover the whole lake. On what day number was the lake half covered?"
+        },
+        "response": {
+          "output": "{ \"answer\": \"47\" }",
+          "metadata": {
+            "tok_per_sec": "86.7"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"47\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "A farmer has 17 sheep. All but 9 die. How many sheep are left alive?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "all-but-9",
+          "question": "A farmer has 17 sheep. All but 9 die. How many sheep are left alive?"
+        },
+        "response": {
+          "output": "{\"answer\": \"9\"}",
+          "metadata": {
+            "tok_per_sec": "89.3"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"9\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "A store starts with 120 apples. It sells one third of them in the morning, then one quarter of the REMAINING apples in the afternoon. How many apples are left at the end of the day?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "apples-fractions",
+          "question": "A store starts with 120 apples. It sells one third of them in the morning, then one quarter of the REMAINING apples in the afternoon. How many apples are left at the end of the day?"
+        },
+        "response": {
+          "output": "{\n\"answer\": \"60\"\n}",
+          "metadata": {
+            "tok_per_sec": "85.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"60\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Alice is older than Bob. Carol is younger than Bob. Dave is older than Alice. Among Alice, Bob, Carol, and Dave, who is the oldest? Give the single name.",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "age-order",
+          "question": "Alice is older than Bob. Carol is younger than Bob. Dave is older than Alice. Among Alice, Bob, Carol, and Dave, who is the oldest? Give the single name."
+        },
+        "response": {
+          "output": "{\n\"answer\": \"Dave\"\n}",
+          "metadata": {
+            "tok_per_sec": "86.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"Dave\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Today is Wednesday. What day of the week will it be exactly 100 days from now? Give the weekday name.",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "days-100",
+          "question": "Today is Wednesday. What day of the week will it be exactly 100 days from now? Give the weekday name."
+        },
+        "response": {
+          "output": "{\n\"answer\": \"Tuesday\"\n}",
+          "metadata": {
+            "tok_per_sec": "86.1"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0,
+          "reason": "wrong: got \"Tuesday\", expected one of [friday]"
+        },
+        "success": false,
+        "score": 0,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Counting through the whole numbers from 1 to 100 inclusive, how many times does the digit 7 appear in total (e.g. 77 contains the digit 7 twice)?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "count-sevens",
+          "question": "Counting through the whole numbers from 1 to 100 inclusive, how many times does the digit 7 appear in total (e.g. 77 contains the digit 7 twice)?"
+        },
+        "response": {
+          "output": "{\n\"answer\": \"20\"\n}",
+          "metadata": {
+            "tok_per_sec": "86.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"20\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "What is the next number in this sequence: 2, 6, 12, 20, 30, ? Give just the number.",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "next-in-sequence",
+          "question": "What is the next number in this sequence: 2, 6, 12, 20, 30, ? Give just the number."
+        },
+        "response": {
+          "output": "{ \"answer\": \"42\" }",
+          "metadata": {
+            "tok_per_sec": "87.5"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"42\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Rule: If it is raining, then the ground is wet. Observation: the ground is NOT wet. Based only on this, is it raining? Answer yes or no.",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "modus-tollens",
+          "question": "Rule: If it is raining, then the ground is wet. Observation: the ground is NOT wet. Based only on this, is it raining? Answer yes or no."
+        },
+        "response": {
+          "output": "{\n\"answer\": \"no\"\n}",
+          "metadata": {
+            "tok_per_sec": "86.6"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"no\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "A drawer has 10 red socks and 10 blue socks mixed together in the dark. How many socks must you pull out, at minimum, to be GUARANTEED a matching pair?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "socks",
+          "question": "A drawer has 10 red socks and 10 blue socks mixed together in the dark. How many socks must you pull out, at minimum, to be GUARANTEED a matching pair?"
+        },
+        "response": {
+          "output": "{\n\"answer\": \"3\"\n}",
+          "metadata": {
+            "tok_per_sec": "86.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"3\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "In a race, you overtake the runner in second place. What position are you in now? Give the ordinal (e.g. first, second).",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "overtaking",
+          "question": "In a race, you overtake the runner in second place. What position are you in now? Give the ordinal (e.g. first, second)."
+        },
+        "response": {
+          "output": "{ \"answer\": \"second\" }",
+          "metadata": {
+            "tok_per_sec": "87.7"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"second\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "What is the weather in Tokyo right now?",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "weather-basic"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"get_weather\",\"arguments\":\"{\\\"city\\\":\\\"Tokyo\\\",\\\"unit\\\":\\\"celsius\\\"}\"},\"id\":\"nX1bEBpm9ZiWEsOXb8aroIGjE9XRb5V6\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: get_weather({\"city\":\"Tokyo\",\"unit\":\"celsius\"})"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 847
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "What is the temperature in Berlin in Fahrenheit?",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "weather-unit"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"get_weather\",\"arguments\":\"{\\\"city\\\":\\\"Berlin\\\",\\\"unit\\\":\\\"fahrenheit\\\"}\"},\"id\":\"skwj6sSfBa2Uufd5I2Df1g7JtNe4PgWc\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: get_weather({\"city\":\"Berlin\",\"unit\":\"fahrenheit\"})"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 559
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Add up these numbers for me: 12, 30, and 8.",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "add-list"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"add_numbers\",\"arguments\":\"{\\\"numbers\\\":[12, 30, 8]}\"},\"id\":\"9cxKS9EFIGLdSrNasYvMdWBb8MxYMzIS\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: add_numbers({\"numbers\":[12,30,8]})"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 851
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Convert 250 US dollars to euros.",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "currency"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"convert_currency\",\"arguments\":\"{\\\"amount\\\":250,\\\"from\\\":\\\"USD\\\",\\\"to\\\":\\\"EUR\\\"}\"},\"id\":\"FHI0nrDNaRUSxWLvnLTaQg0kg3vEvnEw\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: convert_currency({\"amount\":250,\"from\":\"USD\",\"to\":\"EUR\"})"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 1062
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Email alice@example.com with the subject \"Lunch\" and tell her I will be 10 minutes late.",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "email-fields"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"send_email\",\"arguments\":\"{\\\"to\\\":\\\"alice@example.com\\\",\\\"subject\\\":\\\"Lunch\\\",\\\"body\\\":\\\"I will be 10 minutes late.\\\"}\"},\"id\":\"xXkJSv6Rru6i63MeaMHGjQeH3oHTUjzM\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: send_email({\"to\":\"alice@example.com\",\"subject\":\"Lunch\",\"body\":\"I will b)"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 1125
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Find wireless headphones in the catalog, show me 5.",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "pick-right-tool"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"search_db\",\"arguments\":\"{\\\"query\\\":\\\"wireless headphones\\\",\\\"limit\\\":5}\"},\"id\":\"b9mdCwVT9oU2nqWYuYB3KnCKBsHraHpL\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: search_db({\"query\":\"wireless headphones\",\"limit\":5})"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 1002
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "How much is 1000 Japanese yen in British pounds?",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "distractor-tools"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"convert_currency\",\"arguments\":\"{\\\"amount\\\":1000,\\\"from\\\":\\\"JPY\\\",\\\"to\\\":\\\"GBP\\\"}\"},\"id\":\"jJSvl37qHhII1npXnuP0EiAr4cTdzMNY\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: convert_currency({\"amount\":1000,\"from\":\"JPY\",\"to\":\"GBP\"})"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 768
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Thanks, that is all I needed. Have a good day!",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "no-tool-needed"
+        },
+        "response": {
+          "output": "[]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correctly no tool called"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 555
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Please book me a flight from London to New York tomorrow.",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "missing-tool"
+        },
+        "response": {
+          "output": "[]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correctly no tool called"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 1558
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "I bought three items costing seven dollars, fifteen dollars, and twenty-two dollars. What is the total?",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "numbers-from-prose"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"add_numbers\",\"arguments\":\"{\\\"numbers\\\":[7, 15, 22]}\"},\"id\":\"wm6mliyvK18dAN58nongYpqdoY59PMqH\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: add_numbers({\"numbers\":[7,15,22]})"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 794
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `fizzbuzz(n)`. Return \"Fizz\" if n is divisible by 3, \"Buzz\" if divisible by 5, \"FizzBuzz\" if divisible by both 3 and 5, otherwise the number as a string.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "fizzbuzz",
+          "category": "algo",
+          "difficulty": "easy"
+        },
+        "response": {
+          "output": "```javascript\nfunction fizzbuzz(n) {\n    if (n % 15 === 0) return \"FizzBuzz\";\n    if (n % 3 === 0) return \"Fizz\";\n    if (n % 5 === 0) return \"Buzz\";\n    return n.toString();\n}\n```",
+          "metadata": {
+            "tok_per_sec": "80.7"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 7,
+          "total": 7,
+          "reason": "pass: 7/7"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `reverseWords(s)`. Return the string with the order of space-separated words reversed, collapsing any runs of whitespace to a single space and trimming leading/trailing whitespace. Example: \"  the  sky is \" → \"is sky the\".",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "reverse-words",
+          "category": "string",
+          "difficulty": "easy"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * Reverses the order of words in a string, collapsing multiple spaces to one and trimming edges.\n * @param {string} s - The input string.\n * @returns {string} - The string with reversed word order.\n */\nfunction reverseWords(s) {\n  return s.trim().split(/\\s+/).reverse().join(' ');\n}\n```",
+          "metadata": {
+            "tok_per_sec": "80.2"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `sumEven(nums)`. Return the sum of the even integers in the array. Empty array returns 0.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "sum-even",
+          "category": "algo",
+          "difficulty": "easy"
+        },
+        "response": {
+          "output": "```javascript\nfunction sumEven(nums) {\n    return nums.reduce((acc, num) => acc + (num % 2 === 0 ? num : 0), 0);\n}\n```",
+          "metadata": {
+            "tok_per_sec": "81.1"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 5,
+          "total": 5,
+          "reason": "pass: 5/5"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `twoSum(nums, target)`. Return the indices [i, j] (i < j) of the two numbers that add up to target. Exactly one solution exists. Return [] if none.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "two-sum",
+          "category": "algo",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction twoSum(nums, target) {\n  const map = new Map();\n  for (let i = 0; i < nums.length; i++) {\n    const complement = target - nums[i];\n    if (map.has(complement)) {\n      return [map.get(complement), i];\n    }\n    map.set(nums[i], i);\n  }\n  return [];\n}\n```",
+          "metadata": {
+            "tok_per_sec": "80.2"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 5,
+          "total": 5,
+          "reason": "pass: 5/5"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `isValid(s)`. Given a string of just the characters ()[]{}, return true if every bracket is closed by the matching type in the correct order. Empty string is valid.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "valid-parens",
+          "category": "algo",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction isValid(s) {\n    const stack = [];\n    const pairs = { ')': '(', ']': '[', '}': '{' };\n    \n    for (let char of s) {\n        if (char === '(' || char === '[' || char === '{') {\n            stack.push(char);\n        } else if (char === ')' || char === ']' || char === '}') {\n            if (stack.length === 0 || stack[stack.length - 1] !== pairs[char]) {\n                return false;\n            }\n            stack.pop();\n        }\n    }\n    \n    return stack.length === 0;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "79.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 8,
+          "total": 8,
+          "reason": "pass: 8/8"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `romanToInt(s)`. Convert a Roman numeral string (I,V,X,L,C,D,M) to its integer value, handling subtractive pairs (IV=4, IX=9, XL=40, XC=90, CD=400, CM=900).",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "roman-to-int",
+          "category": "string",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nconst romanToInt = (s) => {\n  const values = { I: 1, V: 5, X: 10, L: 50, C: 100, D: 500, M: 1000 };\n  let total = 0;\n  for (let i = 0; i < s.length; i++) {\n    const current = values[s[i]];\n    const next = i + 1 < s.length ? values[s[i + 1]] : 0;\n    if (current < next) {\n      total += next - current;\n      i++;\n    } else {\n      total += current;\n    }\n  }\n  return total;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "80.2"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `groupAnagrams(words)`. Group the words that are anagrams of each other. Return an array of groups; within each group preserve the input order, and order the groups by the first appearance of any member in the input. Example: [\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"] → [[\"eat\",\"tea\",\"ate\"],[\"tan\",\"nat\"],[\"bat\"]].",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "group-anagrams",
+          "category": "datastruct",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction groupAnagrams(words) {\n  const groups = [];\n  const map = new Map();\n\n  for (const word of words) {\n    const sorted = word.split('').sort().join('');\n    if (!map.has(sorted)) {\n      map.set(sorted, []);\n    }\n    map.get(sorted).push(word);\n  }\n\n  const seenWords = new Set();\n  for (const [key, group] of map) {\n    const firstWord = group[0];\n    if (!seenWords.has(firstWord)) {\n      seenWords.add(firstWord);\n      groups.push(group);\n    }\n  }\n\n  return groups;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "79.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 4,
+          "total": 4,
+          "reason": "pass: 4/4"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `mergeIntervals(intervals)`. Given an array of [start, end] pairs, merge all overlapping intervals and return the result sorted by start. Touching intervals ([1,2] and [2,3]) merge.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "merge-intervals",
+          "category": "algo",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction mergeIntervals(intervals) {\n    if (intervals.length === 0) return [];\n\n    // Sort by start time; if starts are equal, sort by end time\n    intervals.sort((a, b) => a[0] - b[0] || a[1] - b[1]);\n\n    const merged = [intervals[0]];\n\n    for (let i = 1; i < intervals.length; i++) {\n        const current = intervals[i];\n        const last = merged[merged.length - 1];\n\n        // Check if current interval overlaps or touches the last one\n        if (current[0] <= last[1]) {\n            // Merge them by updating the end of the last interval\n            last[1] = Math.max(last[1], current[1]);\n        } else {\n            // No overlap, add current as a new interval\n            merged.push(current);\n        }\n    }\n\n    return merged;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "79.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 5,
+          "total": 5,
+          "reason": "pass: 5/5"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `firstUnique(s)`. Return the first character in the string that appears exactly once. If there is none, return an empty string \"\".",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "lru-ish-cache",
+          "category": "datastruct",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction firstUnique(s: string): string {\n  const count = new Map();\n  \n  // Count occurrences of each character\n  for (const char of s) {\n    count.set(char, (count.get(char) || 0) + 1);\n  }\n  \n  // Find the first character with count exactly 1\n  for (const char of s) {\n    if (count.get(char) === 1) {\n      return char;\n    }\n  }\n  \n  return \"\";\n}\n```",
+          "metadata": {
+            "tok_per_sec": "80.2"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0,
+          "passed": 0,
+          "total": 6,
+          "reason": "define-error"
+        },
+        "success": false,
+        "score": 0,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `lengthOfLongestSubstring(s)`. Return the length of the longest substring without repeating characters.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "longest-substring",
+          "category": "algo",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\nfunction lengthOfLongestSubstring(s: string): number {\n    let maxLen = 0;\n    let start = 0;\n    const charIndexMap = new Map();\n\n    for (let end = 0; end < s.length; end++) {\n        const char = s[end];\n\n        if (charIndexMap.has(char) && charIndexMap.get(char) >= start) {\n            start = charIndexMap.get(char) + 1;\n        }\n\n        charIndexMap.set(char, end);\n        maxLen = Math.max(maxLen, end - start + 1);\n    }\n\n    return maxLen;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "80.2"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0,
+          "passed": 0,
+          "total": 8,
+          "reason": "define-error"
+        },
+        "success": false,
+        "score": 0,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `coinChange(coins, amount)`. Return the fewest number of coins needed to make up `amount`. Each coin may be used unlimited times. Return -1 if it cannot be made. amount 0 returns 0.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "coin-change",
+          "category": "algo",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\ncoinChange(coins, amount) {\n    const dp = new Array(amount + 1).fill(Infinity);\n    dp[0] = 0;\n\n    for (let i = 1; i <= amount; i++) {\n        for (const coin of coins) {\n            if (coin <= i) {\n                dp[i] = Math.min(dp[i], dp[i - coin] + 1);\n            }\n        }\n    }\n\n    return dp[amount] === Infinity ? -1 : dp[amount];\n}\n```",
+          "metadata": {
+            "tok_per_sec": "80.1"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0,
+          "passed": 0,
+          "total": 6,
+          "reason": "define-error"
+        },
+        "success": false,
+        "score": 0,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `spiralOrder(matrix)`. Return all elements of the m×n matrix in clockwise spiral order starting from the top-left.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "spiral-order",
+          "category": "algo",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\nfunction spiralOrder(matrix: number[][]): number[] {\n    if (matrix.length === 0) return [];\n    \n    const result = [];\n    let top = 0;\n    let bottom = matrix.length - 1;\n    let left = 0;\n    let right = matrix[0].length - 1;\n    \n    while (top <= bottom && left <= right) {\n        // Traverse from left to right along the top row\n        for (let i = left; i <= right; i++) {\n            result.push(matrix[top][i]);\n        }\n        top++;\n        \n        // Traverse from top to bottom along the right column\n        for (let i = top; i <= bottom; i++) {\n            result.push(matrix[i][right]);\n        }\n        right--;\n        \n        // Check if there's still a row to traverse\n        if (top <= bottom) {\n            // Traverse from right to left along the bottom row\n            for (let i = right; i >= left; i--) {\n                result.push(matrix[bottom][i]);\n            }\n            bottom--;\n        }\n        \n        // Check if there's still a column to traverse\n        if (left <= right) {\n            // Traverse from bottom to top along the left column\n            for (let i = bottom; i >= top; i--) {\n                result.push(matrix[i][left]);\n            }\n            left++;\n        }\n    }\n    \n    return result;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "79.7"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0,
+          "passed": 0,
+          "total": 6,
+          "reason": "define-error"
+        },
+        "success": false,
+        "score": 0,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `editDistance(a, b)`. Return the minimum number of single-character insertions, deletions, or substitutions to turn string a into string b (Levenshtein distance).",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "edit-distance",
+          "category": "algo",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\nfunction editDistance(a, b) {\n    const m = a.length;\n    const n = b.length;\n    \n    // Create a matrix to store distances\n    const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));\n    \n    // Initialize base cases\n    for (let i = 0; i <= m; i++) {\n        dp[i][0] = i;\n    }\n    for (let j = 0; j <= n; j++) {\n        dp[0][j] = j;\n    }\n    \n    // Fill the matrix\n    for (let i = 1; i <= m; i++) {\n        for (let j = 1; j <= n; j++) {\n            if (a[i - 1] === b[j - 1]) {\n                dp[i][j] = dp[i - 1][j - 1];\n            } else {\n                dp[i][j] = Math.min(\n                    dp[i - 1][j],      // deletion\n                    dp[i][j - 1],      // insertion\n                    dp[i - 1][j - 1]   // substitution\n                ) + 1;\n            }\n        }\n    }\n    \n    return dp[m][n];\n}\n```",
+          "metadata": {
+            "tok_per_sec": "80.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 7,
+          "total": 7,
+          "reason": "pass: 7/7"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `median(nums)`. Return the median of the array. For an even count, return the average of the two middle values (a number, possibly fractional). The input is NOT sorted. Empty array returns 0.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "median-two",
+          "category": "edge",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\nfunction median(nums) {\n    if (nums.length === 0) return 0;\n    \n    const sorted = [...nums].sort((a, b) => a - b);\n    const mid = Math.floor(sorted.length / 2);\n    \n    if (sorted.length % 2 === 1) {\n        return sorted[mid];\n    } else {\n        return (sorted[mid - 1] + sorted[mid]) / 2;\n    }\n}\n```",
+          "metadata": {
+            "tok_per_sec": "80.1"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 7,
+          "total": 7,
+          "reason": "pass: 7/7"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `roundHalfUp(x)`. Round to the nearest integer with ties (exactly .5) always going UP toward +Infinity, so roundHalfUp(2.5) = 3 and roundHalfUp(-2.5) = -2. Note: JS Math.round already does this — but verify the negative-tie behavior carefully.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "rounding-trap",
+          "category": "edge",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nroundHalfUp(x) {\n    return x >= 0 ? Math.floor(x + 0.5) : Math.ceil(x - 0.5);\n}\n```",
+          "metadata": {
+            "tok_per_sec": "81.1"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0,
+          "passed": 0,
+          "total": 7,
+          "reason": "define-error"
+        },
+        "success": false,
+        "score": 0,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "The following binary search has a bug. Return a CORRECTED version that returns the index of `target` in the sorted array `arr`, or -1 if absent. Keep the function name `binarySearch`.\n\n```js\nfunction binarySearch(arr, target) {\n  let lo = 0, hi = arr.length;\n  while (lo < hi) {\n    const mid = (lo + hi) / 2;\n    if (arr[mid] === target) return mid;\n    if (arr[mid] < target) lo = mid;\n    else hi = mid;\n  }\n  return -1;\n}\n```",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "bugfix-binsearch",
+          "category": "bugfix",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```js\nfunction binarySearch(arr, target) {\n  let lo = 0, hi = arr.length - 1;\n  while (lo <= hi) {\n    const mid = Math.floor((lo + hi) / 2);\n    if (arr[mid] === target) return mid;\n    if (arr[mid] < target) lo = mid + 1;\n    else hi = mid - 1;\n  }\n  return -1;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "80.3"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "The following deep-flatten has a bug — it only flattens one level. Return a CORRECTED version that fully flattens an arbitrarily nested array of numbers into a flat array, preserving order. Keep the function name `flatten`.\n\n```js\nfunction flatten(arr) {\n  const out = [];\n  for (const x of arr) {\n    if (Array.isArray(x)) out.push(...x);\n    else out.push(x);\n  }\n  return out;\n}\n```",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "bugfix-flatten",
+          "category": "bugfix",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```js\nfunction flatten(arr) {\n  const out = [];\n  for (const x of arr) {\n    if (Array.isArray(x)) {\n      out.push(...flatten(x));\n    } else {\n      out.push(x);\n    }\n  }\n  return out;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "80.6"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "The following dedup is supposed to remove duplicates while PRESERVING first-seen order, but it sorts the output, breaking order. Return a CORRECTED version that preserves first-seen order. Keep the function name `dedup`.\n\n```js\nfunction dedup(arr) {\n  return [...new Set(arr)].sort();\n}\n```",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "bugfix-dedup-order",
+          "category": "bugfix",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction dedup(arr) {\n  const seen = new Set();\n  const result = [];\n  for (const item of arr) {\n    if (!seen.has(item)) {\n      seen.add(item);\n      result.push(item);\n    }\n  }\n  return result;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "80.6"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 5,
+          "total": 5,
+          "reason": "pass: 5/5"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement the game engine for 2048 as a JavaScript class named `Game2048`. Follow this spec EXACTLY — it is graded by executing your class.\n\nBoard: a 4×4 grid, represented as an array of 4 rows, each an array of 4 integers. 0 means an empty cell; non-zero values are tiles.\n\nConstructor `new Game2048(board, spawnQueue)`:\n  • `board` — the initial 4×4 grid. Copy it; do not alias the caller’s array.\n  • `spawnQueue` — an array of spawn instructions `{r, c, v}` consumed IN ORDER, one per spawn (see move). The score starts at 0.\n\nProvide three METHODS (called with parentheses):\n  • `getBoard()` → the current 4×4 grid.\n  • `getScore()` → the running score (a number).\n  • `isGameOver()` → boolean: true iff there are NO empty cells AND no two horizontally- or vertically-adjacent cells are equal (no move would change the board).\n\nMethod `move(dir)` where `dir` is one of \"left\", \"right\", \"up\", \"down\":\n  1. Slide all tiles as far as possible in `dir`. When two tiles of equal value collide while sliding, they merge into one tile of double the value, and that merged value is ADDED to `score`. A tile that resulted from a merge cannot merge again in the same move. When multiple merges are possible in a line, the ones nearer the direction of travel happen first (e.g. moving [2,2,2,2] left gives [4,4,0,0], NOT [8,0,0,0]; [2,2,4] moving left gives [4,4,0]).\n  2. If the board CHANGED as a result of the move, consume the next spawn `{r,c,v}` from the queue and set that cell to `v`, then return `true`. If the board did NOT change, consume NO spawn and return `false`.",
+          "label": "coding_hard"
+        },
+        "vars": {
+          "case_id": "2048-engine",
+          "category": "game",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\nclass Game2048 {\n  constructor(board, spawnQueue) {\n    // Deep copy the board to avoid aliasing\n    this.board = board.map(row => [...row]);\n    this.spawnQueue = spawnQueue ? [...spawnQueue] : [];\n    this.score = 0;\n  }\n\n  getBoard() {\n    return this.board.map(row => [...row]);\n  }\n\n  getScore() {\n    return this.score;\n  }\n\n  isGameOver() {\n    // Check for empty cells\n    for (let r = 0; r < 4; r++) {\n      for (let c = 0; c < 4; c++) {\n        if (this.board[r][c] === 0) return false;\n      }\n    }\n\n    // Check for adjacent equal values horizontally and vertically\n    for (let r = 0; r < 4; r++) {\n      for (let c = 0; c < 4; c++) {\n        const current = this.board[r][c];\n        \n        // Check right neighbor\n        if (c < 3 && current === this.board[r][c + 1]) return false;\n        \n        // Check down neighbor\n        if (r < 3 && current === this.board[r + 1][c]) return false;\n      }\n    }\n\n    return true;\n  }\n\n  move(dir) {\n    let moved = false;\n    const newBoard = this.board.map(row => [...row]);\n\n    if (dir === 'left' || dir === 'right') {\n      for (let r = 0; r < 4; r++) {\n        const row = newBoard[r];\n        const newRow = this.processRow(row, dir === 'left');\n        if (dir === 'right') newRow.reverse();\n        \n        // Update board and check for changes\n        for (let c = 0; c < 4; c++) {\n          if (newBoard[r][c] !== newRow[c]) moved = true;\n          newBoard[r][c] = newRow[c];\n        }\n      }\n    } else if (dir === 'up' || dir === 'down') {\n      for (let c = 0; c < 4; c++) {\n        const col = [];\n        for (let r = 0; r < 4; r++) col.push(newBoard[r][c]);\n        \n        const newCol = this.processRow(col, dir === 'up');\n        \n        if (dir === 'down') newCol.reverse();\n\n        // Update board and check for changes\n        for (let r = 0; r < 4; r++) {\n          if (newBoard[r][c] !== newCol[r]) moved = true;\n          newBoard[r][c] = newCol[r];\n        }\n      }\n    }\n\n    if (moved) {\n      this.score += this.calculateScoreDiff(newBoard);\n      // Note: The spec says \"If the board CHANGED... consume spawn\". \n      // We need to compare the old board state before move vs new board state.\n      // Actually, the logic is simpler: if any cell value changed during the move operation.\n      \n      // Re-implementing score calculation based on the merge logic inside processRow\n      // The spec says: \"A tile that resulted from a merge cannot merge again in the same move.\"\n      // My processRow handles this by returning the final state and adding to score.\n      // However, I need to ensure I'm not double counting or missing the score update logic \n      // relative to the specific \"consume spawn\" condition.\n      \n      // Let's refine: The score is updated during the move. If the board changed (which implies merges happened), we spawn.\n      // Wait, sliding without merging also changes the board? \n      // Spec: \"If the board CHANGED as a result of the move...\". \n      // Usually in 2048, if you slide but don't merge, the board state is identical (tiles just moved to same positions).\n      // So \"Changed\" effectively means \"Merges occurred\".\n      \n      // Let's verify: [0, 2, 0, 2] -> Left -> [2, 2, 0, 0]. Board changed. No merge happened? \n      // Wait, [0, 2, 0, 2] left becomes [2, 2, 0, 0]. The values at indices 0 and 1 are now 2.\n      // Originally index 0 was 0, index 1 was 2. So the board definitely changed.\n      // BUT, standard 2048 rules say: \"If the board CHANGED...\". \n      // If I slide [0, 2, 0, 2] left to [2, 2, 0, 0], did it change? Yes.\n      // Did a merge happen? No. Score should not increase. Spawn should NOT happen?\n      // Standard 2048: Spawn happens ONLY if a move was made (which includes sliding). \n      // BUT the spec says: \"If the board CHANGED... consume spawn\".\n      // Let's re-read carefully: \"If the board CHANGED as a result of the move, consume the next spawn... and return true. If the board did NOT change, consume NO spawn and return false.\"\n      \n      // Case A: [0, 2, 0, 2] Left -> [2, 2, 0, 0]. Board changed. Spawn? Yes. Score? No (no merge).\n      // Case B: [2, 2, 0, 0] Left -> [4, 0, 0, 0]. Board changed. Spawn? Yes. Score? +4.\n      \n      // Wait, if I have [2, 2, 0, 0] and move left, it becomes [4, 0, 0, 0]. Changed.\n      // If I have [2, 0, 2, 0] and move left, it becomes [2, 2, 0, 0]. Changed.\n      \n      // Is there a case where board does NOT change? \n      // Only if the board is already in the \"slid\" state for that direction.\n      // Example: [4, 0, 0, 0] Left -> [4, 0, 0, 0]. No change. Return false.\n      \n      // So my logic `moved` flag based on comparing old and new board is correct for the \"return true/false\" part.\n      // But I need to make sure I don't add score if no merge happened.\n      \n      // Let's re-verify the score update. \n      // In `processRow`, I calculate the score added by merges.\n      // If `moved` is true but no merges happened (e.g. [0,2,0,2] -> [2,2,0,0]), score should not change.\n      \n      // My current implementation updates `this.score` inside `processRow`. \n      // I need to separate the \"score added\" from the \"board changed\".\n      \n      // Let's refactor slightly to be safe.\n    }\n\n    // Re-evaluating the logic flow:\n    // 1. Calculate new board state and score delta.\n    // 2. Compare old board with new board.\n    // 3. If different, apply new board, update total score, spawn, return true.\n    // 4. Else, keep old board, do not spawn, return false.\n\n    // Let's restart the move logic cleanly within this block to ensure correctness.\n    \n    // Reset for clean calculation\n    const tempBoard = this.board.map(row => [...row]);\n    let scoreDelta = 0;\n    \n    if (dir === 'left' || dir === 'right') {\n      for (let r = 0; r < 4; r++) {\n        const row = tempBoard[r];\n        const newRow = this.processRow(row, dir === 'left');\n        scoreDelta += newRow.reduce((acc, val) => acc + val, 0); // Wait, processRow returns values. \n        // I need to track score inside processRow or return it.\n        // Let's modify processRow to return {row: [], score: 0}\n      }\n    } else if (dir === 'up' || dir === 'down') {\n      for (let c = 0; c < 4; c++) {\n        const col = [];\n        for (let r = 0; r < 4; r++) col.push(tempBoard[r][c]);\n        const newCol = this.processRow(col, dir === 'up');\n      }\n    }\n\n    // Okay, I need to change `processRow` to return score as well.\n    // But I can't change the signature of `processRow` easily without breaking internal logic if I were to reuse it.\n    // Let's just implement the move logic inline or modify processRow.\n    // Modifying processRow is better.\n\n    // Re-running the move with the updated understanding:\n    \n    // Actually, let's just rewrite the move method completely to be self-contained and correct.\n    \n    const finalBoard = this.board.map(row => [...row]);\n    let totalScoreAdded = 0;\n    let hasChanged = false;\n\n    if (dir === 'left' || dir === 'right') {\n      for (let r = 0; r < 4; r++) {\n        const row = finalBoard[r];\n        const result = this.processRow(row, dir === 'left');\n        totalScoreAdded += result.score;\n        \n        // Check if row changed\n        let rowChanged = false;\n        for (let c = 0; c < 4; c++) {\n          if (finalBoard[r][c] !== result.row[c]) {\n            rowChanged = true;\n            finalBoard[r][c] = result.row[c];\n          }\n        }\n        if (rowChanged) hasChanged = true;\n      }\n    } else if (dir === 'up' || dir === 'down') {\n      for (let c = 0; c < 4; c++) {\n        const col = [];\n        for (let r = 0; r < 4; r++) col.push(finalBoard[r][c]);\n        const result = this.processRow(col, dir === 'up');\n        totalScoreAdded += result.score;\n\n        let colChanged = false;\n        if (dir === 'down') result.row.reverse(); // Wait, processRow returns sorted. If original was down, we need to reverse the result?\n        // No. \n        // If dir is 'down', we treat the column as if it's moving right in a transposed view?\n        // Let's stick to the logic: \n        // Extract col. Move it (like left). If dir is down, the \"start\" of the move is bottom?\n        // No, standard 2048: Down means tiles fall to the bottom row.\n        // So if we have [2, 0, 2, 0] (top to bottom), moving down -> [0, 0, 2, 2].\n        // My processRow assumes \"move towards index 0\".\n        // So for 'down', I should reverse the column, call processRow('left'), then reverse back.\n        \n        if (dir === 'down') {\n          result.row.reverse();\n          colChanged = false;\n          for (let r = 0; r < 4; r++) {\n            if (finalBoard[r][c] !== result.row[r]) {\n              colChanged = true;\n              finalBoard[r][c] = result.row[r];\n            }\n          }\n        } else {\n          // 'up'\n          // processRow moves towards index 0. So [2, 0, 2, 0] -> [4, 0, 0, 0]? No.\n          // [2, 0, 2, 0] up -> [2, 2, 0, 0].\n          // processRow([2, 0, 2, 0], true) -> [2, 2, 0, 0]. Correct.\n          colChanged = false;\n          for (let r = 0; r < 4; r++) {\n            if (finalBoard[r][c] !== result.row[r]) {\n              colChanged = true;\n              finalBoard[r][c] = result.row[r];\n            }\n          }\n        }\n        \n        if (colChanged) hasChanged = true;\n      }\n    }\n\n    // Wait, the logic for 'down' in my loop above was slightly messy.\n    // Let's simplify: \n    // For 'up': extract col, processRow(col, true), put back.\n    // For 'down': reverse col, processRow(col, true), reverse result, put back.\n    \n    // Re-doing the loop for clarity:\n    \n    if (dir === 'left' || dir === 'right') {\n      for (let r = 0; r < 4; r++) {\n        const row = finalBoard[r];\n        const result = this.processRow(row, dir === 'left');\n        totalScoreAdded += result.score;\n        \n        let changed = false;\n        for (let c = 0; c < 4; c++) {\n          if (finalBoard[r][c] !== result.row[c]) {\n            finalBoard[r][c] = result.row[c];\n            changed = true;\n          }\n        }\n        if (changed) hasChanged = true;\n      }\n    } else if (dir === 'up') {\n      for (let c = 0; c < 4; c++) {\n        const col = [];\n        for (let r = 0; r < 4; r++) col.push(finalBoard[r][c]);\n        const result = this.processRow(col, true); // Move towards index 0\n        \n        let changed = false;\n        for (let r = 0; r < 4; r++) {\n          if (finalBoard[r][c] !== result.row[r]) {\n            finalBoard[r][c] = result.row[r];\n            changed = true;\n          }\n        }\n        if (changed) hasChanged = true;\n      }\n    } else if (dir === 'down') {\n      for (let c = 0; c < 4; c++) {\n        const col = [];\n        for (let r = 0; r < 4; r++) col.push(finalBoard[r][c]);\n        \n        // Reverse to simulate moving towards bottom as \"index 0\"\n        col.reverse();\n        const result = this.processRow(col, true);\n        \n        // Reverse back\n        result.row.reverse();\n        \n        let changed = false;\n        for (let r = 0; r < 4; r++) {\n          if (finalBoard[r][c] !== result.row[r]) {\n            finalBoard[r][c] = result.row[r];\n            changed = true;\n          }\n        }\n        if (changed) hasChanged = true;\n      }\n    }\n\n    // Apply changes to actual board and score\n    this.board = finalBoard;\n    this.score += totalScoreAdded;\n\n    if (hasChanged) {\n      if (this.spawnQueue.length > 0) {\n        const spawn = this.spawnQueue.shift();\n        this.board[spawn.r][spawn.c] = spawn.v;\n      }\n      return true;\n    } else {\n      return false;\n    }\n  }\n\n  processRow(row, towardsZero) {\n    // row: [2, 0, 2, 0]\n    // towardsZero: true (move left/up), false (move right/down)\n    \n    let filtered = row.filter(x => x !== 0);\n    let score = 0;\n    let result = [];\n    let i = 0;\n    \n    while (i < filtered.length) {\n      if (i + 1 < filtered.length && filtered[i] === filtered[i+1]) {\n        const val = filtered[i] * 2;\n        score += val;\n        result.push(val);\n        i += 2;\n      } else {\n        result.push(filtered[i]);\n        i++;\n      }\n    }\n    \n    // Pad with zeros\n    while (result.length < 4) {\n      result.push(0);\n    }\n    \n    if (!towardsZero) {\n      result.reverse();\n    }\n    \n    return { row: result, score };\n  }\n}\n```",
+          "metadata": {
+            "tok_per_sec": "78.7"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.25,
+          "passed": 3,
+          "total": 12,
+          "reason": "wrong: 3/12 err=\"this.calculateScoreDiff is not a function\""
+        },
+        "success": false,
+        "score": 0.25,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Agentic RAG whitepaper\n\nCovers multi-step reasoning with retrieval, tool use, and LLM orchestration. Describes how agents decompose queries into sub-tasks, retrieve relevant context at each step, and synthesize answers using chained tool calls.",
+          "label": "summarization"
+        },
+        "vars": {
+          "case_id": "rag-paper"
+        },
+        "response": {
+          "output": "{\n\"summary\": \"This whitepaper outlines Agentic RAG, a framework where AI agents decompose complex queries into sub-tasks to perform multi-step reasoning, retrieval, and tool use before synthesizing final answers.\",\n\"area\": \"craft\",\n\"tags\": [\n  \"software/AI\",\n  \"software/LLM\",\n  \"AI/retrieval_augmented_generation\"\n]\n}",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 0.8,
+          "reason": "score=80/100 | kw=3/3 | area=craft | tags=bad | words=27"
+        },
+        "success": true,
+        "score": 0.8,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Sidechain compression for trance pumping\n\nClassic trance pumping effect: sidechain a compressor on bass and pads keyed to the kick drum. Attack 0.1ms, release 80-150ms for the pump feel. Ghost kick sidechain keeps it in time without audible kick bleed.",
+          "label": "summarization"
+        },
+        "vars": {
+          "case_id": "trance-compression"
+        },
+        "response": {
+          "output": "{\n\"summary\": \"This note explains how to achieve a classic trance pumping effect by sidechaining a compressor on bass and pads to the kick drum with specific attack and release settings, while using a ghost kick to maintain timing.\",\n\"area\": \"music\",\n\"tags\": [\n  \"production\",\n  \"mixing\",\n  \"trance\",\n  \"sidechain_compression\",\n  \"kick_drums\"\n]\n}",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 0.8,
+          "reason": "score=80/100 | kw=3/3 | area=music | tags=bad | words=37"
+        },
+        "success": true,
+        "score": 0.8,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: 0DTE options theta decay\n\nZero-days-to-expiry SPX options accelerate theta decay after 2pm. Selling premium after 2pm captures the steepest part of the intraday theta curve but gamma risk is highest in the last 30 minutes.",
+          "label": "summarization"
+        },
+        "vars": {
+          "case_id": "trading-0dte"
+        },
+        "response": {
+          "output": "{\n\"summary\": \"Selling zero-days-to-expiry (0DTE) SPX options after 2 PM allows traders to capture accelerated theta decay, though this strategy carries elevated gamma risk during the final 30 minutes before expiration.\",\n\"area\": \"finance\",\n\"tags\": [\n\"trading\",\n\"options\",\n\"theta_decay\",\n\"intraday_strategy\",\n\"risk_management\"\n]\n}",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 0.8,
+          "reason": "score=80/100 | kw=3/3 | area=finance | tags=bad | words=29"
+        },
+        "success": true,
+        "score": 0.8,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Keyboard debouncing in QMK firmware\n\nQMK supports eager, defer-until-idle, and sym_eager_pk debounce algorithms. Eager fires immediately on press and delays release; sym_eager_pk is best for per-key debounce on split keyboards with noisy switches.",
+          "label": "summarization"
+        },
+        "vars": {
+          "case_id": "qmk-debounce"
+        },
+        "response": {
+          "output": "{\n  \"summary\": \"QMK firmware offers multiple keyboard debouncing algorithms including eager, defer-until-idle, and sym_eager_pk, with the latter being optimal for split keyboards using noisy switches.\",\n  \"area\": \"craft\",\n  \"tags\": [\n    \"craft/software\",\n    \"craft/hardware\"\n  ]\n}",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 0.8666666666666666,
+          "reason": "score=87/100 | kw=2/3(missing:debounce) | area=craft | tags=ok | words=23"
+        },
+        "success": true,
+        "score": 0.8666666666666666,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Zettelkasten vs folder hierarchies for PKM\n\nDense bidirectional links between atomic notes outperform deep folder hierarchies for knowledge retrieval. Each note has exactly one idea; links surface unexpected connections better than any taxonomy.",
+          "label": "summarization"
+        },
+        "vars": {
+          "case_id": "zettelkasten"
+        },
+        "response": {
+          "output": "{\n  \"summary\": \"The content argues that a Zettelkasten system using dense bidirectional links between atomic notes is superior to traditional deep folder hierarchies for personal knowledge management and retrieval.\",\n  \"area\": \"craft\",\n  \"tags\": [\n    \"craft/pkm\",\n    \"craft/organization\",\n    \"craft/zettelkasten\"\n  ]\n}",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 0.8666666666666666,
+          "reason": "score=87/100 | kw=2/3(missing:hierarchy) | area=craft | tags=ok | words=27"
+        },
+        "success": true,
+        "score": 0.8666666666666666,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.5-9B-Q5_K_M",
+          "label": "Qwen3.5-9B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Negotiating a senior engineer offer\n\nAnchor high on total compensation including equity refresh. Use competing offers as leverage. Recruiter call script: confirm base, then move to signing bonus and RSU refresh before benefits.",
+          "label": "summarization"
+        },
+        "vars": {
+          "case_id": "salary-negotiation"
+        },
+        "response": {
+          "output": "{\n  \"summary\": \"To secure a senior engineering offer, anchor negotiations on total compensation with a focus on refreshing equity, using competing offers as leverage during recruiter calls to prioritize base salary, signing bonuses, and RSUs before discussing benefits.\",\n  \"area\": \"work\",\n  \"tags\": [\n    \"career/negotiation\",\n    \"employer/senior-engineering\",\n    \"compensation/equity\"\n  ]\n}",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 0.8,
+          "reason": "score=80/100 | kw=3/3 | area=work | tags=bad | words=36"
+        },
+        "success": true,
+        "score": 0.8,
+        "latencyMs": 0
+      }
+    ],
+    "stats": {
+      "successes": 50,
+      "failures": 15,
+      "errors": 0
+    }
+  },
+  "config": {
+    "description": "llm-bench target=rose backend=vulkan"
+  }
+}

@@ -1,8 +1,4 @@
 node_modules/
-# Result store is local-only: run dirs, reports, charts all live under results/.
-# Everything is ignored except the .gitkeep that preserves the directory.
-results/*
-!results/.gitkeep
 *.out
 nohup.log
 .claude/scheduled_tasks.lock

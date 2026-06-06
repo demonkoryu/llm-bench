@@ -1,0 +1,140 @@
+{
+  "results": {
+    "version": 3,
+    "timestamp": "2026-06-04T17:47:52.146Z",
+    "results": [
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-26B-A4B-it-UD-Q4_K_M",
+          "label": "Gemma4-26B Q4_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement the game engine for 2048 as a JavaScript class named `Game2048`. Follow this spec EXACTLY — it is graded by executing your class.\n\nBoard: a 4×4 grid, represented as an array of 4 rows, each an array of 4 integers. 0 means an empty cell; non-zero values are tiles.\n\nConstructor `new Game2048(board, spawnQueue)`:\n  • `board` — the initial 4×4 grid. Copy it; do not alias the caller’s array.\n  • `spawnQueue` — an array of spawn instructions `{r, c, v}` consumed IN ORDER, one per spawn (see move). The score starts at 0.\n\nProvide three METHODS (called with parentheses):\n  • `getBoard()` → the current 4×4 grid.\n  • `getScore()` → the running score (a number).\n  • `isGameOver()` → boolean: true iff there are NO empty cells AND no two horizontally- or vertically-adjacent cells are equal (no move would change the board).\n\nMethod `move(dir)` where `dir` is one of \"left\", \"right\", \"up\", \"down\":\n  1. Slide all tiles as far as possible in `dir`. When two tiles of equal value collide while sliding, they merge into one tile of double the value, and that merged value is ADDED to `score`. A tile that resulted from a merge cannot merge again in the same move. When multiple merges are possible in a line, the ones nearer the direction of travel happen first (e.g. moving [2,2,2,2] left gives [4,4,0,0], NOT [8,0,0,0]; [2,2,4] moving left gives [4,4,0]).\n  2. If the board CHANGED as a result of the move, consume the next spawn `{r,c,v}` from the queue and set that cell to `v`, then return `true`. If the board did NOT change, consume NO spawn and return `false`.",
+          "label": "coding_hard"
+        },
+        "vars": {
+          "case_id": "2048-engine",
+          "category": "game",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\nclass Game2048 {\n  constructor(board, spawnQueue) {\n    this.board = board.map(row => [...row]);\n    this.spawnQueue = [...spawnQueue];\n    this.score = 0;\n  }\n\n  getBoard() {\n    return this.board.map(row => [...row]);\n  }\n\n  getScore() {\n    return this.score;\n  }\n\n  isGameOver() {\n    for (let r = 0; r < 4; r++) {\n      for (let c = 0; c < 4; c++) {\n        if (this.board[r][c] === 0) return false;\n        // Check right neighbor\n        if (c < 3 && this.board[r][c] === this.board[r][c + 1]) return false;\n        // Check bottom neighbor\n        if (r < 3 && this.board[r][c] === this.board[r + 1][c]) return false;\n      }\n    }\n    return true;\n  }\n\n  move(dir) {\n    const originalBoard = this.getBoard();\n    \n    // Process lines based on direction\n    // We extract lines, process them, and write them back.\n    // A line is an array of 4 numbers.\n    \n    const processLine = (line) => {\n      let newLine = line.filter(v => v !== 0);\n      let mergedLine = [];\n      let addedScore = 0;\n      let skipNext = false;\n\n      for (let i = 0; i < newLine.length; i++) {\n        if (skipNext) {\n          skipNext = false;\n          continue;\n        }\n        if (i + 1 < newLine.length && newLine[i] === newLine[i + 1]) {\n          const val = newLine[i] * 2;\n          mergedLine.push(val);\n          addedScore += val;\n          skipNext = true;\n        } else {\n          mergedLine.push(newLine[i]);\n        }\n      }\n      while (mergedLine.length < 4) {\n        mergedLine.push(0);\n      }\n      return { mergedLine, addedScore };\n    };\n\n    if (dir === \"left\" || dir === \"right\") {\n      for (let r = 0; r < 4; r++) {\n        let line = this.board[r];\n        if (dir === \"right\") line.reverse();\n        const { mergedLine, addedScore } = processLine(line);\n        if (dir === \"right\") mergedLine.reverse();\n        this.board[r] = mergedLine;\n        this.score += addedScore;\n      }\n    } else {\n      // up or down\n      for (let c = 0; c < 4; c++) {\n        let line = [this.board[0][c], this.board[1][c], this.board[2][c], this.board[3][c]];\n        if (dir === \"down\") line.reverse();\n        const { mergedLine, addedScore } = processLine(line);\n        if (dir === \"down\") mergedLine.reverse();\n        this.score += addedScore;\n        for (let r = 0; r < 4; r++) {\n          this.board[r][c] = mergedLine[r];\n        }\n      }\n    }\n\n    // Check if board changed\n    let changed = false;\n    for (let r = 0; r < 4; r++) {\n      for (let c = 0; c < 4; c++) {\n        if (this.board[r][c] !== originalBoard[r][c]) {\n          changed = true;\n          break;\n        }\n      }\n      if (changed) break;\n    }\n\n    if (changed && this.spawnQueue.length > 0) {\n      const spawn = this.spawnQueue.shift();\n      this.board[spawn.r][spawn.c] = spawn.v;\n      return true;\n    }\n\n    return changed;\n  }\n}\n```",
+          "metadata": {
+            "tok_per_sec": "85.3"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 12,
+          "total": 12,
+          "reason": "pass: 12/12"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-26B-A4B-it-UD-Q4_K_M",
+          "label": "Gemma4-26B Q4_K_M [think]"
+        },
+        "prompt": {
+          "raw": "Implement the game engine for 2048 as a JavaScript class named `Game2048`. Follow this spec EXACTLY — it is graded by executing your class.\n\nBoard: a 4×4 grid, represented as an array of 4 rows, each an array of 4 integers. 0 means an empty cell; non-zero values are tiles.\n\nConstructor `new Game2048(board, spawnQueue)`:\n  • `board` — the initial 4×4 grid. Copy it; do not alias the caller’s array.\n  • `spawnQueue` — an array of spawn instructions `{r, c, v}` consumed IN ORDER, one per spawn (see move). The score starts at 0.\n\nProvide three METHODS (called with parentheses):\n  • `getBoard()` → the current 4×4 grid.\n  • `getScore()` → the running score (a number).\n  • `isGameOver()` → boolean: true iff there are NO empty cells AND no two horizontally- or vertically-adjacent cells are equal (no move would change the board).\n\nMethod `move(dir)` where `dir` is one of \"left\", \"right\", \"up\", \"down\":\n  1. Slide all tiles as far as possible in `dir`. When two tiles of equal value collide while sliding, they merge into one tile of double the value, and that merged value is ADDED to `score`. A tile that resulted from a merge cannot merge again in the same move. When multiple merges are possible in a line, the ones nearer the direction of travel happen first (e.g. moving [2,2,2,2] left gives [4,4,0,0], NOT [8,0,0,0]; [2,2,4] moving left gives [4,4,0]).\n  2. If the board CHANGED as a result of the move, consume the next spawn `{r,c,v}` from the queue and set that cell to `v`, then return `true`. If the board did NOT change, consume NO spawn and return `false`.",
+          "label": "coding_hard"
+        },
+        "vars": {
+          "case_id": "2048-engine",
+          "category": "game",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\nclass Game2048 {\n  constructor(board, spawnQueue) {\n    this.board = board.map(row => [...row]);\n    this.spawnQueue = [...spawnQueue];\n    this.score = 0;\n  }\n\n  getBoard() {\n    return this.board.map(row => [...row]);\n  }\n\n  getScore() {\n    return this.score;\n  }\n\n  isGameOver() {\n    for (let r = 0; r < 4; r++) {\n      for (let c = 0; c < 4; c++) {\n        if (this.board[r][c] === 0) return false;\n        if (c < 3 && this.board[r][c] === this.board[r][c + 1]) return false;\n        if (r < 3 && this.board[r][c] === this.board[r + 1][c]) return false;\n      }\n    }\n    return true;\n  }\n\n  move(dir) {\n    const oldBoard = this.getBoard();\n\n    if (dir === \"left\") {\n      for (let r = 0; r < 4; r++) {\n        this.board[r] = this._slideLeft(this.board[r]);\n      }\n    } else if (dir === \"right\") {\n      for (let r = 0; r < 4; r++) {\n        const reversedRow = [...this.board[r]].reverse();\n        const slidRow = this._slideLeft(reversedRow);\n        this.board[r] = slidRow.reverse();\n      }\n    } else if (dir === \"up\") {\n      for (let c = 0; c < 4; c++) {\n        const col = [this.board[0][c], this.board[1][c], this.board[2][c], this.board[3][c]];\n        const slidCol = this._slideLeft(col);\n        for (let r = 0; r < 4; r++) {\n          this.board[r][c] = slidCol[r];\n        }\n      }\n    } else if (dir === \"down\") {\n      for (let c = 0; c < 4; c++) {\n        const col = [this.board[0][c], this.board[1][c], this.board[2][c], this.board[3][c]].reverse();\n        const slidCol = this._slideLeft(col);\n        const reversedSlidCol = slidCol.reverse();\n        for (let r = 0; r < 4; r++) {\n          this.board[r][c] = reversedSlidCol[r];\n        }\n      }\n    }\n\n    const newBoard = this.getBoard();\n    let changed = false;\n    for (let r = 0; r < 4; r++) {\n      for (let c = 0; c < 4; c++) {\n        if (oldBoard[r][c] !== newBoard[r][c]) {\n          changed = true;\n          break;\n        }\n      }\n      if (changed) break;\n    }\n\n    if (changed) {\n      const spawn = this.spawnQueue.shift();\n      if (spawn) {\n        this.board[spawn.r][spawn.c] = spawn.v;\n      }\n      return true;\n    }\n\n    return false;\n  }\n\n  _slideLeft(row) {\n    const nonZeros = row.filter(x => x !== 0);\n    const newRow = [];\n    let i = 0;\n    while (i < nonZeros.length) {\n      if (i + 1 < nonZeros.length && nonZeros[i] === nonZeros[i + 1]) {\n        const mergedValue = nonZeros[i] * 2;\n        newRow.push(mergedValue);\n        this.score += mergedValue;\n        i += 2;\n      } else {\n        newRow.push(nonZeros[i]);\n        i++;\n      }\n    }\n    while (newRow.length < 4) {\n      newRow.push(0);\n    }\n    return newRow;\n  }\n}\n```",
+          "metadata": {
+            "tok_per_sec": "78.4"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 12,
+          "total": 12,
+          "reason": "pass: 12/12"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-12b-it-Q5_K_M",
+          "label": "Gemma4-12B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement the game engine for 2048 as a JavaScript class named `Game2048`. Follow this spec EXACTLY — it is graded by executing your class.\n\nBoard: a 4×4 grid, represented as an array of 4 rows, each an array of 4 integers. 0 means an empty cell; non-zero values are tiles.\n\nConstructor `new Game2048(board, spawnQueue)`:\n  • `board` — the initial 4×4 grid. Copy it; do not alias the caller’s array.\n  • `spawnQueue` — an array of spawn instructions `{r, c, v}` consumed IN ORDER, one per spawn (see move). The score starts at 0.\n\nProvide three METHODS (called with parentheses):\n  • `getBoard()` → the current 4×4 grid.\n  • `getScore()` → the running score (a number).\n  • `isGameOver()` → boolean: true iff there are NO empty cells AND no two horizontally- or vertically-adjacent cells are equal (no move would change the board).\n\nMethod `move(dir)` where `dir` is one of \"left\", \"right\", \"up\", \"down\":\n  1. Slide all tiles as far as possible in `dir`. When two tiles of equal value collide while sliding, they merge into one tile of double the value, and that merged value is ADDED to `score`. A tile that resulted from a merge cannot merge again in the same move. When multiple merges are possible in a line, the ones nearer the direction of travel happen first (e.g. moving [2,2,2,2] left gives [4,4,0,0], NOT [8,0,0,0]; [2,2,4] moving left gives [4,4,0]).\n  2. If the board CHANGED as a result of the move, consume the next spawn `{r,c,v}` from the queue and set that cell to `v`, then return `true`. If the board did NOT change, consume NO spawn and return `false`.",
+          "label": "coding_hard"
+        },
+        "vars": {
+          "case_id": "2048-engine",
+          "category": "game",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\nclass Game2048 {\n  constructor(board, spawnQueue) {\n    this.grid = board.map(row => [...row]);\n    this.spawnQueue = [...spawnQueue];\n    this.score = 0;\n  }\n\n  getBoard() {\n    return this.grid.map(row => [...row]);\n  }\n\n  getScore() {\n    return this.score;\n  }\n\n  isGameOver() {\n    let empty = false;\n    for (let r = 0; r < 4; r++) {\n      for (let c = 0; c < 4; c++) {\n        if (this.grid[r][c] === 0) {\n          empty = true;\n          break;\n        }\n      }\n    }\n    if (empty) return false;\n\n    for (let r = 0; r < 4; r++) {\n      for (let c = 0; c < 4; c++) {\n        const val = this.grid[r][c];\n        if (r + 1 < 4 && val === this.grid[r + 1][c]) return false;\n        if (c + 1 < 4 && val === this.grid[r][c + 1]) return false;\n      }\n    }\n    return true;\n  }\n\n  move(dir) {\n    const prevGrid = this.grid.map(row => [...row]);\n    \n    const processLine = (line) => {\n      const nonZero = line.filter(v => v !== 0);\n      const result = [];\n      let i = 0;\n      while (i < nonZero.length) {\n        if (i + 1 < nonZero.length && nonZero[i] === nonZero[i + 1]) {\n          const merged = nonZero[i] * 2;\n          result.push(merged);\n          this.score += merged;\n          i += 2;\n        } else {\n          result.push(nonZero[i]);\n          i++;\n        }\n      }\n      while (result.length < 4) result.push(0);\n      return result;\n    };\n\n    if (dir === \"left\" || dir === \"right\") {\n      for (let r = 0; r < 4; r++) {\n        let row = this.grid[r];\n        if (dir === \"right\") row.reverse();\n        const processed = processLine(row);\n        if (dir === \"right\") processed.reverse();\n        this.grid[r] = processed;\n      }\n    } else {\n      for (let c = 0; c < 4; c++) {\n        let col = [];\n        for (let r = 0; r < 4; r++) col.push(this.grid[r][c]);\n        if (dir === \"down\") col.reverse();\n        const processed = processLine(col);\n        if (dir === \"down\") processed.reverse();\n        for (let r = 0; r < 4; r++) {\n          this.grid[r][c] = processed[r];\n        }\n      }\n    }\n\n    let changed = false;\n    for (let r = 0; r < 4; r++) {\n      for (let c = 0; c < 4; c++) {\n        if (this.grid[r][c] !== prevGrid[r][c]) {\n          changed = true;\n          break;\n        }\n      }\n    }\n\n    if (changed && this.spawnQueue.length > 0) {\n      const { r, c, v } = this.spawnQueue.shift();\n      this.grid[r][c] = v;\n    }\n\n    return changed;\n  }\n}\n```",
+          "metadata": {
+            "tok_per_sec": "53.7"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 12,
+          "total": 12,
+          "reason": "pass: 12/12"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-12b-it-Q5_K_M",
+          "label": "Gemma4-12B Q5_K_M [think]"
+        },
+        "prompt": {
+          "raw": "Implement the game engine for 2048 as a JavaScript class named `Game2048`. Follow this spec EXACTLY — it is graded by executing your class.\n\nBoard: a 4×4 grid, represented as an array of 4 rows, each an array of 4 integers. 0 means an empty cell; non-zero values are tiles.\n\nConstructor `new Game2048(board, spawnQueue)`:\n  • `board` — the initial 4×4 grid. Copy it; do not alias the caller’s array.\n  • `spawnQueue` — an array of spawn instructions `{r, c, v}` consumed IN ORDER, one per spawn (see move). The score starts at 0.\n\nProvide three METHODS (called with parentheses):\n  • `getBoard()` → the current 4×4 grid.\n  • `getScore()` → the running score (a number).\n  • `isGameOver()` → boolean: true iff there are NO empty cells AND no two horizontally- or vertically-adjacent cells are equal (no move would change the board).\n\nMethod `move(dir)` where `dir` is one of \"left\", \"right\", \"up\", \"down\":\n  1. Slide all tiles as far as possible in `dir`. When two tiles of equal value collide while sliding, they merge into one tile of double the value, and that merged value is ADDED to `score`. A tile that resulted from a merge cannot merge again in the same move. When multiple merges are possible in a line, the ones nearer the direction of travel happen first (e.g. moving [2,2,2,2] left gives [4,4,0,0], NOT [8,0,0,0]; [2,2,4] moving left gives [4,4,0]).\n  2. If the board CHANGED as a result of the move, consume the next spawn `{r,c,v}` from the queue and set that cell to `v`, then return `true`. If the board did NOT change, consume NO spawn and return `false`.",
+          "label": "coding_hard"
+        },
+        "vars": {
+          "case_id": "2048-engine",
+          "category": "game",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\nclass Game2048 {\n  constructor(board, spawnQueue) {\n    this.board = board.map((row) => [...row]);\n    this.spawnQueue = [...spawnQueue];\n    this.score = 0;\n  }\n\n  getBoard() {\n    return this.board.map((row) => [...row]);\n  }\n\n  getScore() {\n    return this.score;\n  }\n\n  isGameOver() {\n    for (let r = 0; r < 4; r++) {\n      for (let c = 0; c < 4; c++) {\n        if (this.board[r][c] === 0) return false;\n        if (c + 1 < 4 && this.board[r][c] === this.board[r][c + 1]) return false;\n        if (r + 1 < 4 && this.board[r][c] === this.board[r + 1][c]) return false;\n      }\n    }\n    return true;\n  }\n\n  move(dir) {\n    const oldBoard = this.board.map((row) => [...row]);\n\n    if (dir === \"left\") {\n      for (let r = 0; r < 4; r++) {\n        const { result, score } = this._moveLeft(this.board[r]);\n        this.board[r] = result;\n        this.score += score;\n      }\n    } else if (dir === \"right\") {\n      for (let r = 0; r < 4; r++) {\n        const row = [...this.board[r]].reverse();\n        const { result, score } = this._moveLeft(row);\n        this.board[r] = result.reverse();\n        this.score += score;\n      }\n    } else if (dir === \"up\") {\n      const transposed = this._transpose(this.board);\n      for (let c = 0; c < 4; c++) {\n        const { result, score } = this._moveLeft(transposed[c]);\n        transposed[c] = result;\n        this.score += score;\n      }\n      this.board = this._transpose(transposed);\n    } else if (dir === \"down\") {\n      const flipped = this.board.map((row) => [...row]).reverse();\n      const transposed = this._transpose(flipped);\n      for (let c = 0; c < 4; c++) {\n        const { result, score } = this._moveLeft(transposed[c]);\n        transposed[c] = result;\n        this.score += score;\n      }\n      const newBoard = this._transpose(transposed).reverse();\n      this.board = newBoard.map((row) => [...row]);\n    }\n\n    let changed = false;\n    for (let r = 0; r < 4; r++) {\n      for (let c = 0; c < 4; c++) {\n        if (this.board[r][c] !== oldBoard[r][c]) {\n          changed = true;\n          break;\n        }\n      }\n      if (changed) break;\n    }\n\n    if (changed && this.spawnQueue.length > 0) {\n      const { r, c, v } = this.spawnQueue.shift();\n      this.board[r][c] = v;\n    }\n\n    return changed;\n  }\n\n  _moveLeft(row) {\n    let score = 0;\n    const nonZeros = row.filter((v) => v !== 0);\n    const result = [];\n    for (let i = 0; i < nonZeros.length; i++) {\n      if (i + 1 < nonZeros.length && nonZeros[i] === nonZeros[i + 1]) {\n        const mergedValue = nonZeros[i] * 2;\n        result.push(mergedValue);\n        score += mergedValue;\n        i++;\n      } else {\n        result.push(nonZeros[i]);\n      }\n    }\n    while (result.length < 4) result.push(0);\n    return { result, score };\n  }\n\n  _transpose(board) {\n    const newBoard = Array.from({ length: 4 }, () => Array(4).fill(0));\n    for (let r = 0; r < 4; r++) {\n      for (let c = 0; c < 4; c++) {\n        newBoard[c][r] = board[r][c];\n      }\n    }\n    return newBoard;\n  }\n}\n```",
+          "metadata": {
+            "tok_per_sec": "51.7"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 12,
+          "total": 12,
+          "reason": "pass: 12/12"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      }
+    ],
+    "stats": {
+      "successes": 4,
+      "failures": 0,
+      "errors": 0
+    }
+  },
+  "config": {
+    "description": "llm-bench target=rose backend=vulkan"
+  }
+}

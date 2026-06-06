@@ -1,0 +1,202 @@
+{
+  "run_id": "rose-rx7900xt-vulkan-20260606-121349-instructionfollowing",
+  "kind": "instruction-following",
+  "host": "rose",
+  "gpu": "RX 7900 XT",
+  "backend": "vulkan",
+  "config_hash": null,
+  "started": "2026-06-06T10:13:49.671Z",
+  "finished": "2026-06-06T10:19:49.737Z",
+  "status": "complete",
+  "seed": "rose-rx7900xt-vulkan-20260606-004710",
+  "planned": [],
+  "results": [
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+      "think": "n/a",
+      "bench": "instruction_following",
+      "score": "92.9",
+      "status": "ok",
+      "notes": "26/28 checks · 18/20 full",
+      "ts": "2026-06-06T10:14:12.297Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+      "think": "n/a",
+      "bench": "instruction_following",
+      "score": "96.4",
+      "status": "ok",
+      "notes": "27/28 checks · 19/20 full",
+      "ts": "2026-06-06T10:14:33.883Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+      "think": "n/a",
+      "bench": "instruction_following",
+      "score": "96.4",
+      "status": "ok",
+      "notes": "27/28 checks · 19/20 full",
+      "ts": "2026-06-06T10:14:53.485Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3-14B-Q5_K_M",
+      "think": "n/a",
+      "bench": "instruction_following",
+      "score": "96.4",
+      "status": "ok",
+      "notes": "27/28 checks · 19/20 full",
+      "ts": "2026-06-06T10:15:13.994Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.5-9B-Q5_K_M",
+      "think": "n/a",
+      "bench": "instruction_following",
+      "score": "96.4",
+      "status": "ok",
+      "notes": "27/28 checks · 19/20 full",
+      "ts": "2026-06-06T10:15:30.663Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-35B-A3B-UD-IQ4_XS",
+      "think": "n/a",
+      "bench": "instruction_following",
+      "score": "96.4",
+      "status": "ok",
+      "notes": "27/28 checks · 19/20 full",
+      "ts": "2026-06-06T10:15:56.964Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-E4B-it-Q8_0",
+      "think": "n/a",
+      "bench": "instruction_following",
+      "score": "96.4",
+      "status": "ok",
+      "notes": "27/28 checks · 19/20 full",
+      "ts": "2026-06-06T10:16:16.398Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-E4B-it-Q5_K_M",
+      "think": "n/a",
+      "bench": "instruction_following",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "28/28 checks · 20/20 full",
+      "ts": "2026-06-06T10:16:29.923Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M",
+      "think": "n/a",
+      "bench": "instruction_following",
+      "score": "96.4",
+      "status": "ok",
+      "notes": "27/28 checks · 19/20 full",
+      "ts": "2026-06-06T10:16:52.620Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-12b-it-Q5_K_M",
+      "think": "n/a",
+      "bench": "instruction_following",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "28/28 checks · 20/20 full",
+      "ts": "2026-06-06T10:17:12.936Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-12b-it-qat-q4_0",
+      "think": "n/a",
+      "bench": "instruction_following",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "28/28 checks · 20/20 full",
+      "ts": "2026-06-06T10:17:30.350Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-26B_q4_0-it",
+      "think": "n/a",
+      "bench": "instruction_following",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "28/28 checks · 20/20 full",
+      "ts": "2026-06-06T10:17:49.956Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-12B-it-qat-UD-Q4_K_XL",
+      "think": "n/a",
+      "bench": "instruction_following",
+      "score": "96.4",
+      "status": "ok",
+      "notes": "27/28 checks · 19/20 full",
+      "ts": "2026-06-06T10:18:07.137Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL",
+      "think": "n/a",
+      "bench": "instruction_following",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "28/28 checks · 20/20 full",
+      "ts": "2026-06-06T10:18:22.683Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "LFM2.5-8B-A1B-Q5_K_M",
+      "think": "n/a",
+      "bench": "instruction_following",
+      "score": "96.4",
+      "status": "ok",
+      "notes": "27/28 checks · 19/20 full",
+      "ts": "2026-06-06T10:18:56.856Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "granite-4.0-h-tiny-Q5_K_M",
+      "think": "n/a",
+      "bench": "instruction_following",
+      "score": "96.4",
+      "status": "ok",
+      "notes": "27/28 checks · 19/20 full",
+      "ts": "2026-06-06T10:19:14.574Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "nvidia_Nemotron-3-Nano-4B-Q8_0",
+      "think": "n/a",
+      "bench": "instruction_following",
+      "score": "96.4",
+      "status": "ok",
+      "notes": "27/28 checks · 19/20 full",
+      "ts": "2026-06-06T10:19:45.873Z"
+    }
+  ]
+}

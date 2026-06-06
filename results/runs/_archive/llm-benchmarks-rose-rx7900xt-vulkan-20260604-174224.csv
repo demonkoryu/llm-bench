@@ -1,0 +1,20 @@
+target,backend,model,think,bench,score,halls,json_fail,tok_s,prefill_tps,vram_mib,ctx_loaded,oom_ceiling,coherence_ceiling,status,wall_s,notes
+rose,vulkan,Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL,n/a,coding,94.4,-,0,128.3,-,20251,262144,262144,262144,ok,24,tests 98.2%
+rose,vulkan,Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL,n/a,coding,100.0,-,0,110.1,-,20274,262144,262144,262144,ok,28,tests 100.0%
+rose,vulkan,Qwen3-30B-A3B-Instruct-2507-IQ4_XS,n/a,coding,94.4,-,0,130.3,-,20014,81920,81920,81920,ok,20,tests 98.2%
+rose,vulkan,Qwen3-14B-Q5_K_M--nothi,no_think,coding,100.0,-,0,60.5,-,13600,40960,40960,40960,ok,33,tests 100.0%
+rose,vulkan,Qwen3-14B-Q5_K_M--think,think,coding,100.0,-,0,59.0,-,13600,40960,40960,40960,ok,483,tests 100.0%
+rose,vulkan,Qwen3.6-35B-A3B-UD-IQ4_XS--nothi,no_think,coding,100.0,-,0,153.9,-,20067,262144,262144,262144,ok,23,tests 100.0%
+rose,vulkan,Qwen3.6-35B-A3B-UD-IQ4_XS--think,think,coding,100.0,-,0,125.8,-,20067,262144,262144,262144,ok,262,tests 100.0%
+rose,vulkan,gemma-4-E4B-it-Q8_0--nothi,no_think,coding,100.0,-,0,84.7,-,7095,128000,128000,128000,ok,47,tests 100.0%
+rose,vulkan,gemma-4-E4B-it-Q8_0--think,think,coding,100.0,-,0,84.0,-,7095,128000,128000,128000,ok,215,tests 100.0%
+rose,vulkan,gemma-4-E4B-it-Q5_K_M--nothi,no_think,coding,100.0,-,0,102.2,-,5517,128000,128000,128000,ok,39,tests 100.0%
+rose,vulkan,gemma-4-E4B-it-Q5_K_M--think,think,coding,100.0,-,0,101.4,-,5517,128000,128000,128000,ok,169,tests 100.0%
+rose,vulkan,gemma-4-26B-A4B-it-UD-Q4_K_M--nothi,no_think,coding,100.0,-,0,77.4,-,18717,128000,128000,128000,ok,37,tests 100.0%
+rose,vulkan,gemma-4-26B-A4B-it-UD-Q4_K_M--think,think,coding,100.0,-,0,72.7,-,18717,128000,128000,128000,ok,445,tests 100.0%
+rose,vulkan,gemma-4-12b-it-Q5_K_M--nothi,no_think,coding,100.0,-,0,55.5,-,10657,131072,131072,131072,ok,45,tests 100.0%
+rose,vulkan,gemma-4-12b-it-Q5_K_M--think,think,coding,100.0,-,0,53.9,-,10657,131072,131072,131072,ok,538,tests 100.0%
+rose,vulkan,LFM2.5-8B-A1B-Q5_K_M,n/a,coding,72.2,-,0,249.8,-,7311,131072,131072,131072,ok,38,tests 90.9%
+rose,vulkan,granite-4.0-h-tiny-Q5_K_M,n/a,coding,88.9,-,0,180.8,-,6047,128000,128000,128000,ok,13,tests 94.5%
+rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0--nothi,no_think,coding,100.0,-,0,130.7,-,5707,128000,128000,128000,ok,44,tests 100.0%
+rose,vulkan,nvidia_Nemotron-3-Nano-4B-Q8_0--think,think,coding,94.4,-,0,130.7,-,5707,128000,128000,128000,ok,40,tests 95.5%

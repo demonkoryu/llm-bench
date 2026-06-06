@@ -1,0 +1,2372 @@
+{
+  "results": {
+    "version": 3,
+    "timestamp": "2026-06-04T17:58:19.913Z",
+    "results": [
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `fizzbuzz(n)`. Return \"Fizz\" if n is divisible by 3, \"Buzz\" if divisible by 5, \"FizzBuzz\" if divisible by both 3 and 5, otherwise the number as a string.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "fizzbuzz",
+          "category": "algo",
+          "difficulty": "easy"
+        },
+        "response": {
+          "output": "```javascript\nconst fizzbuzz = (n) => {\n  if (n % 3 === 0 && n % 5 === 0) {\n    return \"FizzBuzz\";\n  } else if (n % 3 === 0) {\n    return \"Fizz\";\n  } else if (n % 5 === 0) {\n    return \"Buzz\";\n  } else {\n    return String(n);\n  }\n};\n```",
+          "metadata": {
+            "tok_per_sec": "81.1"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 7,
+          "total": 7,
+          "reason": "pass: 7/7"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `reverseWords(s)`. Return the string with the order of space-separated words reversed, collapsing any runs of whitespace to a single space and trimming leading/trailing whitespace. Example: \"  the  sky is \" → \"is sky the\".",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "reverse-words",
+          "category": "string",
+          "difficulty": "easy"
+        },
+        "response": {
+          "output": "```javascript\nconst reverseWords = (s) => {\n  return s.trim().split(/\\s+/).reverse().join(' ');\n};\n```",
+          "metadata": {
+            "tok_per_sec": "82.6"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `sumEven(nums)`. Return the sum of the even integers in the array. Empty array returns 0.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "sum-even",
+          "category": "algo",
+          "difficulty": "easy"
+        },
+        "response": {
+          "output": "```javascript\nconst sumEven = (nums) => {\n  let sum = 0;\n  for (const num of nums) {\n    if (num % 2 === 0) {\n      sum += num;\n    }\n  }\n  return sum;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "81.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 5,
+          "total": 5,
+          "reason": "pass: 5/5"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `twoSum(nums, target)`. Return the indices [i, j] (i < j) of the two numbers that add up to target. Exactly one solution exists. Return [] if none.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "two-sum",
+          "category": "algo",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {number[]} nums\n * @param {number} target\n * @return {number[]}\n */\nconst twoSum = (nums, target) => {\n    const numMap = new Map();\n\n    for (let i = 0; i < nums.length; i++) {\n        const complement = target - nums[i];\n        if (numMap.has(complement)) {\n            const j = numMap.get(complement);\n            // The problem requires returning indices [i, j] such that i < j.\n            // Since we iterate i from 0 upwards, j (from the map) will always be less than i.\n            // We return [j, i] to satisfy the i < j condition.\n            return [j, i];\n        }\n        numMap.set(nums[i], i);\n    }\n\n    return [];\n};\n```",
+          "metadata": {
+            "tok_per_sec": "80.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 5,
+          "total": 5,
+          "reason": "pass: 5/5"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `isValid(s)`. Given a string of just the characters ()[]{}, return true if every bracket is closed by the matching type in the correct order. Empty string is valid.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "valid-parens",
+          "category": "algo",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {string} s\n * @return {boolean}\n */\nvar isValid = function(s) {\n    const stack = [];\n    const map = {\n        ')': '(',\n        ']': '[',\n        '}': '{'\n    };\n\n    for (let i = 0; i < s.length; i++) {\n        const char = s[i];\n\n        if (char === '(' || char === '[' || char === '{') {\n            stack.push(char);\n        } else if (char === ')' || char === ']' || char === '}') {\n            if (stack.length === 0) {\n                return false;\n            }\n\n            const topElement = stack.pop();\n            if (topElement !== map[char]) {\n                return false;\n            }\n        }\n    }\n\n    return stack.length === 0;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "80.1"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 8,
+          "total": 8,
+          "reason": "pass: 8/8"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `romanToInt(s)`. Convert a Roman numeral string (I,V,X,L,C,D,M) to its integer value, handling subtractive pairs (IV=4, IX=9, XL=40, XC=90, CD=400, CM=900).",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "roman-to-int",
+          "category": "string",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * Converts a Roman numeral string to its integer value.\n * @param {string} s The Roman numeral string.\n * @returns {number} The integer representation.\n */\nconst romanToInt = (s) => {\n    const romanMap = {\n        'I': 1,\n        'V': 5,\n        'X': 10,\n        'L': 50,\n        'C': 100,\n        'D': 500,\n        'M': 1000\n    };\n\n    let result = 0;\n\n    for (let i = 0; i < s.length; i++) {\n        const currentValue = romanMap[s[i]];\n        const nextValue = romanMap[s[i + 1]];\n\n        // Check for a subtractive case (e.g., IV, IX, XL)\n        if (nextValue && currentValue < nextValue) {\n            result += (nextValue - currentValue);\n            i++; // Skip the next character as it was already processed\n        } else {\n            result += currentValue;\n        }\n    }\n\n    return result;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "79.3"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `groupAnagrams(words)`. Group the words that are anagrams of each other. Return an array of groups; within each group preserve the input order, and order the groups by the first appearance of any member in the input. Example: [\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"] → [[\"eat\",\"tea\",\"ate\"],[\"tan\",\"nat\"],[\"bat\"]].",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "group-anagrams",
+          "category": "datastruct",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {string[]} words\n * @return {string[][]}\n */\nconst groupAnagrams = (words) => {\n  const anagramMap = new Map();\n  const order = [];\n\n  for (const word of words) {\n    // Create a canonical key for the word by sorting its characters\n    const sortedKey = word.split('').sort().join('');\n\n    if (!anagramMap.has(sortedKey)) {\n      anagramMap.set(sortedKey, []);\n      // Record the order of appearance of this group's first member\n      order.push(sortedKey);\n    }\n\n    // Add the word to the corresponding group\n    anagramMap.get(sortedKey).push(word);\n  }\n\n  // Construct the result array following the order of first appearance\n  const result = [];\n  for (const key of order) {\n    result.push(anagramMap.get(key));\n  }\n\n  return result;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "79.4"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 4,
+          "total": 4,
+          "reason": "pass: 4/4"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `mergeIntervals(intervals)`. Given an array of [start, end] pairs, merge all overlapping intervals and return the result sorted by start. Touching intervals ([1,2] and [2,3]) merge.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "merge-intervals",
+          "category": "algo",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {number[][]} intervals\n * @return {number[][]}\n */\nconst mergeIntervals = (intervals) => {\n    if (!intervals || intervals.length === 0) {\n        return [];\n    }\n\n    // Sort the intervals based on the start time\n    intervals.sort((a, b) => a[0] - b[0]);\n\n    const merged = [];\n    let currentMerge = intervals[0];\n\n    for (let i = 1; i < intervals.length; i++) {\n        const nextInterval = intervals[i];\n        const currentEnd = currentMerge[1];\n        const nextStart = nextInterval[0];\n\n        // Check for overlap or touching: nextStart <= currentEnd\n        if (nextStart <= currentEnd) {\n            // Merge: extend the end of the current merged interval\n            currentMerge[1] = Math.max(currentEnd, nextInterval[1]);\n        } else {\n            // No overlap, push the current merged interval and start a new one\n            merged.push(currentMerge);\n            currentMerge = nextInterval;\n        }\n    }\n\n    // Add the last processed interval\n    merged.push(currentMerge);\n\n    return merged;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "79.4"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 5,
+          "total": 5,
+          "reason": "pass: 5/5"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `firstUnique(s)`. Return the first character in the string that appears exactly once. If there is none, return an empty string \"\".",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "lru-ish-cache",
+          "category": "datastruct",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {string} s\n * @return {string}\n */\nconst firstUnique = (s) => {\n    const charCounts = new Map();\n\n    // First pass: count character frequencies\n    for (const char of s) {\n        charCounts.set(char, (charCounts.get(char) || 0) + 1);\n    }\n\n    // Second pass: find the first character with a count of 1\n    for (const char of s) {\n        if (charCounts.get(char) === 1) {\n            return char;\n        }\n    }\n\n    // If no unique character is found\n    return \"\";\n};\n```",
+          "metadata": {
+            "tok_per_sec": "80.7"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `lengthOfLongestSubstring(s)`. Return the length of the longest substring without repeating characters.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "longest-substring",
+          "category": "algo",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {string} s\n * @return {number}\n */\nconst lengthOfLongestSubstring = (s) => {\n    let maxLength = 0;\n    let start = 0;\n    const charIndexMap = new Map();\n\n    for (let end = 0; end < s.length; end++) {\n        const char = s[end];\n\n        if (charIndexMap.has(char) && charIndexMap.get(char) >= start) {\n            // If the character is found within the current window [start, end-1],\n            // move the start pointer to the position right after the last occurrence of this character.\n            start = charIndexMap.get(char) + 1;\n        }\n\n        // Update the index of the current character\n        charIndexMap.set(char, end);\n\n        // Calculate the current window length and update maxLength\n        maxLength = Math.max(maxLength, end - start + 1);\n    }\n\n    return maxLength;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "80.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 8,
+          "total": 8,
+          "reason": "pass: 8/8"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `coinChange(coins, amount)`. Return the fewest number of coins needed to make up `amount`. Each coin may be used unlimited times. Return -1 if it cannot be made. amount 0 returns 0.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "coin-change",
+          "category": "algo",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {number[]} coins\n * @param {number} amount\n * @return {number}\n */\nconst coinChange = (coins, amount) => {\n    if (amount === 0) {\n        return 0;\n    }\n\n    // dp[i] will store the minimum number of coins needed to make amount i\n    // Initialize with amount + 1, which is effectively infinity for this problem,\n    // since the maximum number of coins needed would be 'amount' (if all coins were 1).\n    const dp = new Array(amount + 1).fill(amount + 1);\n\n    // Base case: 0 coins needed for amount 0\n    dp[0] = 0;\n\n    // Iterate through all amounts from 1 up to the target amount\n    for (let i = 1; i <= amount; i++) {\n        // For each amount i, check every available coin\n        for (const coin of coins) {\n            // If the current coin can be used to form amount i\n            if (coin <= i) {\n                // Update dp[i] with the minimum of its current value\n                // or 1 + the minimum coins needed for the remaining amount (i - coin)\n                dp[i] = Math.min(dp[i], 1 + dp[i - coin]);\n            }\n        }\n    }\n\n    // If dp[amount] is still amount + 1, it means the amount cannot be formed\n    return dp[amount] > amount ? -1 : dp[amount];\n};\n```",
+          "metadata": {
+            "tok_per_sec": "79.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `spiralOrder(matrix)`. Return all elements of the m×n matrix in clockwise spiral order starting from the top-left.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "spiral-order",
+          "category": "algo",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {number[][]} matrix\n * @return {number[]}\n */\nconst spiralOrder = (matrix) => {\n    if (!matrix || matrix.length === 0 || matrix[0].length === 0) {\n        return [];\n    }\n\n    const rows = matrix.length;\n    const cols = matrix[0].length;\n    const result = [];\n\n    let top = 0;\n    let bottom = rows - 1;\n    let left = 0;\n    let right = cols - 1;\n\n    while (top <= bottom && left <= right) {\n        // Traverse top row (left to right)\n        for (let c = left; c <= right; c++) {\n            result.push(matrix[top][c]);\n        }\n        top++;\n\n        // Traverse right column (top to bottom)\n        for (let r = top; r <= bottom; r++) {\n            result.push(matrix[r][right]);\n        }\n        right--;\n\n        // Traverse bottom row (right to left) - only if there is a remaining bottom row\n        if (top <= bottom) {\n            for (let c = right; c >= left; c--) {\n                result.push(matrix[bottom][c]);\n            }\n            bottom--;\n        }\n\n        // Traverse left column (bottom to top) - only if there is a remaining left column\n        if (left <= right) {\n            for (let r = bottom; r >= top; r--) {\n                result.push(matrix[r][left]);\n            }\n            left++;\n        }\n    }\n\n    return result;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "79.2"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `editDistance(a, b)`. Return the minimum number of single-character insertions, deletions, or substitutions to turn string a into string b (Levenshtein distance).",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "edit-distance",
+          "category": "algo",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * Calculates the Levenshtein distance between two strings.\n * The Levenshtein distance is the minimum number of single-character \n * edits (insertions, deletions, or substitutions) required to change \n * one word into the other.\n * \n * @param {string} a The first string.\n * @param {string} b The second string.\n * @returns {number} The edit distance between a and b.\n */\nconst editDistance = (a, b) => {\n    const m = a.length;\n    const n = b.length;\n\n    // Create a matrix to store the results of subproblems\n    // dp[i][j] will hold the edit distance between the first i characters of a \n    // and the first j characters of b.\n    const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));\n\n    // Base cases:\n    // If string a is empty, the distance is the length of string b (all insertions)\n    for (let j = 0; j <= n; j++) {\n        dp[0][j] = j;\n    }\n\n    // If string b is empty, the distance is the length of string a (all deletions)\n    for (let i = 0; i <= m; i++) {\n        dp[i][0] = i;\n    }\n\n    // Fill the DP table\n    for (let i = 1; i <= m; i++) {\n        for (let j = 1; j <= n; j++) {\n            // Cost of substitution: 0 if characters match, 1 otherwise\n            const cost = a[i - 1] === b[j - 1] ? 0 : 1;\n\n            dp[i][j] = Math.min(\n                dp[i - 1][j] + 1,      // Deletion (from a)\n                dp[i][j - 1] + 1,      // Insertion (to a, matching b)\n                dp[i - 1][j - 1] + cost // Substitution or Match\n            );\n        }\n    }\n\n    // The bottom-right cell contains the final edit distance\n    return dp[m][n];\n};\n```",
+          "metadata": {
+            "tok_per_sec": "78.1"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 7,
+          "total": 7,
+          "reason": "pass: 7/7"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `median(nums)`. Return the median of the array. For an even count, return the average of the two middle values (a number, possibly fractional). The input is NOT sorted. Empty array returns 0.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "median-two",
+          "category": "edge",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\nconst median = (nums) => {\n  if (nums.length === 0) {\n    return 0;\n  }\n\n  const sortedNums = [...nums].sort((a, b) => a - b);\n  const n = sortedNums.length;\n  const middleIndex = Math.floor(n / 2);\n\n  if (n % 2 === 1) {\n    // Odd number of elements\n    return sortedNums[middleIndex];\n  } else {\n    // Even number of elements\n    const lowerMiddle = sortedNums[middleIndex - 1];\n    const upperMiddle = sortedNums[middleIndex];\n    return (lowerMiddle + upperMiddle) / 2;\n  }\n};\n```",
+          "metadata": {
+            "tok_per_sec": "80.4"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 7,
+          "total": 7,
+          "reason": "pass: 7/7"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `roundHalfUp(x)`. Round to the nearest integer with ties (exactly .5) always going UP toward +Infinity, so roundHalfUp(2.5) = 3 and roundHalfUp(-2.5) = -2. Note: JS Math.round already does this — but verify the negative-tie behavior carefully.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "rounding-trap",
+          "category": "edge",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * Rounds a number to the nearest integer with halves rounded up (towards +Infinity).\n * @param {number} x The number to round.\n * @returns {number} The rounded integer.\n */\nconst roundHalfUp = (x) => {\n  // The standard JavaScript Math.round() rounds halves to the nearest even integer\n  // (e.g., Math.round(2.5) is 3, Math.round(3.5) is 4, but Math.round(2.5) in some\n  // contexts or implementations might be expected to follow different rules,\n  // although modern JS typically rounds .5 away from zero or to the nearest even.\n  // The requirement is: ties (exactly .5) always going UP toward +Infinity.\n  // 2.5 -> 3\n  // -2.5 -> -2 (since -2 is greater than -3)\n\n  // Adding 0.5 and then flooring implements \"round half up\" for positive numbers.\n  // Math.floor(x + 0.5)\n  // 2.5 + 0.5 = 3.0 -> floor(3.0) = 3\n  // 2.4 + 0.5 = 2.9 -> floor(2.9) = 2\n\n  // For negative numbers, we need to be careful.\n  // -2.5. Adding 0.5 gives -2.0. floor(-2.0) = -2. (Correct, -2 is up from -3)\n  // -2.6. Adding 0.5 gives -2.1. floor(-2.1) = -3. (Correct)\n  // -2.4. Adding 0.5 gives -1.9. floor(-1.9) = -2. (Correct)\n\n  // This approach (floor(x + 0.5)) correctly implements rounding half up towards +Infinity.\n  return Math.floor(x + 0.5);\n};\n```",
+          "metadata": {
+            "tok_per_sec": "78.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 7,
+          "total": 7,
+          "reason": "pass: 7/7"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "The following binary search has a bug. Return a CORRECTED version that returns the index of `target` in the sorted array `arr`, or -1 if absent. Keep the function name `binarySearch`.\n\n```js\nfunction binarySearch(arr, target) {\n  let lo = 0, hi = arr.length;\n  while (lo < hi) {\n    const mid = (lo + hi) / 2;\n    if (arr[mid] === target) return mid;\n    if (arr[mid] < target) lo = mid;\n    else hi = mid;\n  }\n  return -1;\n}\n```",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "bugfix-binsearch",
+          "category": "bugfix",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction binarySearch(arr, target) {\n  let lo = 0;\n  let hi = arr.length - 1;\n  while (lo <= hi) {\n    const mid = Math.floor((lo + hi) / 2);\n    if (arr[mid] === target) return mid;\n    if (arr[mid] < target) {\n      lo = mid + 1;\n    } else {\n      hi = mid - 1;\n    }\n  }\n  return -1;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "79.4"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "The following deep-flatten has a bug — it only flattens one level. Return a CORRECTED version that fully flattens an arbitrarily nested array of numbers into a flat array, preserving order. Keep the function name `flatten`.\n\n```js\nfunction flatten(arr) {\n  const out = [];\n  for (const x of arr) {\n    if (Array.isArray(x)) out.push(...x);\n    else out.push(x);\n  }\n  return out;\n}\n```",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "bugfix-flatten",
+          "category": "bugfix",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction flatten(arr) {\n  const result = [];\n  for (const element of arr) {\n    if (Array.isArray(element)) {\n      const flattenedSubArray = flatten(element);\n      result.push(...flattenedSubArray);\n    } else {\n      result.push(element);\n    }\n  }\n  return result;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "80.6"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "The following dedup is supposed to remove duplicates while PRESERVING first-seen order, but it sorts the output, breaking order. Return a CORRECTED version that preserves first-seen order. Keep the function name `dedup`.\n\n```js\nfunction dedup(arr) {\n  return [...new Set(arr)].sort();\n}\n```",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "bugfix-dedup-order",
+          "category": "bugfix",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction dedup(arr) {\n  const seen = new Set();\n  const result = [];\n  for (const item of arr) {\n    if (!seen.has(item)) {\n      seen.add(item);\n      result.push(item);\n    }\n  }\n  return result;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "81.3"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 5,
+          "total": 5,
+          "reason": "pass: 5/5"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement the game engine for 2048 as a JavaScript class named `Game2048`. Follow this spec EXACTLY — it is graded by executing your class.\n\nBoard: a 4×4 grid, represented as an array of 4 rows, each an array of 4 integers. 0 means an empty cell; non-zero values are tiles.\n\nConstructor `new Game2048(board, spawnQueue)`:\n  • `board` — the initial 4×4 grid. Copy it; do not alias the caller’s array.\n  • `spawnQueue` — an array of spawn instructions `{r, c, v}` consumed IN ORDER, one per spawn (see move). The score starts at 0.\n\nProvide three METHODS (called with parentheses):\n  • `getBoard()` → the current 4×4 grid.\n  • `getScore()` → the running score (a number).\n  • `isGameOver()` → boolean: true iff there are NO empty cells AND no two horizontally- or vertically-adjacent cells are equal (no move would change the board).\n\nMethod `move(dir)` where `dir` is one of \"left\", \"right\", \"up\", \"down\":\n  1. Slide all tiles as far as possible in `dir`. When two tiles of equal value collide while sliding, they merge into one tile of double the value, and that merged value is ADDED to `score`. A tile that resulted from a merge cannot merge again in the same move. When multiple merges are possible in a line, the ones nearer the direction of travel happen first (e.g. moving [2,2,2,2] left gives [4,4,0,0], NOT [8,0,0,0]; [2,2,4] moving left gives [4,4,0]).\n  2. If the board CHANGED as a result of the move, consume the next spawn `{r,c,v}` from the queue and set that cell to `v`, then return `true`. If the board did NOT change, consume NO spawn and return `false`.",
+          "label": "coding_hard"
+        },
+        "vars": {
+          "case_id": "2048-engine",
+          "category": "game",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\nclass Game2048 {\n    constructor(board, spawnQueue) {\n        this.board = this._copyBoard(board);\n        this.spawnQueue = [...spawnQueue];\n        this.score = 0;\n    }\n\n    _copyBoard(board) {\n        return board.map(row => [...row]);\n    }\n\n    getBoard() {\n        return this.board;\n    }\n\n    getScore() {\n        return this.score;\n    }\n\n    isGameOver() {\n        let hasEmpty = false;\n        for (let r = 0; r < 4; r++) {\n            for (let c = 0; c < 4; c++) {\n                if (this.board[r][c] === 0) {\n                    hasEmpty = true;\n                    break;\n                }\n            }\n            if (hasEmpty) break;\n        }\n\n        if (hasEmpty) return false;\n\n        // Check for adjacent equal tiles\n        for (let r = 0; r < 4; r++) {\n            for (let c = 0; c < 4; c++) {\n                const val = this.board[r][c];\n                if (val === 0) continue;\n\n                // Check right\n                if (c + 1 < 4 && this.board[r][c + 1] === val) return false;\n                // Check down\n                if (r + 1 < 4 && this.board[r + 1][c] === val) return false;\n            }\n        }\n\n        return true;\n    }\n\n    _compress(line) {\n        const filtered = line.filter(val => val !== 0);\n        const newLine = [...filtered, ...Array(4 - filtered.length).fill(0)];\n        return newLine;\n    }\n\n    _merge(line) {\n        const merged = [];\n        let i = 0;\n        let changed = false;\n        while (i < 4) {\n            const current = line[i];\n            if (current !== 0) {\n                if (i + 1 < 4 && line[i + 1] !== 0 && current === line[i + 1]) {\n                    const mergedValue = current * 2;\n                    merged.push(mergedValue);\n                    this.score += mergedValue;\n                    i += 2; // Skip the next tile as it was merged\n                    changed = true;\n                } else {\n                    merged.push(current);\n                    i += 1;\n                }\n            } else {\n                merged.push(0);\n                i += 1;\n            }\n        }\n        \n        // Pad the rest with zeros\n        while (merged.length < 4) {\n            merged.push(0);\n        }\n\n        // Re-compress in case merging didn't fill the line (e.g., [2, 2, 0, 0] -> [4, 0, 0, 0])\n        const compressedLine = this._compress(merged);\n\n        return { newLine: compressedLine, changed: changed };\n    }\n\n    _processLine(line, direction) {\n        let lineChanged = false;\n\n        if (direction === \"left\" || direction === \"up\") {\n            // Compression and Merging happens left-to-right or top-to-bottom\n            const compressed = this._compress(line);\n            const { newLine: mergedLine, changed: mergeHappened } = this._merge(compressed);\n            \n            // Check if any change occurred (compression or merge)\n            let originalHasZeros = line.includes(0);\n            let newHasZeros = mergedLine.includes(0);\n            \n            lineChanged = originalHasZeros !== newHasZeros || mergeHappened;\n            \n            return { newLine: mergedLine, changed: lineChanged };\n        } else { // \"right\" or \"down\"\n            // Reverse, process as 'left', then reverse back\n            const reversedLine = [...line].reverse();\n            const { newLine: mergedReversed, changed: mergeHappened } = this._merge(reversedLine);\n            const finalLine = mergedReversed.reverse();\n            \n            // Check if any change occurred\n            let originalHasZeros = line.includes(0);\n            let newHasZeros = finalLine.includes(0);\n            \n            let lineChanged = originalHasZeros !== newHasZeros || mergeHappened;\n\n            return { newLine: finalLine, changed: lineChanged };\n        }\n    }\n\n\n    move(dir) {\n        let boardChanged = false;\n        const originalBoard = this._copyBoard(this.board);\n        const newBoard = this._copyBoard(this.board);\n\n        if (dir === \"left\" || dir === \"right\") {\n            for (let r = 0; r < 4; r++) {\n                const row = this.board[r];\n                const { newLine: processedRow, changed: lineChanged } = this._processLine(row, dir);\n                \n                if (lineChanged) {\n                    boardChanged = true;\n                    newBoard[r] = processedRow;\n                }\n            }\n        } else { // \"up\" or \"down\"\n            for (let c = 0; c < 4; c++) {\n                // Extract column\n                const col = [];\n                for (let r = 0; r < 4; r++) {\n                    col.push(this.board[r][c]);\n                }\n\n                // Process column (treating it as a line)\n                const { newLine: processedCol, changed: lineChanged } = this._processLine(col, dir);\n                \n                if (lineChanged) {\n                    boardChanged = true;\n                    // Place processed column back\n                    for (let r = 0; r < 4; r++) {\n                        newBoard[r][c] = processedCol[r];\n                    }\n                }\n            }\n        }\n\n        if (boardChanged) {\n            this.board = newBoard;\n\n            // Consume spawn\n            if (this.spawnQueue.length > 0) {\n                const spawn = this.spawnQueue.shift();\n                const { r, c, v } = spawn;\n                \n                // Spawn must go into an empty cell (guaranteed by game rules if move was possible)\n                if (this.board[r][c] === 0) {\n                    this.board[r][c] = v;\n                }\n            }\n            return true;\n        } else {\n            // No change, no spawn consumed\n            return false;\n        }\n    }\n}\n```",
+          "metadata": {
+            "tok_per_sec": "72.0"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.9166666666666666,
+          "passed": 11,
+          "total": 12,
+          "reason": "wrong: 11/12 case#8 got {\"board\":[[8,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,2,2]],\"score\":16}"
+        },
+        "success": false,
+        "score": 0.9166666666666666,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [think]"
+        },
+        "prompt": {
+          "raw": "Implement `fizzbuzz(n)`. Return \"Fizz\" if n is divisible by 3, \"Buzz\" if divisible by 5, \"FizzBuzz\" if divisible by both 3 and 5, otherwise the number as a string.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "fizzbuzz",
+          "category": "algo",
+          "difficulty": "easy"
+        },
+        "response": {
+          "output": "```javascript\nconst fizzbuzz = (n) => {\n  if (n % 3 === 0 && n % 5 === 0) {\n    return \"FizzBuzz\";\n  }\n  if (n % 3 === 0) {\n    return \"Fizz\";\n  }\n  if (n % 5 === 0) {\n    return \"Buzz\";\n  }\n  return String(n);\n};\n```",
+          "metadata": {
+            "tok_per_sec": "81.3"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 7,
+          "total": 7,
+          "reason": "pass: 7/7"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [think]"
+        },
+        "prompt": {
+          "raw": "Implement `reverseWords(s)`. Return the string with the order of space-separated words reversed, collapsing any runs of whitespace to a single space and trimming leading/trailing whitespace. Example: \"  the  sky is \" → \"is sky the\".",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "reverse-words",
+          "category": "string",
+          "difficulty": "easy"
+        },
+        "response": {
+          "output": "```javascript\nconst reverseWords = (s) => {\n    // 1. Trim leading/trailing whitespace.\n    // 2. Split the string by one or more whitespace characters (\\s+).\n    // 3. Filter out any resulting empty strings (which can happen if the input was empty or only whitespace).\n    const words = s.trim().split(/\\s+/).filter(word => word.length > 0);\n\n    // 4. Reverse the order of the words.\n    const reversedWords = words.reverse();\n\n    // 5. Join the words back into a single string, separated by exactly one space.\n    return reversedWords.join(' ');\n};\n```",
+          "metadata": {
+            "tok_per_sec": "75.5"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [think]"
+        },
+        "prompt": {
+          "raw": "Implement `sumEven(nums)`. Return the sum of the even integers in the array. Empty array returns 0.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "sum-even",
+          "category": "algo",
+          "difficulty": "easy"
+        },
+        "response": {
+          "output": "```javascript\nconst sumEven = (nums) => {\n  return nums\n    .filter(num => num % 2 === 0)\n    .reduce((sum, num) => sum + num, 0);\n};\n```",
+          "metadata": {
+            "tok_per_sec": "77.4"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 5,
+          "total": 5,
+          "reason": "pass: 5/5"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [think]"
+        },
+        "prompt": {
+          "raw": "Implement `twoSum(nums, target)`. Return the indices [i, j] (i < j) of the two numbers that add up to target. Exactly one solution exists. Return [] if none.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "two-sum",
+          "category": "algo",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {number[]} nums\n * @param {number} target\n * @return {number[]}\n */\nconst twoSum = (nums, target) => {\n    const map = new Map();\n    for (let i = 0; i < nums.length; i++) {\n        const complement = target - nums[i];\n        if (map.has(complement)) {\n            // The stored index (map.get(complement)) will always be less than the current index i\n            return [map.get(complement), i];\n        }\n        // Store the current number and its index\n        map.set(nums[i], i);\n    }\n    // Should not be reached based on problem description (exactly one solution exists) \n    // but included for robustness.\n    return [];\n};\n```",
+          "metadata": {
+            "tok_per_sec": "77.3"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 5,
+          "total": 5,
+          "reason": "pass: 5/5"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [think]"
+        },
+        "prompt": {
+          "raw": "Implement `isValid(s)`. Given a string of just the characters ()[]{}, return true if every bracket is closed by the matching type in the correct order. Empty string is valid.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "valid-parens",
+          "category": "algo",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {string} s\n * @return {boolean}\n */\nconst isValid = (s) => {\n    const stack = [];\n    const map = {\n        ')': '(',\n        ']': '[',\n        '}': '{'\n    };\n\n    for (let i = 0; i < s.length; i++) {\n        const char = s[i];\n\n        // If the character is a closing bracket\n        if (map[char]) {\n            // Get the expected opening bracket\n            const expectedOpen = map[char];\n\n            // Check if the stack is empty or if the top element doesn't match the expected opener\n            if (stack.length === 0 || stack.pop() !== expectedOpen) {\n                return false;\n            }\n        } else {\n            // If the character is an opening bracket, push it onto the stack\n            stack.push(char);\n        }\n    }\n\n    // The string is valid only if the stack is empty at the end\n    return stack.length === 0;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "76.1"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 8,
+          "total": 8,
+          "reason": "pass: 8/8"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [think]"
+        },
+        "prompt": {
+          "raw": "Implement `romanToInt(s)`. Convert a Roman numeral string (I,V,X,L,C,D,M) to its integer value, handling subtractive pairs (IV=4, IX=9, XL=40, XC=90, CD=400, CM=900).",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "roman-to-int",
+          "category": "string",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nconst romanToInt = (s) => {\n    const romanMap = {\n        'I': 1,\n        'V': 5,\n        'X': 10,\n        'L': 50,\n        'C': 100,\n        'D': 500,\n        'M': 1000\n    };\n\n    let result = 0;\n    let previousValue = 0;\n\n    // Iterate through the Roman numeral string from right to left\n    for (let i = s.length - 1; i >= 0; i--) {\n        const currentValue = romanMap[s[i]];\n\n        // If the current value is less than the value to its right (previousValue), \n        // it is a subtractive case (e.g., 'I' before 'V').\n        if (currentValue < previousValue) {\n            result -= currentValue;\n        } else {\n            // Otherwise, it is an additive case.\n            result += currentValue;\n        }\n\n        // Update the previous value for the next iteration\n        previousValue = currentValue;\n    }\n\n    return result;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "76.5"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [think]"
+        },
+        "prompt": {
+          "raw": "Implement `groupAnagrams(words)`. Group the words that are anagrams of each other. Return an array of groups; within each group preserve the input order, and order the groups by the first appearance of any member in the input. Example: [\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"] → [[\"eat\",\"tea\",\"ate\"],[\"tan\",\"nat\"],[\"bat\"]].",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "group-anagrams",
+          "category": "datastruct",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {string[]} words\n * @return {string[][]}\n */\nconst groupAnagrams = (words) => {\n    /**\n     * Generates the canonical key for an anagram by sorting the characters.\n     * @param {string} s\n     * @returns {string}\n     */\n    const sortString = (s) => s.split('').sort().join('');\n\n    // Use a Map to store groups. Map maintains insertion order, \n    // which ensures the groups are ordered by the first appearance of their member.\n    const anagramMap = new Map();\n\n    for (const word of words) {\n        const key = sortString(word);\n\n        if (anagramMap.has(key)) {\n            // Preserve internal order\n            anagramMap.get(key).push(word);\n        } else {\n            // Store the new group, establishing the order based on first appearance\n            anagramMap.set(key, [word]);\n        }\n    }\n\n    // Return all the values (the groups) from the Map\n    return Array.from(anagramMap.values());\n};\n```",
+          "metadata": {
+            "tok_per_sec": "74.7"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 4,
+          "total": 4,
+          "reason": "pass: 4/4"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [think]"
+        },
+        "prompt": {
+          "raw": "Implement `mergeIntervals(intervals)`. Given an array of [start, end] pairs, merge all overlapping intervals and return the result sorted by start. Touching intervals ([1,2] and [2,3]) merge.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "merge-intervals",
+          "category": "algo",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {number[][]} intervals\n * @return {number[][]}\n */\nconst mergeIntervals = (intervals) => {\n    if (!intervals || intervals.length <= 1) {\n        return intervals;\n    }\n\n    // 1. Sort intervals by their start time\n    intervals.sort((a, b) => a[0] - b[0]);\n\n    const merged = [];\n    let currentInterval = intervals[0];\n\n    for (let i = 1; i < intervals.length; i++) {\n        const nextInterval = intervals[i];\n        const [currentStart, currentEnd] = currentInterval;\n        const [nextStart, nextEnd] = nextInterval;\n\n        // Check for overlap or touching: next interval starts before or exactly when current ends\n        if (nextStart <= currentEnd) {\n            // Merge: update the end of the current interval to the maximum end time\n            currentInterval[1] = Math.max(currentEnd, nextEnd);\n        } else {\n            // No overlap, finalize the current interval and start a new one\n            merged.push(currentInterval);\n            currentInterval = nextInterval;\n        }\n    }\n\n    // Add the last processed interval\n    merged.push(currentInterval);\n\n    return merged;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "76.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 5,
+          "total": 5,
+          "reason": "pass: 5/5"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [think]"
+        },
+        "prompt": {
+          "raw": "Implement `firstUnique(s)`. Return the first character in the string that appears exactly once. If there is none, return an empty string \"\".",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "lru-ish-cache",
+          "category": "datastruct",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {string} s\n * @returns {string}\n */\nconst firstUnique = (s) => {\n    const counts = new Map();\n\n    // Step 1: Count the frequency of each character\n    for (const char of s) {\n        counts.set(char, (counts.get(char) || 0) + 1);\n    }\n\n    // Step 2: Iterate through the string again to find the first character\n    // that has a count of 1.\n    for (const char of s) {\n        if (counts.get(char) === 1) {\n            return char;\n        }\n    }\n\n    // Step 3: If no unique character is found\n    return \"\";\n};\n```",
+          "metadata": {
+            "tok_per_sec": "77.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [think]"
+        },
+        "prompt": {
+          "raw": "Implement `lengthOfLongestSubstring(s)`. Return the length of the longest substring without repeating characters.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "longest-substring",
+          "category": "algo",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\nconst lengthOfLongestSubstring = (s) => {\n    let maxLength = 0;\n    let start = 0;\n    const charMap = new Map(); // Stores character -> index\n\n    for (let end = 0; end < s.length; end++) {\n        const char = s[end];\n\n        // If the character is already in the current window (i.e., its last seen index is >= start)\n        if (charMap.has(char) && charMap.get(char) >= start) {\n            // Move the start pointer to the position right after the last occurrence of this character\n            start = charMap.get(char) + 1;\n        }\n\n        // Update the last seen index of the current character\n        charMap.set(char, end);\n\n        // Calculate the current window length (end - start + 1) and update maxLength\n        maxLength = Math.max(maxLength, end - start + 1);\n    }\n\n    return maxLength;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "74.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 8,
+          "total": 8,
+          "reason": "pass: 8/8"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [think]"
+        },
+        "prompt": {
+          "raw": "Implement `coinChange(coins, amount)`. Return the fewest number of coins needed to make up `amount`. Each coin may be used unlimited times. Return -1 if it cannot be made. amount 0 returns 0.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "coin-change",
+          "category": "algo",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {number[]} coins\n * @param {number} amount\n * @return {number}\n */\nconst coinChange = (coins, amount) => {\n    if (amount === 0) {\n        return 0;\n    }\n\n    // dp[i] will store the minimum number of coins needed to make amount i.\n    // Initialize with amount + 1 (which is effectively infinity for this problem)\n    // since the max number of coins needed cannot exceed amount (if all coins were 1).\n    const dp = new Array(amount + 1).fill(amount + 1);\n\n    // Base case: 0 amount needs 0 coins.\n    dp[0] = 0;\n\n    // Iterate through every amount from 1 up to the target amount\n    for (let i = 1; i <= amount; i++) {\n        // Check every coin denomination\n        for (const coin of coins) {\n            // If the current coin can be used to form amount i\n            if (i - coin >= 0) {\n                // Update dp[i] with the minimum of its current value\n                // and (1 + the minimum coins needed for the remaining amount i - coin)\n                dp[i] = Math.min(dp[i], dp[i - coin] + 1);\n            }\n        }\n    }\n\n    // If dp[amount] is still amount + 1, it means the amount is unreachable.\n    return dp[amount] > amount ? -1 : dp[amount];\n};\n```",
+          "metadata": {
+            "tok_per_sec": "79.1"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [think]"
+        },
+        "prompt": {
+          "raw": "Implement `spiralOrder(matrix)`. Return all elements of the m×n matrix in clockwise spiral order starting from the top-left.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "spiral-order",
+          "category": "algo",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {number[][]} matrix\n * @return {number[]}\n */\nconst spiralOrder = (matrix) => {\n    if (!matrix || matrix.length === 0 || matrix[0].length === 0) {\n        return [];\n    }\n\n    const M = matrix.length;\n    const N = matrix[0].length;\n    const result = [];\n\n    let top = 0;\n    let bottom = M - 1;\n    let left = 0;\n    let right = N - 1;\n\n    while (top <= bottom && left <= right) {\n        // 1. Traverse Right (Top Row)\n        for (let c = left; c <= right; c++) {\n            result.push(matrix[top][c]);\n        }\n        top++;\n\n        // 2. Traverse Down (Right Column)\n        for (let r = top; r <= bottom; r++) {\n            result.push(matrix[r][right]);\n        }\n        right--;\n\n        // Check boundary before traversing left/up, as boundaries might have crossed\n        if (top <= bottom) {\n            // 3. Traverse Left (Bottom Row)\n            for (let c = right; c >= left; c--) {\n                result.push(matrix[bottom][c]);\n            }\n            bottom--;\n        }\n\n        if (left <= right) {\n            // 4. Traverse Up (Left Column)\n            for (let r = bottom; r >= top; r--) {\n                result.push(matrix[r][left]);\n            }\n            left++;\n        }\n    }\n\n    return result;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "73.4"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [think]"
+        },
+        "prompt": {
+          "raw": "Implement `editDistance(a, b)`. Return the minimum number of single-character insertions, deletions, or substitutions to turn string a into string b (Levenshtein distance).",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "edit-distance",
+          "category": "algo",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * Calculates the Levenshtein distance (edit distance) between two strings.\n *\n * @param {string} a The first string.\n * @param {string} b The second string.\n * @returns {number} The minimum number of operations (insertions, deletions, substitutions)\n *                    required to transform string a into string b.\n */\nconst editDistance = (a, b) => {\n    const m = a.length;\n    const n = b.length;\n\n    // Create a matrix (m+1) x (n+1)\n    const dp = Array(m + 1).fill(0).map(() => Array(n + 1).fill(0));\n\n    // Initialize the first row and column\n    // dp[i][0] = i (i deletions to transform a[0..i-1] to empty string)\n    for (let i = 0; i <= m; i++) {\n        dp[i][0] = i;\n    }\n\n    // dp[0][j] = j (j insertions to transform empty string to b[0..j-1])\n    for (let j = 0; j <= n; j++) {\n        dp[0][j] = j;\n    }\n\n    // Fill the DP table\n    for (let i = 1; i <= m; i++) {\n        for (let j = 1; j <= n; j++) {\n            // Cost of substitution (0 if characters match, 1 otherwise)\n            const cost = (a[i - 1] === b[j - 1]) ? 0 : 1;\n\n            dp[i][j] = Math.min(\n                dp[i - 1][j] + 1,        // Deletion (a[i-1] deleted)\n                dp[i][j - 1] + 1,        // Insertion (b[j-1] inserted)\n                dp[i - 1][j - 1] + cost  // Substitution/Match\n            );\n        }\n    }\n\n    // The result is in the bottom-right cell\n    return dp[m][n];\n};\n```",
+          "metadata": {
+            "tok_per_sec": "78.2"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 7,
+          "total": 7,
+          "reason": "pass: 7/7"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [think]"
+        },
+        "prompt": {
+          "raw": "Implement `median(nums)`. Return the median of the array. For an even count, return the average of the two middle values (a number, possibly fractional). The input is NOT sorted. Empty array returns 0.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "median-two",
+          "category": "edge",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\nconst median = (nums) => {\n    if (nums.length === 0) {\n        return 0;\n    }\n\n    // Create a sorted copy of the array\n    const sortedNums = [...nums].sort((a, b) => a - b);\n    const n = sortedNums.length;\n\n    if (n % 2 === 1) {\n        // Odd number of elements\n        const middleIndex = Math.floor(n / 2);\n        return sortedNums[middleIndex];\n    } else {\n        // Even number of elements\n        const rightMiddleIndex = n / 2;\n        const leftMiddleIndex = rightMiddleIndex - 1;\n        \n        const middle1 = sortedNums[leftMiddleIndex];\n        const middle2 = sortedNums[rightMiddleIndex];\n\n        return (middle1 + middle2) / 2;\n    }\n};\n```",
+          "metadata": {
+            "tok_per_sec": "78.3"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 7,
+          "total": 7,
+          "reason": "pass: 7/7"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [think]"
+        },
+        "prompt": {
+          "raw": "Implement `roundHalfUp(x)`. Round to the nearest integer with ties (exactly .5) always going UP toward +Infinity, so roundHalfUp(2.5) = 3 and roundHalfUp(-2.5) = -2. Note: JS Math.round already does this — but verify the negative-tie behavior carefully.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "rounding-trap",
+          "category": "edge",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nconst roundHalfUp = (x) => {\n  // The standard way to achieve \"round half up\" (away from zero for positive, \n  // and towards positive infinity for negative ties) is to use Math.floor(x + 0.5).\n  //\n  // Let's verify the requirements:\n  // 1. x = 2.5: Math.floor(2.5 + 0.5) = Math.floor(3.0) = 3 (Correct)\n  // 2. x = 2.4: Math.floor(2.4 + 0.5) = Math.floor(2.9) = 2 (Correct)\n  // 3. x = 2.6: Math.floor(2.6 + 0.5) = Math.floor(3.1) = 3 (Correct)\n  // 4. x = -2.5: Math.floor(-2.5 + 0.5) = Math.floor(-2.0) = -2 (Correct)\n  // 5. x = -2.4: Math.floor(-2.4 + 0.5) = Math.floor(-1.9) = -2 (Correct)\n  // 6. x = -2.6: Math.floor(-2.6 + 0.5) = Math.floor(-2.1) = -3 (Correct)\n\n  return Math.floor(x + 0.5);\n};\n```",
+          "metadata": {
+            "tok_per_sec": "78.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 7,
+          "total": 7,
+          "reason": "pass: 7/7"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [think]"
+        },
+        "prompt": {
+          "raw": "The following binary search has a bug. Return a CORRECTED version that returns the index of `target` in the sorted array `arr`, or -1 if absent. Keep the function name `binarySearch`.\n\n```js\nfunction binarySearch(arr, target) {\n  let lo = 0, hi = arr.length;\n  while (lo < hi) {\n    const mid = (lo + hi) / 2;\n    if (arr[mid] === target) return mid;\n    if (arr[mid] < target) lo = mid;\n    else hi = mid;\n  }\n  return -1;\n}\n```",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "bugfix-binsearch",
+          "category": "bugfix",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction binarySearch(arr, target) {\n  let lo = 0;\n  let hi = arr.length - 1;\n\n  while (lo <= hi) {\n    // Ensure mid is an integer index\n    const mid = Math.floor((lo + hi) / 2);\n\n    if (arr[mid] === target) {\n      return mid;\n    } else if (arr[mid] < target) {\n      // Target must be in the right half\n      lo = mid + 1;\n    } else {\n      // Target must be in the left half\n      hi = mid - 1;\n    }\n  }\n\n  return -1;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "74.4"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [think]"
+        },
+        "prompt": {
+          "raw": "The following deep-flatten has a bug — it only flattens one level. Return a CORRECTED version that fully flattens an arbitrarily nested array of numbers into a flat array, preserving order. Keep the function name `flatten`.\n\n```js\nfunction flatten(arr) {\n  const out = [];\n  for (const x of arr) {\n    if (Array.isArray(x)) out.push(...x);\n    else out.push(x);\n  }\n  return out;\n}\n```",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "bugfix-flatten",
+          "category": "bugfix",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```js\nfunction flatten(arr) {\n  const result = [];\n  for (const element of arr) {\n    if (Array.isArray(element)) {\n      result.push(...flatten(element));\n    } else {\n      result.push(element);\n    }\n  }\n  return result;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "76.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [think]"
+        },
+        "prompt": {
+          "raw": "The following dedup is supposed to remove duplicates while PRESERVING first-seen order, but it sorts the output, breaking order. Return a CORRECTED version that preserves first-seen order. Keep the function name `dedup`.\n\n```js\nfunction dedup(arr) {\n  return [...new Set(arr)].sort();\n}\n```",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "bugfix-dedup-order",
+          "category": "bugfix",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction dedup(arr) {\n  return [...new Set(arr)];\n}\n```",
+          "metadata": {
+            "tok_per_sec": "79.5"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 5,
+          "total": 5,
+          "reason": "pass: 5/5"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q8_0",
+          "label": "Gemma4-E4B Q8_0 [think]"
+        },
+        "prompt": {
+          "raw": "Implement the game engine for 2048 as a JavaScript class named `Game2048`. Follow this spec EXACTLY — it is graded by executing your class.\n\nBoard: a 4×4 grid, represented as an array of 4 rows, each an array of 4 integers. 0 means an empty cell; non-zero values are tiles.\n\nConstructor `new Game2048(board, spawnQueue)`:\n  • `board` — the initial 4×4 grid. Copy it; do not alias the caller’s array.\n  • `spawnQueue` — an array of spawn instructions `{r, c, v}` consumed IN ORDER, one per spawn (see move). The score starts at 0.\n\nProvide three METHODS (called with parentheses):\n  • `getBoard()` → the current 4×4 grid.\n  • `getScore()` → the running score (a number).\n  • `isGameOver()` → boolean: true iff there are NO empty cells AND no two horizontally- or vertically-adjacent cells are equal (no move would change the board).\n\nMethod `move(dir)` where `dir` is one of \"left\", \"right\", \"up\", \"down\":\n  1. Slide all tiles as far as possible in `dir`. When two tiles of equal value collide while sliding, they merge into one tile of double the value, and that merged value is ADDED to `score`. A tile that resulted from a merge cannot merge again in the same move. When multiple merges are possible in a line, the ones nearer the direction of travel happen first (e.g. moving [2,2,2,2] left gives [4,4,0,0], NOT [8,0,0,0]; [2,2,4] moving left gives [4,4,0]).\n  2. If the board CHANGED as a result of the move, consume the next spawn `{r,c,v}` from the queue and set that cell to `v`, then return `true`. If the board did NOT change, consume NO spawn and return `false`.",
+          "label": "coding_hard"
+        },
+        "vars": {
+          "case_id": "2048-engine",
+          "category": "game",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\nclass Game2048 {\n    constructor(board, spawnQueue) {\n        // Deep copy the board\n        this.board = board.map(row => [...row]);\n        this.score = 0;\n        this.spawnQueue = [...spawnQueue];\n        this.BOARD_SIZE = 4;\n    }\n\n    /**\n     * Processes a single line (row or column) for sliding and merging.\n     * This internal method always assumes movement starts from index 0 (left/top)\n     * and returns the processed line and score gained.\n     * \n     * @param {number[]} line - The array line (4 elements).\n     * @returns {[number[], number]} [newLine, scoreGained]\n     */\n    _processLine(line) {\n        let scoreGained = 0;\n        let compacted = line.filter(x => x !== 0);\n        let newLine = new Array(this.BOARD_SIZE).fill(0);\n        let writePointer = 0;\n        let mergedFlags = new Array(compacted.length).fill(false);\n\n        // Merging loop\n        for (let i = 0; i < compacted.length; i++) {\n            if (mergedFlags[i]) continue;\n\n            // Check for merge with the next tile\n            if (i + 1 < compacted.length && compacted[i] === compacted[i + 1] && !mergedFlags[i + 1]) {\n                let mergedValue = compacted[i] * 2;\n                scoreGained += mergedValue;\n                \n                newLine[writePointer++] = mergedValue;\n                \n                // Mark both tiles as used/merged\n                mergedFlags[i] = true;\n                mergedFlags[i + 1] = true;\n            } else {\n                // No merge, copy the tile\n                newLine[writePointer++] = compacted[i];\n            }\n        }\n\n        // Padding with zeros is handled by initializing newLine to zeros.\n        return [newLine, scoreGained];\n    }\n\n    /**\n     * Transposes the 4x4 board (rows become columns and vice versa).\n     * @param {number[][]} board \n     * @returns {number[][]}\n     */\n    _transpose(board) {\n        const newBoard = Array.from({ length: 4 }, () => new Array(4).fill(0));\n        for (let r = 0; r < 4; r++) {\n            for (let c = 0; c < 4; c++) {\n                newBoard[c][r] = board[r][c];\n            }\n        }\n        return newBoard;\n    }\n    \n    /**\n     * Reverses a line array.\n     * @param {number[]} line \n     * @returns {number[]}\n     */\n    _reverseLine(line) {\n        return [...line].reverse();\n    }\n\n    getBoard() {\n        return this.board.map(row => [...row]); // Return a copy\n    }\n\n    getScore() {\n        return this.score;\n    }\n\n    /**\n     * Checks if the game is over: no empty cells AND no possible merges.\n     * @returns {boolean}\n     */\n    isGameOver() {\n        // 1. Check for empty cells\n        const hasEmpty = this.board.flat().some(val => val === 0);\n        if (hasEmpty) return false;\n\n        // 2. Check for adjacent equal tiles (potential move)\n        // Check rows\n        for (let r = 0; r < this.BOARD_SIZE; r++) {\n            for (let c = 0; c < this.BOARD_SIZE - 1; c++) {\n                if (this.board[r][c] === this.board[r][c + 1]) {\n                    return false; // Horizontal merge possible\n                }\n            }\n        }\n\n        // Check columns\n        for (let c = 0; c < this.BOARD_SIZE; c++) {\n            for (let r = 0; r < this.BOARD_SIZE - 1; r++) {\n                if (this.board[r][c] === this.board[r + 1][c]) {\n                    return false; // Vertical merge possible\n                }\n            }\n        }\n\n        // If no empty cells and no adjacent equal tiles, game is over\n        return true;\n    }\n\n    move(dir) {\n        let originalBoard = this.board.map(row => [...row]);\n        let scoreDelta = 0;\n        let newBoard = JSON.parse(JSON.stringify(this.board));\n        let boardChanged = false;\n\n        // Determine if we are processing horizontal (rows) or vertical (columns) lines\n        const isHorizontal = (dir === \"left\" || dir === \"right\");\n\n        if (isHorizontal) {\n            // --- Horizontal Movement (Rows) ---\n            for (let r = 0; r < this.BOARD_SIZE; r++) {\n                let line = this.board[r];\n                let processedLine;\n                let lineScore;\n\n                if (dir === \"left\") {\n                    [processedLine, lineScore] = this._processLine(line);\n                } else { // \"right\"\n                    // Reverse line, process left-to-right, then reverse result\n                    let reversedLine = this._reverseLine(line);\n                    let [processedReversed, score] = this._processLine(reversedLine);\n                    \n                    processedLine = this._reverseLine(processedReversed);\n                    lineScore = score;\n                }\n\n                scoreDelta += lineScore;\n                newBoard[r] = processedLine;\n            }\n        } else {\n            // --- Vertical Movement (Columns) ---\n            // 1. Transpose to treat columns as rows\n            const transposedBoard = this._transpose(this.board);\n            let transposedNewBoard = transposedBoard.map(row => [...row]);\n\n            for (let c = 0; c < this.BOARD_SIZE; c++) {\n                let line = transposedBoard[c];\n                let processedLine;\n                let lineScore;\n\n                if (dir === \"up\") {\n                    // Process up (equivalent to left movement on transposed)\n                    [processedLine, lineScore] = this._processLine(line);\n                } else { // \"down\"\n                    // Process down (equivalent to right movement on transposed)\n                    let reversedLine = this._reverseLine(line);\n                    let [processedReversed, score] = this._processLine(reversedLine);\n                    \n                    processedLine = this._reverseLine(processedReversed);\n                    lineScore = score;\n                }\n                \n                scoreDelta += lineScore;\n                transposedNewBoard[c] = processedLine;\n            }\n            \n            // 2. Transpose back\n            newBoard = this._transpose(transposedNewBoard);\n        }\n\n        // Check if the board state changed\n        const originalString = JSON.stringify(originalBoard);\n        const newString = JSON.stringify(newBoard);\n        \n        if (originalString !== newString) {\n            this.board = newBoard;\n            this.score += scoreDelta;\n            boardChanged = true;\n        }\n\n        // Handle spawning if the board changed\n        if (boardChanged && this.spawnQueue.length > 0) {\n            const spawn = this.spawnQueue.shift();\n            const { r, c, v } = spawn;\n            \n            // Set the new tile. The spec guarantees the spawn location is valid.\n            this.board[r][c] = v;\n        }\n\n        return boardChanged;\n    }\n}\n```",
+          "metadata": {
+            "tok_per_sec": "66.5"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 12,
+          "total": 12,
+          "reason": "pass: 12/12"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `fizzbuzz(n)`. Return \"Fizz\" if n is divisible by 3, \"Buzz\" if divisible by 5, \"FizzBuzz\" if divisible by both 3 and 5, otherwise the number as a string.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "fizzbuzz",
+          "category": "algo",
+          "difficulty": "easy"
+        },
+        "response": {
+          "output": "```javascript\nconst fizzbuzz = (n) => {\n  if (n % 15 === 0) {\n    return \"FizzBuzz\";\n  } else if (n % 3 === 0) {\n    return \"Fizz\";\n  } else if (n % 5 === 0) {\n    return \"Buzz\";\n  } else {\n    return String(n);\n  }\n};\n```",
+          "metadata": {
+            "tok_per_sec": "102.1"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 7,
+          "total": 7,
+          "reason": "pass: 7/7"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `reverseWords(s)`. Return the string with the order of space-separated words reversed, collapsing any runs of whitespace to a single space and trimming leading/trailing whitespace. Example: \"  the  sky is \" → \"is sky the\".",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "reverse-words",
+          "category": "string",
+          "difficulty": "easy"
+        },
+        "response": {
+          "output": "```javascript\nconst reverseWords = (s) => {\n  if (!s) {\n    return \"\";\n  }\n  // Split by one or more whitespace characters, filtering out empty strings that result from leading/trailing/multiple spaces\n  const words = s.trim().split(/\\s+/);\n\n  // Reverse the array of words\n  const reversedWords = words.reverse();\n\n  // Join them back with a single space\n  return reversedWords.join(' ');\n};\n```",
+          "metadata": {
+            "tok_per_sec": "102.2"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `sumEven(nums)`. Return the sum of the even integers in the array. Empty array returns 0.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "sum-even",
+          "category": "algo",
+          "difficulty": "easy"
+        },
+        "response": {
+          "output": "```javascript\nconst sumEven = (nums) => {\n  return nums.reduce((sum, num) => {\n    if (num % 2 === 0) {\n      return sum + num;\n    }\n    return sum;\n  }, 0);\n};\n```",
+          "metadata": {
+            "tok_per_sec": "102.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 5,
+          "total": 5,
+          "reason": "pass: 5/5"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `twoSum(nums, target)`. Return the indices [i, j] (i < j) of the two numbers that add up to target. Exactly one solution exists. Return [] if none.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "two-sum",
+          "category": "algo",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {number[]} nums\n * @param {number} target\n * @return {number[]}\n */\nconst twoSum = (nums, target) => {\n  const numMap = new Map();\n\n  for (let i = 0; i < nums.length; i++) {\n    const complement = target - nums[i];\n\n    if (numMap.has(complement)) {\n      const j = numMap.get(complement);\n      // Since we iterate from left to right, j (the previously seen index) will be less than i.\n      // The requirement is to return [i, j] where i < j.\n      // If we found complement at j and current is i, we return [j, i].\n      return [j, i];\n    }\n\n    numMap.set(nums[i], i);\n  }\n\n  return [];\n};\n```",
+          "metadata": {
+            "tok_per_sec": "101.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 5,
+          "total": 5,
+          "reason": "pass: 5/5"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `isValid(s)`. Given a string of just the characters ()[]{}, return true if every bracket is closed by the matching type in the correct order. Empty string is valid.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "valid-parens",
+          "category": "algo",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {string} s\n * @return {boolean}\n */\nconst isValid = (s) => {\n    const stack = [];\n    const map = {\n        ')': '(',\n        ']': '[',\n        '}': '{'\n    };\n\n    for (let i = 0; i < s.length; i++) {\n        const char = s[i];\n\n        if (char === '(' || char === '[' || char === '{') {\n            stack.push(char);\n        } else if (char === ')' || char === ']' || char === '}') {\n            if (stack.length === 0) {\n                return false;\n            }\n            const topElement = stack.pop();\n            if (topElement !== map[char]) {\n                return false;\n            }\n        }\n    }\n\n    return stack.length === 0;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "101.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 8,
+          "total": 8,
+          "reason": "pass: 8/8"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `romanToInt(s)`. Convert a Roman numeral string (I,V,X,L,C,D,M) to its integer value, handling subtractive pairs (IV=4, IX=9, XL=40, XC=90, CD=400, CM=900).",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "roman-to-int",
+          "category": "string",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {string} s\n * @return {number}\n */\nconst romanToInt = (s) => {\n    const romanMap = {\n        'I': 1,\n        'V': 5,\n        'X': 10,\n        'L': 50,\n        'C': 100,\n        'D': 500,\n        'M': 1000\n    };\n\n    let total = 0;\n    for (let i = 0; i < s.length; i++) {\n        const currentVal = romanMap[s[i]];\n        const nextVal = romanMap[s[i + 1]];\n\n        if (nextVal && currentVal < nextVal) {\n            total += (nextVal - currentVal);\n            i++; // Skip the next character since it was already processed\n        } else {\n            total += currentVal;\n        }\n    }\n\n    return total;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "101.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `groupAnagrams(words)`. Group the words that are anagrams of each other. Return an array of groups; within each group preserve the input order, and order the groups by the first appearance of any member in the input. Example: [\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"] → [[\"eat\",\"tea\",\"ate\"],[\"tan\",\"nat\"],[\"bat\"]].",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "group-anagrams",
+          "category": "datastruct",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {string[]} words\n * @return {string[][]}\n */\nconst groupAnagrams = (words) => {\n  const anagramMap = new Map();\n\n  for (const word of words) {\n    // Create a canonical key for the anagram group by sorting the characters\n    const sortedKey = word.split('').sort().join('');\n\n    if (!anagramMap.has(sortedKey)) {\n      // Initialize the group, preserving the order of first appearance\n      anagramMap.set(sortedKey, []);\n    }\n    \n    // Add the current word to its corresponding group\n    anagramMap.get(sortedKey).push(word);\n  }\n\n  // The requirement is to order the groups by the first appearance of any member.\n  // Since we iterated through `words` sequentially, the Map insertion order \n  // for keys derived from the first appearance of a word naturally preserves \n  // the order required if we iterate over the Map keys in insertion order, \n  // which standard JS Map iteration does.\n\n  // Extract the groups (the values of the map)\n  return Array.from(anagramMap.values());\n};\n```",
+          "metadata": {
+            "tok_per_sec": "101.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 4,
+          "total": 4,
+          "reason": "pass: 4/4"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `mergeIntervals(intervals)`. Given an array of [start, end] pairs, merge all overlapping intervals and return the result sorted by start. Touching intervals ([1,2] and [2,3]) merge.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "merge-intervals",
+          "category": "algo",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {number[][]} intervals\n * @return {number[][]}\n */\nconst mergeIntervals = (intervals) => {\n    if (!intervals || intervals.length === 0) {\n        return [];\n    }\n\n    // Sort intervals based on the start time\n    intervals.sort((a, b) => a[0] - b[0]);\n\n    const merged = [];\n    let currentInterval = intervals[0];\n\n    for (let i = 1; i < intervals.length; i++) {\n        const nextInterval = intervals[i];\n        const currentEnd = currentInterval[1];\n        const nextStart = nextInterval[0];\n\n        // Check for overlap or touching: currentEnd >= nextStart\n        // This handles both [1, 3] and [1, 2] touching [2, 3]\n        if (currentEnd >= nextStart) {\n            // Merge: update the end of the current interval to the maximum of the two ends\n            currentInterval[1] = Math.max(currentEnd, nextInterval[1]);\n        } else {\n            // No overlap, push the current merged interval and start a new one\n            merged.push(currentInterval);\n            currentInterval = nextInterval;\n        }\n    }\n\n    // Push the last processed interval\n    merged.push(currentInterval);\n\n    return merged;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "101.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 5,
+          "total": 5,
+          "reason": "pass: 5/5"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `firstUnique(s)`. Return the first character in the string that appears exactly once. If there is none, return an empty string \"\".",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "lru-ish-cache",
+          "category": "datastruct",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nconst firstUnique = (s) => {\n  const charCounts = new Map();\n  for (const char of s) {\n    charCounts.set(char, (charCounts.get(char) || 0) + 1);\n  }\n\n  for (const char of s) {\n    if (charCounts.get(char) === 1) {\n      return char;\n    }\n  }\n\n  return \"\";\n};\n```",
+          "metadata": {
+            "tok_per_sec": "102.1"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `lengthOfLongestSubstring(s)`. Return the length of the longest substring without repeating characters.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "longest-substring",
+          "category": "algo",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {string} s\n * @return {number}\n */\nconst lengthOfLongestSubstring = (s) => {\n    let maxLength = 0;\n    let start = 0;\n    const charIndexMap = new Map();\n\n    for (let end = 0; end < s.length; end++) {\n        const char = s[end];\n\n        if (charIndexMap.has(char) && charIndexMap.get(char) >= start) {\n            // If the character is already in the current window (and its last index is >= start),\n            // move the start pointer to the right of the last occurrence of this character.\n            start = charIndexMap.get(char) + 1;\n        }\n\n        // Update the last seen index of the current character\n        charIndexMap.set(char, end);\n\n        // Calculate the current window length and update maxLength\n        maxLength = Math.max(maxLength, end - start + 1);\n    }\n\n    return maxLength;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "101.5"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 8,
+          "total": 8,
+          "reason": "pass: 8/8"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `coinChange(coins, amount)`. Return the fewest number of coins needed to make up `amount`. Each coin may be used unlimited times. Return -1 if it cannot be made. amount 0 returns 0.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "coin-change",
+          "category": "algo",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\nconst coinChange = (coins, amount) => {\n    if (amount === 0) {\n        return 0;\n    }\n\n    // dp[i] will store the minimum number of coins needed to make amount i\n    // Initialize dp array of size amount + 1 with a value indicating infinity\n    const dp = new Array(amount + 1).fill(amount + 1);\n\n    // Base case: 0 amount requires 0 coins\n    dp[0] = 0;\n\n    // Iterate through all amounts from 1 up to the target amount\n    for (let i = 1; i <= amount; i++) {\n        // Try every coin denomination\n        for (const coin of coins) {\n            // If the current coin can be used to form amount i\n            if (coin <= i) {\n                // Update dp[i] with the minimum of its current value\n                // and 1 (for the current coin) + the minimum coins needed for the remaining amount (i - coin)\n                dp[i] = Math.min(dp[i], dp[i - coin] + 1);\n            }\n        }\n    }\n\n    // If dp[amount] is still amount + 1, it means the amount cannot be formed\n    return dp[amount] > amount ? -1 : dp[amount];\n};\n```",
+          "metadata": {
+            "tok_per_sec": "101.4"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `spiralOrder(matrix)`. Return all elements of the m×n matrix in clockwise spiral order starting from the top-left.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "spiral-order",
+          "category": "algo",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {number[][]} matrix\n * @return {number[]}\n */\nconst spiralOrder = (matrix) => {\n    if (!matrix || matrix.length === 0 || matrix[0].length === 0) {\n        return [];\n    }\n\n    const m = matrix.length;\n    const n = matrix[0].length;\n    const result = [];\n\n    let top = 0;\n    let bottom = m - 1;\n    let left = 0;\n    let right = n - 1;\n\n    while (top <= bottom && left <= right) {\n        // Traverse Right (Top row)\n        for (let c = left; c <= right; c++) {\n            result.push(matrix[top][c]);\n        }\n        top++;\n\n        if (top > bottom) break;\n\n        // Traverse Down (Right column)\n        for (let r = top; r <= bottom; r++) {\n            result.push(matrix[r][right]);\n        }\n        right--;\n\n        if (left > right) break;\n\n        // Traverse Left (Bottom row)\n        for (let c = right; c >= left; c--) {\n            result.push(matrix[bottom][c]);\n        }\n        bottom--;\n\n        if (top > bottom) break;\n\n        // Traverse Up (Left column)\n        for (let r = bottom; r >= top; r--) {\n            result.push(matrix[r][left]);\n        }\n        left++;\n    }\n\n    return result;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "101.4"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `editDistance(a, b)`. Return the minimum number of single-character insertions, deletions, or substitutions to turn string a into string b (Levenshtein distance).",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "edit-distance",
+          "category": "algo",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * Calculates the Levenshtein distance between two strings.\n * The Levenshtein distance is the minimum number of single-character\n * edits (insertions, deletions, or substitutions) required to change one word into the other.\n *\n * @param {string} a The first string.\n * @param {string} b The second string.\n * @returns {number} The edit distance.\n */\nconst editDistance = (a, b) => {\n    const m = a.length;\n    const n = b.length;\n\n    // Create a 2D array (m+1) x (n+1) for dynamic programming\n    const dp = Array(m + 1).fill(0).map(() => Array(n + 1).fill(0));\n\n    // Initialize the DP table\n    // Base case: distance from empty string to prefix of length i in 'a' is i (i deletions)\n    for (let i = 0; i <= m; i++) {\n        dp[i][0] = i;\n    }\n    // Base case: distance from empty string to prefix of length j in 'b' is j (j insertions)\n    for (let j = 0; j <= n; j++) {\n        dp[0][j] = j;\n    }\n\n    // Fill the DP table\n    for (let i = 1; i <= m; i++) {\n        for (let j = 1; j <= n; j++) {\n            // Cost of substitution: 0 if characters match, 1 otherwise\n            const cost = a[i - 1] === b[j - 1] ? 0 : 1;\n\n            // dp[i][j] is the minimum of:\n            // 1. Deletion: dp[i-1][j] + 1\n            // 2. Insertion: dp[i][j-1] + 1\n            // 3. Substitution/Match: dp[i-1][j-1] + cost\n            dp[i][j] = Math.min(\n                dp[i - 1][j] + 1,      // Deletion\n                dp[i][j - 1] + 1,      // Insertion\n                dp[i - 1][j - 1] + cost // Substitution/Match\n            );\n        }\n    }\n\n    // The bottom-right cell contains the Levenshtein distance\n    return dp[m][n];\n};\n```",
+          "metadata": {
+            "tok_per_sec": "101.4"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 7,
+          "total": 7,
+          "reason": "pass: 7/7"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `median(nums)`. Return the median of the array. For an even count, return the average of the two middle values (a number, possibly fractional). The input is NOT sorted. Empty array returns 0.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "median-two",
+          "category": "edge",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\nconst median = (nums) => {\n  if (nums.length === 0) {\n    return 0;\n  }\n\n  const sortedNums = [...nums].sort((a, b) => a - b);\n  const length = sortedNums.length;\n  const middleIndex = Math.floor(length / 2);\n\n  if (length % 2 === 1) {\n    // Odd number of elements\n    return sortedNums[middleIndex];\n  } else {\n    // Even number of elements\n    const middle1 = sortedNums[middleIndex - 1];\n    const middle2 = sortedNums[middleIndex];\n    return (middle1 + middle2) / 2;\n  }\n};\n```",
+          "metadata": {
+            "tok_per_sec": "101.4"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 7,
+          "total": 7,
+          "reason": "pass: 7/7"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement `roundHalfUp(x)`. Round to the nearest integer with ties (exactly .5) always going UP toward +Infinity, so roundHalfUp(2.5) = 3 and roundHalfUp(-2.5) = -2. Note: JS Math.round already does this — but verify the negative-tie behavior carefully.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "rounding-trap",
+          "category": "edge",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nconst roundHalfUp = (x) => {\n  return Math.floor(x + 0.5);\n};\n```",
+          "metadata": {
+            "tok_per_sec": "103.7"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 7,
+          "total": 7,
+          "reason": "pass: 7/7"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "The following binary search has a bug. Return a CORRECTED version that returns the index of `target` in the sorted array `arr`, or -1 if absent. Keep the function name `binarySearch`.\n\n```js\nfunction binarySearch(arr, target) {\n  let lo = 0, hi = arr.length;\n  while (lo < hi) {\n    const mid = (lo + hi) / 2;\n    if (arr[mid] === target) return mid;\n    if (arr[mid] < target) lo = mid;\n    else hi = mid;\n  }\n  return -1;\n}\n```",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "bugfix-binsearch",
+          "category": "bugfix",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction binarySearch(arr, target) {\n  let lo = 0;\n  let hi = arr.length - 1;\n  while (lo <= hi) {\n    // Use Math.floor to ensure mid is an integer index\n    const mid = Math.floor((lo + hi) / 2);\n    \n    if (arr[mid] === target) {\n      return mid;\n    } else if (arr[mid] < target) {\n      // Target is in the right half\n      lo = mid + 1;\n    } else {\n      // arr[mid] > target, target is in the left half\n      hi = mid - 1;\n    }\n  }\n  return -1;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "101.4"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "The following deep-flatten has a bug — it only flattens one level. Return a CORRECTED version that fully flattens an arbitrarily nested array of numbers into a flat array, preserving order. Keep the function name `flatten`.\n\n```js\nfunction flatten(arr) {\n  const out = [];\n  for (const x of arr) {\n    if (Array.isArray(x)) out.push(...x);\n    else out.push(x);\n  }\n  return out;\n}\n```",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "bugfix-flatten",
+          "category": "bugfix",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction flatten(arr) {\n  const out = [];\n  for (const x of arr) {\n    if (Array.isArray(x)) {\n      out.push(...flatten(x));\n    } else {\n      out.push(x);\n    }\n  }\n  return out;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "101.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "The following dedup is supposed to remove duplicates while PRESERVING first-seen order, but it sorts the output, breaking order. Return a CORRECTED version that preserves first-seen order. Keep the function name `dedup`.\n\n```js\nfunction dedup(arr) {\n  return [...new Set(arr)].sort();\n}\n```",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "bugfix-dedup-order",
+          "category": "bugfix",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction dedup(arr) {\n  const seen = new Set();\n  const result = [];\n  for (const item of arr) {\n    if (!seen.has(item)) {\n      seen.add(item);\n      result.push(item);\n    }\n  }\n  return result;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "102.3"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 5,
+          "total": 5,
+          "reason": "pass: 5/5"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [no_think]"
+        },
+        "prompt": {
+          "raw": "Implement the game engine for 2048 as a JavaScript class named `Game2048`. Follow this spec EXACTLY — it is graded by executing your class.\n\nBoard: a 4×4 grid, represented as an array of 4 rows, each an array of 4 integers. 0 means an empty cell; non-zero values are tiles.\n\nConstructor `new Game2048(board, spawnQueue)`:\n  • `board` — the initial 4×4 grid. Copy it; do not alias the caller’s array.\n  • `spawnQueue` — an array of spawn instructions `{r, c, v}` consumed IN ORDER, one per spawn (see move). The score starts at 0.\n\nProvide three METHODS (called with parentheses):\n  • `getBoard()` → the current 4×4 grid.\n  • `getScore()` → the running score (a number).\n  • `isGameOver()` → boolean: true iff there are NO empty cells AND no two horizontally- or vertically-adjacent cells are equal (no move would change the board).\n\nMethod `move(dir)` where `dir` is one of \"left\", \"right\", \"up\", \"down\":\n  1. Slide all tiles as far as possible in `dir`. When two tiles of equal value collide while sliding, they merge into one tile of double the value, and that merged value is ADDED to `score`. A tile that resulted from a merge cannot merge again in the same move. When multiple merges are possible in a line, the ones nearer the direction of travel happen first (e.g. moving [2,2,2,2] left gives [4,4,0,0], NOT [8,0,0,0]; [2,2,4] moving left gives [4,4,0]).\n  2. If the board CHANGED as a result of the move, consume the next spawn `{r,c,v}` from the queue and set that cell to `v`, then return `true`. If the board did NOT change, consume NO spawn and return `false`.",
+          "label": "coding_hard"
+        },
+        "vars": {
+          "case_id": "2048-engine",
+          "category": "game",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\nclass Game2048 {\n    constructor(board, spawnQueue) {\n        this.board = board.map(row => [...row]);\n        this.spawnQueue = [...spawnQueue];\n        this.score = 0;\n    }\n\n    getBoard() {\n        return this.board.map(row => [...row]);\n    }\n\n    getScore() {\n        return this.score;\n    }\n\n    isGameOver() {\n        // Check for empty cells\n        for (let r = 0; r < 4; r++) {\n            for (let c = 0; c < 4; c++) {\n                if (this.board[r][c] === 0) {\n                    return false;\n                }\n            }\n        }\n\n        // Check for possible adjacent moves (horizontal or vertical)\n        for (let r = 0; r < 4; r++) {\n            for (let c = 0; c < 4; c++) {\n                const val = this.board[r][c];\n\n                // Check right\n                if (c < 3 && this.board[r][c + 1] === val) return false;\n                // Check down\n                if (r < 3 && this.board[r + 1][c] === val) return false;\n            }\n        }\n\n        return true;\n    }\n\n    move(dir) {\n        const originalBoard = this.getBoard();\n        let boardChanged = false;\n\n        // Deep copy the board for manipulation in this move\n        let newBoard = this.board.map(row => [...row]);\n\n        // --- Helper function for sliding and merging in one dimension (row or column) ---\n        const operateLine = (line) => {\n            // 1. Slide (compact non-zero tiles)\n            let compacted = line.filter(val => val !== 0);\n            \n            // 2. Merge\n            let merged = [];\n            for (let i = 0; i < compacted.length; i++) {\n                if (i + 1 < compacted.length && compacted[i] === compacted[i + 1]) {\n                    const mergedValue = compacted[i] * 2;\n                    merged.push(mergedValue);\n                    \n                    // Score update logic: the merged value is added to the score\n                    // This score update MUST happen within the move logic scope.\n                    // Since this helper is complex to manage score updates across calls,\n                    // we will manage the scoring logic directly in the main move function flow \n                    // by checking the results of the slide/merge operation.\n                    \n                    i++; // Skip the next element as it was merged\n                } else {\n                    merged.push(compacted[i]);\n                }\n            }\n\n            // 3. Pad (fill remaining space with 0s)\n            const newLine = [...merged];\n            while (newLine.length < 4) {\n                newLine.push(0);\n            }\n            return newLine;\n        };\n\n        // --- Apply movement logic ---\n\n        if (dir === \"left\" || dir === \"right\") {\n            for (let r = 0; r < 4; r++) {\n                let row = [...this.board[r]];\n                \n                if (dir === \"right\") {\n                    row.reverse();\n                }\n\n                const compactedAndMerged = operateLine(row);\n\n                if (dir === \"right\") {\n                    compactedAndMerged.reverse();\n                }\n\n                // Calculate score change during merging for this row\n                // This is complex because operateLine doesn't return merge data. \n                // We must re-implement the merge logic to track score.\n                \n                // Reset newBoard[r] and recalculate carefully to track score\n                let currentLine = [...this.board[r]];\n                let newLine = [];\n                let scoreChange = 0;\n\n                if (dir === \"left\") {\n                    let temp = currentLine.filter(v => v !== 0);\n                    let mergedTemp = [];\n                    for (let i = 0; i < temp.length; i++) {\n                        if (i + 1 < temp.length && temp[i] === temp[i + 1]) {\n                            const mergedValue = temp[i] * 2;\n                            scoreChange += mergedValue;\n                            mergedTemp.push(mergedValue);\n                            i++;\n                        } else {\n                            mergedTemp.push(temp[i]);\n                        }\n                    }\n                    while (mergedTemp.length < 4) mergedTemp.push(0);\n                    newLine = mergedTemp;\n                } else { // right\n                    let temp = currentLine.filter(v => v !== 0).reverse();\n                    let mergedTemp = [];\n                    for (let i = 0; i < temp.length; i++) {\n                        if (i + 1 < temp.length && temp[i] === temp[i + 1]) {\n                            const mergedValue = temp[i] * 2;\n                            scoreChange += mergedValue;\n                            mergedTemp.push(mergedValue);\n                            i++;\n                        } else {\n                            mergedTemp.push(temp[i]);\n                        }\n                    }\n                    while (mergedTemp.length < 4) mergedTemp.push(0);\n                    newLine = mergedTemp.reverse();\n                }\n                \n                if (this.board[r].join(',') !== newLine.join(',')) {\n                    boardChanged = true;\n                    newBoard[r] = newLine;\n                    this.score += scoreChange;\n                }\n            }\n        } else { // Up or Down (Vertical operation)\n            for (let c = 0; c < 4; c++) {\n                // Extract column\n                let col = [];\n                for(let r = 0; r < 4; r++) {\n                    col.push(this.board[r][c]);\n                }\n\n                let newLine = [];\n                let scoreChange = 0;\n                \n                if (dir === \"up\") {\n                    // Up logic (equivalent to left on a transposed board)\n                    let temp = col.filter(v => v !== 0);\n                    let mergedTemp = [];\n                    for (let i = 0; i < temp.length; i++) {\n                        if (i + 1 < temp.length && temp[i] === temp[i + 1]) {\n                            const mergedValue = temp[i] * 2;\n                            scoreChange += mergedValue;\n                            mergedTemp.push(mergedValue);\n                            i++;\n                        } else {\n                            mergedTemp.push(temp[i]);\n                        }\n                    }\n                    while (mergedTemp.length < 4) mergedTemp.push(0);\n                    newLine = mergedTemp;\n\n                } else { // Down\n                    // Down logic (equivalent to right on a transposed board)\n                    let temp = col.filter(v => v !== 0).reverse();\n                    let mergedTemp = [];\n                    for (let i = 0; i < temp.length; i++) {\n                        if (i + 1 < temp.length && temp[i] === temp[i + 1]) {\n                            const mergedValue = temp[i] * 2;\n                            scoreChange += mergedValue;\n                            mergedTemp.push(mergedValue);\n                            i++;\n                        } else {\n                            mergedTemp.push(temp[i]);\n                        }\n                    }\n                    while (mergedTemp.length < 4) mergedTemp.push(0);\n                    newLine = mergedTemp.reverse();\n                }\n                \n                // Update board\n                let changedInCol = false;\n                for(let r = 0; r < 4; r++) {\n                    if (this.board[r][c] !== newLine[r]) {\n                        changedInCol = true;\n                        break;\n                    }\n                }\n\n                if (changedInCol) {\n                    boardChanged = true;\n                    for(let r = 0; r < 4; r++) {\n                        newBoard[r][c] = newLine[r];\n                    }\n                    this.score += scoreChange;\n                }\n            }\n        }\n        \n        // Apply changes if any\n        if (boardChanged) {\n            this.board = newBoard;\n            \n            // Consume spawn\n            if (this.spawnQueue.length > 0) {\n                const spawn = this.spawnQueue.shift();\n                const { r, c, v } = spawn;\n                // Ensure spawn is within bounds, although spec implies it will be valid\n                if (r >= 0 && r < 4 && c >= 0 && c < 4) {\n                    this.board[r][c] = v;\n                }\n            }\n            return true;\n        }\n\n        return false;\n    }\n}\n```",
+          "metadata": {
+            "tok_per_sec": "99.2"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 12,
+          "total": 12,
+          "reason": "pass: 12/12"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [think]"
+        },
+        "prompt": {
+          "raw": "Implement `fizzbuzz(n)`. Return \"Fizz\" if n is divisible by 3, \"Buzz\" if divisible by 5, \"FizzBuzz\" if divisible by both 3 and 5, otherwise the number as a string.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "fizzbuzz",
+          "category": "algo",
+          "difficulty": "easy"
+        },
+        "response": {
+          "output": "```javascript\nconst fizzbuzz = (n) => {\n  if (n % 3 === 0 && n % 5 === 0) {\n    return \"FizzBuzz\";\n  }\n  if (n % 3 === 0) {\n    return \"Fizz\";\n  }\n  if (n % 5 === 0) {\n    return \"Buzz\";\n  }\n  return String(n);\n};\n```",
+          "metadata": {
+            "tok_per_sec": "101.2"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 7,
+          "total": 7,
+          "reason": "pass: 7/7"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [think]"
+        },
+        "prompt": {
+          "raw": "Implement `reverseWords(s)`. Return the string with the order of space-separated words reversed, collapsing any runs of whitespace to a single space and trimming leading/trailing whitespace. Example: \"  the  sky is \" → \"is sky the\".",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "reverse-words",
+          "category": "string",
+          "difficulty": "easy"
+        },
+        "response": {
+          "output": "```javascript\nconst reverseWords = (s) => {\n    // 1. Trim leading/trailing whitespace\n    const trimmedString = s.trim();\n\n    // Handle the case where the string is empty or only contains whitespace\n    if (trimmedString.length === 0) {\n        return \"\";\n    }\n\n    // 2. Split by one or more whitespace characters to get clean words\n    const words = trimmedString.split(/\\s+/);\n\n    // 3. Reverse the order of words\n    const reversedWords = words.reverse();\n\n    // 4. Join them back into a string with a single space separator\n    return reversedWords.join(' ');\n};\n```",
+          "metadata": {
+            "tok_per_sec": "100.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [think]"
+        },
+        "prompt": {
+          "raw": "Implement `sumEven(nums)`. Return the sum of the even integers in the array. Empty array returns 0.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "sum-even",
+          "category": "algo",
+          "difficulty": "easy"
+        },
+        "response": {
+          "output": "```javascript\nconst sumEven = (nums) => {\n  return nums.reduce((sum, current) => {\n    if (current % 2 === 0) {\n      return sum + current;\n    }\n    return sum;\n  }, 0);\n};\n```",
+          "metadata": {
+            "tok_per_sec": "101.4"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 5,
+          "total": 5,
+          "reason": "pass: 5/5"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [think]"
+        },
+        "prompt": {
+          "raw": "Implement `twoSum(nums, target)`. Return the indices [i, j] (i < j) of the two numbers that add up to target. Exactly one solution exists. Return [] if none.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "two-sum",
+          "category": "algo",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {number[]} nums\n * @param {number} target\n * @return {number[]}\n */\nconst twoSum = (nums, target) => {\n    const numMap = new Map();\n\n    for (let i = 0; i < nums.length; i++) {\n        const complement = target - nums[i];\n        if (numMap.has(complement)) {\n            const j = numMap.get(complement);\n            // The problem requires returning [i, j] where i < j.\n            // Since we process i in increasing order, and j was stored previously, j < i.\n            // We must return [j, i] to satisfy j < i (where j is the smaller index).\n            return [j, i];\n        }\n        numMap.set(nums[i], i);\n    }\n\n    // Although the problem statement guarantees exactly one solution, \n    // standard practice dictates handling the no-solution case.\n    return [];\n};\n```",
+          "metadata": {
+            "tok_per_sec": "101.3"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 5,
+          "total": 5,
+          "reason": "pass: 5/5"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [think]"
+        },
+        "prompt": {
+          "raw": "Implement `isValid(s)`. Given a string of just the characters ()[]{}, return true if every bracket is closed by the matching type in the correct order. Empty string is valid.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "valid-parens",
+          "category": "algo",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {string} s\n * @return {boolean}\n */\nconst isValid = (s) => {\n    const stack = [];\n    const map = {\n        ')': '(',\n        ']': '[',\n        '}': '{'\n    };\n\n    for (let i = 0; i < s.length; i++) {\n        const char = s[i];\n\n        if (char === '(' || char === '[' || char === '{') {\n            stack.push(char);\n        } else if (char === ')' || char === ']' || char === '}') {\n            // If the stack is empty, we encountered a closing bracket without an opening one.\n            if (stack.length === 0) {\n                return false;\n            }\n\n            const topElement = stack.pop();\n            \n            // Check if the popped element matches the required opening bracket\n            if (topElement !== map[char]) {\n                return false;\n            }\n        }\n    }\n\n    // The string is valid only if the stack is empty at the end (all opening brackets were closed).\n    return stack.length === 0;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "101.2"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 8,
+          "total": 8,
+          "reason": "pass: 8/8"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [think]"
+        },
+        "prompt": {
+          "raw": "Implement `romanToInt(s)`. Convert a Roman numeral string (I,V,X,L,C,D,M) to its integer value, handling subtractive pairs (IV=4, IX=9, XL=40, XC=90, CD=400, CM=900).",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "roman-to-int",
+          "category": "string",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nconst romanToInt = (s) => {\n    const values = {\n        'I': 1,\n        'V': 5,\n        'X': 10,\n        'L': 50,\n        'C': 100,\n        'D': 500,\n        'M': 1000\n    };\n\n    let result = 0;\n    const n = s.length;\n\n    for (let i = 0; i < n; i++) {\n        const currentValue = values[s[i]];\n        const nextValue = (i + 1 < n) ? values[s[i + 1]] : 0;\n\n        if (currentValue < nextValue) {\n            // Subtractive case (e.g., IV, IX)\n            result -= currentValue;\n        } else {\n            // Additive case\n            result += currentValue;\n        }\n    }\n\n    return result;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "100.7"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [think]"
+        },
+        "prompt": {
+          "raw": "Implement `groupAnagrams(words)`. Group the words that are anagrams of each other. Return an array of groups; within each group preserve the input order, and order the groups by the first appearance of any member in the input. Example: [\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"] → [[\"eat\",\"tea\",\"ate\"],[\"tan\",\"nat\"],[\"bat\"]].",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "group-anagrams",
+          "category": "datastruct",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction groupAnagrams(words) {\n    const anagramGroups = new Map();\n\n    for (const word of words) {\n        // Generate a canonical key by sorting the characters of the word\n        const sortedWord = word.split('').sort().join('');\n\n        if (!anagramGroups.has(sortedWord)) {\n            // If the key is new, initialize the group\n            anagramGroups.set(sortedWord, []);\n        }\n\n        // Add the original word to the corresponding group. \n        // Since we iterate through 'words' sequentially, this preserves the within-group order.\n        anagramGroups.get(sortedWord).push(word);\n    }\n\n    // Map iteration preserves insertion order. Converting values to an array \n    // returns the groups ordered by the first appearance of their member.\n    return Array.from(anagramGroups.values());\n}\n```",
+          "metadata": {
+            "tok_per_sec": "100.5"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 4,
+          "total": 4,
+          "reason": "pass: 4/4"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [think]"
+        },
+        "prompt": {
+          "raw": "Implement `mergeIntervals(intervals)`. Given an array of [start, end] pairs, merge all overlapping intervals and return the result sorted by start. Touching intervals ([1,2] and [2,3]) merge.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "merge-intervals",
+          "category": "algo",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {number[][]} intervals\n * @return {number[][]}\n */\nconst mergeIntervals = (intervals) => {\n    if (!intervals || intervals.length < 2) {\n        return intervals;\n    }\n\n    // 1. Sort the intervals based on the start time.\n    // This is crucial for efficient merging.\n    intervals.sort((a, b) => a[0] - b[0]);\n\n    const merged = [];\n    \n    // Start with the first interval\n    let currentInterval = intervals[0];\n\n    for (let i = 1; i < intervals.length; i++) {\n        const nextInterval = intervals[i];\n        \n        const currentEnd = currentInterval[1];\n        const nextStart = nextInterval[0];\n        \n        // Check for overlap or touching: \n        // Overlap occurs if currentInterval[1] >= nextInterval[0].\n        // Touching occurs if currentInterval[1] == nextInterval[0].\n        // Since the problem states \"Touching intervals ([1,2] and [2,3]) merge\", \n        // the condition for merging is currentInterval[1] >= nextInterval[0].\n        if (currentEnd >= nextStart) {\n            // Merge: Extend the current interval's end time\n            // We take the maximum of the current end and the next end.\n            currentInterval[1] = Math.max(currentEnd, nextInterval[1]);\n        } else {\n            // No overlap/touching: The current merged interval is complete.\n            merged.push(currentInterval);\n            // Start a new interval\n            currentInterval = nextInterval;\n        }\n    }\n\n    // Add the last processed interval\n    merged.push(currentInterval);\n\n    return merged;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "101.2"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 5,
+          "total": 5,
+          "reason": "pass: 5/5"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [think]"
+        },
+        "prompt": {
+          "raw": "Implement `firstUnique(s)`. Return the first character in the string that appears exactly once. If there is none, return an empty string \"\".",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "lru-ish-cache",
+          "category": "datastruct",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nconst firstUnique = (s) => {\n    const counts = new Map();\n\n    // Pass 1: Count character frequencies\n    for (const char of s) {\n        counts.set(char, (counts.get(char) || 0) + 1);\n    }\n\n    // Pass 2: Iterate through the string again to find the first unique character\n    for (const char of s) {\n        if (counts.get(char) === 1) {\n            return char;\n        }\n    }\n\n    // If no character appears exactly once\n    return \"\";\n};\n```",
+          "metadata": {
+            "tok_per_sec": "101.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [think]"
+        },
+        "prompt": {
+          "raw": "Implement `lengthOfLongestSubstring(s)`. Return the length of the longest substring without repeating characters.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "longest-substring",
+          "category": "algo",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {string} s\n * @return {number}\n */\nconst lengthOfLongestSubstring = (s) => {\n    let maxLength = 0;\n    let start = 0;\n    const charMap = new Map(); // Stores character and its last seen index\n\n    for (let end = 0; end < s.length; end++) {\n        const char = s[end];\n\n        if (charMap.has(char) && charMap.get(char) >= start) {\n            // If the character is already in the current window (>= start),\n            // move the start pointer to the index after the previous occurrence.\n            start = charMap.get(char) + 1;\n        }\n\n        // Update the map with the current index of the character\n        charMap.set(char, end);\n\n        // Calculate the current window length and update maxLength\n        maxLength = Math.max(maxLength, end - start + 1);\n    }\n\n    return maxLength;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "101.3"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 8,
+          "total": 8,
+          "reason": "pass: 8/8"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [think]"
+        },
+        "prompt": {
+          "raw": "Implement `coinChange(coins, amount)`. Return the fewest number of coins needed to make up `amount`. Each coin may be used unlimited times. Return -1 if it cannot be made. amount 0 returns 0.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "coin-change",
+          "category": "algo",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\nfunction coinChange(coins, amount) {\n    if (amount === 0) {\n        return 0;\n    }\n\n    // dp[i] will store the minimum number of coins needed to make amount i.\n    const dp = new Array(amount + 1).fill(Infinity);\n\n    // Base case: 0 coins needed for amount 0.\n    dp[0] = 0;\n\n    // Iterate through all possible amounts from 1 up to the target amount\n    for (let i = 1; i <= amount; i++) {\n        // Try every coin denomination\n        for (const coin of coins) {\n            // If the current coin can be used\n            if (i >= coin) {\n                // Update dp[i] if using this coin leads to a smaller count\n                // We must ensure dp[i - coin] is not Infinity before adding 1\n                if (dp[i - coin] !== Infinity) {\n                    dp[i] = Math.min(dp[i], dp[i - coin] + 1);\n                }\n            }\n        }\n    }\n\n    // If dp[amount] is Infinity, it means the amount cannot be formed.\n    return dp[amount] === Infinity ? -1 : dp[amount];\n}\n```",
+          "metadata": {
+            "tok_per_sec": "100.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [think]"
+        },
+        "prompt": {
+          "raw": "Implement `spiralOrder(matrix)`. Return all elements of the m×n matrix in clockwise spiral order starting from the top-left.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "spiral-order",
+          "category": "algo",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\n/**\n * @param {number[][]} matrix\n * @return {number[]}\n */\nconst spiralOrder = (matrix) => {\n    if (!matrix || matrix.length === 0 || matrix[0].length === 0) {\n        return [];\n    }\n\n    const rows = matrix.length;\n    const cols = matrix[0].length;\n    const result = [];\n\n    let top = 0;\n    let bottom = rows - 1;\n    let left = 0;\n    let right = cols - 1;\n\n    while (top <= bottom && left <= right) {\n        // Traverse right (Top row)\n        for (let c = left; c <= right; c++) {\n            result.push(matrix[top][c]);\n        }\n        top++;\n\n        // Traverse down (Right column)\n        if (top <= bottom) {\n            for (let r = top; r <= bottom; r++) {\n                result.push(matrix[r][right]);\n            }\n            right--;\n        }\n\n        // Traverse left (Bottom row)\n        if (top <= bottom && left <= right) {\n            for (let c = right; c >= left; c--) {\n                result.push(matrix[bottom][c]);\n            }\n            bottom--;\n        }\n\n        // Traverse up (Left column)\n        if (top <= bottom && left <= right) {\n            for (let r = bottom; r >= top; r--) {\n                result.push(matrix[r][left]);\n            }\n            left++;\n        }\n    }\n\n    return result;\n};\n```",
+          "metadata": {
+            "tok_per_sec": "101.5"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [think]"
+        },
+        "prompt": {
+          "raw": "Implement `editDistance(a, b)`. Return the minimum number of single-character insertions, deletions, or substitutions to turn string a into string b (Levenshtein distance).",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "edit-distance",
+          "category": "algo",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\nconst editDistance = (a, b) => {\n    const m = a.length;\n    const n = b.length;\n    \n    // Create a 2D array (m+1) x (n+1)\n    const dp = Array(m + 1).fill(0).map(() => Array(n + 1).fill(0));\n\n    // Initialize base cases\n    for (let i = 0; i <= m; i++) {\n        dp[i][0] = i;\n    }\n    for (let j = 0; j <= n; j++) {\n        dp[0][j] = j;\n    }\n\n    // Fill the DP table\n    for (let i = 1; i <= m; i++) {\n        for (let j = 1; j <= n; j++) {\n            // Cost of substitution/match\n            const cost = (a[i - 1] === b[j - 1]) ? 0 : 1;\n\n            dp[i][j] = Math.min(\n                dp[i - 1][j] + 1,      // Deletion\n                dp[i][j - 1] + 1,      // Insertion\n                dp[i - 1][j - 1] + cost // Substitution or Match\n            );\n        }\n    }\n\n    return dp[m][n];\n};\n```",
+          "metadata": {
+            "tok_per_sec": "101.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 7,
+          "total": 7,
+          "reason": "pass: 7/7"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [think]"
+        },
+        "prompt": {
+          "raw": "Implement `median(nums)`. Return the median of the array. For an even count, return the average of the two middle values (a number, possibly fractional). The input is NOT sorted. Empty array returns 0.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "median-two",
+          "category": "edge",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\nconst median = (nums) => {\n    if (nums.length === 0) {\n        return 0;\n    }\n\n    // Create a sorted copy of the array\n    const sortedNums = [...nums].sort((a, b) => a - b);\n    const N = sortedNums.length;\n    \n    const middleIndex = Math.floor(N / 2);\n\n    if (N % 2 === 1) {\n        // Odd number of elements\n        return sortedNums[middleIndex];\n    } else {\n        // Even number of elements\n        const value1 = sortedNums[middleIndex - 1];\n        const value2 = sortedNums[middleIndex];\n        return (value1 + value2) / 2;\n    }\n};\n```",
+          "metadata": {
+            "tok_per_sec": "101.1"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 7,
+          "total": 7,
+          "reason": "pass: 7/7"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [think]"
+        },
+        "prompt": {
+          "raw": "Implement `roundHalfUp(x)`. Round to the nearest integer with ties (exactly .5) always going UP toward +Infinity, so roundHalfUp(2.5) = 3 and roundHalfUp(-2.5) = -2. Note: JS Math.round already does this — but verify the negative-tie behavior carefully.",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "rounding-trap",
+          "category": "edge",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nconst roundHalfUp = (x) => Math.floor(x + 0.5);\n```",
+          "metadata": {
+            "tok_per_sec": "101.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 7,
+          "total": 7,
+          "reason": "pass: 7/7"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [think]"
+        },
+        "prompt": {
+          "raw": "The following binary search has a bug. Return a CORRECTED version that returns the index of `target` in the sorted array `arr`, or -1 if absent. Keep the function name `binarySearch`.\n\n```js\nfunction binarySearch(arr, target) {\n  let lo = 0, hi = arr.length;\n  while (lo < hi) {\n    const mid = (lo + hi) / 2;\n    if (arr[mid] === target) return mid;\n    if (arr[mid] < target) lo = mid;\n    else hi = mid;\n  }\n  return -1;\n}\n```",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "bugfix-binsearch",
+          "category": "bugfix",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction binarySearch(arr, target) {\n  let lo = 0;\n  let hi = arr.length; // Exclusive upper bound\n  \n  while (lo < hi) {\n    // Calculate mid point using Math.floor to ensure integer index\n    const mid = Math.floor((lo + hi) / 2);\n    \n    if (arr[mid] === target) {\n      return mid;\n    } \n    \n    if (arr[mid] < target) {\n      // Target is in the right half\n      lo = mid + 1;\n    } else {\n      // arr[mid] > target. Target could be mid, so we shrink hi to mid.\n      hi = mid;\n    }\n  }\n  \n  return -1;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "100.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [think]"
+        },
+        "prompt": {
+          "raw": "The following deep-flatten has a bug — it only flattens one level. Return a CORRECTED version that fully flattens an arbitrarily nested array of numbers into a flat array, preserving order. Keep the function name `flatten`.\n\n```js\nfunction flatten(arr) {\n  const out = [];\n  for (const x of arr) {\n    if (Array.isArray(x)) out.push(...x);\n    else out.push(x);\n  }\n  return out;\n}\n```",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "bugfix-flatten",
+          "category": "bugfix",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction flatten(arr) {\n  let result = [];\n  for (const item of arr) {\n    if (Array.isArray(item)) {\n      result.push(...flatten(item));\n    } else {\n      result.push(item);\n    }\n  }\n  return result;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "101.2"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [think]"
+        },
+        "prompt": {
+          "raw": "The following dedup is supposed to remove duplicates while PRESERVING first-seen order, but it sorts the output, breaking order. Return a CORRECTED version that preserves first-seen order. Keep the function name `dedup`.\n\n```js\nfunction dedup(arr) {\n  return [...new Set(arr)].sort();\n}\n```",
+          "label": "coding"
+        },
+        "vars": {
+          "case_id": "bugfix-dedup-order",
+          "category": "bugfix",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction dedup(arr) {\n  return [...new Set(arr)];\n}\n```",
+          "metadata": {
+            "tok_per_sec": "101.4"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 5,
+          "total": 5,
+          "reason": "pass: 5/5"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:gemma-4-E4B-it-Q5_K_M",
+          "label": "Gemma4-E4B Q5_K_M [think]"
+        },
+        "prompt": {
+          "raw": "Implement the game engine for 2048 as a JavaScript class named `Game2048`. Follow this spec EXACTLY — it is graded by executing your class.\n\nBoard: a 4×4 grid, represented as an array of 4 rows, each an array of 4 integers. 0 means an empty cell; non-zero values are tiles.\n\nConstructor `new Game2048(board, spawnQueue)`:\n  • `board` — the initial 4×4 grid. Copy it; do not alias the caller’s array.\n  • `spawnQueue` — an array of spawn instructions `{r, c, v}` consumed IN ORDER, one per spawn (see move). The score starts at 0.\n\nProvide three METHODS (called with parentheses):\n  • `getBoard()` → the current 4×4 grid.\n  • `getScore()` → the running score (a number).\n  • `isGameOver()` → boolean: true iff there are NO empty cells AND no two horizontally- or vertically-adjacent cells are equal (no move would change the board).\n\nMethod `move(dir)` where `dir` is one of \"left\", \"right\", \"up\", \"down\":\n  1. Slide all tiles as far as possible in `dir`. When two tiles of equal value collide while sliding, they merge into one tile of double the value, and that merged value is ADDED to `score`. A tile that resulted from a merge cannot merge again in the same move. When multiple merges are possible in a line, the ones nearer the direction of travel happen first (e.g. moving [2,2,2,2] left gives [4,4,0,0], NOT [8,0,0,0]; [2,2,4] moving left gives [4,4,0]).\n  2. If the board CHANGED as a result of the move, consume the next spawn `{r,c,v}` from the queue and set that cell to `v`, then return `true`. If the board did NOT change, consume NO spawn and return `false`.",
+          "label": "coding_hard"
+        },
+        "vars": {
+          "case_id": "2048-engine",
+          "category": "game",
+          "difficulty": "hard"
+        },
+        "response": {
+          "output": "```javascript\nclass Game2048 {\n    /**\n     * @param {number[][]} board - Initial 4x4 grid.\n     * @param {{r: number, c: number, v: number}[]} spawnQueue - Queue of spawn instructions.\n     */\n    constructor(board, spawnQueue) {\n        // Deep copy the initial board\n        this.board = board.map(row => [...row]);\n        this.score = 0;\n        this.spawnQueue = spawnQueue;\n        this.spawnIndex = 0;\n    }\n\n    /**\n     * Helper function to deeply copy the board.\n     * @returns {number[][]}\n     */\n    _deepCopyBoard() {\n        return this.board.map(row => [...row]);\n    }\n\n    /**\n     * Compresses and merges a single 1D line (row or column)\n     * @param {number[]} line - The 1D array to process.\n     * @returns {{newLine: number[], scoreChange: number}}\n     */\n    _compressAndMerge(line) {\n        // 1. Slide (Filter out zeros)\n        let temp = line.filter(v => v !== 0);\n        let merged = [];\n        let scoreChange = 0;\n        let i = 0;\n\n        // 2. Merge\n        while (i < temp.length) {\n            if (i + 1 < temp.length && temp[i] === temp[i + 1]) {\n                let mergedValue = temp[i] * 2;\n                merged.push(mergedValue);\n                // The score is the value of the new tile\n                scoreChange += mergedValue;\n                i += 2; // Skip both tiles that merged\n            } else {\n                merged.push(temp[i]);\n                i += 1;\n            }\n        }\n\n        // 3. Pad with zeros (to length 4)\n        while (merged.length < 4) {\n            merged.push(0);\n        }\n\n        return { newLine: merged, scoreChange: scoreChange };\n    }\n\n    /**\n     * Performs the slide/merge operation on a row/column based on direction.\n     * @param {number[]} line - The line to process.\n     * @param {string} dir - \"left\" or \"right\".\n     * @returns {{newLine: number[], scoreChange: number}}\n     */\n    _processLine(line, dir) {\n        let processedLine = line;\n\n        if (dir === \"right\") {\n            // To simulate right movement, reverse, process as left, then reverse back.\n            processedLine = processedLine.reverse();\n        }\n\n        const { newLine, scoreChange } = this._compressAndMerge(processedLine);\n\n        if (dir === \"right\") {\n            // Reverse back to original orientation\n            return { newLine: newLine.reverse(), scoreChange: scoreChange };\n        }\n        return { newLine: newLine, scoreChange: scoreChange };\n    }\n\n    /**\n     * Handles the movement logic.\n     * @param {\"left\" | \"right\" | \"up\" | \"down\"} dir - The direction of movement.\n     * @returns {boolean} - True if the board changed, false otherwise.\n     */\n    move(dir) {\n        const oldBoard = this._deepCopyBoard();\n        let totalScoreChange = 0;\n        let boardChanged = false;\n\n        // Determine the transformation strategy\n        let currentBoard = this.board;\n\n        // Transpose for Up/Down movement (rows become columns)\n        if (dir === \"up\" || dir === \"down\") {\n            // Transpose (rows -> columns)\n            currentBoard = Array(4).fill(0).map((_, c) =>\n                Array(4).fill(0).map((_, r) => this.board[r][c])\n            );\n            // Now, the \"rows\" of currentBoard are the original columns.\n        }\n\n        // Process movement based on row/column structure\n        if (dir === \"left\" || dir === \"right\") {\n            for (let r = 0; r < 4; r++) {\n                const line = currentBoard[r];\n                const { newLine, scoreChange } = this._processLine(line, dir);\n\n                if (newLine.some((val, i) => val !== line[i])) {\n                    boardChanged = true;\n                    totalScoreChange += scoreChange;\n                    currentBoard[r] = newLine;\n                }\n            }\n        } else if (dir === \"up\" || dir === \"down\") {\n            // Since we transposed, we process rows (which are the original columns)\n            for (let r = 0; r < 4; r++) {\n                const line = currentBoard[r];\n                const { newLine, scoreChange } = this._processLine(line, dir);\n\n                if (newLine.some((val, i) => val !== line[i])) {\n                    boardChanged = true;\n                    totalScoreChange += scoreChange;\n                    currentBoard[r] = newLine;\n                }\n            }\n        }\n\n        // Transpose back if necessary\n        if (dir === \"up\" || dir === \"down\") {\n            const newBoard = Array(4).fill(0).map((_, r) =>\n                Array(4).fill(0).map((_, c) => currentBoard[c][r])\n            );\n            this.board = newBoard;\n        } else {\n            this.board = currentBoard;\n        }\n\n        if (boardChanged) {\n            // 1. Update score\n            this.score += totalScoreChange;\n\n            // 2. Apply spawn\n            if (this.spawnIndex < this.spawnQueue.length) {\n                const spawn = this.spawnQueue[this.spawnIndex];\n                // Set the new tile value at the specified location\n                this.board[spawn.r][spawn.c] = spawn.v;\n                this.spawnIndex++;\n            }\n            return true;\n        }\n        return false;\n    }\n\n    /**\n     * @returns {number[][]} The current 4x4 grid.\n     */\n    getBoard() {\n        return this.board.map(row => [...row]); // Return a copy\n    }\n\n    /**\n     * @returns {number} The running score.\n     */\n    getScore() {\n        return this.score;\n    }\n\n    /**\n     * @returns {boolean} True if the game is over.\n     */\n    isGameOver() {\n        // Condition 1: Check for empty cells\n        for (let r = 0; r < 4; r++) {\n            for (let c = 0; c < 4; c++) {\n                if (this.board[r][c] === 0) {\n                    return false;\n                }\n            }\n        }\n\n        // Condition 2: Check for adjacent equal tiles (no possible move)\n\n        // Horizontal check\n        for (let r = 0; r < 4; r++) {\n            for (let c = 0; c < 3; c++) {\n                if (this.board[r][c] === this.board[r][c + 1]) {\n                    return false;\n                }\n            }\n        }\n\n        // Vertical check\n        for (let r = 0; r < 3; r++) {\n            for (let c = 0; c < 4; c++) {\n                if (this.board[r][c] === this.board[r + 1][c]) {\n                    return false;\n                }\n            }\n        }\n\n        return true;\n    }\n}\n```",
+          "metadata": {
+            "tok_per_sec": "98.5"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.9166666666666666,
+          "passed": 11,
+          "total": 12,
+          "reason": "wrong: 11/12 case#5 got [[4,0,0,2],[2,0,0,0],[0,0,0,0],[0,0,0,0]]"
+        },
+        "success": false,
+        "score": 0.9166666666666666,
+        "latencyMs": 0
+      }
+    ],
+    "stats": {
+      "successes": 74,
+      "failures": 2,
+      "errors": 0
+    }
+  },
+  "config": {
+    "description": "llm-bench target=rose backend=vulkan"
+  }
+}
