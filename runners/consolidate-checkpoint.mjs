@@ -82,9 +82,13 @@ const environment = buildEnvironment({
 // ── Coverage gap: per base model, which registry metrics have no measurement ────────
 const okByBase = new Map(); // base → Set(bench)
 for (const r of rows) {
-   if (r.status !== 'ok') continue;
+   if (r.status !== 'ok') {
+      continue;
+   }
    const b = baseModel(r.model);
-   if (!okByBase.has(b)) okByBase.set(b, new Set());
+   if (!okByBase.has(b)) {
+      okByBase.set(b, new Set());
+   }
    okByBase.get(b).add(String(r.bench));
 }
 const baseModels = [...okByBase.keys()].sort();
@@ -94,7 +98,9 @@ for (const base of baseModels) {
    for (const [, e] of Object.entries(BENCH_REGISTRY)) {
       const has = e.benches.some((p) => [...present].some((b) => benchMatches(p, b)));
       if (!has) {
-         if (!gapByRunner.has(e.runner)) gapByRunner.set(e.runner, { command: e.command, models: new Set() });
+         if (!gapByRunner.has(e.runner)) {
+            gapByRunner.set(e.runner, { command: e.command, models: new Set() });
+         }
          gapByRunner.get(e.runner).models.add(base);
       }
    }
@@ -163,12 +169,18 @@ if (flags['no-purge']) {
    );
 } else {
    const hardDelete = flags['purge-delete'];
-   if (!hardDelete) mkdirSync(ARCHIVE, { recursive: true });
+   if (!hardDelete) {
+      mkdirSync(ARCHIVE, { recursive: true });
+   }
    let moved = 0;
    for (const id of absorbed) {
-      if (id === ck.runId) continue;
+      if (id === ck.runId) {
+         continue;
+      }
       const dir = runDir(RESULTS_DIR, id);
-      if (!existsSync(dir)) continue;
+      if (!existsSync(dir)) {
+         continue;
+      }
       if (hardDelete) {
          rmSync(dir, { recursive: true, force: true });
       } else {
@@ -182,7 +194,9 @@ if (flags['no-purge']) {
    let csvs = 0;
    if (existsSync(RESULTS_DIR)) {
       for (const f of readdirSync(RESULTS_DIR)) {
-         if (!f.endsWith('.csv')) continue;
+         if (!f.endsWith('.csv')) {
+            continue;
+         }
          if (hardDelete) {
             rmSync(join(RESULTS_DIR, f), { force: true });
          } else {
@@ -193,8 +207,9 @@ if (flags['no-purge']) {
    }
    const verb = hardDelete ? 'deleted' : 'archived → results/runs/_archive/';
    console.log(`[consolidate] ${verb} ${moved} absorbed run dir(s)${csvs ? ` + ${csvs} legacy CSV(s)` : ''}.`);
-   if (!hardDelete)
+   if (!hardDelete) {
       console.log('[consolidate] (delete results/runs/_archive yourself once you trust the checkpoint, or re-run with --purge-delete.)');
+   }
 }
 
 console.log('\nNext: node runners/build-report.mjs && node runners/build-dashboard.mjs');

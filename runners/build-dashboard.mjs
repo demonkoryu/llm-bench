@@ -186,9 +186,13 @@ const caps = loadCapabilities(join(ROOT, 'config/models.yaml'));
 // Per-base-model coverage of registry metrics (drives the required-runs panel).
 const okByBase = new Map();
 for (const r of rows) {
-   if (r.status !== 'ok') continue;
+   if (r.status !== 'ok') {
+      continue;
+   }
    const b = baseModel(r.model);
-   if (!okByBase.has(b)) okByBase.set(b, new Set());
+   if (!okByBase.has(b)) {
+      okByBase.set(b, new Set());
+   }
    okByBase.get(b).add(String(r.bench));
 }
 const coverage = {};
@@ -196,7 +200,9 @@ for (const [base, present] of okByBase) {
    const missing = [];
    for (const [metric, e] of Object.entries(BENCH_REGISTRY)) {
       const has = e.benches.some((p) => [...present].some((b) => benchMatches(p, b)));
-      if (!has) missing.push(metric);
+      if (!has) {
+         missing.push(metric);
+      }
    }
    coverage[base] = { present: [...present].sort(), missing };
 }
@@ -238,8 +244,12 @@ function numField(id, value, step) {
 function groupControls(name) {
    const g = DEFAULT_DIALS[name];
    let h = `<fieldset><legend>${name}${g.strength !== undefined ? ' · contribution' : ''}</legend>`;
-   if (g.strength !== undefined) h += slider(`d_${name}_strength`, g.strength, { min: 0, max: 2, step: 0.05 });
-   for (const [k, v] of Object.entries(g.weights ?? {})) h += slider(`d_w_${name}_${k}`, v);
+   if (g.strength !== undefined) {
+      h += slider(`d_${name}_strength`, g.strength, { min: 0, max: 2, step: 0.05 });
+   }
+   for (const [k, v] of Object.entries(g.weights ?? {})) {
+      h += slider(`d_w_${name}_${k}`, v);
+   }
    h += '</fieldset>';
    return h;
 }

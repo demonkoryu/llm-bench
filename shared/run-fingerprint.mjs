@@ -24,7 +24,7 @@
  * token unchanged if it's already literal or no assignment is found.
  */
 function resolveShellVar(token, scriptText) {
-   if (!token || !token.startsWith('$')) {
+   if (!token?.startsWith('$')) {
       return token;
    }
    const name = token.replace(/^\$\{?/, '').replace(/\}$/, '');

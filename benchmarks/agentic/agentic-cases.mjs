@@ -41,18 +41,24 @@ export function makeExecutor() {
             return JSON.stringify(USERS.map((u) => ({ id: u.id, name: u.name })));
          case 'get_user': {
             const u = USERS.find((x) => x.id === args.user_id || norm(x.name) === norm(args.user_id) || norm(x.name) === norm(args.name));
-            if (!u) return JSON.stringify({ error: `no such user: ${args.user_id ?? args.name ?? '?'}` });
+            if (!u) {
+               return JSON.stringify({ error: `no such user: ${args.user_id ?? args.name ?? '?'}` });
+            }
             return JSON.stringify(u);
          }
          case 'get_account': {
             const a = ACCOUNTS[args.account_id];
-            if (!a) return JSON.stringify({ error: `no such account: ${args.account_id}` });
+            if (!a) {
+               return JSON.stringify({ error: `no such account: ${args.account_id}` });
+            }
             return JSON.stringify({ account_id: args.account_id, ...a });
          }
          case 'convert': {
             const from = norm(args.from);
             const to = norm(args.to);
-            if (!RATE_USD[from] || !RATE_USD[to]) return JSON.stringify({ error: `unknown currency ${args.from}/${args.to}` });
+            if (!RATE_USD[from] || !RATE_USD[to]) {
+               return JSON.stringify({ error: `unknown currency ${args.from}/${args.to}` });
+            }
             const result = (Number(args.amount) * RATE_USD[from]) / RATE_USD[to];
             return JSON.stringify({ result: Math.round(result * 100) / 100 });
          }
@@ -124,8 +130,11 @@ const recoveredFrom = (calls, executor) => {
    for (const c of calls) {
       const out = executor(c.name, c.arguments);
       const isErr = /"error"/.test(out);
-      if (isErr) sawError = true;
-      else if (sawError) return true; // a good call after a prior error
+      if (isErr) {
+         sawError = true;
+      } else if (sawError) {
+         return true; // a good call after a prior error
+      }
    }
    return false;
 };

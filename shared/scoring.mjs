@@ -187,7 +187,9 @@ export function computeMetrics(rows) {
    const powerEffByModel = new Map();
    const codingByMT = new Map();
    const setDepth = (map, base, key, val) => {
-      if (!map.has(base)) map.set(base, new Map());
+      if (!map.has(base)) {
+         map.set(base, new Map());
+      }
       map.get(base).set(key, val);
    };
    const depthOf = (bench, prefix) => Number(bench.replace(prefix, '').replace('k', '')) * 1024;
@@ -195,22 +197,36 @@ export function computeMetrics(rows) {
       const bench = String(r.bench);
       const v = parseFloat(r.score);
       if (bench.startsWith('speed_pargen-')) {
-         if (Number.isFinite(v)) setDepth(pargenByModel, baseModel(r.model), Number(bench.replace('speed_pargen-', '')), v);
+         if (Number.isFinite(v)) {
+            setDepth(pargenByModel, baseModel(r.model), Number(bench.replace('speed_pargen-', '')), v);
+         }
       } else if (bench.startsWith('quality_decay-')) {
-         if (Number.isFinite(v)) setDepth(qualityByModel, baseModel(r.model), depthOf(bench, 'quality_decay-'), v);
+         if (Number.isFinite(v)) {
+            setDepth(qualityByModel, baseModel(r.model), depthOf(bench, 'quality_decay-'), v);
+         }
       } else if (bench.startsWith('ttft-')) {
-         if (Number.isFinite(v)) setDepth(ttftByModel, baseModel(r.model), depthOf(bench, 'ttft-'), v);
+         if (Number.isFinite(v)) {
+            setDepth(ttftByModel, baseModel(r.model), depthOf(bench, 'ttft-'), v);
+         }
       } else if (bench.startsWith('e2e-')) {
-         if (Number.isFinite(v)) setDepth(e2eByModel, baseModel(r.model), depthOf(bench, 'e2e-'), v);
+         if (Number.isFinite(v)) {
+            setDepth(e2eByModel, baseModel(r.model), depthOf(bench, 'e2e-'), v);
+         }
       } else if (bench === 'struct_output') {
-         if (Number.isFinite(v)) structByModel.set(baseModel(r.model), v);
+         if (Number.isFinite(v)) {
+            structByModel.set(baseModel(r.model), v);
+         }
       } else if (bench === 'instruction_following') {
-         if (Number.isFinite(v)) ifByModel.set(baseModel(r.model), v);
+         if (Number.isFinite(v)) {
+            ifByModel.set(baseModel(r.model), v);
+         }
       } else if (bench === 'agentic_loop') {
          if (Number.isFinite(v)) {
             agenticByModel.set(baseModel(r.model), v);
             const sm = /steps\s+([\d.]+)/.exec(r.notes ?? '');
-            if (sm) agenticStepsByModel.set(baseModel(r.model), Number(sm[1]));
+            if (sm) {
+               agenticStepsByModel.set(baseModel(r.model), Number(sm[1]));
+            }
          }
       } else if (bench === 'prefix_cache_warm_ms') {
          if (Number.isFinite(v)) {
@@ -223,10 +239,14 @@ export function computeMetrics(rows) {
             });
          }
       } else if (bench === 'power_eff') {
-         if (Number.isFinite(v)) powerEffByModel.set(baseModel(r.model), v);
+         if (Number.isFinite(v)) {
+            powerEffByModel.set(baseModel(r.model), v);
+         }
       } else if (bench === 'kv_per_tok') {
          // kv-probe stores KiB/token in `score`; fleet wants MiB/token.
-         if (Number.isFinite(v) && v > 0) kvPerTokByModel.set(baseModel(r.model), v / 1024);
+         if (Number.isFinite(v) && v > 0) {
+            kvPerTokByModel.set(baseModel(r.model), v / 1024);
+         }
       } else if (bench === 'coding_multipl') {
          const tr = /tests\s+([\d.]+)%/.exec(r.notes ?? '');
          if (Number.isFinite(v) || tr) {
@@ -237,20 +257,30 @@ export function computeMetrics(rows) {
          }
       }
       if (r.bench === 'maxctx') {
-         if (Number.isFinite(v)) maxctxByModel.set(baseModel(r.model), v);
+         if (Number.isFinite(v)) {
+            maxctxByModel.set(baseModel(r.model), v);
+         }
          const vram = parseFloat(r.vram_mib);
-         if (Number.isFinite(vram)) maxctxVramByModel.set(baseModel(r.model), vram);
+         if (Number.isFinite(vram)) {
+            maxctxVramByModel.set(baseModel(r.model), vram);
+         }
       } else if (bench.startsWith('speed_decay-')) {
          const depth = Number(bench.replace('speed_decay-', '').replace('k', '')) * 1024;
-         if (Number.isFinite(v)) setDepth(decayByModel, baseModel(r.model), depth, v);
+         if (Number.isFinite(v)) {
+            setDepth(decayByModel, baseModel(r.model), depth, v);
+         }
       }
    }
 
    const modelMap = new Map();
    for (const r of data) {
-      if (isSharedBench(r.bench)) continue;
+      if (isSharedBench(r.bench)) {
+         continue;
+      }
       const key = `${r.model}|${r.think}`;
-      if (!modelMap.has(key)) modelMap.set(key, { model: r.model, think: r.think, rows: [] });
+      if (!modelMap.has(key)) {
+         modelMap.set(key, { model: r.model, think: r.think, rows: [] });
+      }
       modelMap.get(key).rows.push(r);
    }
 
@@ -383,6 +413,14 @@ export function computeMetrics(rows) {
             prefixCache,
             powerEff,
             codingGrade,
+            // Filled in after the fleet-relative denominators are known (loops below):
+            // declared here so the inferred shape carries them (no TS2568 suggestions).
+            norm: /** @type {Record<string, number | null>} */ ({}),
+            throughputNorm: /** @type {number | null} */ (null),
+            latencyNorm: /** @type {number | null} */ (null),
+            warmLatencyNorm: /** @type {number | null} */ (null),
+            codingGradeNorm: /** @type {number | null} */ (null),
+            maxctxSharedFrom: /** @type {string | null} */ (null),
          };
       })
       .filter((m) => m.maxctx || m.triage || m.speedTg);
@@ -391,7 +429,9 @@ export function computeMetrics(rows) {
    const THINK_ORDER = { 'n/a': 0, no_think: 1, think: 2 };
    const byBase = new Map();
    for (const m of models) {
-      if (!byBase.has(m.base_model)) byBase.set(m.base_model, []);
+      if (!byBase.has(m.base_model)) {
+         byBase.set(m.base_model, []);
+      }
       byBase.get(m.base_model).push(m);
    }
    for (const variants of byBase.values()) {
@@ -449,14 +489,18 @@ function additive(norm, weights) {
    let s = 0;
    for (const [k, w] of Object.entries(weights ?? {})) {
       const v = norm[k];
-      if (v != null && Number.isFinite(v)) s += w * v;
+      if (v != null && Number.isFinite(v)) {
+         s += w * v;
+      }
    }
    return s;
 }
 
 /** Renormalized weighted mean over present members; `required` member missing → null. */
 function codingCompetence(norm, weights) {
-   if (norm.grade == null) return null; // grade is the anchor — no coding data ⇒ unusable coder
+   if (norm.grade == null) {
+      return null; // grade is the anchor — no coding data ⇒ unusable coder
+   }
    let num = 0;
    let den = 0;
    for (const k of ['grade', 'agentic_loop', 'instruction_following']) {
@@ -574,7 +618,9 @@ export function computeFleet(models, dials = DEFAULT_DIALS) {
       p.latency_norm = ttft != null && Number.isFinite(minTtft) ? minTtft / ttft : null;
       p.capacity_norm = p.agg_tps != null ? p.agg_tps / bestAgg : null;
       if (p.capability == null || p.slots == null || p.main_ctx == null) {
-         if (!p.reason) p.reason = 'needs kv-probe + maxctx';
+         if (!p.reason) {
+            p.reason = 'needs kv-probe + maxctx';
+         }
          continue;
       }
       p.ctx_norm = Math.min(p.main_ctx, tier) / tier;

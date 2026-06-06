@@ -106,7 +106,9 @@ for (const m of wanted) {
       const total = toks.reduce((s, t) => s + t, 0);
       const aggTps = total / wallS;
       const perSlot = aggTps / k;
-      if (k === 1) base = aggTps;
+      if (k === 1) {
+         base = aggTps;
+      }
       const speedup = base ? (aggTps / base).toFixed(2) : '?';
       console.log(
          `  K=${String(k).padStart(2)}: agg ${aggTps.toFixed(0).padStart(5)} tok/s  (${perSlot.toFixed(0)}/slot · ${speedup}× vs K=1)  [${total} toks / ${wallS.toFixed(1)}s]`,

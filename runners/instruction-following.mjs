@@ -114,12 +114,18 @@ for (const m of wanted) {
          } catch {
             ok = false;
          }
-         if (ok) casePass++;
+         if (ok) {
+            casePass++;
+         }
       }
       totalChecks += c.checks.length;
       passedChecks += casePass;
-      if (casePass === c.checks.length) fullCases++;
-      if (process.env.BENCH_DEBUG) console.log(`  ${c.id}: ${casePass}/${c.checks.length}`);
+      if (casePass === c.checks.length) {
+         fullCases++;
+      }
+      if (process.env.BENCH_DEBUG) {
+         console.log(`  ${c.id}: ${casePass}/${c.checks.length}`);
+      }
    }
    const score = totalChecks ? (passedChecks / totalChecks) * 100 : 0;
    console.log(`  → ${score.toFixed(1)}%  (${passedChecks}/${totalChecks} checks · ${fullCases}/${CASES.length} cases fully obeyed)`);

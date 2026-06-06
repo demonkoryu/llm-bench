@@ -83,11 +83,14 @@ const TASKS = [
 function extractJson(text) {
    const s = text.replace(/```(json)?/gi, '');
    const start = s.indexOf('{');
-   if (start < 0) return null;
+   if (start < 0) {
+      return null;
+   }
    let depth = 0;
    for (let i = start; i < s.length; i++) {
-      if (s[i] === '{') depth++;
-      else if (s[i] === '}' && --depth === 0) {
+      if (s[i] === '{') {
+         depth++;
+      } else if (s[i] === '}' && --depth === 0) {
          try {
             return JSON.parse(s.slice(start, i + 1));
          } catch {
@@ -112,7 +115,9 @@ async function readPowerW() {
       for (const chip of Object.values(j)) {
          if (chip && typeof chip === 'object') {
             for (const feat of Object.values(chip)) {
-               if (feat && typeof feat === 'object' && 'power1_average' in feat) return feat.power1_average;
+               if (feat && typeof feat === 'object' && 'power1_average' in feat) {
+                  return feat.power1_average;
+               }
             }
          }
       }
@@ -150,7 +155,9 @@ for (const m of wanted) {
    const poller = (async () => {
       while (sampling) {
          const w = await readPowerW();
-         if (w) pw.push(w);
+         if (w) {
+            pw.push(w);
+         }
       }
    })();
    let decodeTps = null;
@@ -171,7 +178,7 @@ for (const m of wanted) {
    console.log(
       `  power: ${avgW ? avgW.toFixed(0) : '?'}W · ${decodeTps ? decodeTps.toFixed(0) : '?'} tok/s → ${tokPerW ? tokPerW.toFixed(2) : '?'} tok/s/W  (${pw.length} samples)`,
    );
-   if (tokPerW != null)
+   if (tokPerW != null) {
       run.append({
          target: flags.target,
          backend: 'vulkan',
@@ -183,6 +190,7 @@ for (const m of wanted) {
          status: 'ok',
          notes: `W=${avgW.toFixed(0)} tps=${decodeTps.toFixed(1)} n=${pw.length}`,
       });
+   }
 
    let parseOk = 0;
    let schemaOk = 0;
@@ -204,7 +212,9 @@ for (const m of wanted) {
       const obj = extractJson(text);
       if (obj) {
          parseOk++;
-         if (Object.entries(t.req).every(([k, ty]) => k in obj && isType(obj[k], ty))) schemaOk++;
+         if (Object.entries(t.req).every(([k, ty]) => k in obj && isType(obj[k], ty))) {
+            schemaOk++;
+         }
       }
    }
    const parsePct = (parseOk / TASKS.length) * 100;

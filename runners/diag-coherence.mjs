@@ -48,7 +48,9 @@ function parseAnswers(text, n) {
    // Fallback: if the model ignored the A<n>: format, grab integers in order.
    if (out.every((x) => x === null)) {
       const ints = text.match(/-?\d+/g) ?? [];
-      for (let i = 0; i < n; i++) out[i] = ints[i] ?? null;
+      for (let i = 0; i < n; i++) {
+         out[i] = ints[i] ?? null;
+      }
    }
    return out;
 }
@@ -94,7 +96,9 @@ try {
       let pass = 0;
       const perDepth = probes.map((p, i) => {
          const ok = got[i] != null && String(got[i]) === String(p.answer);
-         if (ok) pass++;
+         if (ok) {
+            pass++;
+         }
          return `${Math.round(p.depth * 100)}%:${ok ? '✓' : `✗(${got[i] ?? '∅'}≠${p.answer})`}`;
       });
       console.log(`fill≈${fill}t  ${pass}/${probes.length} correct   ${perDepth.join('  ')}`);

@@ -60,9 +60,13 @@ const { models, ranking } = aggregateModels(rows);
 // slope is dropped from the packing analysis below rather than guessed.
 const kvMeasMiB = new Map(); // base_model -> kv MiB/token
 for (const r of rows) {
-   if (String(r.bench) !== 'kv_per_tok') continue;
+   if (String(r.bench) !== 'kv_per_tok') {
+      continue;
+   }
    const kib = parseFloat(r.score);
-   if (Number.isFinite(kib) && kib > 0) kvMeasMiB.set(r.model.replace(/--(nothi|think)$/, ''), kib / 1024);
+   if (Number.isFinite(kib) && kib > 0) {
+      kvMeasMiB.set(r.model.replace(/--(nothi|think)$/, ''), kib / 1024);
+   }
 }
 
 // Think-state display tag. VRAM, weights, KV and max ctx are QUANT-determined and
@@ -82,7 +86,9 @@ ranking.slice(0, 5).forEach((m, i) => {
 // quant, which hid that capacity tradeoff entirely.)
 const fleet = [];
 for (const m of models) {
-   if (m.maxctx == null || m.maxctxVram == null) continue;
+   if (m.maxctx == null || m.maxctxVram == null) {
+      continue;
+   }
    const vramMax = m.maxctxVram;
    const kv = kvMeasMiB.get(m.base_model); // measured KV/token (MiB); no fallback
    if (kv == null) {
@@ -119,7 +125,7 @@ console.log(
 );
 for (const m of fleet) {
    console.log(
-      `${pad(m.id, 42)} ${pad(m.score, 5)} ${pad(r0(m.maxctx), 9)} ${pad(r0(m.vramMax) + 'M', 9)} ${pad(m.footprintPct.toFixed(0) + '%', 6)} ${pad(m.kvPerTokKiB.toFixed(1), 9)} ${(CARD_TOTAL_MIB / m.vramMax).toFixed(1)}`,
+      `${pad(m.id, 42)} ${pad(m.score, 5)} ${pad(r0(m.maxctx), 9)} ${pad(`${r0(m.vramMax)}M`, 9)} ${pad(`${m.footprintPct.toFixed(0)}%`, 6)} ${pad(m.kvPerTokKiB.toFixed(1), 9)} ${(CARD_TOTAL_MIB / m.vramMax).toFixed(1)}`,
    );
 }
 
@@ -170,7 +176,7 @@ for (const s of setups) {
            : 'main + scratchpad';
    const w64 = s.workerCtx < WORKER_CTX ? `1+${s.workers64}×${r0(s.workerCtx / 1024)}k` : `1+${s.workers64}×64k`;
    console.log(
-      `${pad(s.id, 42)} ${pad(s.score, 5)} ${pad(gb(s.weights) + 'G', 8)} ${pad(r0(s.main), 9)} ${pad(s.scratch < SCRATCH_MIN ? '—' : r0(s.scratch), 9)} ${pad(s.fullSlots, 11)} ${pad(w64, 11)} ${note}`,
+      `${pad(s.id, 42)} ${pad(s.score, 5)} ${pad(`${gb(s.weights)}G`, 8)} ${pad(r0(s.main), 9)} ${pad(s.scratch < SCRATCH_MIN ? '—' : r0(s.scratch), 9)} ${pad(s.fullSlots, 11)} ${pad(w64, 11)} ${note}`,
    );
 }
 
@@ -231,16 +237,22 @@ const cols = [
    { x: 945, label: 'fit×', get: (m) => (CARD_TOTAL_MIB / m.vramMax).toFixed(1), anchor: 'end' },
 ];
 svg += R(20, tableTop, W - 40, 24 + fleet.length * tableRowH, PANEL, 8);
-for (const c of cols) svg += T(c.x, tableTop + 18, c.label, { fill: DIM, size: 10, anchor: c.anchor });
+for (const c of cols) {
+   svg += T(c.x, tableTop + 18, c.label, { fill: DIM, size: 10, anchor: c.anchor });
+}
 fleet.forEach((m, i) => {
    const y = tableTop + 24 + (i + 1) * tableRowH - 6;
-   if (i % 2) svg += R(24, y - 14, W - 48, tableRowH, '#1e1e2a', 0);
+   if (i % 2) {
+      svg += R(24, y - 14, W - 48, tableRowH, '#1e1e2a', 0);
+   }
    const fpFill = m.footprintPct > 90 ? WARN : m.footprintPct < 35 ? GOOD : TEXT;
    for (const c of cols) {
       const fill = c.label === '% card' ? fpFill : c.label === 'Quality' ? ACCENT : TEXT;
       svg += T(c.x, y, c.get(m), { fill, size: 11, anchor: c.anchor, mono: c.label !== 'Model' });
    }
-   if (m.rankIdx != null) svg += starBadge(W - 30, y - 3, 5 - m.rankIdx);
+   if (m.rankIdx != null) {
+      svg += starBadge(W - 30, y - 3, 5 - m.rankIdx);
+   }
 });
 
 // ── Table 2: best single-model setups (weights once · main + scratchpad) ──
@@ -275,20 +287,31 @@ const scols = [
    },
 ];
 svg += R(20, setupsTop, W - 40, 24 + setups.length * tableRowH, PANEL, 8);
-for (const c of scols) svg += T(c.x, setupsTop + 18, c.label, { fill: DIM, size: 10, anchor: c.anchor });
+for (const c of scols) {
+   svg += T(c.x, setupsTop + 18, c.label, { fill: DIM, size: 10, anchor: c.anchor });
+}
 setups.forEach((s, i) => {
    const y = setupsTop + 24 + (i + 1) * tableRowH - 6;
-   if (i % 2) svg += R(24, y - 14, W - 48, tableRowH, '#1e1e2a', 0);
+   if (i % 2) {
+      svg += R(24, y - 14, W - 48, tableRowH, '#1e1e2a', 0);
+   }
    const scratchOK = s.scratch >= SCRATCH_MIN;
    for (const c of scols) {
       let fill = TEXT;
-      if (c.label === 'Quality') fill = ACCENT;
-      else if (c.label === 'Scratchpad') fill = scratchOK ? GOOD : WARN;
-      else if (c.label === '1full+64k') fill = s.workers64 > 0 ? GOOD : WARN;
-      else if (c.label === 'Note') fill = scratchOK ? DIM : WARN;
+      if (c.label === 'Quality') {
+         fill = ACCENT;
+      } else if (c.label === 'Scratchpad') {
+         fill = scratchOK ? GOOD : WARN;
+      } else if (c.label === '1full+64k') {
+         fill = s.workers64 > 0 ? GOOD : WARN;
+      } else if (c.label === 'Note') {
+         fill = scratchOK ? DIM : WARN;
+      }
       svg += T(c.x, y, c.get(s), { fill, size: 11, anchor: c.anchor, mono: c.label !== 'Model' && c.label !== 'Note' });
    }
-   if (s.rankIdx != null) svg += starBadge(W - 30, y - 3, 5 - s.rankIdx);
+   if (s.rankIdx != null) {
+      svg += starBadge(W - 30, y - 3, 5 - s.rankIdx);
+   }
 });
 svg += '</svg>';
 

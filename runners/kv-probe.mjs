@@ -61,7 +61,9 @@ if (!seedRows.length) {
 const { models: aggregated } = aggregateModels(seedRows);
 const maxctxByBase = new Map();
 for (const m of aggregated) {
-   if (m.maxctx != null) maxctxByBase.set(m.base_model, m.maxctx);
+   if (m.maxctx != null) {
+      maxctxByBase.set(m.base_model, m.maxctx);
+   }
 }
 
 const filter = flags.models ? flags.models.split(',').map((s) => s.trim()) : [];

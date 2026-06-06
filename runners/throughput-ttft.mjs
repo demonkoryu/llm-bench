@@ -80,7 +80,9 @@ if (!seedRows.length) {
 // to drop depths that wouldn't fit).
 const maxctxByModel = new Map();
 for (const r of seedRows) {
-   if (r.bench === 'maxctx' && Number.isFinite(parseFloat(r.score))) maxctxByModel.set(r.model, parseFloat(r.score));
+   if (r.bench === 'maxctx' && Number.isFinite(parseFloat(r.score))) {
+      maxctxByModel.set(r.model, parseFloat(r.score));
+   }
 }
 
 const filter = flags.models ? flags.models.split(',').map((s) => s.trim()) : [];
@@ -97,7 +99,9 @@ let nonce = 0;
 const median = (xs) => {
    const s = xs.filter(Number.isFinite).sort((a, b) => a - b);
    const n = s.length;
-   if (!n) return null;
+   if (!n) {
+      return null;
+   }
    return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2;
 };
 
@@ -141,7 +145,7 @@ for (const m of wanted) {
       continue;
    }
    console.log(
-      `\n══ ${m.label ?? id}  (ctx ${maxctx.toLocaleString()}, depths ${depths.map((d) => Math.round(d / 1024) + 'k').join(',')})`,
+      `\n══ ${m.label ?? id}  (ctx ${maxctx.toLocaleString()}, depths ${depths.map((d) => `${Math.round(d / 1024)}k`).join(',')})`,
    );
    await srv.killAll();
    await srv.waitVramClear(30_000);

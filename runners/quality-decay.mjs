@@ -57,7 +57,9 @@ if (!seedRows.length) {
 
 const maxctxByModel = new Map();
 for (const r of seedRows) {
-   if (r.bench === 'maxctx' && Number.isFinite(parseFloat(r.score))) maxctxByModel.set(r.model, parseFloat(r.score));
+   if (r.bench === 'maxctx' && Number.isFinite(parseFloat(r.score))) {
+      maxctxByModel.set(r.model, parseFloat(r.score));
+   }
 }
 
 const filter = flags.models ? flags.models.split(',').map((s) => s.trim()) : [];
@@ -77,7 +79,9 @@ function grade(text, probes) {
    for (let i = 0; i < probes.length; i++) {
       const m = new RegExp(`A${i + 1}\\s*[:=]\\s*(-?\\d+)`, 'i').exec(text);
       const got = m ? m[1] : (ints[i] ?? null);
-      if (got != null && String(got) === String(probes[i].answer)) correct++;
+      if (got != null && String(got) === String(probes[i].answer)) {
+         correct++;
+      }
    }
    return (correct / probes.length) * 100;
 }
@@ -102,7 +106,7 @@ for (const m of wanted) {
    const reasons = m.think === 'reasoning' || m.think === 'required';
    const maxTokens = reasons ? 8192 : 512;
    console.log(
-      `\n══ ${m.label ?? id}  (ctx ${maxctx.toLocaleString()}, depths ${depths.map((d) => Math.round(d / 1024) + 'k').join(',')})`,
+      `\n══ ${m.label ?? id}  (ctx ${maxctx.toLocaleString()}, depths ${depths.map((d) => `${Math.round(d / 1024)}k`).join(',')})`,
    );
    await srv.killAll();
    await srv.waitVramClear(30_000);
@@ -139,10 +143,12 @@ for (const m of wanted) {
          console.log(`  depth ${d}: error ${e.message.slice(0, 60)}`);
          continue;
       }
-      if (d === 0) base = acc;
+      if (d === 0) {
+         base = acc;
+      }
       const ret = base ? `${((acc / base) * 100).toFixed(0)}%` : '?';
       console.log(
-         `  depth ${String(Math.round(d / 1024) + 'k').padStart(4)}: accuracy ${acc.toFixed(0).padStart(3)}%  (ret ${ret})  TTFT ${ttft ? (ttft / 1000).toFixed(1) + 's' : '?'}`,
+         `  depth ${String(`${Math.round(d / 1024)}k`).padStart(4)}: accuracy ${acc.toFixed(0).padStart(3)}%  (ret ${ret})  TTFT ${ttft ? `${(ttft / 1000).toFixed(1)}s` : '?'}`,
       );
       run.append({
          target: flags.target,
@@ -156,7 +162,7 @@ for (const m of wanted) {
          status: 'ok',
          notes: `acc@${d}`,
       });
-      if (ttft != null)
+      if (ttft != null) {
          run.append({
             target: flags.target,
             backend: BACKEND,
@@ -169,6 +175,7 @@ for (const m of wanted) {
             status: 'ok',
             notes: `prompt_ms@${d}`,
          });
+      }
    }
 }
 await srv.stopServer();

@@ -267,7 +267,9 @@ export function llamacppServer({
             await startServer({ hf_repo, hf_file, ctx, extraFlags: extra_flags });
             // HF download may be needed on first run — give 360s
             await waitHealthy(360_000);
-            if (oomCeiling == null) oomCeiling = ctx; // first (largest) load that fits
+            if (oomCeiling == null) {
+               oomCeiling = ctx; // first (largest) load that fits
+            }
          } catch {
             const crashed = await hasCrashed();
             console.log(`  [maxctx] ctx=${ctx} — load failed (${crashed ? 'crash/OOM' : 'timeout'})`);

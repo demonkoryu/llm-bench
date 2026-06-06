@@ -116,12 +116,16 @@ for (const m of wanted) {
       } catch {
          g = { pass: false };
       }
-      if (g.pass) passed++;
+      if (g.pass) {
+         passed++;
+      }
       stepsSum += res.steps;
       stepsN++;
       if ('recovered' in g) {
          recoveryTasks++;
-         if (g.recovered) recoveredOk++;
+         if (g.recovered) {
+            recoveredOk++;
+         }
       }
       const eff = g.optimalSteps ? ` [opt ${g.optimalSteps}]` : '';
       console.log(

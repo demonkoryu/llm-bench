@@ -71,7 +71,9 @@ if (!seedRows.length) {
 
 const maxctxByModel = new Map();
 for (const r of seedRows) {
-   if (r.bench === 'maxctx' && Number.isFinite(parseFloat(r.score))) maxctxByModel.set(r.model, parseFloat(r.score));
+   if (r.bench === 'maxctx' && Number.isFinite(parseFloat(r.score))) {
+      maxctxByModel.set(r.model, parseFloat(r.score));
+   }
 }
 
 const filter = flags.models ? flags.models.split(',').map((s) => s.trim()) : [];
@@ -88,7 +90,9 @@ let nonce = 0;
 const median = (xs) => {
    const s = xs.filter(Number.isFinite).sort((a, b) => a - b);
    const n = s.length;
-   if (!n) return null;
+   if (!n) {
+      return null;
+   }
    return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2;
 };
 
@@ -96,7 +100,9 @@ const median = (xs) => {
 async function ttftOf(messages) {
    const { timings } = await client.chat(messages, { think: null, max_tokens: 8, temperature: 0.0 }, 300_000);
    const pm = timings?.prompt_ms;
-   if (!Number.isFinite(pm)) throw new Error('no prompt_ms');
+   if (!Number.isFinite(pm)) {
+      throw new Error('no prompt_ms');
+   }
    return pm;
 }
 
@@ -132,8 +138,9 @@ for (const m of wanted) {
          const warm = await ttftOf(built.messages); // hit: identical prefix, prefill skipped
          colds.push(cold);
          warms.push(warm);
-         if (process.env.BENCH_DEBUG)
+         if (process.env.BENCH_DEBUG) {
             console.log(`  rep ${r}: cold ${(cold / 1000).toFixed(2)}s  warm ${(warm / 1000).toFixed(2)}s  (${(cold / warm).toFixed(1)}×)`);
+         }
       } catch (e) {
          console.log(`  rep ${r}: error ${e.message.slice(0, 50)}`);
       }
@@ -146,7 +153,7 @@ for (const m of wanted) {
    const warm = median(warms);
    const speedup = warm > 0 ? cold / warm : null;
    console.log(
-      `  → cold ${(cold / 1000).toFixed(2)}s  warm ${(warm / 1000).toFixed(2)}s  speedup ${speedup ? speedup.toFixed(1) + '×' : '?'}  (n=${colds.length})`,
+      `  → cold ${(cold / 1000).toFixed(2)}s  warm ${(warm / 1000).toFixed(2)}s  speedup ${speedup ? `${speedup.toFixed(1)}×` : '?'}  (n=${colds.length})`,
    );
    const common = { target: flags.target, backend: BACKEND, model: id, think: 'n/a', vram_mib: '?', ctx_loaded: maxctx, status: 'ok' };
    run.append({ ...common, bench: 'prefix_cache_cold_ms', score: cold.toFixed(0), notes: `cold prompt_ms@${depth} n=${colds.length}` });
@@ -156,7 +163,9 @@ for (const m of wanted) {
       score: warm.toFixed(0),
       notes: `warm prompt_ms@${depth} cold ${cold.toFixed(0)} speedup ${speedup ? speedup.toFixed(2) : '?'} n=${warms.length}`,
    });
-   if (speedup != null) run.append({ ...common, bench: 'prefix_cache_speedup', score: speedup.toFixed(2), notes: `cold÷warm@${depth}` });
+   if (speedup != null) {
+      run.append({ ...common, bench: 'prefix_cache_speedup', score: speedup.toFixed(2), notes: `cold÷warm@${depth}` });
+   }
 }
 await srv.stopServer();
 await srv.waitVramClear(20_000);

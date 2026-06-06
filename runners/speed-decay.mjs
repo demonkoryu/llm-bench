@@ -59,7 +59,9 @@ if (!seedRows.length) {
 // Per-model measured max ctx (and vram) from the maxctx rows.
 const maxctxByModel = new Map();
 for (const r of seedRows) {
-   if (r.bench === 'maxctx' && Number.isFinite(parseFloat(r.score))) maxctxByModel.set(r.model, parseFloat(r.score));
+   if (r.bench === 'maxctx' && Number.isFinite(parseFloat(r.score))) {
+      maxctxByModel.set(r.model, parseFloat(r.score));
+   }
 }
 
 const filter = flags.models ? flags.models.split(',').map((s) => s.trim()) : [];
@@ -99,7 +101,7 @@ for (const m of wanted) {
    }
    const ctx = maxctx; // known to load (it's the coherence ceiling)
    const depths = [0, ...DEPTHS.filter((d) => d + GEN + 256 < maxctx)];
-   console.log(`\n══ ${m.label ?? id}  (ctx ${ctx.toLocaleString()}, depths ${depths.map((d) => Math.round(d / 1024) + 'k').join(',')})`);
+   console.log(`\n══ ${m.label ?? id}  (ctx ${ctx.toLocaleString()}, depths ${depths.map((d) => `${Math.round(d / 1024)}k`).join(',')})`);
    await srv.killAll();
    await srv.waitVramClear(30_000);
    try {
@@ -119,10 +121,12 @@ for (const m of wanted) {
          console.log(`  depth ${d}: error ${e.message.slice(0, 60)}`);
          continue;
       }
-      if (d === 0) base = res.decode;
+      if (d === 0) {
+         base = res.decode;
+      }
       const pct = base ? ((res.decode / base) * 100).toFixed(0) : '?';
       console.log(
-         `  depth ${String(Math.round(d / 1024) + 'k').padStart(4)}: decode ${res.decode?.toFixed(1).padStart(6)} tok/s  (${pct}% of base)  prefill ${res.prefill?.toFixed(0)} t/s`,
+         `  depth ${String(`${Math.round(d / 1024)}k`).padStart(4)}: decode ${res.decode?.toFixed(1).padStart(6)} tok/s  (${pct}% of base)  prefill ${res.prefill?.toFixed(0)} t/s`,
       );
       run.append({
          target: flags.target,

@@ -1579,8 +1579,11 @@ if (FULL) {
          });
          process.stdout.write(stdout);
          const m = stdout.match(/done → (.+)\s*$/m);
-         if (m) secondaryInputs.push(m[1].trim());
-         else console.warn(`[run-suite] ${kind}: could not parse output run dir — chart may miss its rows`);
+         if (m) {
+            secondaryInputs.push(m[1].trim());
+         } else {
+            console.warn(`[run-suite] ${kind}: could not parse output run dir — chart may miss its rows`);
+         }
       } catch (e) {
          console.warn(`[run-suite] ${kind} failed: ${e.message.slice(0, 160)}`);
       }
