@@ -185,18 +185,7 @@ const rankItems = ranked.map((r, i) => ({
    displayVal: `${r.score.toFixed(1)}%`,
 }));
 // Subtitle is derived from the SCORING export so it can never drift from the code.
-const restLabels = {
-   reasoning: 'reasoning',
-   triage: 'triage',
-   summarization: 'summ',
-   docqa: 'docqa',
-   performance: 'perf',
-   degradation: 'degrade',
-};
-const restStr = Object.entries(SCORING.rest_weights)
-   .map(([k, w]) => `${restLabels[k] ?? k} ${w.toFixed(2).replace(/^0/, '')}`)
-   .join(' · ');
-const scoreSubtitle = `score = coding × toolcalling × struct-output × maxctx% × Σ(${restStr})`;
+const scoreSubtitle = SCORING.formula;
 svg += barPanel(PAD.left, rankY, WIDE_W, 'Overall Ranking', scoreSubtitle, rankItems);
 
 // ── Per-metric grid (one panel per scored metric — no blending) ──────────────────

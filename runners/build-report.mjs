@@ -31,6 +31,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { aggregateModels, CARD_TOTAL_MIB, loadCapabilities, loadRuns, mergeResultRows, SCORING } from '../shared/results-store.mjs';
+import { environmentDiff, environmentsConsistent } from '../shared/run-fingerprint.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dir, '..');
@@ -61,7 +62,7 @@ function describeSource(run) {
    return `${run.run_id} (${run.kind}/${run.status})`;
 }
 
-const { models, ranking } = aggregateModels(rows);
+const { models, ranking, fleet, fleetRanking } = aggregateModels(rows);
 
 // host/gpu/backend live on the run object; row fields (target/backend) override when present.
 const sample = rows[0] ?? {};
@@ -72,7 +73,27 @@ const environment = {
    ...(first.backend ? { backend: first.backend } : {}),
    ...(sample.target ? { host: sample.target } : {}),
    ...(sample.backend ? { backend: sample.backend } : {}),
+   // The readable server fingerprint (shared/run-fingerprint.mjs) from the run(s).
+   ...(first.environment ? { server: first.environment } : {}),
 };
+
+// Provenance: are the merged runs from a consistent server config? Warn (don't block)
+// when they're not — mixed fingerprints mean the numbers aren't strictly comparable.
+const runEnvs = runs.map((r) => r.environment ?? null);
+const refEnv = runEnvs.find(Boolean) ?? null;
+const provenance = {
+   consistent: environmentsConsistent(runEnvs),
+   environments: runEnvs,
+   warnings: refEnv
+      ? runs.flatMap((r) => {
+           const d = environmentDiff(refEnv, r.environment ?? null);
+           return d.length ? [`${r.run_id}: ${d.join('; ')}`] : [];
+        })
+      : ['no server fingerprint on these runs (pre-fingerprint data)'],
+};
+if (!provenance.consistent) {
+   console.warn(`[build-report] ⚠ mixing runs with different server configs:\n  ${provenance.warnings.join('\n  ')}`);
+}
 
 const caps = loadCapabilities(join(ROOT, 'config/models.yaml'));
 
@@ -80,14 +101,23 @@ const report = {
    generated: new Date().toISOString(),
    sources: runs.map(describeSource),
    environment,
-   // Multiplicative scoring: two hard gates × a context/VRAM amplifier × the
-   // weighted "rest" axes. See SCORING in shared/results-store.mjs.
+   provenance,
+   // Scoring structure: capability = coding × comprehension (fleet = capability ×
+   // speed_term). See SCORING in shared/scoring.mjs.
    scoring: SCORING,
    models: models.map((m) => ({
       model: m.model,
       base_model: m.base_model,
       label: m.label,
       think: m.think,
+      // Capability subranking (headline) = coding × comprehension. Speed is not in it.
+      capability: {
+         score: m.capability,
+         comprehension: m.comprehension,
+         coding: m.coding,
+         coding_competence: m.codingCompetence,
+         speed_group: m.speed,
+      },
       maxctx: m.maxctx,
       maxctx_shared_from: m.maxctxSharedFrom ?? null,
       benches: {
@@ -121,7 +151,7 @@ const report = {
       // prompt-cache bench's warm (prefix-reused) TTFT — a fast cache hit is a real
       // serving-latency win, so prefix_cache is part of the performance rating.
       performance: {
-         axis: m.performance,
+         speed_group: m.speed,
          throughput_norm: m.throughputNorm,
          latency_norm: m.latencyNorm,
          warm_latency_norm: m.warmLatencyNorm,
@@ -188,6 +218,35 @@ const report = {
       think: m.think,
       weighted_score: m.score,
    })),
+   // Fleet suitability = capability × speed_term over VRAM-packed slots (1 main@maxctx
+   // + N×worker_ctx). Requires measured pargen — needs_pargen models carry no score.
+   fleet: fleet.map((p) => ({
+      model: p.model,
+      think: p.think,
+      label: p.label,
+      capability: p.capability,
+      main_ctx: p.main_ctx,
+      weights_mib: p.weights_mib,
+      worker_ctx: p.worker_ctx,
+      n_workers: p.n_workers,
+      slots: p.slots,
+      agg_tok_s: p.agg_tps,
+      ctx_norm: p.ctx_norm,
+      slots_norm: p.slots_norm,
+      capacity_norm: p.capacity_norm,
+      latency_norm: p.latency_norm,
+      fleet_suitability: p.fleet_suitability,
+      needs_pargen: p.needs_pargen,
+      reason: p.reason ?? null,
+   })),
+   fleet_ranking: fleetRanking.map((p, i) => ({
+      rank: i + 1,
+      label: p.label,
+      model: p.model,
+      think: p.think,
+      fleet_suitability: p.fleet_suitability,
+      slots: p.slots,
+   })),
    // Per-category leaderboards: each metric ranked independently by its own score,
    // descending. Models that didn't run a metric (null) are omitted from that list.
    category_rankings: Object.fromEntries(
@@ -204,8 +263,11 @@ const report = {
          ['prefill_tok_s_12k', (m) => m.prefill12k],
          ['total_tok_s_4k', (m) => m.total4k],
          ['total_tok_s_12k', (m) => m.total12k],
-         ['e2e_throughput_tok_s', (m) => m.e2eThroughput], // throughput half of the performance axis
-         ['performance_axis', (m) => m.performance], // blended throughput+latency value entering restScore
+         ['e2e_throughput_tok_s', (m) => m.e2eThroughput], // throughput half of the speed group
+         ['speed_group', (m) => m.speed], // additive speed score (display)
+         ['capability', (m) => m.capability], // headline: coding × comprehension
+         ['comprehension', (m) => m.comprehension],
+         ['coding', (m) => m.coding],
          ['latency_rel_8k', (m) => m.latencyNorm], // first-token latency @8k, fleet-relative (higher=faster)
          ['vram_free_at_maxctx_mib', (m) => (m.maxctxVram != null ? CARD_TOTAL_MIB - m.maxctxVram : null)],
          ['decode_retention_pct', (m) => m.decodeRetentionPct], // % of base decode held at ~32k ctx

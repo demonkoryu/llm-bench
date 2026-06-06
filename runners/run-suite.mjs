@@ -31,7 +31,6 @@
  */
 
 import { execFile } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -39,6 +38,7 @@ import { parseArgs, promisify } from 'node:util';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
 import { loadModelsConfig } from '../shared/models-config.mjs';
 import { createRun, latestRun, readRun } from '../shared/results-store.mjs';
+import { buildEnvironment, environmentDiff } from '../shared/run-fingerprint.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dir, '..');
@@ -212,20 +212,44 @@ export function isDivergent(text, minReps = 5) {
 const RESULTS_DIR = join(ROOT, 'results');
 mkdirSync(RESULTS_DIR, { recursive: true });
 
-// Config epoch fingerprint: short hash of the inputs that change measured numbers
-// (backend + merged ubatch/extra-flag defaults). Stamped on every row so a report
-// can flag when it's mixing pre/post-config-change measurements.
-const CONFIG_HASH = createHash('sha1')
-   .update(JSON.stringify({ backend: BACKEND, defaults: modelsConfig.defaults?.extra_flags ?? null }))
-   .digest('hex')
-   .slice(0, 8);
+// Readable server fingerprint (shared/run-fingerprint.mjs): the config marker stamped
+// on the run, derived from the server-dependent config (GPU, backend, KV-cache quant,
+// flash-attn, ngl/np, batch/ubatch defaults, and the verbatim start-server.sh launch
+// line). Config-FILE derived — it does NOT capture the llama.cpp build commit or GPU
+// driver, so it labels a run for comparability, it is not a reproducibility guarantee.
+const START_SERVER_SH = (() => {
+   try {
+      return readFileSync(join(ROOT, 'scripts/llm2/start-server.sh'), 'utf8');
+   } catch {
+      return '';
+   }
+})();
+const ENVIRONMENT = buildEnvironment({
+   gpu: GPU,
+   backend: BACKEND,
+   startServerShText: START_SERVER_SH,
+   defaultsExtraFlags: modelsConfig.defaults?.extra_flags ?? null,
+});
 
 // Captured BEFORE we create our own (empty) run dir so --resume seeds from the
 // previous run, not from the directory this invocation is about to write.
 const PRIOR_RUN = latestRun(RESULTS_DIR);
 
+// Marker check: if the latest run's server config differs from ours, warn loudly —
+// resuming/merging across a config change mixes non-comparable measurements.
+if (!DRY_RUN && PRIOR_RUN) {
+   const prior = readRun(RESULTS_DIR, PRIOR_RUN);
+   const diff = environmentDiff(prior?.environment ?? null, ENVIRONMENT);
+   if (diff.length) {
+      console.warn(`[run-suite] ⚠ server config changed vs ${PRIOR_RUN}: ${diff.join('; ')}`);
+      console.warn('[run-suite]   prior measurements are NOT comparable — consider a fresh checkpoint, not --resume.');
+   } else if (prior?.environment) {
+      console.log(`[run-suite] server config unchanged vs ${PRIOR_RUN} (resume-safe).`);
+   }
+}
+
 // Each invocation is its own immutable run directory (results/runs/<run_id>/).
-// run.append() stamps run_id/ts/config_hash and mirrors the row into the manifest.
+// run.append() stamps run_id/ts and mirrors the row into the manifest.
 // Skipped for --dry-run so a discarded invocation never leaves a stray 'running' dir.
 const run = DRY_RUN
    ? null
@@ -235,7 +259,7 @@ const run = DRY_RUN
         backend: BACKEND,
         date: new Date(),
         kind: 'suite',
-        config_hash: CONFIG_HASH,
+        environment: ENVIRONMENT,
         extra: {
            filters: {
               models: FILTER_MODELS.length ? FILTER_MODELS : null,
