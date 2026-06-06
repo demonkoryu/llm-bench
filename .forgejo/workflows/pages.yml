@@ -1,7 +1,10 @@
 # Publishes the self-contained benchmark dashboard to Forgejo Pages.
-# On every push to main, copies results/dashboard.html -> index.html and
-# force-pushes it to the `pages` branch, which the pages-server serves at
-# https://llm-bench.demonkoryu.pages.xor0.de
+# On every push to main that touches the dashboard, copy results/dashboard.html
+# to index.html and force-push it to the `pages` branch, which the pages-server
+# serves at https://llm-bench.demonkoryu.pages.xor0.de
+#
+# Self-contained: clones via PAGES_TOKEN in a plain run step rather than using
+# actions/checkout, so the job has no dependency on an external action registry.
 name: pages
 on:
   push:
@@ -12,22 +15,22 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      TOKEN: ${{ secrets.PAGES_TOKEN }}
+      REPO: ${{ github.repository }}
     steps:
-      - name: Checkout main
-        uses: actions/checkout@v4
-
       - name: Build & push pages branch
         run: |
           set -euo pipefail
-          test -f results/dashboard.html
-          work="$(mktemp -d)"
-          cp results/dashboard.html "$work/index.html"
-          cd "$work"
+          remote="https://forgejo-actions:${TOKEN}@git.xor0.de/${REPO}.git"
+          git clone --depth 1 --branch main "$remote" src
+          test -f src/results/dashboard.html
+          mkdir site
+          cp src/results/dashboard.html site/index.html
+          cd site
           git init -q -b pages
           git config user.name  "forgejo-actions"
           git config user.email "actions@git.xor0.de"
           git add index.html
-          git commit -q -m "Deploy dashboard ($GITHUB_SHA)"
-          git push -q --force \
-            "https://forgejo-actions:${{ secrets.PAGES_TOKEN }}@git.xor0.de/${{ github.repository }}.git" \
-            pages
+          git commit -q -m "Deploy dashboard"
+          git push -q --force "$remote" pages
