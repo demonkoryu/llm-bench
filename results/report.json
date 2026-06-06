@@ -1,9 +1,13 @@
 {
-  "generated": "2026-06-06T03:53:28.516Z",
+  "generated": "2026-06-06T09:01:32.021Z",
   "sources": [
     "rose-rx7900xt-vulkan-20260606-004710 (suite/complete)",
+    "rose-rx7900xt-vulkan-20260606-045445-kvprobe (kvprobe/complete)",
     "rose-rx7900xt-vulkan-20260606-050038-structoutput (struct-output/complete)",
-    "rose-rx7900xt-vulkan-20260606-054939 (suite/complete)"
+    "rose-rx7900xt-vulkan-20260606-085343-throughputttft (throughput-ttft/complete)",
+    "rose-rx7900xt-vulkan-20260606-092654-speeddecay (speed-decay/complete)",
+    "rose-rx7900xt-vulkan-20260606-101317-qualitydecay (quality-decay/complete)",
+    "rose-rx7900xt-vulkan-20260606-105644-qualitydecay (quality-decay/complete)"
   ],
   "environment": {
     "host": "rose",
@@ -38,8 +42,8 @@
       "maxctx": 65536,
       "maxctx_shared_from": null,
       "benches": {
-        "triage": 88.2,
-        "reasoning": 100,
+        "triage": 87.8,
+        "reasoning": null,
         "toolcalling": 90,
         "docqa": 9.75,
         "summarization": 75.6
@@ -58,25 +62,51 @@
         "12k": 275.45432300163134
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 819.7666666666668,
+        "ref": 759.2,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 607.6
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1092.5
+          },
+          {
+            "depth": 32768,
+            "tok_s": 759.2
+          }
+        ]
       },
       "performance": {
-        "axis": null,
-        "throughput_norm": null,
-        "latency_norm": null,
-        "ttft_8k_ms": null
+        "axis": 0.25371639221195585,
+        "throughput_norm": 0.249832381803775,
+        "latency_norm": 0.25630573248407645,
+        "ttft_8k_ms": 3925
       },
       "vram_at_maxctx_mib": {
         "used": 19977,
         "free": 487
       },
       "decode_decay": {
-        "base_tok_s": null,
-        "retention_pct": null,
-        "ref_depth": null,
-        "curve": []
+        "base_tok_s": 128.2,
+        "retention_pct": 62,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 128.2
+          },
+          {
+            "depth": 16384,
+            "tok_s": 99.8
+          },
+          {
+            "depth": 32768,
+            "tok_s": 79.4
+          }
+        ]
       },
       "parallel_gen": {
         "agg_tok_s_max": null,
@@ -85,18 +115,52 @@
         "curve": []
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 66.7,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 66.7
+          },
+          {
+            "depth": 16384,
+            "acc": 83.3
+          },
+          {
+            "depth": 32768,
+            "acc": 66.7
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 30026,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 544
+          },
+          {
+            "depth": 2048,
+            "ms": 725
+          },
+          {
+            "depth": 8192,
+            "ms": 3925
+          },
+          {
+            "depth": 16384,
+            "ms": 9752
+          },
+          {
+            "depth": 32768,
+            "ms": 30026
+          }
+        ]
       },
       "struct_output_pct": 100,
       "coding_grade": 92.88,
       "power_eff_tok_s_per_w": 0.538,
-      "weighted_score": 26.2
+      "weighted_score": 23.1
     },
     {
       "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
@@ -126,25 +190,51 @@
         "12k": 293.36534669085745
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 824.5,
+        "ref": 762.5,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 610.3
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1100.7
+          },
+          {
+            "depth": 32768,
+            "tok_s": 762.5
+          }
+        ]
       },
       "performance": {
-        "axis": null,
-        "throughput_norm": null,
-        "latency_norm": null,
-        "ttft_8k_ms": null
+        "axis": 0.25555748685554935,
+        "throughput_norm": 0.2512749141591662,
+        "latency_norm": 0.2584125353198048,
+        "ttft_8k_ms": 3893
       },
       "vram_at_maxctx_mib": {
         "used": 20001,
         "free": 463
       },
       "decode_decay": {
-        "base_tok_s": null,
-        "retention_pct": null,
-        "ref_depth": null,
-        "curve": []
+        "base_tok_s": 130.2,
+        "retention_pct": 61,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 130.2
+          },
+          {
+            "depth": 16384,
+            "tok_s": 100.2
+          },
+          {
+            "depth": 32768,
+            "tok_s": 79.6
+          }
+        ]
       },
       "parallel_gen": {
         "agg_tok_s_max": null,
@@ -153,18 +243,52 @@
         "curve": []
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 66.7,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 66.7
+          },
+          {
+            "depth": 16384,
+            "acc": 66.7
+          },
+          {
+            "depth": 32768,
+            "acc": 83.3
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 29740,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 520
+          },
+          {
+            "depth": 2048,
+            "ms": 724
+          },
+          {
+            "depth": 8192,
+            "ms": 3893
+          },
+          {
+            "depth": 16384,
+            "ms": 9617
+          },
+          {
+            "depth": 32768,
+            "ms": 29740
+          }
+        ]
       },
       "struct_output_pct": 100,
       "coding_grade": 91.12,
       "power_eff_tok_s_per_w": 0.534,
-      "weighted_score": 27.2
+      "weighted_score": 33.2
     },
     {
       "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
@@ -194,25 +318,51 @@
         "12k": 1148.5464848694053
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 817,
+        "ref": 760.2,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 604.2
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1086.6
+          },
+          {
+            "depth": 32768,
+            "tok_s": 760.2
+          }
+        ]
       },
       "performance": {
-        "axis": null,
-        "throughput_norm": null,
-        "latency_norm": null,
-        "ttft_8k_ms": null
+        "axis": 0.25186611849849444,
+        "throughput_norm": 0.24898921148337025,
+        "latency_norm": 0.2537840565085772,
+        "ttft_8k_ms": 3964
       },
       "vram_at_maxctx_mib": {
         "used": 19135,
         "free": 1329
       },
       "decode_decay": {
-        "base_tok_s": null,
-        "retention_pct": null,
-        "ref_depth": null,
-        "curve": []
+        "base_tok_s": 129.7,
+        "retention_pct": 61,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 129.7
+          },
+          {
+            "depth": 16384,
+            "tok_s": 98.6
+          },
+          {
+            "depth": 32768,
+            "tok_s": 78.8
+          }
+        ]
       },
       "parallel_gen": {
         "agg_tok_s_max": null,
@@ -221,18 +371,52 @@
         "curve": []
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 66.7,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 66.7
+          },
+          {
+            "depth": 16384,
+            "acc": 66.7
+          },
+          {
+            "depth": 32768,
+            "acc": 83.3
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 29944,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 543
+          },
+          {
+            "depth": 2048,
+            "ms": 743
+          },
+          {
+            "depth": 8192,
+            "ms": 3964
+          },
+          {
+            "depth": 16384,
+            "ms": 9744
+          },
+          {
+            "depth": 32768,
+            "ms": 29944
+          }
+        ]
       },
       "struct_output_pct": 100,
       "coding_grade": 92.60000000000001,
       "power_eff_tok_s_per_w": 0.486,
-      "weighted_score": 27.2
+      "weighted_score": 33.3
     },
     {
       "model": "Qwen3-14B-Q5_K_M--nothi",
@@ -262,25 +446,43 @@
         "12k": 565.2587848364203
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 476.84999999999997,
+        "ref": 616.8,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 336.9
+          },
+          {
+            "depth": 8192,
+            "tok_s": 616.8
+          }
+        ]
       },
       "performance": {
-        "axis": null,
-        "throughput_norm": null,
-        "latency_norm": null,
-        "ttft_8k_ms": null
+        "axis": 0.1371559134673386,
+        "throughput_norm": 0.14532497612710538,
+        "latency_norm": 0.13170987169416076,
+        "ttft_8k_ms": 7638
       },
       "vram_at_maxctx_mib": {
         "used": 12887,
         "free": 7577
       },
       "decode_decay": {
-        "base_tok_s": null,
-        "retention_pct": null,
-        "ref_depth": null,
-        "curve": []
+        "base_tok_s": 60.1,
+        "retention_pct": 81,
+        "ref_depth": 16384,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 60.1
+          },
+          {
+            "depth": 16384,
+            "tok_s": 48.4
+          }
+        ]
       },
       "parallel_gen": {
         "agg_tok_s_max": null,
@@ -289,18 +491,44 @@
         "curve": []
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 66.7,
+        "retention_pct": 75,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 66.7
+          },
+          {
+            "depth": 16384,
+            "acc": 50
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 16700,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 1046
+          },
+          {
+            "depth": 2048,
+            "ms": 1556
+          },
+          {
+            "depth": 8192,
+            "ms": 7638
+          },
+          {
+            "depth": 16384,
+            "ms": 16700
+          }
+        ]
       },
       "struct_output_pct": 100,
       "coding_grade": 87.32,
       "power_eff_tok_s_per_w": 0.216,
-      "weighted_score": 13.9
+      "weighted_score": 16.1
     },
     {
       "model": "Qwen3.5-9B-Q5_K_M--nothi",
@@ -330,25 +558,59 @@
         "12k": 1017.6546865427813
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 1010,
+        "ref": 1386.4,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 523.4
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1120.2
+          },
+          {
+            "depth": 32768,
+            "tok_s": 1386.4
+          }
+        ]
       },
       "performance": {
-        "axis": null,
-        "throughput_norm": null,
-        "latency_norm": null,
-        "ttft_8k_ms": null
+        "axis": 0.2771027759729423,
+        "throughput_norm": 0.30780796034051894,
+        "latency_norm": 0.2566326530612245,
+        "ttft_8k_ms": 3920
       },
       "vram_at_maxctx_mib": {
         "used": 9637,
         "free": 10827
       },
       "decode_decay": {
-        "base_tok_s": null,
-        "retention_pct": null,
-        "ref_depth": null,
-        "curve": []
+        "base_tok_s": 85.2,
+        "retention_pct": 89,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 85.2
+          },
+          {
+            "depth": 16384,
+            "tok_s": 80.2
+          },
+          {
+            "depth": 32768,
+            "tok_s": 75.5
+          },
+          {
+            "depth": 65536,
+            "tok_s": 67.7
+          },
+          {
+            "depth": 98304,
+            "tok_s": 61.2
+          }
+        ]
       },
       "parallel_gen": {
         "agg_tok_s_max": null,
@@ -357,18 +619,68 @@
         "curve": []
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 66.7,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 66.7
+          },
+          {
+            "depth": 16384,
+            "acc": 66.7
+          },
+          {
+            "depth": 32768,
+            "acc": 66.7
+          },
+          {
+            "depth": 65536,
+            "acc": 66.7
+          },
+          {
+            "depth": 98304,
+            "acc": 66.7
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 17038,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 688
+          },
+          {
+            "depth": 2048,
+            "ms": 945
+          },
+          {
+            "depth": 8192,
+            "ms": 3920
+          },
+          {
+            "depth": 16384,
+            "ms": 7636
+          },
+          {
+            "depth": 32768,
+            "ms": 17038
+          },
+          {
+            "depth": 65536,
+            "ms": 41672
+          },
+          {
+            "depth": 98304,
+            "ms": 73969
+          }
+        ]
       },
       "struct_output_pct": 91.7,
       "coding_grade": 82.56,
       "power_eff_tok_s_per_w": 0.301,
-      "weighted_score": 47.9
+      "weighted_score": 59.3
     },
     {
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
@@ -398,25 +710,59 @@
         "12k": 1164.3597148404558
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 962.1,
+        "ref": 876.4,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 760.6
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1249.3
+          },
+          {
+            "depth": 32768,
+            "tok_s": 876.4
+          }
+        ]
       },
       "performance": {
-        "axis": null,
-        "throughput_norm": null,
-        "latency_norm": null,
-        "ttft_8k_ms": null
+        "axis": 0.2609640518727808,
+        "throughput_norm": 0.2932099392511022,
+        "latency_norm": 0.23946679362056653,
+        "ttft_8k_ms": 4201
       },
       "vram_at_maxctx_mib": {
         "used": 19793,
         "free": 671
       },
       "decode_decay": {
-        "base_tok_s": null,
-        "retention_pct": null,
-        "ref_depth": null,
-        "curve": []
+        "base_tok_s": 133.5,
+        "retention_pct": 71,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 133.5
+          },
+          {
+            "depth": 16384,
+            "tok_s": 121.8
+          },
+          {
+            "depth": 32768,
+            "tok_s": 95.2
+          },
+          {
+            "depth": 65536,
+            "tok_s": 70.7
+          },
+          {
+            "depth": 98304,
+            "tok_s": 56.2
+          }
+        ]
       },
       "parallel_gen": {
         "agg_tok_s_max": null,
@@ -425,18 +771,68 @@
         "curve": []
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 66.7,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 66.7
+          },
+          {
+            "depth": 16384,
+            "acc": 66.7
+          },
+          {
+            "depth": 32768,
+            "acc": 66.7
+          },
+          {
+            "depth": 65536,
+            "acc": 66.7
+          },
+          {
+            "depth": 98304,
+            "acc": 66.7
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 28042,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 796
+          },
+          {
+            "depth": 2048,
+            "ms": 906
+          },
+          {
+            "depth": 8192,
+            "ms": 4201
+          },
+          {
+            "depth": 16384,
+            "ms": 9470
+          },
+          {
+            "depth": 32768,
+            "ms": 28042
+          },
+          {
+            "depth": 65536,
+            "ms": 98347
+          },
+          {
+            "depth": 98304,
+            "ms": 214926
+          }
+        ]
       },
       "struct_output_pct": 100,
       "coding_grade": 95.08,
       "power_eff_tok_s_per_w": 0.386,
-      "weighted_score": 42.8
+      "weighted_score": 53.1
     },
     {
       "model": "gemma-4-E4B-it-Q8_0--nothi",
@@ -466,25 +862,59 @@
         "12k": 1313.4214025553563
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 1306.3999999999999,
+        "ref": 1910.1,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 590.2
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1418.9
+          },
+          {
+            "depth": 32768,
+            "tok_s": 1910.1
+          }
+        ]
       },
       "performance": {
-        "axis": null,
-        "throughput_norm": null,
-        "latency_norm": null,
-        "ttft_8k_ms": null
+        "axis": 0.4048210724420245,
+        "throughput_norm": 0.39813893008797413,
+        "latency_norm": 0.4092758340113914,
+        "ttft_8k_ms": 2458
       },
       "vram_at_maxctx_mib": {
         "used": 7133,
         "free": 13331
       },
       "decode_decay": {
-        "base_tok_s": null,
-        "retention_pct": null,
-        "ref_depth": null,
-        "curve": []
+        "base_tok_s": 84.9,
+        "retention_pct": 82,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 84.9
+          },
+          {
+            "depth": 16384,
+            "tok_s": 75.1
+          },
+          {
+            "depth": 32768,
+            "tok_s": 69.6
+          },
+          {
+            "depth": 65536,
+            "tok_s": 62.1
+          },
+          {
+            "depth": 98304,
+            "tok_s": 56.3
+          }
+        ]
       },
       "parallel_gen": {
         "agg_tok_s_max": null,
@@ -493,18 +923,68 @@
         "curve": []
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 50,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 50
+          },
+          {
+            "depth": 16384,
+            "acc": 50
+          },
+          {
+            "depth": 32768,
+            "acc": 50
+          },
+          {
+            "depth": 65536,
+            "acc": 50
+          },
+          {
+            "depth": 98304,
+            "acc": 50
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 11642,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 427
+          },
+          {
+            "depth": 2048,
+            "ms": 603
+          },
+          {
+            "depth": 8192,
+            "ms": 2458
+          },
+          {
+            "depth": 16384,
+            "ms": 4910
+          },
+          {
+            "depth": 32768,
+            "ms": 11642
+          },
+          {
+            "depth": 65536,
+            "ms": 30807
+          },
+          {
+            "depth": 98304,
+            "ms": 57561
+          }
+        ]
       },
       "struct_output_pct": 100,
       "coding_grade": 87.66,
       "power_eff_tok_s_per_w": 0.321,
-      "weighted_score": 47.5
+      "weighted_score": 63.2
     },
     {
       "model": "gemma-4-E4B-it-Q5_K_M--nothi",
@@ -534,25 +1014,59 @@
         "12k": 1441.8921181999892
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 1383.2,
+        "ref": 1928.7,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 684
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1536.9
+          },
+          {
+            "depth": 32768,
+            "tok_s": 1928.7
+          }
+        ]
       },
       "performance": {
-        "axis": null,
-        "throughput_norm": null,
-        "latency_norm": null,
-        "ttft_8k_ms": null
+        "axis": 0.40644286929690465,
+        "throughput_norm": 0.42154452548812454,
+        "latency_norm": 0.3963750985027581,
+        "ttft_8k_ms": 2538
       },
       "vram_at_maxctx_mib": {
         "used": 5555,
         "free": 14909
       },
       "decode_decay": {
-        "base_tok_s": null,
-        "retention_pct": null,
-        "ref_depth": null,
-        "curve": []
+        "base_tok_s": 102.1,
+        "retention_pct": 79,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 102.1
+          },
+          {
+            "depth": 16384,
+            "tok_s": 88.4
+          },
+          {
+            "depth": 32768,
+            "tok_s": 81.1
+          },
+          {
+            "depth": 65536,
+            "tok_s": 71.3
+          },
+          {
+            "depth": 98304,
+            "tok_s": 63.6
+          }
+        ]
       },
       "parallel_gen": {
         "agg_tok_s_max": null,
@@ -561,18 +1075,68 @@
         "curve": []
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 50,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 50
+          },
+          {
+            "depth": 16384,
+            "acc": 50
+          },
+          {
+            "depth": 32768,
+            "acc": 50
+          },
+          {
+            "depth": 65536,
+            "acc": 50
+          },
+          {
+            "depth": 98304,
+            "acc": 50
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 11929,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 458
+          },
+          {
+            "depth": 2048,
+            "ms": 623
+          },
+          {
+            "depth": 8192,
+            "ms": 2538
+          },
+          {
+            "depth": 16384,
+            "ms": 5065
+          },
+          {
+            "depth": 32768,
+            "ms": 11929
+          },
+          {
+            "depth": 65536,
+            "ms": 31424
+          },
+          {
+            "depth": 98304,
+            "ms": 58661
+          }
+        ]
       },
       "struct_output_pct": 100,
       "coding_grade": 91.36,
       "power_eff_tok_s_per_w": 0.391,
-      "weighted_score": 46.4
+      "weighted_score": 61.1
     },
     {
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
@@ -602,25 +1166,59 @@
         "12k": 1246.5937552178993
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 1001.9333333333334,
+        "ref": 1394.2,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 493.8
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1117.8
+          },
+          {
+            "depth": 32768,
+            "tok_s": 1394.2
+          }
+        ]
       },
       "performance": {
-        "axis": null,
-        "throughput_norm": null,
-        "latency_norm": null,
-        "ttft_8k_ms": null
+        "axis": 0.30866640007146484,
+        "throughput_norm": 0.30534956012921843,
+        "latency_norm": 0.31087762669962915,
+        "ttft_8k_ms": 3236
       },
       "vram_at_maxctx_mib": {
         "used": 18768,
         "free": 1696
       },
       "decode_decay": {
-        "base_tok_s": null,
-        "retention_pct": null,
-        "ref_depth": null,
-        "curve": []
+        "base_tok_s": 78,
+        "retention_pct": 72,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 78
+          },
+          {
+            "depth": 16384,
+            "tok_s": 61.4
+          },
+          {
+            "depth": 32768,
+            "tok_s": 56.5
+          },
+          {
+            "depth": 65536,
+            "tok_s": 48.9
+          },
+          {
+            "depth": 98304,
+            "tok_s": 43.2
+          }
+        ]
       },
       "parallel_gen": {
         "agg_tok_s_max": null,
@@ -629,18 +1227,68 @@
         "curve": []
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 100,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 100
+          },
+          {
+            "depth": 16384,
+            "acc": 100
+          },
+          {
+            "depth": 32768,
+            "acc": 100
+          },
+          {
+            "depth": 65536,
+            "acc": 100
+          },
+          {
+            "depth": 98304,
+            "acc": 83.3
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 16144,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 596
+          },
+          {
+            "depth": 2048,
+            "ms": 770
+          },
+          {
+            "depth": 8192,
+            "ms": 3236
+          },
+          {
+            "depth": 16384,
+            "ms": 6553
+          },
+          {
+            "depth": 32768,
+            "ms": 16144
+          },
+          {
+            "depth": 65536,
+            "ms": 51267
+          },
+          {
+            "depth": 98304,
+            "ms": 106897
+          }
+        ]
       },
       "struct_output_pct": 100,
       "coding_grade": 96.74000000000001,
       "power_eff_tok_s_per_w": 0.313,
-      "weighted_score": 58.9
+      "weighted_score": 73.5
     },
     {
       "model": "gemma-4-12b-it-Q5_K_M--nothi",
@@ -670,25 +1318,59 @@
         "12k": 635.7606350498677
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 621.1333333333333,
+        "ref": 819.5,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 341.1
+          },
+          {
+            "depth": 8192,
+            "tok_s": 702.8
+          },
+          {
+            "depth": 32768,
+            "tok_s": 819.5
+          }
+        ]
       },
       "performance": {
-        "axis": null,
-        "throughput_norm": null,
-        "latency_norm": null,
-        "ttft_8k_ms": null
+        "axis": 0.1675908726267773,
+        "throughput_norm": 0.18929681627013958,
+        "latency_norm": 0.15312024353120243,
+        "ttft_8k_ms": 6570
       },
       "vram_at_maxctx_mib": {
         "used": 10657,
         "free": 9807
       },
       "decode_decay": {
-        "base_tok_s": null,
-        "retention_pct": null,
-        "ref_depth": null,
-        "curve": []
+        "base_tok_s": 55.3,
+        "retention_pct": 89,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 55.3
+          },
+          {
+            "depth": 16384,
+            "tok_s": 51.4
+          },
+          {
+            "depth": 32768,
+            "tok_s": 49.1
+          },
+          {
+            "depth": 65536,
+            "tok_s": 46.2
+          },
+          {
+            "depth": 98304,
+            "tok_s": 43.7
+          }
+        ]
       },
       "parallel_gen": {
         "agg_tok_s_max": null,
@@ -697,18 +1379,68 @@
         "curve": []
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 83.3,
+        "retention_pct": 80,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 83.3
+          },
+          {
+            "depth": 16384,
+            "acc": 83.3
+          },
+          {
+            "depth": 32768,
+            "acc": 66.7
+          },
+          {
+            "depth": 65536,
+            "acc": 66.7
+          },
+          {
+            "depth": 98304,
+            "acc": 66.7
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 30277,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 1097
+          },
+          {
+            "depth": 2048,
+            "ms": 1603
+          },
+          {
+            "depth": 8192,
+            "ms": 6570
+          },
+          {
+            "depth": 16384,
+            "ms": 13153
+          },
+          {
+            "depth": 32768,
+            "ms": 30277
+          },
+          {
+            "depth": 65536,
+            "ms": 77673
+          },
+          {
+            "depth": 98304,
+            "ms": 142644
+          }
+        ]
       },
       "struct_output_pct": 100,
       "coding_grade": 94.25999999999999,
       "power_eff_tok_s_per_w": 0.196,
-      "weighted_score": 57
+      "weighted_score": 67.6
     },
     {
       "model": "gemma-4-12b-it-qat-q4_0--nothi",
@@ -738,25 +1470,59 @@
         "12k": 696.1426901235943
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 674.0333333333334,
+        "ref": 878.2,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 376
+          },
+          {
+            "depth": 8192,
+            "tok_s": 767.9
+          },
+          {
+            "depth": 32768,
+            "tok_s": 878.2
+          }
+        ]
       },
       "performance": {
-        "axis": null,
-        "throughput_norm": null,
-        "latency_norm": null,
-        "ttft_8k_ms": null
+        "axis": 0.1820350929836421,
+        "throughput_norm": 0.20541863914342026,
+        "latency_norm": 0.16644606221045666,
+        "ttft_8k_ms": 6044
       },
       "vram_at_maxctx_mib": {
         "used": 9286,
         "free": 11178
       },
       "decode_decay": {
-        "base_tok_s": null,
-        "retention_pct": null,
-        "ref_depth": null,
-        "curve": []
+        "base_tok_s": 61.4,
+        "retention_pct": 87,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 61.4
+          },
+          {
+            "depth": 16384,
+            "tok_s": 56.6
+          },
+          {
+            "depth": 32768,
+            "tok_s": 53.7
+          },
+          {
+            "depth": 65536,
+            "tok_s": 50.3
+          },
+          {
+            "depth": 98304,
+            "tok_s": 47.6
+          }
+        ]
       },
       "parallel_gen": {
         "agg_tok_s_max": null,
@@ -765,18 +1531,68 @@
         "curve": []
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 83.3,
+        "retention_pct": 80,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 83.3
+          },
+          {
+            "depth": 16384,
+            "acc": 83.3
+          },
+          {
+            "depth": 32768,
+            "acc": 66.7
+          },
+          {
+            "depth": 65536,
+            "acc": 66.7
+          },
+          {
+            "depth": 98304,
+            "acc": 66.7
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 28137,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 1008
+          },
+          {
+            "depth": 2048,
+            "ms": 1464
+          },
+          {
+            "depth": 8192,
+            "ms": 6044
+          },
+          {
+            "depth": 16384,
+            "ms": 12060
+          },
+          {
+            "depth": 32768,
+            "ms": 28137
+          },
+          {
+            "depth": 65536,
+            "ms": 73468
+          },
+          {
+            "depth": 98304,
+            "ms": 136538
+          }
+        ]
       },
       "struct_output_pct": 100,
       "coding_grade": 93.66,
       "power_eff_tok_s_per_w": 0.216,
-      "weighted_score": 57.2
+      "weighted_score": 68.1
     },
     {
       "model": "gemma-4-26B_q4_0-it--nothi",
@@ -806,25 +1622,59 @@
         "12k": 1365.1309396011077
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 1015.7333333333332,
+        "ref": 1316.5,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 543.9
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1186.8
+          },
+          {
+            "depth": 32768,
+            "tok_s": 1316.5
+          }
+        ]
       },
       "performance": {
-        "axis": null,
-        "throughput_norm": null,
-        "latency_norm": null,
-        "ttft_8k_ms": null
+        "axis": 0.31174240010027615,
+        "throughput_norm": 0.3095552530526829,
+        "latency_norm": 0.31320049813200496,
+        "ttft_8k_ms": 3212
       },
       "vram_at_maxctx_mib": {
         "used": 16376,
         "free": 4088
       },
       "decode_decay": {
-        "base_tok_s": null,
-        "retention_pct": null,
-        "ref_depth": null,
-        "curve": []
+        "base_tok_s": 123.1,
+        "retention_pct": 78,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 123.1
+          },
+          {
+            "depth": 16384,
+            "tok_s": 103.9
+          },
+          {
+            "depth": 32768,
+            "tok_s": 96.2
+          },
+          {
+            "depth": 65536,
+            "tok_s": 85.6
+          },
+          {
+            "depth": 98304,
+            "tok_s": 77.6
+          }
+        ]
       },
       "parallel_gen": {
         "agg_tok_s_max": null,
@@ -833,18 +1683,68 @@
         "curve": []
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 100,
+        "retention_pct": 83,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 100
+          },
+          {
+            "depth": 16384,
+            "acc": 66.7
+          },
+          {
+            "depth": 32768,
+            "acc": 83.3
+          },
+          {
+            "depth": 65536,
+            "acc": 50
+          },
+          {
+            "depth": 98304,
+            "acc": 66.7
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 15225,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 584
+          },
+          {
+            "depth": 2048,
+            "ms": 765
+          },
+          {
+            "depth": 8192,
+            "ms": 3212
+          },
+          {
+            "depth": 16384,
+            "ms": 6365
+          },
+          {
+            "depth": 32768,
+            "ms": 15225
+          },
+          {
+            "depth": 65536,
+            "ms": 41126
+          },
+          {
+            "depth": 98304,
+            "ms": 78036
+          }
+        ]
       },
       "struct_output_pct": 100,
       "coding_grade": 95.9,
       "power_eff_tok_s_per_w": 0.475,
-      "weighted_score": 58.4
+      "weighted_score": 72.5
     },
     {
       "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
@@ -874,25 +1774,59 @@
         "12k": 705.3680981595093
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 679.5,
+        "ref": 880.1,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 383.5
+          },
+          {
+            "depth": 8192,
+            "tok_s": 774.9
+          },
+          {
+            "depth": 32768,
+            "tok_s": 880.1
+          }
+        ]
       },
       "performance": {
-        "axis": null,
-        "throughput_norm": null,
-        "latency_norm": null,
-        "ttft_8k_ms": null
+        "axis": 0.18235571163201525,
+        "throughput_norm": 0.2070846624271115,
+        "latency_norm": 0.1658697444352844,
+        "ttft_8k_ms": 6065
       },
       "vram_at_maxctx_mib": {
         "used": 8688,
         "free": 11776
       },
       "decode_decay": {
-        "base_tok_s": null,
-        "retention_pct": null,
-        "ref_depth": null,
-        "curve": []
+        "base_tok_s": 63.1,
+        "retention_pct": 87,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 63.1
+          },
+          {
+            "depth": 16384,
+            "tok_s": 58.1
+          },
+          {
+            "depth": 32768,
+            "tok_s": 55
+          },
+          {
+            "depth": 65536,
+            "tok_s": 51.5
+          },
+          {
+            "depth": 98304,
+            "tok_s": 48.6
+          }
+        ]
       },
       "parallel_gen": {
         "agg_tok_s_max": null,
@@ -901,18 +1835,68 @@
         "curve": []
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 83.3,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 83.3
+          },
+          {
+            "depth": 16384,
+            "acc": 66.7
+          },
+          {
+            "depth": 32768,
+            "acc": 83.3
+          },
+          {
+            "depth": 65536,
+            "acc": 50
+          },
+          {
+            "depth": 98304,
+            "acc": 50
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 28180,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 1022
+          },
+          {
+            "depth": 2048,
+            "ms": 1470
+          },
+          {
+            "depth": 8192,
+            "ms": 6065
+          },
+          {
+            "depth": 16384,
+            "ms": 12075
+          },
+          {
+            "depth": 32768,
+            "ms": 28180
+          },
+          {
+            "depth": 65536,
+            "ms": 73527
+          },
+          {
+            "depth": 98304,
+            "ms": 136465
+          }
+        ]
       },
       "struct_output_pct": 100,
       "coding_grade": 93.78,
       "power_eff_tok_s_per_w": 0.222,
-      "weighted_score": 45.5
+      "weighted_score": 54.6
     },
     {
       "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
@@ -942,25 +1926,59 @@
         "12k": 1383.4293673416503
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 1286.2333333333333,
+        "ref": 1617.8,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 753
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1487.9
+          },
+          {
+            "depth": 32768,
+            "tok_s": 1617.8
+          }
+        ]
       },
       "performance": {
-        "axis": null,
-        "throughput_norm": null,
-        "latency_norm": null,
-        "ttft_8k_ms": null
+        "axis": 0.3489041100797772,
+        "throughput_norm": 0.3919929295597229,
+        "latency_norm": 0.32017823042647997,
+        "ttft_8k_ms": 3142
       },
       "vram_at_maxctx_mib": {
         "used": 16194,
         "free": 4270
       },
       "decode_decay": {
-        "base_tok_s": null,
-        "retention_pct": null,
-        "ref_depth": null,
-        "curve": []
+        "base_tok_s": 127.2,
+        "retention_pct": 78,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 127.2
+          },
+          {
+            "depth": 16384,
+            "tok_s": 105.3
+          },
+          {
+            "depth": 32768,
+            "tok_s": 98.6
+          },
+          {
+            "depth": 65536,
+            "tok_s": 87.4
+          },
+          {
+            "depth": 98304,
+            "tok_s": 79
+          }
+        ]
       },
       "parallel_gen": {
         "agg_tok_s_max": null,
@@ -969,18 +1987,68 @@
         "curve": []
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 100,
+        "retention_pct": 67,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 100
+          },
+          {
+            "depth": 16384,
+            "acc": 50
+          },
+          {
+            "depth": 32768,
+            "acc": 66.7
+          },
+          {
+            "depth": 65536,
+            "acc": 66.7
+          },
+          {
+            "depth": 98304,
+            "acc": 50
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 15218,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 578
+          },
+          {
+            "depth": 2048,
+            "ms": 745
+          },
+          {
+            "depth": 8192,
+            "ms": 3142
+          },
+          {
+            "depth": 16384,
+            "ms": 6363
+          },
+          {
+            "depth": 32768,
+            "ms": 15218
+          },
+          {
+            "depth": 65536,
+            "ms": 41065
+          },
+          {
+            "depth": 98304,
+            "ms": 77922
+          }
+        ]
       },
       "struct_output_pct": 100,
       "coding_grade": 95.56,
       "power_eff_tok_s_per_w": 0.395,
-      "weighted_score": 58
+      "weighted_score": 72.4
     },
     {
       "model": "LFM2.5-8B-A1B-Q5_K_M",
@@ -1010,25 +2078,59 @@
         "12k": 3486.731664726426
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 3281.2666666666664,
+        "ref": 4550.6,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 1693
+          },
+          {
+            "depth": 8192,
+            "tok_s": 3600.2
+          },
+          {
+            "depth": 32768,
+            "tok_s": 4550.6
+          }
+        ]
       },
       "performance": {
-        "axis": null,
-        "throughput_norm": null,
-        "latency_norm": null,
-        "ttft_8k_ms": null
+        "axis": 1,
+        "throughput_norm": 1,
+        "latency_norm": 1,
+        "ttft_8k_ms": 1006
       },
       "vram_at_maxctx_mib": {
         "used": 7311,
         "free": 13153
       },
       "decode_decay": {
-        "base_tok_s": null,
-        "retention_pct": null,
-        "ref_depth": null,
-        "curve": []
+        "base_tok_s": 278.7,
+        "retention_pct": 89,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 278.7
+          },
+          {
+            "depth": 16384,
+            "tok_s": 266.5
+          },
+          {
+            "depth": 32768,
+            "tok_s": 247.6
+          },
+          {
+            "depth": 65536,
+            "tok_s": 215.6
+          },
+          {
+            "depth": 98304,
+            "tok_s": 192.1
+          }
+        ]
       },
       "parallel_gen": {
         "agg_tok_s_max": null,
@@ -1037,18 +2139,68 @@
         "curve": []
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 100,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 100
+          },
+          {
+            "depth": 16384,
+            "acc": 83.3
+          },
+          {
+            "depth": 32768,
+            "acc": 100
+          },
+          {
+            "depth": 65536,
+            "acc": 66.7
+          },
+          {
+            "depth": 98304,
+            "acc": 0
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 4479,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 194
+          },
+          {
+            "depth": 2048,
+            "ms": 246
+          },
+          {
+            "depth": 8192,
+            "ms": 1006
+          },
+          {
+            "depth": 16384,
+            "ms": 1987
+          },
+          {
+            "depth": 32768,
+            "ms": 4479
+          },
+          {
+            "depth": 65536,
+            "ms": 11363
+          },
+          {
+            "depth": 98304,
+            "ms": 20724
+          }
+        ]
       },
       "struct_output_pct": 75,
       "coding_grade": 72.58000000000001,
       "power_eff_tok_s_per_w": 1.08,
-      "weighted_score": 17.9
+      "weighted_score": 32.6
     },
     {
       "model": "granite-4.0-h-tiny-Q5_K_M",
@@ -1059,7 +2211,7 @@
       "maxctx_shared_from": null,
       "benches": {
         "triage": 73.8,
-        "reasoning": 83.3,
+        "reasoning": null,
         "toolcalling": 100,
         "docqa": 7.83,
         "summarization": 64.2
@@ -1078,25 +2230,59 @@
         "12k": 2540.264771320132
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 2571.4,
+        "ref": 4119.3,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 1044.2
+          },
+          {
+            "depth": 8192,
+            "tok_s": 2550.7
+          },
+          {
+            "depth": 32768,
+            "tok_s": 4119.3
+          }
+        ]
       },
       "performance": {
-        "axis": null,
-        "throughput_norm": null,
-        "latency_norm": null,
-        "ttft_8k_ms": null
+        "axis": 0.8298030636315119,
+        "throughput_norm": 0.7836607814055548,
+        "latency_norm": 0.8605645851154833,
+        "ttft_8k_ms": 1169
       },
       "vram_at_maxctx_mib": {
         "used": 6072,
         "free": 14392
       },
       "decode_decay": {
-        "base_tok_s": null,
-        "retention_pct": null,
-        "ref_depth": null,
-        "curve": []
+        "base_tok_s": 179.2,
+        "retention_pct": 100,
+        "ref_depth": 32768,
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 179.2
+          },
+          {
+            "depth": 16384,
+            "tok_s": 236.6
+          },
+          {
+            "depth": 32768,
+            "tok_s": 233.2
+          },
+          {
+            "depth": 65536,
+            "tok_s": 219.9
+          },
+          {
+            "depth": 98304,
+            "tok_s": 208.8
+          }
+        ]
       },
       "parallel_gen": {
         "agg_tok_s_max": null,
@@ -1105,18 +2291,68 @@
         "curve": []
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 33.3,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 33.3
+          },
+          {
+            "depth": 16384,
+            "acc": 50
+          },
+          {
+            "depth": 32768,
+            "acc": 50
+          },
+          {
+            "depth": 65536,
+            "acc": 33.3
+          },
+          {
+            "depth": 98304,
+            "acc": 33.3
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 4409,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 295
+          },
+          {
+            "depth": 2048,
+            "ms": 307
+          },
+          {
+            "depth": 8192,
+            "ms": 1169
+          },
+          {
+            "depth": 16384,
+            "ms": 2115
+          },
+          {
+            "depth": 32768,
+            "ms": 4409
+          },
+          {
+            "depth": 65536,
+            "ms": 9786
+          },
+          {
+            "depth": 98304,
+            "ms": 16159
+          }
+        ]
       },
       "struct_output_pct": 100,
       "coding_grade": 81.47999999999999,
       "power_eff_tok_s_per_w": 0.482,
-      "weighted_score": 42.4
+      "weighted_score": 52.6
     },
     {
       "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
@@ -1146,25 +2382,39 @@
         "12k": 1721.2249898071666
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 1362.75,
+        "ref": 1898.9,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 826.6
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1898.9
+          }
+        ]
       },
       "performance": {
-        "axis": null,
-        "throughput_norm": null,
-        "latency_norm": null,
-        "ttft_8k_ms": null
+        "axis": 0.4575782746294317,
+        "throughput_norm": 0.41531217619212096,
+        "latency_norm": 0.4857556735876388,
+        "ttft_8k_ms": 2071
       },
       "vram_at_maxctx_mib": {
         "used": 4345,
         "free": 16119
       },
       "decode_decay": {
-        "base_tok_s": null,
+        "base_tok_s": 131.2,
         "retention_pct": null,
         "ref_depth": null,
-        "curve": []
+        "curve": [
+          {
+            "depth": 0,
+            "tok_s": 131.2
+          }
+        ]
       },
       "parallel_gen": {
         "agg_tok_s_max": null,
@@ -1173,13 +2423,31 @@
         "curve": []
       },
       "quality_decay": {
-        "base_acc": null,
+        "base_acc": 100,
         "retention_pct": null,
-        "curve": []
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 100
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 2071,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 426
+          },
+          {
+            "depth": 2048,
+            "ms": 531
+          },
+          {
+            "depth": 8192,
+            "ms": 2071
+          }
+        ]
       },
       "struct_output_pct": 83.3,
       "coding_grade": 84.08,
@@ -1193,112 +2461,112 @@
       "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
       "think": "no_think",
-      "weighted_score": 58.9
+      "weighted_score": 73.5
     },
     {
       "rank": 2,
       "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
       "model": "gemma-4-26B_q4_0-it--nothi",
       "think": "no_think",
-      "weighted_score": 58.4
+      "weighted_score": 72.5
     },
     {
       "rank": 3,
       "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
       "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
       "think": "no_think",
-      "weighted_score": 58
+      "weighted_score": 72.4
     },
     {
       "rank": 4,
       "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
       "model": "gemma-4-12b-it-qat-q4_0--nothi",
       "think": "no_think",
-      "weighted_score": 57.2
+      "weighted_score": 68.1
     },
     {
       "rank": 5,
       "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
       "model": "gemma-4-12b-it-Q5_K_M--nothi",
       "think": "no_think",
-      "weighted_score": 57
+      "weighted_score": 67.6
     },
     {
       "rank": 6,
-      "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
-      "model": "Qwen3.5-9B-Q5_K_M--nothi",
-      "think": "no_think",
-      "weighted_score": 47.9
-    },
-    {
-      "rank": 7,
       "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
       "model": "gemma-4-E4B-it-Q8_0--nothi",
       "think": "no_think",
-      "weighted_score": 47.5
+      "weighted_score": 63.2
     },
     {
-      "rank": 8,
+      "rank": 7,
       "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
       "model": "gemma-4-E4B-it-Q5_K_M--nothi",
       "think": "no_think",
-      "weighted_score": 46.4
+      "weighted_score": 61.1
+    },
+    {
+      "rank": 8,
+      "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+      "model": "Qwen3.5-9B-Q5_K_M--nothi",
+      "think": "no_think",
+      "weighted_score": 59.3
     },
     {
       "rank": 9,
       "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
       "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
       "think": "no_think",
-      "weighted_score": 45.5
+      "weighted_score": 54.6
     },
     {
       "rank": 10,
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
       "think": "no_think",
-      "weighted_score": 42.8
+      "weighted_score": 53.1
     },
     {
       "rank": 11,
       "label": "granite-4.0-h-tiny-Q5_K_M",
       "model": "granite-4.0-h-tiny-Q5_K_M",
       "think": "n/a",
-      "weighted_score": 42.4
+      "weighted_score": 52.6
     },
     {
       "rank": 12,
-      "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
-      "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
-      "think": "n/a",
-      "weighted_score": 27.2
-    },
-    {
-      "rank": 13,
       "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
       "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
       "think": "n/a",
-      "weighted_score": 27.2
+      "weighted_score": 33.3
+    },
+    {
+      "rank": 13,
+      "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+      "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+      "think": "n/a",
+      "weighted_score": 33.2
     },
     {
       "rank": 14,
-      "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
-      "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
-      "think": "n/a",
-      "weighted_score": 26.2
-    },
-    {
-      "rank": 15,
       "label": "LFM2.5-8B-A1B-Q5_K_M",
       "model": "LFM2.5-8B-A1B-Q5_K_M",
       "think": "n/a",
-      "weighted_score": 17.9
+      "weighted_score": 32.6
+    },
+    {
+      "rank": 15,
+      "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+      "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+      "think": "n/a",
+      "weighted_score": 23.1
     },
     {
       "rank": 16,
       "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
       "model": "Qwen3-14B-Q5_K_M--nothi",
       "think": "no_think",
-      "weighted_score": 13.9
+      "weighted_score": 16.1
     },
     {
       "rank": 17,
@@ -1312,118 +2580,104 @@
     "reasoning": [
       {
         "rank": 1,
-        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
-        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
-        "think": "n/a",
-        "score": 100
-      },
-      {
-        "rank": 2,
         "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
         "model": "Qwen3-14B-Q5_K_M--nothi",
         "think": "no_think",
         "score": 100
       },
       {
-        "rank": 3,
+        "rank": 2,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
         "think": "no_think",
         "score": 100
       },
       {
-        "rank": 4,
+        "rank": 3,
         "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
         "model": "gemma-4-12b-it-Q5_K_M--nothi",
         "think": "no_think",
         "score": 100
       },
       {
-        "rank": 5,
+        "rank": 4,
         "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
         "model": "gemma-4-12b-it-qat-q4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
-        "rank": 6,
+        "rank": 5,
         "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--nothi",
         "think": "no_think",
         "score": 100
       },
       {
-        "rank": 7,
+        "rank": 6,
         "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
         "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
         "think": "no_think",
         "score": 100
       },
       {
-        "rank": 8,
+        "rank": 7,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
         "think": "no_think",
         "score": 100
       },
       {
-        "rank": 9,
+        "rank": 8,
         "label": "LFM2.5-8B-A1B-Q5_K_M",
         "model": "LFM2.5-8B-A1B-Q5_K_M",
         "think": "n/a",
         "score": 100
       },
       {
-        "rank": 10,
+        "rank": 9,
         "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
         "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
-        "rank": 11,
+        "rank": 10,
         "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
         "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
         "think": "n/a",
         "score": 91.7
       },
       {
-        "rank": 12,
+        "rank": 11,
         "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
         "model": "Qwen3.5-9B-Q5_K_M--nothi",
         "think": "no_think",
         "score": 91.7
       },
       {
-        "rank": 13,
+        "rank": 12,
         "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
         "model": "gemma-4-E4B-it-Q5_K_M--nothi",
         "think": "no_think",
         "score": 91.7
       },
       {
-        "rank": 14,
+        "rank": 13,
         "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
         "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
         "think": "n/a",
         "score": 83.3
       },
       {
-        "rank": 15,
+        "rank": 14,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
         "think": "no_think",
         "score": 83.3
       },
       {
-        "rank": 16,
-        "label": "granite-4.0-h-tiny-Q5_K_M",
-        "model": "granite-4.0-h-tiny-Q5_K_M",
-        "think": "n/a",
-        "score": 83.3
-      },
-      {
-        "rank": 17,
+        "rank": 15,
         "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
         "model": "gemma-4-E4B-it-Q8_0--nothi",
         "think": "no_think",
@@ -1433,17 +2687,17 @@
     "triage": [
       {
         "rank": 1,
-        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
-        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
-        "think": "n/a",
-        "score": 88.2
-      },
-      {
-        "rank": 2,
         "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
         "model": "gemma-4-E4B-it-Q8_0--nothi",
         "think": "no_think",
         "score": 88
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 87.8
       },
       {
         "rank": 3,
@@ -2747,9 +4001,369 @@
         "score": 275.45432300163134
       }
     ],
-    "e2e_throughput_tok_s": [],
-    "performance_axis": [],
-    "latency_rel_8k": [],
+    "e2e_throughput_tok_s": [
+      {
+        "rank": 1,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 3281.2666666666664
+      },
+      {
+        "rank": 2,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 2571.4
+      },
+      {
+        "rank": 3,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 1383.2
+      },
+      {
+        "rank": 4,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 1362.75
+      },
+      {
+        "rank": 5,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 1306.3999999999999
+      },
+      {
+        "rank": 6,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 1286.2333333333333
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--nothi",
+        "think": "no_think",
+        "score": 1015.7333333333332
+      },
+      {
+        "rank": 8,
+        "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3.5-9B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 1010
+      },
+      {
+        "rank": 9,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 1001.9333333333334
+      },
+      {
+        "rank": 10,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 962.1
+      },
+      {
+        "rank": 11,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 824.5
+      },
+      {
+        "rank": 12,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 819.7666666666668
+      },
+      {
+        "rank": 13,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 817
+      },
+      {
+        "rank": 14,
+        "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 679.5
+      },
+      {
+        "rank": 15,
+        "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+        "model": "gemma-4-12b-it-qat-q4_0--nothi",
+        "think": "no_think",
+        "score": 674.0333333333334
+      },
+      {
+        "rank": 16,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 621.1333333333333
+      },
+      {
+        "rank": 17,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 476.84999999999997
+      }
+    ],
+    "performance_axis": [
+      {
+        "rank": 1,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 1
+      },
+      {
+        "rank": 2,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 0.8298030636315119
+      },
+      {
+        "rank": 3,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 0.4575782746294317
+      },
+      {
+        "rank": 4,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 0.40644286929690465
+      },
+      {
+        "rank": 5,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 0.4048210724420245
+      },
+      {
+        "rank": 6,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 0.3489041100797772
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--nothi",
+        "think": "no_think",
+        "score": 0.31174240010027615
+      },
+      {
+        "rank": 8,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 0.30866640007146484
+      },
+      {
+        "rank": 9,
+        "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3.5-9B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 0.2771027759729423
+      },
+      {
+        "rank": 10,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 0.2609640518727808
+      },
+      {
+        "rank": 11,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 0.25555748685554935
+      },
+      {
+        "rank": 12,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 0.25371639221195585
+      },
+      {
+        "rank": 13,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 0.25186611849849444
+      },
+      {
+        "rank": 14,
+        "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 0.18235571163201525
+      },
+      {
+        "rank": 15,
+        "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+        "model": "gemma-4-12b-it-qat-q4_0--nothi",
+        "think": "no_think",
+        "score": 0.1820350929836421
+      },
+      {
+        "rank": 16,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 0.1675908726267773
+      },
+      {
+        "rank": 17,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 0.1371559134673386
+      }
+    ],
+    "latency_rel_8k": [
+      {
+        "rank": 1,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 1
+      },
+      {
+        "rank": 2,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 0.8605645851154833
+      },
+      {
+        "rank": 3,
+        "label": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi [no_think]",
+        "model": "nvidia_Nemotron-3-Nano-4B-Q8_0--nothi",
+        "think": "no_think",
+        "score": 0.4857556735876388
+      },
+      {
+        "rank": 4,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 0.4092758340113914
+      },
+      {
+        "rank": 5,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 0.3963750985027581
+      },
+      {
+        "rank": 6,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 0.32017823042647997
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--nothi",
+        "think": "no_think",
+        "score": 0.31320049813200496
+      },
+      {
+        "rank": 8,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 0.31087762669962915
+      },
+      {
+        "rank": 9,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 0.2584125353198048
+      },
+      {
+        "rank": 10,
+        "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3.5-9B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 0.2566326530612245
+      },
+      {
+        "rank": 11,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 0.25630573248407645
+      },
+      {
+        "rank": 12,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 0.2537840565085772
+      },
+      {
+        "rank": 13,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 0.23946679362056653
+      },
+      {
+        "rank": 14,
+        "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+        "model": "gemma-4-12b-it-qat-q4_0--nothi",
+        "think": "no_think",
+        "score": 0.16644606221045666
+      },
+      {
+        "rank": 15,
+        "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 0.1658697444352844
+      },
+      {
+        "rank": 16,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 0.15312024353120243
+      },
+      {
+        "rank": 17,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 0.13170987169416076
+      }
+    ],
     "vram_free_at_maxctx_mib": [
       {
         "rank": 1,
@@ -2871,11 +4485,350 @@
         "score": 463
       }
     ],
-    "decode_retention_pct": [],
-    "decode_tok_s_at_ref": [],
+    "decode_retention_pct": [
+      {
+        "rank": 1,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 100
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3.5-9B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 89
+      },
+      {
+        "rank": 3,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 89
+      },
+      {
+        "rank": 4,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 89
+      },
+      {
+        "rank": 5,
+        "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+        "model": "gemma-4-12b-it-qat-q4_0--nothi",
+        "think": "no_think",
+        "score": 87
+      },
+      {
+        "rank": 6,
+        "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 87
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 82
+      },
+      {
+        "rank": 8,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 81
+      },
+      {
+        "rank": 9,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 79
+      },
+      {
+        "rank": 10,
+        "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--nothi",
+        "think": "no_think",
+        "score": 78
+      },
+      {
+        "rank": 11,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 78
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 72
+      },
+      {
+        "rank": 13,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 71
+      },
+      {
+        "rank": 14,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 62
+      },
+      {
+        "rank": 15,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 61
+      },
+      {
+        "rank": 16,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 61
+      }
+    ],
+    "decode_tok_s_at_ref": [
+      {
+        "rank": 1,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 247.6
+      },
+      {
+        "rank": 2,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 233.2
+      },
+      {
+        "rank": 3,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 98.6
+      },
+      {
+        "rank": 4,
+        "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--nothi",
+        "think": "no_think",
+        "score": 96.2
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 95.2
+      },
+      {
+        "rank": 6,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 81.1
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 79.6
+      },
+      {
+        "rank": 8,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 79.4
+      },
+      {
+        "rank": 9,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 78.8
+      },
+      {
+        "rank": 10,
+        "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3.5-9B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 75.5
+      },
+      {
+        "rank": 11,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 69.6
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 56.5
+      },
+      {
+        "rank": 13,
+        "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 55
+      },
+      {
+        "rank": 14,
+        "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+        "model": "gemma-4-12b-it-qat-q4_0--nothi",
+        "think": "no_think",
+        "score": 53.7
+      },
+      {
+        "rank": 15,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 49.1
+      },
+      {
+        "rank": 16,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 48.4
+      }
+    ],
     "parallel_agg_tok_s_8slots": [],
     "parallel_speedup": [],
-    "quality_retention_pct": [],
+    "quality_retention_pct": [
+      {
+        "rank": 1,
+        "label": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "model": "Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 100
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "model": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL",
+        "think": "n/a",
+        "score": 100
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "model": "Qwen3-30B-A3B-Instruct-2507-IQ4_XS",
+        "think": "n/a",
+        "score": 100
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3.5-9B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3.5-9B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 6,
+        "label": "gemma-4-E4B-it-Q8_0--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q8_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-E4B-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-E4B-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 8,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 9,
+        "label": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-12B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 10,
+        "label": "LFM2.5-8B-A1B-Q5_K_M",
+        "model": "LFM2.5-8B-A1B-Q5_K_M",
+        "think": "n/a",
+        "score": 100
+      },
+      {
+        "rank": 11,
+        "label": "granite-4.0-h-tiny-Q5_K_M",
+        "model": "granite-4.0-h-tiny-Q5_K_M",
+        "think": "n/a",
+        "score": 100
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-26B_q4_0-it--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--nothi",
+        "think": "no_think",
+        "score": 83
+      },
+      {
+        "rank": 13,
+        "label": "gemma-4-12b-it-Q5_K_M--nothi [no_think]",
+        "model": "gemma-4-12b-it-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 80
+      },
+      {
+        "rank": 14,
+        "label": "gemma-4-12b-it-qat-q4_0--nothi [no_think]",
+        "model": "gemma-4-12b-it-qat-q4_0--nothi",
+        "think": "no_think",
+        "score": 80
+      },
+      {
+        "rank": 15,
+        "label": "Qwen3-14B-Q5_K_M--nothi [no_think]",
+        "model": "Qwen3-14B-Q5_K_M--nothi",
+        "think": "no_think",
+        "score": 75
+      },
+      {
+        "rank": 16,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--nothi",
+        "think": "no_think",
+        "score": 67
+      }
+    ],
     "struct_output_pct": [
       {
         "rank": 1,
