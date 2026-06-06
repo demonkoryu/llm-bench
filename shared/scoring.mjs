@@ -68,7 +68,7 @@ export const DEFAULT_DIALS = {
       w_cap: 2, // capability exponent — >1 makes high-capability dominate the ranking
       w_ctx: 1, // context-reach exponent (uses the clamped ctx_tier)
       w_slots: 1, // slot-count exponent — "several of them" parallel capacity
-      w_thru: 0, // measured-throughput exponent (needs pargen); 0 = off so the board fills without it
+      w_thru: 0.5, // measured-throughput exponent (pargen aggregate); modulates without overtaking capability (w_cap=2)
    },
 };
 
