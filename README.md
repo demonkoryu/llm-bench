@@ -82,6 +82,10 @@ more times to merge specific runs instead.
 
 ## 3. Showing the dashboard
 
+**Live:** the latest dashboard is published at **<https://pages.xor0.de/llm-bench/>**
+(every push to `main` that changes `results/dashboard.html` redeploys it via Forgejo
+Actions → the `pages` branch → a Caddy static server).
+
 The dashboard is the primary way to read results. It is a **single self-contained
 `results/dashboard.html`** — no server, no network, no dependencies (the scoring code and
 all data are inlined). Turning the weight **dials** re-ranks everything live in-browser
