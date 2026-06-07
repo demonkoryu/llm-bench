@@ -155,7 +155,7 @@ function getThinkModes(model) {
 
 // ── Token budgets ──────────────────────────────────────────────────────────────
 const MAX_TOKENS = {
-   no_think: 1024, // structured JSON answer
+   reasoning: 2048, // no_think reasoning bench — model stuffs CoT into answer string; 1024 was too tight
    think: 32768, // think block + answer; Qwen3/DeepSeek-R1 official recommendation
    tool: 512, // single tool call response
    instruct: 1024, // non-thinking instruct models
@@ -482,7 +482,7 @@ async function runReasoning(client, model, thinkState) {
          { role: 'system', content: SYSTEM },
          { role: 'user', content: q },
       ];
-      const maxTok = thinkState === true ? MAX_TOKENS.think : MAX_TOKENS.no_think;
+      const maxTok = thinkState === true ? MAX_TOKENS.think : MAX_TOKENS.reasoning;
       const t0 = Date.now();
       let completion;
       try {
