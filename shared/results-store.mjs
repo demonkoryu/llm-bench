@@ -273,8 +273,14 @@ export function loadCapabilities(modelsYamlPath) {
       const cfg = yaml.load(readFileSync(modelsYamlPath, 'utf8'));
       for (const m of cfg.models ?? []) {
          const base = String(m.hf_file ?? '').replace(/\.gguf$/i, '');
-         if (base) {
-            caps.set(base, { tools: m.tools === true, note: m.capability_note ?? null });
+         if (!base) {
+            continue;
+         }
+         const cfgLabel = m.label ?? base;
+         caps.set(base, { tools: m.tools === true, note: m.capability_note ?? null, label: cfgLabel });
+         // Expand kv_variants so each variant ID gets a labelled entry too.
+         for (const q of m.kv_variants ?? []) {
+            caps.set(`${base}--kv${q}`, { tools: m.tools === true, note: m.capability_note ?? null, label: `${cfgLabel} · KV ${q}` });
          }
       }
    } catch {
