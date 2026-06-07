@@ -1,0 +1,110 @@
+{
+  "model": "Qwen3.6-35B IQ4_XS",
+  "hf_file": "Qwen3.6-35B-A3B-UD-IQ4_XS.gguf",
+  "ctx": 8192,
+  "reps": 3,
+  "max_tokens": 512,
+  "byBackend": {
+    "vulkan": {
+      "off": {
+        "code": {
+          "tg": 66.53583777587723,
+          "accept": null,
+          "drafted": null
+        },
+        "prose": {
+          "tg": 66.5296092644535,
+          "accept": null,
+          "drafted": null
+        }
+      },
+      "mtp-n4": {
+        "code": {
+          "tg": 187.36620870811362,
+          "accept": 0.7341040462427747,
+          "drafted": 519
+        },
+        "prose": {
+          "tg": 127.41969498862778,
+          "accept": 0.40956072351421186,
+          "drafted": 774
+        }
+      },
+      "mtp-n6": {
+        "code": {
+          "tg": 181.4459544840815,
+          "accept": 0.6337670872765511,
+          "drafted": 640
+        },
+        "prose": {
+          "tg": 50.899686465637814,
+          "accept": 0.08333333333333333,
+          "drafted": 36
+        }
+      },
+      "mtp-n8": {
+        "code": {
+          "tg": 83.08252551326912,
+          "accept": 0.5081408046572341,
+          "drafted": 792
+        },
+        "prose": {
+          "tg": 46.21228611538214,
+          "accept": 0.23041258169934642,
+          "drafted": 480
+        }
+      }
+    },
+    "rocm": {
+      "off": {
+        "code": {
+          "tg": 83.86186162720776,
+          "accept": null,
+          "drafted": null
+        },
+        "prose": {
+          "tg": 83.79104284328531,
+          "accept": null,
+          "drafted": null
+        }
+      },
+      "mtp-n4": {
+        "code": {
+          "tg": 128.38066310790924,
+          "accept": 0.7477392761292512,
+          "drafted": 525
+        },
+        "prose": {
+          "tg": 96.21620785930361,
+          "accept": 0.48795316533083316,
+          "drafted": 688
+        }
+      },
+      "mtp-n6": {
+        "code": {
+          "tg": 133.32763491469757,
+          "accept": 0.6641343090259728,
+          "drafted": 604
+        },
+        "prose": {
+          "tg": 83.370878723395,
+          "accept": 0.3401863545884858,
+          "drafted": 1013
+        }
+      },
+      "mtp-n8": {
+        "code": {
+          "tg": 101.48715617345572,
+          "accept": 0.5552233880382111,
+          "drafted": 743
+        },
+        "prose": {
+          "tg": 58.648671942925944,
+          "accept": 0.26236806478643665,
+          "drafted": 1324
+        }
+      }
+    }
+  },
+  "draftTimingKeys": []
+}
