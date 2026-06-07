@@ -12,8 +12,13 @@
  * backend delta is a clean signal, not server/harness noise. Same params across
  * both backends → the only variable is the binary.
  *
- * Defaults mirror production: -fa 1, -ngl 99, q8_0 KV (matches start-server.sh),
- * a pp sweep (512 + 4096) so the attention/prefill scaling shows, and tg128.
+ * Defaults mirror production: -fa 1, -ngl 99, q8_0 KV, AND -b/-ub 2048 (matches
+ * start-server.sh + config/models.yaml defaults.extra_flags), a pp sweep (512 + 4096)
+ * so the attention/prefill scaling shows, and tg128. The batch sizing is NOT optional:
+ * omitting it lets llama-bench fall back to -ub 512, which throttles long-context
+ * prefill (rocm worst of all — it faked a ~60% "prefill collapse" at pp4096). Each
+ * model's effective batch/ubatch is read from its merged extra_flags so any per-model
+ * OOM override (ubatch-size: 1024) is honoured exactly as production would.
  *
  * IMPORTANT: run with NO llama-server running (it loads its own model → VRAM
  * conflict). Stop any server first.
@@ -46,6 +51,10 @@ const REPS = Number(arg('reps', '3'));
 const PP = arg('p', '512,4096'); // comma list → one llama-bench row each
 const TG = arg('n', '128');
 const KV = arg('kv', 'q8_0'); // ctk=ctv=KV; matches production server
+// Production batch sizing (config/models.yaml defaults.extra_flags). Used as the
+// fallback when a model declares no explicit batch-size/ubatch-size of its own.
+const BATCH = Number(arg('batch', '2048'));
+const UBATCH = Number(arg('ubatch', '2048'));
 const OUT = arg('out', join(ROOT, 'results', 'backend-ab.json'));
 const MODEL_FILTER = (arg('models', '') || '')
    .split(',')
@@ -99,8 +108,19 @@ async function findGguf(hf_file) {
  * Qwen MoEs read ~15–45% low); a full -r REPS warmup reaches steady state. See the
  * warmup-confound writeup in results/int-dot-impact.md.
  */
-async function bench(bin, ggufPath, env = '') {
-   const base = [bin, `-m '${ggufPath}'`, `-fa 1`, `-ngl 99`, `-ctk ${KV}`, `-ctv ${KV}`, `-p ${PP}`, `-n ${TG}`];
+async function bench(bin, ggufPath, env = '', batch = BATCH, ubatch = UBATCH) {
+   const base = [
+      bin,
+      `-m '${ggufPath}'`,
+      `-fa 1`,
+      `-ngl 99`,
+      `-ctk ${KV}`,
+      `-ctv ${KV}`,
+      `-b ${batch}`,
+      `-ub ${ubatch}`,
+      `-p ${PP}`,
+      `-n ${TG}`,
+   ];
    const warmupCmd = `${env}${[...base, `-r ${REPS}`, `-o json`].join(' ')}`;
    const cmd = `${env}${[...base, `-r ${REPS}`, `-o json`].join(' ')}`;
    await ssh(`${warmupCmd} 2>/dev/null`, 600_000); // discard — ramps GPU clocks
@@ -148,8 +168,19 @@ async function main() {
    console.log(`Host=${HOST}. Ensure NO llama-server is running (VRAM conflict).\n`);
 
    const vkIntDot = VK_ENV ? 'off' : 'on';
-   const report = { host: HOST, kv: KV, reps: REPS, p: PP, n: TG, vulkan_int_dot: vkIntDot, backends: live.map((b) => b.name), models: [] };
-   console.log(`(vulkan int-dot: ${vkIntDot}; warmup discarded per run)`);
+   const report = {
+      host: HOST,
+      kv: KV,
+      reps: REPS,
+      p: PP,
+      n: TG,
+      batch: BATCH,
+      ubatch: UBATCH,
+      vulkan_int_dot: vkIntDot,
+      backends: live.map((b) => b.name),
+      models: [],
+   };
+   console.log(`(vulkan int-dot: ${vkIntDot}; -b ${BATCH} -ub ${UBATCH} (production); warmup discarded per run)`);
 
    for (const m of models) {
       process.stdout.write(`• ${m.label} … `);
@@ -160,10 +191,14 @@ async function main() {
          console.log(`SKIP (${e.message})`);
          continue;
       }
-      const entry = { label: m.label, hf_file: m.hf_file, byBackend: {} };
+      // Mirror production batch sizing: honour any per-model override, else the default.
+      const ef = m.extra_flags && typeof m.extra_flags === 'object' ? m.extra_flags : {};
+      const batch = Number(ef['batch-size'] ?? BATCH);
+      const ubatch = Number(ef['ubatch-size'] ?? UBATCH);
+      const entry = { label: m.label, hf_file: m.hf_file, batch, ubatch, byBackend: {} };
       for (const b of live) {
          try {
-            entry.byBackend[b.name] = await bench(b.bin, ggufPath, b.env ?? '');
+            entry.byBackend[b.name] = await bench(b.bin, ggufPath, b.env ?? '', batch, ubatch);
          } catch (e) {
             entry.byBackend[b.name] = { error: e.message.slice(0, 120) };
          }
@@ -197,7 +232,7 @@ function renderMarkdown(report, metrics) {
    lines.push(`# Backend A/B — ${report.backends.join(' vs ')}`);
    lines.push('');
    lines.push(
-      `Host \`${report.host}\` · KV \`${report.kv}\` · reps ${report.reps} · p=${report.p} · n=${report.n} · vulkan int-dot \`${report.vulkan_int_dot ?? 'on'}\` · warmup discarded. t/s; Δ = rocm vs vulkan.`,
+      `Host \`${report.host}\` · KV \`${report.kv}\` · reps ${report.reps} · p=${report.p} · n=${report.n} · \`-b ${report.batch ?? '?'} -ub ${report.ubatch ?? '?'}\` (production) · vulkan int-dot \`${report.vulkan_int_dot ?? 'on'}\` · warmup discarded. t/s; Δ = rocm vs vulkan.`,
    );
    lines.push('');
    const head = ['Model', ...metrics.flatMap((k) => [`${k} vk`, `${k} rocm`, `${k} Δ`])];

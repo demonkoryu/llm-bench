@@ -167,7 +167,8 @@ function renderBackendAb(){
   });
   $('backendab').innerHTML=table(
     ['model','pp512 vk','pp512 rocm','Δ','pp4096 vk','pp4096 rocm','Δ','tg128 vk','tg128 rocm','Δ'], rows);
-  const meta='host '+esc(ab.host)+' · kv '+esc(ab.kv)+' · reps '+esc(ab.reps)+' · p='+esc(ab.p)+' · n='+esc(ab.n)+' · vulkan int-dot '+esc(ab.vulkan_int_dot)+' · warmup discarded';
+  const bub=(ab.batch!=null&&ab.ubatch!=null)?' · -b '+esc(ab.batch)+' -ub '+esc(ab.ubatch)+' (production)':'';
+  const meta='host '+esc(ab.host)+' · kv '+esc(ab.kv)+' · reps '+esc(ab.reps)+' · p='+esc(ab.p)+' · n='+esc(ab.n)+bub+' · vulkan int-dot '+esc(ab.vulkan_int_dot)+' · warmup discarded';
   const cap=$('backendab-meta'); if(cap) cap.textContent=meta;
 }
 const BKEYS=['triage','summarization','docqa','reasoning','grade','agentic_loop','instruction_following','toolcalling','struct_output','e2e_throughput','cold_ttft','warm_ttft'];
@@ -337,7 +338,7 @@ function buildHtml({ data, scoringSrc, capControls, fleetControlsHtml }) {
       // Backend A/B: vulkan vs rocm microbench. Hidden if results/backend-ab.json is absent.
       '<section class="panel" id="backendab-sec"><h2>Backend A/B — vulkan vs rocm</h2>',
       '<p class="note" id="backendab-meta"></p>',
-      '<p class="note">Δ = rocm relative to vulkan: <span class="ok-t">green</span> ⇒ vulkan faster, <span class="warn-t">yellow</span> ⇒ rocm faster. Vulkan (int-dot off) is the suite default. <code>llama-bench -fa1 -ngl99 -ctk/v q8_0</code>.</p>',
+      '<p class="note">Δ = rocm relative to vulkan: <span class="ok-t">green</span> ⇒ vulkan faster, <span class="warn-t">yellow</span> ⇒ rocm faster. Vulkan (int-dot off) is the suite default. <code>llama-bench -fa1 -ngl99 -ctk/v q8_0 -b2048 -ub2048</code> (production batch sizing).</p>',
       '<div id="backendab" class="tbl"></div></section>',
       '<section class="panel"><h2>Per-model breakdown</h2><div id="breakdown" class="tbl"></div></section>',
       '<section class="panel"><h2>Data sources / required runs</h2><div id="required" class="tbl"></div></section>',
