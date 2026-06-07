@@ -290,7 +290,58 @@ function loadDoneKeys() {
       return new Set();
    }
    console.log(`[run-suite] --resume: skipping combos already ok in ${seedId}`);
-   return new Set(seed.results.filter((r) => r.status === 'ok').map((r) => `${r.model}\t${r.think}\t${r.bench}`));
+   const done = new Set();
+   for (const r of seed.results) {
+      if (r.status !== 'ok') {
+         continue;
+      }
+      // The speed bench writes four granular rows (speed_short, speed_long-32k,
+      // speed_prefill-4k, speed_prefill-12k) but the run loop checks a single 'speed'
+      // resume key — collapse them so a completed speed pass is recognised as done.
+      const bench = r.bench.startsWith('speed_') ? 'speed' : r.bench;
+      done.add(`${r.model}\t${r.think}\t${bench}`);
+   }
+   return done;
+}
+
+/**
+ * The full set of resume keys a model would produce in this run — mirrors the bench
+ * dispatch gating in the model loop below (capability gates, think-mode gates,
+ * once-only benches). Lets --resume skip a fully-completed model BEFORE the slow
+ * max-ctx ladder probe + server start, instead of probing then skipping each bench.
+ * Must stay in sync with the dispatch; an over-broad key here is safe (we just re-probe),
+ * a missing key is not (we'd skip a model with outstanding work).
+ */
+function plannedResumeKeys(model) {
+   const keys = new Set();
+   const allow = (b) => (model.benches ?? []).includes(b) && (!FILTER_BENCHES.length || FILTER_BENCHES.includes(b));
+   const thinkModes = getThinkModes(model).filter((t) => !(SKIP_THINK && t === true));
+   const mid = modelId(model, null);
+   if (allow('maxctx')) {
+      keys.add(tsvKey(mid, '-', 'maxctx')); // think-independent, recorded once
+   }
+   thinkModes.forEach((thinkState, i) => {
+      const tl = thinkState === null ? 'n/a' : thinkState ? 'think' : 'no_think';
+      const passId = modelId(model, thinkState);
+      // Benches gated only by the model's benches list — run in every think pass.
+      for (const b of ['triage', 'reasoning', 'docqa', 'coding_multipl', 'summarization', 'speed']) {
+         if (allow(b)) {
+            keys.add(tsvKey(passId, tl, b));
+         }
+      }
+      if (model.tools && allow('toolcalling')) {
+         keys.add(tsvKey(passId, tl, 'toolcalling'));
+      }
+      // toolcalling_decay: tools-only, no-think, first pass only (KV-independent).
+      if (model.tools && thinkState !== true && i === 0 && allow('toolcalling_decay')) {
+         keys.add(tsvKey(passId, 'no_think', 'toolcalling_decay'));
+      }
+      // longctx: non-think passes only.
+      if (thinkState !== true && allow('longctx')) {
+         keys.add(tsvKey(passId, tl, 'longctx'));
+      }
+   });
+   return keys;
 }
 
 function appendTsv(row) {
@@ -979,6 +1030,18 @@ for (const model of models) {
    // --skip-think drops the think=true pass (keeps no_think/null) for a fast partial run.
    const thinkModes = getThinkModes(model).filter((t) => !(SKIP_THINK && t === true));
    const benches = (model.benches ?? []).filter((b) => !FILTER_BENCHES.length || FILTER_BENCHES.includes(b));
+
+   // --resume: if every planned (model,think,bench) is already ok in the seed run, skip
+   // the model BEFORE the slow max-ctx ladder probe + server start — not after, which
+   // is what made a resumed run re-probe every already-completed model.
+   if (flags.resume) {
+      const planned = plannedResumeKeys(model);
+      if (planned.size && [...planned].every((k) => doneKeys.has(k))) {
+         console.log(`\n${'═'.repeat(70)}`);
+         console.log(`  ${model.label ?? mid} — all benches already done; skipping (no max-ctx probe)`);
+         continue;
+      }
+   }
 
    console.log(`\n${'═'.repeat(70)}`);
    console.log(`  ${model.label ?? modelId(model, null)}`);
