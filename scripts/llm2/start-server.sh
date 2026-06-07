@@ -3,7 +3,7 @@
 # Acquires a lockfile, kills any orphans, waits for VRAM to clear, then launches.
 #
 # Usage:
-#   start-server.sh --backend <vulkan|rocm> --ctx <N> \
+#   start-server.sh --backend vulkan --ctx <N> \   # rocm DISABLED 2026-06-07
 #                   [--hf-repo <repo> --hf-file <file> | --model <path>] \
 #                   [--port <N>] [--ngl <N>] [extra flags...]
 #
@@ -12,7 +12,7 @@
 # Exits 1 on failure (with reason to stderr).
 set -e
 
-ROCM_BIN="${ROCM_BIN:-$HOME/llama.cpp/build-rocm/bin/llama-server}"
+# ROCM_BIN disabled 2026-06-07 — rocm backend rejected below; build retained on disk.
 VK_BIN="${VK_BIN:-$HOME/llama.cpp/build-vulkan/bin/llama-server}"
 LOCKFILE=/tmp/llama-server.lock
 PIDFILE=/tmp/llama-server.pid
@@ -43,7 +43,10 @@ done
 
 # Select binary
 case "$backend" in
-   rocm)   BIN="$ROCM_BIN"  ;;
+   rocm)   echo "ERROR: rocm backend is DISABLED (2026-06-07) — Vulkan is the sole production backend." >&2
+           echo "       Re-enable here + in config/hosts.yaml + scripts/llm2/backends.sh if revisited." >&2
+           echo "       (Note: ROCm q8_0 KV is +22% at depth for Qwen3.6-35B — see results/kv-quant-sweep-rocm.md.)" >&2
+           exit 1 ;;
    vulkan) BIN="$VK_BIN"    ;;
    *)      echo "ERROR: unknown backend '$backend'" >&2; exit 1 ;;
 esac

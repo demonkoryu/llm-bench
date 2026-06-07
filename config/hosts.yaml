@@ -1,9 +1,9 @@
 # Endpoint config per target host.
 # Override via env: LLAMA_URL, SSH_HOST, BACKEND
 #
-# Backend switching:
-#   Default backend is 'vulkan'. Pass --backend rocm to use ROCm build.
-#   The harness auto-detects which builds are present via scripts/llm2/backends.sh.
+# Backend:
+#   Vulkan is the sole production backend. ROCm was DISABLED 2026-06-07 (see below).
+#   The harness auto-detects builds via scripts/llm2/backends.sh (now vulkan-only).
 
 rose:
    label: "rose / RX 7900 XT (20 GiB)"
@@ -16,9 +16,12 @@ rose:
    backends:
       vulkan:
          bin: "~/llama.cpp/build-vulkan/bin/llama-server"
-      rocm:
-         bin: "~/llama.cpp/build-rocm/bin/llama-server"
-         notes: "ROCm/DeltaNet HIP build — use --backend rocm"
+      # rocm: DISABLED 2026-06-07 — Vulkan is the sole production backend. Build retained
+      #   on llm2 (~/llama.cpp/build-rocm, ~301M) but no longer offered as selectable.
+      #   To re-enable, restore this entry + start-server.sh rocm case + backends.sh.
+      #   (ROCm q8_0 KV is +22% at depth for Qwen3.6-35B — see results/kv-quant-sweep-rocm.md.)
+      #   rocm:
+      #      bin: "~/llama.cpp/build-rocm/bin/llama-server"
    # Remote benchmark deploy path (git pull target)
    remote_dir: "~/llm-bench"
    # VRAM monitoring command (works regardless of inference backend)
