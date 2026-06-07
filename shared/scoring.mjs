@@ -36,8 +36,8 @@ export const GROUPS = {
    },
    coding: {
       kind: 'multiplier-composite',
-      gates: ['toolcalling', 'struct_output'],
-      members: ['grade', 'agentic_loop', 'instruction_following'],
+      gates: ['toolcalling', 'struct_output', 'instruction_following'],
+      members: ['grade', 'agentic_loop'],
    },
    speed: {
       // Displayed/dialable speed score (additive). Capability ignores it; the fleet
@@ -55,7 +55,7 @@ export const DEFAULT_DIALS = {
    },
    coding: {
       strength: 1,
-      weights: { grade: 0.6, agentic_loop: 0.25, instruction_following: 0.15 },
+      weights: { grade: 0.7, agentic_loop: 0.3 },
    },
    speed: {
       weights: { e2e_throughput: 0.4, cold_ttft: 0.45, warm_ttft: 0.15, decode_retention: 0 },
@@ -77,7 +77,7 @@ export const SCORING = {
    formula: 'capability = coding × comprehension   (fleet: see scoring.fleet)',
    groups: {
       comprehension: 'additive: triage, summarization, docqa, reasoning',
-      coding: 'multiplicative: gate(toolcalling) × gate(struct_output) × bundle(grade, agentic_loop, instruction_following)',
+      coding: 'multiplicative: gate(toolcalling) × gate(struct_output) × gate(instruction_following) × bundle(grade, agentic_loop)',
       speed: 'additive (display): e2e_throughput, cold_ttft, warm_ttft, decode_retention',
    },
    fleet: 'fleet_suitability = capability^w_cap × ctx_norm^w_ctx × slots_norm^w_slots × throughput^w_thru (geometric blend; capability dominates, context/slots modulate; ctx clamped at ctx_tier)',
@@ -513,7 +513,7 @@ function codingCompetence(norm, weights) {
    }
    let num = 0;
    let den = 0;
-   for (const k of ['grade', 'agentic_loop', 'instruction_following']) {
+   for (const k of ['grade', 'agentic_loop']) {
       const w = weights?.[k] ?? 0;
       if (norm[k] != null && Number.isFinite(norm[k]) && w > 0) {
          num += w * norm[k];
@@ -540,7 +540,7 @@ export function scoreGroups(models, dials = DEFAULT_DIALS) {
    for (const m of models) {
       const comp = additive(m.norm, d.comprehension.weights);
       const competence = codingCompetence(m.norm, d.coding.weights);
-      const gate = (m.norm.toolcalling ?? 0) * (m.norm.struct_output ?? 0);
+      const gate = (m.norm.toolcalling ?? 0) * (m.norm.struct_output ?? 0) * (m.norm.instruction_following ?? 0);
       const coding = competence == null ? 0 : gate * competence;
       const speed = additive(m.norm, d.speed.weights);
       const capability = comp ** (d.comprehension.strength ?? 1) * coding ** (d.coding.strength ?? 1);
