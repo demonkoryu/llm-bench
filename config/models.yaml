@@ -37,10 +37,12 @@
 #                      shared/models-config.mjs loadModelsConfig() (runners never see
 #                      it). Omit (or false) = active. Reversible: delete the line.
 #   kv_variants      Optional [quant, ...] list — expand this model into one ranked
-#                      configuration per KV-cache quant (cache-type-k/v). Usually set
-#                      fleet-wide via defaults.kv_variants below, not per-model. Each
-#                      variant gets a `--kv<quant>` id tag + " · KV <quant>" label so it
-#                      ranks separately in the dashboard. Symmetric quants only.
+#                      configuration per KV-cache quant (cache-type-k/v). Set per-model
+#                      ONLY where the quant actually moves the needle (the big-KV models:
+#                      35B + 26B). A model without it stays a single plain row — exactly
+#                      like a non-hybrid has no think split. Each variant gets a
+#                      `--kv<quant>` id tag + " · KV <quant>" label so it ranks separately
+#                      in the dashboard. Symmetric quants only.
 #   notes            Caveats
 
 # Global defaults merged into every model's extra_flags (per-model keys override).
@@ -51,12 +53,13 @@ defaults:
    extra_flags:
       batch-size: 2048
       ubatch-size: 2048
-   # KV-cache quant sweep: every active model is expanded into one ranked configuration
-   # per quant (q8_0 = production default, q4_0 = ~half KV VRAM). shared/models-config.mjs
-   # injects --cache-type-k/v + a `--kv<quant>` id tag, so the quants appear as separate
-   # rows in the same dashboard (like a hybrid's think/no-think variants). Symmetric only
-   # — asymmetric K/V de-fuses the FA kernel. To stop sweeping, set to [q8_0] or remove.
-   kv_variants: [q8_0, q4_0]
+   # KV-cache quant sweep is NOT fleet-wide: q4_0 only pays off where the KV cache is
+   # large (the 35B + 26B models — ~half KV VRAM, +15–26% decode at depth). It's set
+   # per-model via `kv_variants: [q8_0, q4_0]` on those four entries only; the small
+   # models (9B/12B/14B) stay a single plain q8_0 row, mirroring how a non-hybrid model
+   # has no think split. shared/models-config.mjs injects --cache-type-k/v + a
+   # `--kv<quant>` id tag per variant. Symmetric only — asymmetric K/V de-fuses the FA
+   # kernel. To sweep a model, add kv_variants to it; to stop, remove the line.
 
 models:
 
@@ -154,6 +157,7 @@ models:
         spec-type: draft-mtp
         spec-draft-n-max: 4
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     kv_variants: [q8_0, q4_0]   # big KV — sweep q4_0 vs q8_0
      notes: "MTP speculative draft; smoke will catch if Vulkan build lacks support."
 
    # ── Gemma4-E4B ───────────────────────────────────────────────────────────────
@@ -205,6 +209,7 @@ models:
      kv_bytes_per_token: 16384
      extra_flags: { "no-mmproj": true }   # see E4B Q8 note: skip gemma4 vision projector (text-only)
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     kv_variants: [q8_0, q4_0]   # big KV — sweep q4_0 vs q8_0
 
    # ── Gemma4-12B (dense "unified" — encoder-free multimodal, run text-only) ──────
    # Released 2026-06-02. Dense 12B, hybrid think, native FC; ~8.4 GB at Q5_K_M.
@@ -254,6 +259,7 @@ models:
      kv_bytes_per_token: 16384
      extra_flags: { "no-mmproj": true }   # repo ships gemma-4-26B-it-mmproj.gguf — skip it (text-only)
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     kv_variants: [q8_0, q4_0]   # big KV — sweep q4_0 vs q8_0
 
    # ── Gemma4 QAT — Unsloth Dynamic UD-Q4_K_XL (QAT base, unsloth's dynamic quant) ─
    # Unsloth's quantization-aware-trained GGUFs: same QAT recipe as Google's q4_0
@@ -286,6 +292,7 @@ models:
      kv_bytes_per_token: 16384
      extra_flags: { "no-mmproj": true }   # repo ships mmproj-*.gguf — skip it (text-only)
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     kv_variants: [q8_0, q4_0]   # big KV — sweep q4_0 vs q8_0
 
    # ── LFM2.5-8B-A1B ────────────────────────────────────────────────────────────
    # Always-reasoning: outputs to reasoning_content field, not content.

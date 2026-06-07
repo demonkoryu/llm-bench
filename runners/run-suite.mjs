@@ -54,6 +54,7 @@ const { values: flags } = parseArgs({
       'skip-maxctx': { type: 'boolean', default: false },
       full: { type: 'boolean', default: false }, // after the core suite, chain ALL secondary runners (kv-probe, struct-output, throughput-ttft, speed-decay, quality-decay) and rebuild every chart. A "full run" is not full without these — the depth/perf + struct/kv benches feed the fleet chart and the e2e/ttft/retention sections.
       'skip-think': { type: 'boolean', default: false }, // drop the think=true pass (no_think only) — fast partial run; do the full think-inclusive pass separately
+      depths: { type: 'string' }, // with --full: forward to the depth secondaries (speed-decay, quality-decay) to cap the sweep, e.g. --depths 16384,32768 to drop the slow 64k/96k tail
       'maxctx-recheck': { type: 'boolean', default: false }, // re-validate prior ceiling at current config (extreme-only, no full search)
       'recheck-from': { type: 'string' }, // CSV to seed prior ceilings from (default: latest results file)
       ctx: { type: 'string' }, // with --skip-maxctx: start server at this fixed ctx (skip the search)
@@ -1636,10 +1637,13 @@ if (FULL) {
       ['agentic-loop', 'runners/agentic-loop.mjs'],
    ];
    console.log(`\n[run-suite] --full: chaining ${secondaries.length} secondary runners against ${run.runId}\n`);
+   // --depths caps the two depth sweeps (speed-decay, quality-decay); other secondaries ignore it.
+   const DEPTH_SWEEPS = new Set(['speed-decay', 'quality-decay']);
    for (const [kind, script] of secondaries) {
       try {
          console.log(`[run-suite] ▸ ${kind} …`);
-         const { stdout } = await execP('node', [join(ROOT, script), '--input', run.runId], {
+         const extraArgs = flags.depths && DEPTH_SWEEPS.has(kind) ? ['--depths', flags.depths] : [];
+         const { stdout } = await execP('node', [join(ROOT, script), '--input', run.runId, ...extraArgs], {
             timeout: 6 * 60 * 60 * 1000, // depth sweeps are slow; 6h ceiling per runner
             maxBuffer: 64 * 1024 * 1024,
          });
