@@ -33,6 +33,9 @@
 #   benches          Applicable benchmark suites:
 #                      triage | reasoning | toolcalling | toolcalling_decay | longctx
 #                      summarization | speed | maxctx | docqa
+#   disabled         true → parked: stays in this file but filtered out by
+#                      shared/models-config.mjs loadModelsConfig() (runners never see
+#                      it). Omit (or false) = active. Reversible: delete the line.
 #   notes            Caveats
 
 # Global defaults merged into every model's extra_flags (per-model keys override).
@@ -52,6 +55,7 @@ models:
    - hf_repo: unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF
      hf_file: Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL.gguf
      label: "Qwen3-Coder-30B Q4_K_XL"
+     disabled: true   # parked 2026-06-07 (user prune)
      family: qwen3-coder
      type: moe
      think: none
@@ -67,6 +71,7 @@ models:
    - hf_repo: unsloth/Qwen3-30B-A3B-Instruct-2507-GGUF
      hf_file: Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL.gguf
      label: "Qwen3-30B-2507 Q4_K_XL"
+     disabled: true   # parked 2026-06-07 (user prune)
      family: qwen3
      type: moe
      think: none
@@ -79,6 +84,7 @@ models:
    - hf_repo: unsloth/Qwen3-30B-A3B-Instruct-2507-GGUF
      hf_file: Qwen3-30B-A3B-Instruct-2507-IQ4_XS.gguf
      label: "Qwen3-30B-2507 IQ4_XS"
+     disabled: true   # parked 2026-06-07 (user prune)
      family: qwen3
      type: moe
      think: none
@@ -146,6 +152,7 @@ models:
    - hf_repo: unsloth/gemma-4-E4B-it-GGUF
      hf_file: gemma-4-E4B-it-Q8_0.gguf
      label: "Gemma4-E4B Q8_0"
+     disabled: true   # parked 2026-06-07 (user prune)
      family: gemma4
      type: moe
      think: optional
@@ -161,6 +168,7 @@ models:
    - hf_repo: unsloth/gemma-4-E4B-it-GGUF
      hf_file: gemma-4-E4B-it-Q5_K_M.gguf
      label: "Gemma4-E4B Q5_K_M"
+     disabled: true   # parked 2026-06-07 (user prune)
      family: gemma4
      type: moe
      think: optional
@@ -274,6 +282,7 @@ models:
    - hf_repo: LiquidAI/LFM2.5-8B-A1B-GGUF
      hf_file: LFM2.5-8B-A1B-Q5_K_M.gguf
      label: "LFM2.5-8B Q5_K_M"
+     disabled: true   # parked 2026-06-07 (user prune)
      family: lfm2.5
      type: dense
      think: reasoning
@@ -293,6 +302,7 @@ models:
    - hf_repo: unsloth/granite-4.0-h-tiny-GGUF
      hf_file: granite-4.0-h-tiny-Q5_K_M.gguf
      label: "Granite-4-H-Tiny Q5_K_M"
+     disabled: true   # parked 2026-06-07 (user prune)
      family: granite
      type: moe
      think: none
@@ -308,6 +318,7 @@ models:
    - hf_repo: bartowski/nvidia_Nemotron-3-Nano-4B-GGUF
      hf_file: nvidia_Nemotron-3-Nano-4B-Q8_0.gguf
      label: "Nemotron-3-Nano-4B Q8_0"
+     disabled: true   # parked 2026-06-07 (user prune)
      family: nemotron3
      type: dense
      think: optional

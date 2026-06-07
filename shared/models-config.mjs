@@ -38,9 +38,16 @@ export function applyDefaults(model, defaults = {}) {
  * Load and parse config/models.yaml with defaults merged into every model.
  * Returns the full parsed config object (so `.sampling_matrix`, etc. still work),
  * with `.models` rewritten to carry effective per-model `extra_flags`.
+ *
+ * Models flagged `disabled: true` are filtered OUT by default — they stay in the
+ * YAML (reversible, documented) but never reach the runners. Pass
+ * `{ includeDisabled: true }` to get the full list (e.g. for a "what's parked"
+ * report).
  */
-export function loadModelsConfig(path) {
+export function loadModelsConfig(path, { includeDisabled = false } = {}) {
    const cfg = yaml.load(readFileSync(path, 'utf8')) ?? {};
    const defaults = cfg.defaults ?? {};
-   return { ...cfg, defaults, models: (cfg.models ?? []).map((m) => applyDefaults(m, defaults)) };
+   const all = (cfg.models ?? []).map((m) => applyDefaults(m, defaults));
+   const models = includeDisabled ? all : all.filter((m) => m.disabled !== true);
+   return { ...cfg, defaults, models };
 }
