@@ -17,7 +17,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs, promisify } from 'node:util';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
-import { loadModelsConfig } from '../shared/models-config.mjs';
+import { loadModelsConfig, modelBaseId } from '../shared/models-config.mjs';
 import { openSecondaryRun } from '../shared/results-store.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
 
@@ -129,13 +129,13 @@ async function readPowerW() {
 
 const filter = flags.models ? flags.models.split(',').map((s) => s.trim()) : [];
 const wanted = modelsCfg.models.filter((m) => {
-   const id = m.hf_file.replace(/\.gguf$/, '');
+   const id = modelBaseId(m);
    return !filter.length || filter.some((f) => id.includes(f) || (m.label ?? '').includes(f));
 });
 
 console.log(`\n[struct-output] ${wanted.length} models · ${TASKS.length} JSON tasks (unconstrained) · ${LLAMA_URL}\n`);
 for (const m of wanted) {
-   const id = m.hf_file.replace(/\.gguf$/, '');
+   const id = modelBaseId(m);
    console.log(`\n══ ${m.label ?? id}`);
    await srv.killAll();
    await srv.waitVramClear(30_000);

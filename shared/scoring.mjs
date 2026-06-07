@@ -93,9 +93,19 @@ export function slugify(s) {
       .replace(/[^a-z0-9]+/g, '');
 }
 
-/** Strip the hybrid think suffix to the canonical model id. */
+/** Strip the hybrid think suffix to the canonical model id.
+ *  The KV-quant variant tag (`--kv<quant>`) lives INSIDE the base id (before the think
+ *  suffix), so it survives this strip on purpose — q8 and q4 stay distinct rows that
+ *  each join to their own secondary metrics. Order is always base[--kv<quant>][--think]. */
 export function baseModel(m) {
    return String(m).replace(/--(?:nothi|think)$/, '');
+}
+
+/** Drop the `--kv<quant>` variant tag from a base id, recovering the underlying GGUF id.
+ *  Used only for capability lookup (caps are keyed by the real model, not its KV variant);
+ *  everywhere else the variant tag is kept so the quants rank as separate configs. */
+export function stripVariant(baseId) {
+   return String(baseId).replace(/--kv[a-z0-9_]+$/i, '');
 }
 
 // ── Shared (base-model-keyed) benches ────────────────────────────────────────────

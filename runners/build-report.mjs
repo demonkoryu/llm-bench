@@ -30,7 +30,15 @@ import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { aggregateModels, CARD_TOTAL_MIB, loadCapabilities, loadRuns, mergeResultRows, SCORING } from '../shared/results-store.mjs';
+import {
+   aggregateModels,
+   CARD_TOTAL_MIB,
+   loadCapabilities,
+   loadRuns,
+   mergeResultRows,
+   SCORING,
+   stripVariant,
+} from '../shared/results-store.mjs';
 import { environmentDiff, environmentsConsistent } from '../shared/run-fingerprint.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
@@ -127,9 +135,11 @@ const report = {
          docqa: m.docqa,
          summarization: m.summ,
       },
-      // capabilities: distinguishes "unsupported" from "not measured" downstream
-      capabilities: { tools: caps.get(m.base_model)?.tools ?? null },
-      capability_note: caps.get(m.base_model)?.note ?? null,
+      // capabilities: distinguishes "unsupported" from "not measured" downstream.
+      // caps are keyed by the underlying GGUF, so strip any `--kv<quant>` variant tag —
+      // both KV variants of a model inherit the same declared capabilities.
+      capabilities: { tools: caps.get(stripVariant(m.base_model))?.tools ?? null },
+      capability_note: caps.get(stripVariant(m.base_model))?.note ?? null,
       // speed: generation (decode) tok/s, real prefill tok/s on 4k/12k prompts,
       // and the synthetic legacy end-to-end estimate (kept for reference only).
       speed_tok_s: m.speedTg,

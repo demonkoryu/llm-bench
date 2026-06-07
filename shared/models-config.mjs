@@ -20,6 +20,49 @@
 import { readFileSync } from 'node:fs';
 import yaml from 'js-yaml';
 
+/**
+ * Canonical per-entry base id: the GGUF filename minus `.gguf`, plus an optional
+ * `--<variant>` tag (e.g. `--kvq4_0`) when the entry is a KV-quant variant. This is
+ * the SINGLE source of model identity for every runner — the suite appends a think
+ * suffix on top (base[--variant][--think]); secondaries emit it verbatim. Two config
+ * entries that share an hf_file (the two KV variants of one GGUF) get distinct ids
+ * only because of the variant tag, which is what keeps their rows from colliding.
+ */
+export function modelBaseId(model) {
+   const base = String(model.hf_file ?? '').replace(/\.gguf$/i, '');
+   return model.variant ? `${base}--${model.variant}` : base;
+}
+
+/**
+ * Expand a model carrying `kv_variants: [q8_0, q4_0, ...]` into one entry per KV quant.
+ * Each variant injects `--cache-type-k/v <quant>` into extra_flags and stamps a
+ * `variant` tag (→ a distinct id via modelBaseId + a distinct label), so the quants
+ * rank as separate configurations in the same dashboard — exactly like a hybrid's
+ * think/no-think rows. The list is read from the model, else from defaults.kv_variants.
+ * No list (or a single-element list resolving to one quant) → the model is returned
+ * unchanged. Symmetric K/V only (asymmetric de-fuses the FA kernel).
+ */
+function expandKvVariants(model, defaults = {}) {
+   const variants = model.kv_variants ?? defaults.kv_variants;
+   if (!Array.isArray(variants) || variants.length === 0) {
+      return [model];
+   }
+   return variants.map((q) => {
+      const quant = String(q);
+      const mf = model.extra_flags;
+      const extra_flags =
+         typeof mf === 'string'
+            ? `${mf} --cache-type-k ${quant} --cache-type-v ${quant}`.trim()
+            : { ...(mf ?? {}), 'cache-type-k': quant, 'cache-type-v': quant };
+      return {
+         ...model,
+         variant: `kv${quant}`,
+         label: `${model.label ?? modelBaseId(model)} · KV ${quant}`,
+         extra_flags,
+      };
+   });
+}
+
 /** Merge defaults.extra_flags into one model entry (per-model keys win). */
 export function applyDefaults(model, defaults = {}) {
    const df = defaults.extra_flags;
@@ -48,6 +91,9 @@ export function loadModelsConfig(path, { includeDisabled = false } = {}) {
    const cfg = yaml.load(readFileSync(path, 'utf8')) ?? {};
    const defaults = cfg.defaults ?? {};
    const all = (cfg.models ?? []).map((m) => applyDefaults(m, defaults));
-   const models = includeDisabled ? all : all.filter((m) => m.disabled !== true);
+   // Filter disabled BEFORE expanding KV variants so a parked model doesn't spawn
+   // (filtered-out) variant rows, and the active count stays clean.
+   const active = includeDisabled ? all : all.filter((m) => m.disabled !== true);
+   const models = active.flatMap((m) => expandKvVariants(m, defaults));
    return { ...cfg, defaults, models };
 }

@@ -27,7 +27,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { CASES, makeExecutor, TOOLS } from '../benchmarks/agentic/agentic-cases.mjs';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
-import { loadModelsConfig } from '../shared/models-config.mjs';
+import { loadModelsConfig, modelBaseId } from '../shared/models-config.mjs';
 import { openSecondaryRun } from '../shared/results-store.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
 
@@ -58,7 +58,7 @@ const { run } = openSecondaryRun(join(ROOT, 'results'), {
 
 const filter = flags.models ? flags.models.split(',').map((s) => s.trim()) : [];
 const wanted = modelsCfg.models.filter((m) => {
-   const id = m.hf_file.replace(/\.gguf$/, '');
+   const id = modelBaseId(m);
    return !filter.length || filter.some((f) => id.includes(f) || (m.label ?? '').includes(f));
 });
 
@@ -72,7 +72,7 @@ const SYSTEM =
 
 console.log(`\n[agentic-loop] ${wanted.length} models · ${CASES.length} tasks · ${LLAMA_URL}\n`);
 for (const m of wanted) {
-   const id = m.hf_file.replace(/\.gguf$/, '');
+   const id = modelBaseId(m);
    const probeThink = m.think === 'optional' ? false : null;
    const thinkControl = m.think_control ?? 'enable_thinking';
    const reasons = m.think === 'reasoning' || m.think === 'required';

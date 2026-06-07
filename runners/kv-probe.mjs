@@ -27,7 +27,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
-import { loadModelsConfig } from '../shared/models-config.mjs';
+import { loadModelsConfig, modelBaseId } from '../shared/models-config.mjs';
 import { aggregateModels, openSecondaryRun } from '../shared/results-store.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
 
@@ -68,7 +68,7 @@ for (const m of aggregated) {
 
 const filter = flags.models ? flags.models.split(',').map((s) => s.trim()) : [];
 const wanted = modelsCfg.models.filter((m) => {
-   const id = m.hf_file.replace(/\.gguf$/, '');
+   const id = modelBaseId(m);
    return !filter.length || filter.some((f) => id.includes(f) || (m.label ?? '').includes(f));
 });
 
@@ -86,7 +86,7 @@ async function vramAtCtx(m, ctx) {
 
 console.log(`\n[kv-probe] ${wanted.length} models · cLow=${C_LOW} · cHigh=maxctx · ${LLAMA_URL}\n`);
 for (const m of wanted) {
-   const id = m.hf_file.replace(/\.gguf$/, '');
+   const id = modelBaseId(m);
    const cHigh = maxctxByBase.get(id);
    console.log(`\n══ ${m.label ?? id}`);
    if (cHigh == null) {

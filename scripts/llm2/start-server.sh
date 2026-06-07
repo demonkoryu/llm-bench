@@ -120,6 +120,15 @@ if [[ "$extra_flags" == *"--reasoning-format"* ]]; then
    rf_flag=""
 fi
 
+# KV cache type defaults to q8_0 (production), but a model may override it via
+# extra_flags (the KV-quant variant sweep injects --cache-type-k/v q4_0). llama-server
+# honors the FIRST occurrence of a flag, so suppress our default when extra_flags
+# already sets it — otherwise the override would be silently ignored. Mirrors rf_flag.
+ctk_flag="--cache-type-k q8_0 --cache-type-v q8_0"
+if [[ "$extra_flags" == *"--cache-type-k"* ]]; then
+   ctk_flag=""
+fi
+
 # Launch llama-server.
 # NOTE: batch sizing (-b / -ub) is intentionally NOT set here — it comes per-model
 # from config/models.yaml extra_flags (every entry carries batch-size:2048
@@ -128,7 +137,7 @@ fi
 cmd="nohup ${vk_env}$BIN $model_args \
    -c $ctx \
    -ngl $ngl \
-   --cache-type-k q8_0 --cache-type-v q8_0 \
+   $ctk_flag \
    -fa on \
    -np 1 \
    --jinja \

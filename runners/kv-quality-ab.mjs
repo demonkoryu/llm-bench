@@ -44,7 +44,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
-import { loadModelsConfig } from '../shared/models-config.mjs';
+import { loadModelsConfig, modelBaseId } from '../shared/models-config.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -88,7 +88,7 @@ const DEFAULT_SUBSET = ['Qwen3-30B-2507 Q4_K_XL', 'Qwen3.6-35B IQ4_XS', 'Gemma4-
 const filters = (flags.models ? flags.models.split(',') : DEFAULT_SUBSET).map((s) => s.trim()).filter(Boolean);
 
 const wanted = modelsCfg.models.filter((m) => {
-   const id = m.hf_file.replace(/\.gguf$/, '');
+   const id = modelBaseId(m);
    return filters.some((f) => id.toLowerCase().includes(f.toLowerCase()) || (m.label ?? '').toLowerCase().includes(f.toLowerCase()));
 });
 if (!wanted.length) {
@@ -202,7 +202,7 @@ async function main() {
    };
 
    for (const m of wanted) {
-      const id = m.hf_file.replace(/\.gguf$/, '');
+      const id = modelBaseId(m);
       const depths = DEPTHS.filter((d) => d + 512 < CTX);
       // Disable thinking on hybrids (think:optional) so the 6 answers land in budget;
       // always-reasoning models (LFM2.5 reasoning / required) keep thinking but get a

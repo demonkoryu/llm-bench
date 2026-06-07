@@ -41,6 +41,7 @@ import {
    SCORING,
    scoreGroups,
    slugify,
+   stripVariant,
 } from './scoring.mjs';
 
 // Re-export the pure scoring/identity surface so consumers can import either module.
@@ -57,6 +58,7 @@ export {
    SCORING,
    scoreGroups,
    slugify,
+   stripVariant,
 };
 
 // ── Result row shape (documented, not enforced) ──────────────────────────────────

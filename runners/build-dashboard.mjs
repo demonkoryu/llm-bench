@@ -20,7 +20,16 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { BENCH_REGISTRY, benchMatches, FLEET_REQUIRED } from '../shared/bench-registry.mjs';
-import { baseModel, computeMetrics, DEFAULT_DIALS, GROUPS, loadCapabilities, loadRuns, mergeResultRows } from '../shared/results-store.mjs';
+import {
+   baseModel,
+   computeMetrics,
+   DEFAULT_DIALS,
+   GROUPS,
+   loadCapabilities,
+   loadRuns,
+   mergeResultRows,
+   stripVariant,
+} from '../shared/results-store.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RESULTS_DIR = join(ROOT, 'results');
@@ -113,7 +122,11 @@ function renderEnv(){
   const s = e ? ('runner '+esc(e.runner)+' · '+esc(e.gpu)+' · '+esc(e.backend)+' · fa='+esc(e.server_flags&&e.server_flags.flash_attn)+' · kv='+esc(e.server_flags&&e.server_flags.cache_type_k)) : 'no server fingerprint (pre-fingerprint data)';
   $('env').innerHTML = s+' · sources: '+DATA.sources.map(esc).join(', ');
   const envs=DATA.environments.filter(Boolean); let consistent=true;
-  for (let i=1;i<envs.length;i++){ if (JSON.stringify(envs[i])!==JSON.stringify(envs[0])) consistent=false; }
+  // KV cache type (cache_type_k/v) is an INTENDED per-configuration axis now — q8 and q4
+  // rank as separate rows — so ignore it when judging whether merged runs are comparable,
+  // else the banner fires permanently on any multi-KV dashboard.
+  const envKey=(e)=>{ const c=JSON.parse(JSON.stringify(e)); if(c&&c.server_flags){ delete c.server_flags.cache_type_k; delete c.server_flags.cache_type_v; } return JSON.stringify(c); };
+  for (let i=1;i<envs.length;i++){ if (envKey(envs[i])!==envKey(envs[0])) consistent=false; }
   $('banner').innerHTML = consistent ? '' : '<div class="warn">⚠ merged runs have different server configs — numbers may not be comparable.</div>';
 }
 function recompute(){
@@ -245,9 +258,11 @@ for (const [base, present] of okByBase) {
    coverage[base] = { present: [...present].sort(), missing };
 }
 
-// Attach capability_note/tools per model for the breakdown.
+// Attach capability_note/tools per model for the breakdown. caps are keyed by the
+// underlying GGUF, so strip any `--kv<quant>` variant tag — both KV variants of a
+// model share the same declared capabilities.
 for (const m of models) {
-   const c = caps.get(m.base_model);
+   const c = caps.get(stripVariant(m.base_model));
    m.tools = c?.tools ?? null;
    m.capability_note = c?.note ?? null;
 }

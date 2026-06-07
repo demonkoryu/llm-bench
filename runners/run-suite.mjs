@@ -36,7 +36,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs, promisify } from 'node:util';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
-import { loadModelsConfig } from '../shared/models-config.mjs';
+import { loadModelsConfig, modelBaseId } from '../shared/models-config.mjs';
 import { createRun, latestRun, readRun } from '../shared/results-store.mjs';
 import { buildEnvironment, environmentDiff } from '../shared/run-fingerprint.mjs';
 
@@ -113,7 +113,10 @@ const allModels = modelsConfig.models ?? [];
  * Used as TSV row key and judge bundle key.
  */
 function modelId(m, thinkState) {
-   const base = m.hf_file.replace(/\.gguf$/i, '');
+   // base already carries the KV-variant tag (`--kv<quant>`) when present; the think
+   // suffix is appended LAST so baseModel()'s trailing `--(nothi|think)$` strip recovers
+   // the variant-scoped base id. Order: <gguf>[--kv<quant>][--think|--nothi].
+   const base = modelBaseId(m);
    if (thinkState === true) {
       return `${base}--think`;
    }
