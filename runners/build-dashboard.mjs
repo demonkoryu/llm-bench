@@ -76,6 +76,7 @@ output{color:var(--accent);text-align:right;font-variant-numeric:tabular-nums}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th,td{text-align:left;padding:3px 8px;border-bottom:1px solid #23232c;font-variant-numeric:tabular-nums;white-space:nowrap}
 th{color:var(--dim);font-weight:600;font-size:10px;text-transform:uppercase}
+th[title],dt[title],.raw-title[title]{cursor:help;text-decoration:underline dotted var(--dim)}
 code{color:#9fe7d6;font-size:11px}
 .dim{color:var(--dim)} .warn-t{color:var(--warn)} .ok-t{color:var(--good)}
 .stars{color:#ffd54a;letter-spacing:1px;white-space:nowrap}
@@ -133,43 +134,45 @@ function pill(label, val){ return '<span class="depth-pill"><span class="dk">'+e
 function renderRawMetrics(m){
   let h='<div class="raw-grid">';
   // Speed
-  h+='<div class="raw-section"><p class="raw-title">Speed</p><dl class="raw-dl">';
-  if(m.speedTg!=null) h+='<dt>Decode</dt><dd>'+fmt(m.speedTg)+' tok/s</dd>';
-  if(m.prefill4k!=null) h+='<dt>Prefill @4k</dt><dd>'+fmt(m.prefill4k,0)+' tok/s</dd>';
-  if(m.prefill12k!=null) h+='<dt>Prefill @12k</dt><dd>'+fmt(m.prefill12k,0)+' tok/s</dd>';
-  if(m.decodeRetentionPct!=null) h+='<dt>Decay@'+(m.decodeRefDepth!=null?Math.round(m.decodeRefDepth/1024)+'k':'?')+'</dt><dd>'+m.decodeRetentionPct+'% · '+(m.decodeRef!=null?fmt(m.decodeRef):'–')+' tok/s</dd>';
+  h+='<div class="raw-section"><p class="raw-title" title="Token generation and prompt-processing speeds measured at various context depths">Speed</p><dl class="raw-dl">';
+  if(m.speedTg!=null) h+='<dt title="Token generation speed at zero KV-cache depth (empty context)">Decode</dt><dd>'+fmt(m.speedTg)+' tok/s</dd>';
+  if(m.prefill4k!=null) h+='<dt title="Prompt processing speed with a 4 k-token context (prefill phase)">Prefill @4k</dt><dd>'+fmt(m.prefill4k,0)+' tok/s</dd>';
+  if(m.prefill12k!=null) h+='<dt title="Prompt processing speed with a 12 k-token context — longer prompts benefit most from high prefill speed">Prefill @12k</dt><dd>'+fmt(m.prefill12k,0)+' tok/s</dd>';
+  if(m.decodeRetentionPct!=null) h+='<dt title="Decode speed retained at this KV-cache depth vs baseline (100% = no slowdown as context fills)">Decay@'+(m.decodeRefDepth!=null?Math.round(m.decodeRefDepth/1024)+'k':'?')+'</dt><dd>'+m.decodeRetentionPct+'% · '+(m.decodeRef!=null?fmt(m.decodeRef):'–')+' tok/s</dd>';
   h+='</dl></div>';
   // Context
-  h+='<div class="raw-section"><p class="raw-title">Context</p><dl class="raw-dl">';
-  if(m.maxctx) h+='<dt>Max ctx</dt><dd>'+m.maxctx.toLocaleString()+' tok</dd>';
-  if(m.ttft8kMs!=null) h+='<dt>TTFT @8k</dt><dd>'+(m.ttft8kMs/1000).toFixed(1)+' s</dd>';
-  if(m.prefixCache&&m.prefixCache.speedup!=null) h+='<dt>Cache speedup</dt><dd>'+fmt(m.prefixCache.speedup,0)+'×</dd>';
-  if(m.pargenCurve&&m.pargenCurve.length) h+='<dt>Parallel gen</dt><dd>'+m.pargenCurve.map(p=>fmt(p.tps,0)+'@K'+p.conc).join(' · ')+' tok/s</dd>';
+  h+='<div class="raw-section"><p class="raw-title" title="Context window size, latency and caching characteristics">Context</p><dl class="raw-dl">';
+  if(m.maxctx) h+='<dt title="Maximum tokens that fit coherently in VRAM, confirmed by a coherence probe">Max ctx</dt><dd>'+m.maxctx.toLocaleString()+' tok</dd>';
+  if(m.ttft8kMs!=null) h+='<dt title="Time-to-first-token with an 8 k prompt, cold KV cache (no prefix cached)">TTFT @8k</dt><dd>'+(m.ttft8kMs/1000).toFixed(1)+' s</dd>';
+  if(m.prefixCache&&m.prefixCache.speedup!=null) h+='<dt title="Cold vs warm TTFT ratio — how much faster repeated prompts are once the prefix is cached">Cache speedup</dt><dd>'+fmt(m.prefixCache.speedup,0)+'×</dd>';
+  if(m.pargenCurve&&m.pargenCurve.length) h+='<dt title="Aggregate tokens/second at K simultaneous requests (K=1 is single-stream decode speed)">Parallel gen</dt><dd>'+m.pargenCurve.map(p=>fmt(p.tps,0)+'@K'+p.conc).join(' · ')+' tok/s</dd>';
   h+='</dl></div>';
   // Memory
-  h+='<div class="raw-section"><p class="raw-title">Memory</p><dl class="raw-dl">';
-  if(m.kvPerTokMiB!=null) h+='<dt>KV/tok</dt><dd>'+(m.kvPerTokMiB*1024).toFixed(1)+' KiB</dd>';
-  if(m.maxctxVram!=null) h+='<dt>VRAM @max ctx</dt><dd>'+Math.round(m.maxctxVram)+' MiB</dd>';
-  if(m.powerEff!=null) h+='<dt>Power</dt><dd>'+fmt(m.powerEff,0)+' W</dd>';
+  h+='<div class="raw-section"><p class="raw-title" title="VRAM usage and power draw during inference">Memory</p><dl class="raw-dl">';
+  if(m.kvPerTokMiB!=null) h+='<dt title="KV-cache memory per token (KiB). Lower = more context fits in the same VRAM.">KV/tok</dt><dd>'+(m.kvPerTokMiB*1024).toFixed(1)+' KiB</dd>';
+  if(m.maxctxVram!=null) h+='<dt title="GPU memory used when running at this model's maximum supported context">VRAM @max ctx</dt><dd>'+Math.round(m.maxctxVram)+' MiB</dd>';
+  if(m.powerEff!=null) h+='<dt title="GPU power draw during inference (watts). Measured via struct-output bench.">Power</dt><dd>'+fmt(m.powerEff,0)+' W</dd>';
   h+='</dl></div>';
   // Quality at depth
   if(m.qualityCurve&&m.qualityCurve.length){
-    h+='<div class="raw-section"><p class="raw-title">Quality at depth</p><div class="depth-pills">';
+    h+='<div class="raw-section"><p class="raw-title" title="Recall accuracy at each tested context depth. Values drop as the target information is buried deeper in the context.">Quality at depth</p><div class="depth-pills">';
     for(const {depth,acc} of m.qualityCurve) h+=pill(Math.round(depth/1024)+'k', Math.round(acc)+'%');
     h+='</div></div>';
   }
   // TTFT curve
   if(m.ttftCurve&&m.ttftCurve.length>1){
-    h+='<div class="raw-section"><p class="raw-title">TTFT</p><div class="depth-pills">';
+    h+='<div class="raw-section"><p class="raw-title" title="Time-to-first-token (seconds) at each tested prompt depth. Grows with prompt length because prefill is O(n).">TTFT</p><div class="depth-pills">';
     for(const {depth,ms} of m.ttftCurve) h+=pill(Math.round(depth/1024)+'k', (ms/1000).toFixed(1)+'s');
     h+='</div></div>';
   }
   h+='</div>';
   return h;
 }
+// headers: array of strings or [label, tooltip] pairs.
+function th(x){ return Array.isArray(x)?'<th title="'+esc(x[1])+'">'+esc(x[0])+'</th>':'<th>'+esc(x)+'</th>'; }
 function table(headers, rows, rowClasses){
   let h='<table><thead><tr>';
-  for (const x of headers) h+='<th>'+esc(x)+'</th>';
+  for (const x of headers) h+=th(x);
   h+='</tr></thead><tbody>';
   rows.forEach((r,i)=>{ const cls=(rowClasses&&rowClasses[i])?' class="'+rowClasses[i]+'"':''; h+='<tr'+cls+'>'; for (const c of r) h+='<td>'+(c==null?'':c)+'</td>'; h+='</tr>'; });
   return h+'</tbody></table>';
@@ -194,10 +197,20 @@ function recompute(){
   const fleetRes=computeFleet(DATA.models, dials);
   renderCap(ranking); renderFleet(fleetRes); renderCtx(); renderBreakdown(); renderRequired(dials);
 }
+const CAP_HEADERS=[
+  ['#','Overall capability rank (1 = best)'],
+  ['★','Top-5 capability badge — ★★★★★ = rank 1'],
+  ['model','Model name and think-mode variant'],
+  ['score','Overall capability score: 80% × √(comprehension × coding) + 20% × quality-decay retention'],
+  ['compr.','Comprehension: weighted blend of triage, summarization, docqa and reasoning'],
+  ['coding','Coding pass rate: fraction of coding problems with all tests passing'],
+  ['competence','Coding competence: pass rate × solution quality grade (penalises low-quality solutions that happen to pass)'],
+  ['quality↓','Quality at depth: mean recall accuracy across all tested context lengths (0 k–96 k). Higher = retains quality deeper into long contexts. Click row to see per-depth breakdown.'],
+];
 function renderCap(ranking){
   const openIds=new Set([...document.querySelectorAll('.raw-row.open')].map(r=>r.id));
   let h='<table><thead><tr>';
-  for(const x of ['#','★','model','score','compr.','coding','competence','quality↓']) h+='<th>'+esc(x)+'</th>';
+  for(const x of CAP_HEADERS) h+=th(x);
   h+='</tr></thead><tbody>';
   for(const [i,m] of ranking.entries()){
     const rid='raw_'+slugify(m.model+'_'+m.think);
@@ -226,18 +239,50 @@ function renderFleet(res){
     const fleetCell=p.fleet_suitability==null?'<span class="dim">'+esc(p.reason||'–')+'</span>':fmt(p.fleet_suitability,3);
     return [i+1, st, esc(p.label), pct(p.capability), fleetCell, mainCtx(p), workers(p), p.agg_tps==null?'–':fmt(p.agg_tps,0), pct(p.capacity_norm), pct(p.latency_norm)];
   });
-  $('fleet').innerHTML=table(['#','★','model','cap','fleet','main ctx','+workers','agg tok/s','capacity','latency'], rows, sorted.map(topClass));
+  $('fleet').innerHTML=table([
+    ['#','Fleet-suitability rank'],
+    ['★','Top-5 capability badge'],
+    ['model','Model name and variant'],
+    ['cap','Capability score from the main ranking'],
+    ['fleet','Fleet suitability score: capability × context reach × throughput × concurrency. Tune the dials above.'],
+    ['main ctx','Tokens allocated to the primary inference slot'],
+    ['+workers','Additional parallel slots: count × context each (e.g. +4×32k = 4 extra 32k slots)'],
+    ['agg tok/s','Aggregate tokens per second at K=8 concurrent requests (from parallel-gen bench)'],
+    ['capacity','Normalised capacity: total concurrent context fit vs fleet baseline'],
+    ['latency','Normalised latency: decode speed + TTFT at depth (higher = faster responses)'],
+  ], rows, sorted.map(topClass));
 }
 function renderCtx(){
   const list=DATA.models.slice().filter(m=>m.maxctx).sort((a,b)=>(b.maxctx||0)-(a.maxctx||0));
   const rows=list.map(m=>[stars(CAPRANK[mkey(m)]), esc(m.label), m.maxctx.toLocaleString(), m.maxctxVram==null?'–':Math.round(m.maxctxVram)+'M', m.kvPerTokMiB==null?'–':(m.kvPerTokMiB*1024).toFixed(1)]);
-  $('ctx').innerHTML=table(['★','model','max ctx','vram@max','KV KiB/tok'], rows, list.map(topClass));
+  $('ctx').innerHTML=table([
+    ['★','Top-5 capability badge'],
+    ['model','Model name and variant'],
+    ['max ctx','Maximum tokens that fit coherently in VRAM, verified by coherence probe (OOM or incoherent outputs cut it lower)'],
+    ['vram@max','VRAM used when running at max context (MiB)'],
+    ['KV KiB/tok','KV-cache memory per token (KiB). Lower = more context fits in the same VRAM.'],
+  ], rows, list.map(topClass));
 }
 const BKEYS=['triage','summarization','docqa','reasoning','grade','agentic_loop','instruction_following','toolcalling','struct_output','e2e_throughput','cold_ttft','warm_ttft'];
+const BKEY_TIPS={
+  triage:'Triage: structured JSON extraction + hallucination detection across varied prompts. Scores penalise missing fields and hallucinated content.',
+  summarization:'Summarization: LLM-graded quality of summaries on reference documents (0–10, fleet-normalised).',
+  docqa:'Document Q&A: accuracy on long-document questions including recall at or near the model's max context.',
+  reasoning:'Reasoning: accuracy on logic, math and multi-step deduction problems.',
+  grade:'Coding grade: average quality score (0–10) for solutions that pass all tests — separates elegant from barely-passing code.',
+  agentic_loop:'Agentic loop: success rate on multi-step tool-call chains, including tasks that require error recovery.',
+  instruction_following:'Instruction following: fraction of explicit formatting/content constraints obeyed (e.g. word limits, forbidden phrases, output structure).',
+  toolcalling:'Tool calling: schema conformance on function-call outputs (argument names, types, required fields).',
+  struct_output:'Structured output: valid + schema-conformant JSON rate under unconstrained sampling (no grammar forcing).',
+  e2e_throughput:'End-to-end throughput at 8 k prefill: tokens/s including TTFT. High prefill speed boosts this; low TTFT matters most for short responses.',
+  cold_ttft:'Cold TTFT: time-to-first-token at 8 k depth with empty KV cache. Normalised: higher = faster.',
+  warm_ttft:'Warm TTFT: time-to-first-token with prefix already cached. Measures prefix-cache effectiveness. Normalised: higher = faster.',
+};
 function renderBreakdown(){
   const list=DATA.models.slice().sort((a,b)=>(b.capability==null?-1:b.capability)-(a.capability==null?-1:a.capability));
   const rows=list.map(m=>[stars(CAPRANK[mkey(m)]), esc(m.label)].concat(BKEYS.map(k=> m.norm[k]==null?'<span class="dim">–</span>':pct(m.norm[k]))));
-  $('breakdown').innerHTML=table(['★','model'].concat(BKEYS), rows, list.map(topClass));
+  const headers=[['★','Top-5 capability badge'],['model','Model name and variant']].concat(BKEYS.map(k=>[k,BKEY_TIPS[k]||k]));
+  $('breakdown').innerHTML=table(headers, rows, list.map(topClass));
 }
 function renderRequired(dials){
   const used=new Set();
