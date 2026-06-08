@@ -267,7 +267,7 @@ function renderCtx(){
 const BKEYS=['triage','summarization','docqa','reasoning','grade','agentic_loop','instruction_following','toolcalling','struct_output','e2e_throughput','cold_ttft','warm_ttft'];
 const BKEY_TIPS={
   triage:'Triage: structured JSON extraction + hallucination detection across varied prompts. Scores penalise missing fields and hallucinated content.',
-  summarization:'Summarization: LLM-graded quality of summaries on reference documents (0–10, fleet-normalised).',
+  summarization:'Summarization: deterministic rubric — keyword coverage (40%), area classification (25%), tag format (20%), length check (15%). Score is fleet-normalised.',
   docqa:'Document Q&A: accuracy on long-document questions including recall at or near the maximum context limit.',
   reasoning:'Reasoning: accuracy on logic, math and multi-step deduction problems.',
   grade:'Coding grade: average quality score (0–10) for solutions that pass all tests — separates elegant from barely-passing code.',
