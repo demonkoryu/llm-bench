@@ -140,6 +140,38 @@ models:
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
      notes: "Hybrid GatedDeltaNet+MoE; linear-attn layers → small KV. Unsloth Q5_K_M."
 
+   # ── Qwen3.5-27B IQ4_XS ───────────────────────────────────────────────────────
+   # Hybrid (think: optional), same 3.5-series GatedDeltaNet+MoE family as the 9B.
+   # IQ4_XS ≈ 14.4 GB → fits comfortably; native 262k ctx. kv-probe will calibrate
+   # the actual KV footprint (may be small if linear-attn layers dominate like 9B).
+   - hf_repo: unsloth/Qwen3.5-27B-GGUF
+     hf_file: Qwen3.5-27B-IQ4_XS.gguf
+     label: "Qwen3.5-27B IQ4_XS"
+     family: qwen3.5
+     type: moe
+     think: optional
+     tools: true
+     native_max_ctx: 262144
+     kv_bytes_per_token: 16384
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     notes: "kv_bytes_per_token is estimated — kv-probe will calibrate."
+
+   # ── Qwen3.6-27B UD-Q4_K_XL ───────────────────────────────────────────────────
+   # Hybrid MoE, same qwen3.6 family/sampling as the 35B-A3B.
+   # UD-Q4_K_XL ≈ 15.5 GB → fits comfortably. Native 262k ctx.
+   # kv_variants omitted until kv-probe confirms footprint.
+   - hf_repo: unsloth/Qwen3.6-27B-GGUF
+     hf_file: Qwen3.6-27B-UD-Q4_K_XL.gguf
+     label: "Qwen3.6-27B UD-Q4_K_XL"
+     family: qwen3.6
+     type: moe
+     think: optional
+     tools: true
+     native_max_ctx: 262144
+     kv_bytes_per_token: 49152
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     notes: "kv_bytes_per_token matches 35B estimate — kv-probe will calibrate."
+
    # ── Qwen3.6-35B-A3B IQ4_XS ──────────────────────────────────────────────────
    # Hybrid: runs both nothi and think passes.
    # Native ctx: 262,144 tokens (genuine, not YaRN-extended).
@@ -192,6 +224,24 @@ models:
      native_max_ctx: 131072
      kv_bytes_per_token: 16384
      extra_flags: { "no-mmproj": true }   # see Q8 note: skip gemma4 vision projector (text-only)
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+
+   # ── Gemma4-31B IQ4_XS ────────────────────────────────────────────────────────
+   # Dense 31B, hybrid think, native FC. IQ4_XS ≈ 16.5 GB → fits 20.5 GB card.
+   # Same family/sampling/think mechanism as E4B/26B; no-mmproj for text-only.
+   # DISABLED: dense 31B is ~10× slower prefill than the MoE 26B (31B active vs 4B active).
+   - disabled: true
+     hf_repo: unsloth/gemma-4-31B-it-GGUF
+     hf_file: gemma-4-31B-it-IQ4_XS.gguf
+     label: "Gemma4-31B IQ4_XS"
+     family: gemma4
+     type: dense
+     think: optional
+     think_control: enable_thinking
+     tools: true
+     native_max_ctx: 131072
+     kv_bytes_per_token: 16384
+     extra_flags: { "no-mmproj": true }
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
 
    # ── Gemma4-26B-A4B ───────────────────────────────────────────────────────────
