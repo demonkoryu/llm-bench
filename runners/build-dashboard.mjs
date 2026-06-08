@@ -40,6 +40,41 @@ const { values: flags } = parseArgs({
    },
 });
 
+// ── Build-time html tagged template ───────────────────────────────────────────
+// Auto-escapes all ${} interpolations. Nested html`…` calls (HRaw instances) are
+// inserted verbatim. Arrays of HRaw/strings are joined without separator.
+class HRaw {
+   constructor(s) {
+      this.s = s;
+   }
+   toString() {
+      return this.s;
+   }
+   valueOf() {
+      return this.s;
+   }
+}
+const esc = (s) =>
+   String(s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+function html(strings, ...vals) {
+   let out = strings[0];
+   for (let i = 0; i < vals.length; i++) {
+      const v = vals[i];
+      out +=
+         v instanceof HRaw
+            ? v.s
+            : Array.isArray(v)
+              ? v.map((x) => (x instanceof HRaw ? x.s : esc(String(x ?? '')))).join('')
+              : esc(String(v ?? ''));
+      out += strings[i + 1];
+   }
+   return new HRaw(out);
+}
+html.raw = (s) => new HRaw(String(s ?? ''));
+
 const CSS = `
 :root{--bg:#0f0f13;--panel:#18181f;--text:#e0e0e0;--dim:#888;--accent:#c8b6ff;--good:#82dc82;--warn:#ffc850}
 *{box-sizing:border-box}
@@ -106,17 +141,37 @@ tr.raw-row>td{padding:8px 14px 12px;border-top:none;background:#111118}
 }
 `;
 
+// Browser JS — runs entirely client-side. Uses the same html`` helper (inlined below)
+// so render functions are template-driven rather than raw string concatenation.
 const UI_JS = `
 const $ = (id) => document.getElementById(id);
 const fmt = (n,d=1) => (n==null||!isFinite(n))?'–':Number(n).toFixed(d);
 const pct = (n) => (n==null||!isFinite(n))?'–':(n*100).toFixed(1)+'%';
 const esc = (s) => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-// Capability-rank star badges (top 5): rank 1 → ★★★★★ … rank 5 → ★☆☆☆☆. Shown in every table.
+
+// html tagged template — auto-escapes strings, passes HRaw instances through verbatim.
+// Use html.raw(s) to mark already-safe HTML. Nested html\`…\` calls are HRaw and compose correctly.
+class HRaw { constructor(s){this.s=s} toString(){return this.s} valueOf(){return this.s} }
+function html(strings,...vals){
+  let out=strings[0];
+  for(let i=0;i<vals.length;i++){
+    const v=vals[i];
+    out += v instanceof HRaw ? v.s
+         : Array.isArray(v) ? v.map(x=>x instanceof HRaw?x.s:esc(String(x??''))).join('')
+         : esc(String(v??''));
+    out += strings[i+1];
+  }
+  return new HRaw(out);
+}
+html.raw = (s) => new HRaw(String(s??''));
+
+// Capability-rank star badges (top 5): rank 1 → ★★★★★ … rank 5 → ★☆☆☆☆.
 let CAPRANK={};
 const mkey=(m)=>m.model+'|'+m.think;
 function stars(rank){ if(!rank||rank>5) return ''; let s=''; for(let i=0;i<5;i++) s+=(i<(6-rank)?'★':'☆'); return '<span class="stars" title="capability rank #'+rank+'">'+s+'</span>'; }
 const topClass=(m)=>CAPRANK[mkey(m)]?'top5':'';
 function num(id,def){ const e=$(id); if(!e) return def; const v=parseFloat(e.value); return isFinite(v)?v:def; }
+
 function getDials(){
   const d = JSON.parse(JSON.stringify(DATA.defaultDials));
   for (const g of ['comprehension','coding']){
@@ -128,76 +183,94 @@ function getDials(){
   if (d.quality_decay) d.quality_decay.weight = num('d_quality_decay_weight', d.quality_decay.weight);
   return d;
 }
+
 function toggleRaw(el){
   const id=el.dataset.rawid; const r=document.getElementById(id); if(r) r.classList.toggle('open');
 }
-function pill(label, val){ return '<span class="depth-pill"><span class="dk">'+esc(label)+'</span><span class="dv">'+esc(val)+'</span></span>'; }
-function renderRawMetrics(m){
-  let h='<div class="raw-grid">';
-  // Speed
-  h+='<div class="raw-section"><p class="raw-title" title="Token generation and prompt-processing speeds measured at various context depths">Speed</p><dl class="raw-dl">';
-  if(m.speedTg!=null) h+='<dt title="Token generation speed at zero KV-cache depth (empty context)">Decode</dt><dd>'+fmt(m.speedTg)+' tok/s</dd>';
-  if(m.prefill4k!=null) h+='<dt title="Prompt processing speed with a 4 k-token context (prefill phase)">Prefill @4k</dt><dd>'+fmt(m.prefill4k,0)+' tok/s</dd>';
-  if(m.prefill12k!=null) h+='<dt title="Prompt processing speed with a 12 k-token context — longer prompts benefit most from high prefill speed">Prefill @12k</dt><dd>'+fmt(m.prefill12k,0)+' tok/s</dd>';
-  if(m.decodeRetentionPct!=null) h+='<dt title="Decode speed retained at this KV-cache depth vs baseline (100% = no slowdown as context fills)">Decay@'+(m.decodeRefDepth!=null?Math.round(m.decodeRefDepth/1024)+'k':'?')+'</dt><dd>'+m.decodeRetentionPct+'% · '+(m.decodeRef!=null?fmt(m.decodeRef):'–')+' tok/s</dd>';
-  h+='</dl></div>';
-  // Context
-  h+='<div class="raw-section"><p class="raw-title" title="Context window size, latency and caching characteristics">Context</p><dl class="raw-dl">';
-  if(m.maxctx) h+='<dt title="Maximum tokens that fit coherently in VRAM, confirmed by a coherence probe">Max ctx</dt><dd>'+m.maxctx.toLocaleString()+' tok</dd>';
-  if(m.ttft8kMs!=null) h+='<dt title="Time-to-first-token with an 8 k prompt, cold KV cache (no prefix cached)">TTFT @8k</dt><dd>'+(m.ttft8kMs/1000).toFixed(1)+' s</dd>';
-  if(m.prefixCache&&m.prefixCache.speedup!=null) h+='<dt title="Cold vs warm TTFT ratio — how much faster repeated prompts are once the prefix is cached">Cache speedup</dt><dd>'+fmt(m.prefixCache.speedup,0)+'×</dd>';
-  if(m.pargenCurve&&m.pargenCurve.length) h+='<dt title="Aggregate tokens/second at K simultaneous requests (K=1 is single-stream decode speed)">Parallel gen</dt><dd>'+m.pargenCurve.map(p=>fmt(p.tps,0)+'@K'+p.conc).join(' · ')+' tok/s</dd>';
-  h+='</dl></div>';
-  // Memory
-  h+='<div class="raw-section"><p class="raw-title" title="VRAM usage and power draw during inference">Memory</p><dl class="raw-dl">';
-  if(m.kvPerTokMiB!=null) h+='<dt title="KV-cache memory per token (KiB). Lower = more context fits in the same VRAM.">KV/tok</dt><dd>'+(m.kvPerTokMiB*1024).toFixed(1)+' KiB</dd>';
-  if(m.maxctxVram!=null) h+='<dt title="GPU memory used when running at the maximum supported context">VRAM @max ctx</dt><dd>'+Math.round(m.maxctxVram)+' MiB</dd>';
-  if(m.powerEff!=null) h+='<dt title="GPU power draw during inference (watts). Measured via struct-output bench.">Power</dt><dd>'+fmt(m.powerEff,0)+' W</dd>';
-  h+='</dl></div>';
-  // Quality at depth
-  if(m.qualityCurve&&m.qualityCurve.length){
-    h+='<div class="raw-section"><p class="raw-title" title="Recall accuracy at each tested context depth. Values drop as the target information is buried deeper in the context.">Quality at depth</p><div class="depth-pills">';
-    for(const {depth,acc} of m.qualityCurve) h+=pill(Math.round(depth/1024)+'k', Math.round(acc)+'%');
-    h+='</div></div>';
-  }
-  // TTFT curve
-  if(m.ttftCurve&&m.ttftCurve.length>1){
-    h+='<div class="raw-section"><p class="raw-title" title="Time-to-first-token (seconds) at each tested prompt depth. Grows with prompt length because prefill is O(n).">TTFT</p><div class="depth-pills">';
-    for(const {depth,ms} of m.ttftCurve) h+=pill(Math.round(depth/1024)+'k', (ms/1000).toFixed(1)+'s');
-    h+='</div></div>';
-  }
-  h+='</div>';
-  return h;
+
+// ── HTML helpers ──────────────────────────────────────────────────────────────
+
+function pill(label, val){
+  return html\`<span class="depth-pill"><span class="dk">\${label}</span><span class="dv">\${val}</span></span>\`;
 }
+
 // headers: array of strings or [label, tooltip] pairs.
-function th(x){ return Array.isArray(x)?'<th title="'+esc(x[1])+'">'+esc(x[0])+'</th>':'<th>'+esc(x)+'</th>'; }
-function table(headers, rows, rowClasses){
-  let h='<table><thead><tr>';
-  for (const x of headers) h+=th(x);
-  h+='</tr></thead><tbody>';
-  rows.forEach((r,i)=>{ const cls=(rowClasses&&rowClasses[i])?' class="'+rowClasses[i]+'"':''; h+='<tr'+cls+'>'; for (const c of r) h+='<td>'+(c==null?'':c)+'</td>'; h+='</tr>'; });
-  return h+'</tbody></table>';
+function th(x){
+  return Array.isArray(x)
+    ? html\`<th title="\${x[1]}">\${x[0]}</th>\`
+    : html\`<th>\${x}</th>\`;
 }
+
+// Cells may be strings (will be escaped), HRaw instances (inserted verbatim), or
+// html\`…\` results. Callers are responsible for wrapping trusted HTML in html.raw().
+function tbl(headers, rows, rowClasses){
+  return html\`<table>
+    <thead><tr>\${headers.map(th)}</tr></thead>
+    <tbody>\${rows.map((r,i)=>html\`<tr\${rowClasses?.[i]?html\` class="\${rowClasses[i]}"\`:html.raw('')}>
+      \${r.map(c=>html\`<td>\${c instanceof HRaw?c:html.raw(String(c??''))}</td>\`)}
+    </tr>\`)}</tbody>
+  </table>\`;
+}
+
+function renderRawMetrics(m){
+  return html\`<div class="raw-grid">
+    <div class="raw-section">
+      <p class="raw-title" title="Token generation and prompt-processing speeds measured at various context depths">Speed</p>
+      <dl class="raw-dl">
+        \${m.speedTg!=null?html\`<dt title="Token generation speed at zero KV-cache depth (empty context)">Decode</dt><dd>\${fmt(m.speedTg)} tok/s</dd>\`:''}
+        \${m.prefill4k!=null?html\`<dt title="Prompt processing speed with a 4 k-token context (prefill phase)">Prefill @4k</dt><dd>\${fmt(m.prefill4k,0)} tok/s</dd>\`:''}
+        \${m.prefill12k!=null?html\`<dt title="Prompt processing speed with a 12 k-token context — longer prompts benefit most from high prefill speed">Prefill @12k</dt><dd>\${fmt(m.prefill12k,0)} tok/s</dd>\`:''}
+        \${m.decodeRetentionPct!=null?html\`<dt title="Decode speed retained at this KV-cache depth vs baseline (100% = no slowdown as context fills)">Decay@\${m.decodeRefDepth!=null?Math.round(m.decodeRefDepth/1024)+'k':'?'}</dt><dd>\${m.decodeRetentionPct}% · \${m.decodeRef!=null?fmt(m.decodeRef):'–'} tok/s</dd>\`:''}
+      </dl>
+    </div>
+    <div class="raw-section">
+      <p class="raw-title" title="Context window size, latency and caching characteristics">Context</p>
+      <dl class="raw-dl">
+        \${m.maxctx?html\`<dt title="Maximum tokens that fit coherently in VRAM, confirmed by a coherence probe">Max ctx</dt><dd>\${m.maxctx.toLocaleString()} tok</dd>\`:''}
+        \${m.ttft8kMs!=null?html\`<dt title="Time-to-first-token with an 8 k prompt, cold KV cache (no prefix cached)">TTFT @8k</dt><dd>\${(m.ttft8kMs/1000).toFixed(1)} s</dd>\`:''}
+        \${m.prefixCache?.speedup!=null?html\`<dt title="Cold vs warm TTFT ratio — how much faster repeated prompts are once the prefix is cached">Cache speedup</dt><dd>\${fmt(m.prefixCache.speedup,0)}×</dd>\`:''}
+        \${m.pargenCurve?.length?html\`<dt title="Aggregate tokens/second at K simultaneous requests (K=1 is single-stream decode speed)">Parallel gen</dt><dd>\${html.raw(m.pargenCurve.map(p=>fmt(p.tps,0)+'@K'+p.conc).join(' · '))} tok/s</dd>\`:''}
+      </dl>
+    </div>
+    <div class="raw-section">
+      <p class="raw-title" title="VRAM usage and power draw during inference">Memory</p>
+      <dl class="raw-dl">
+        \${m.kvPerTokMiB!=null?html\`<dt title="KV-cache memory per token (KiB). Lower = more context fits in the same VRAM.">KV/tok</dt><dd>\${(m.kvPerTokMiB*1024).toFixed(1)} KiB</dd>\`:''}
+        \${m.maxctxVram!=null?html\`<dt title="GPU memory used when running at the maximum supported context">VRAM @max ctx</dt><dd>\${Math.round(m.maxctxVram)} MiB</dd>\`:''}
+        \${m.powerEff!=null?html\`<dt title="GPU power draw during inference (watts). Measured via struct-output bench.">Power</dt><dd>\${fmt(m.powerEff,0)} W</dd>\`:''}
+      </dl>
+    </div>
+    \${m.qualityCurve?.length?html\`<div class="raw-section">
+      <p class="raw-title" title="Recall accuracy at each tested context depth. Values drop as the target information is buried deeper in the context.">Quality at depth</p>
+      <div class="depth-pills">\${m.qualityCurve.map(({depth,acc})=>pill(Math.round(depth/1024)+'k',Math.round(acc)+'%'))}</div>
+    </div>\`:''}
+    \${m.ttftCurve?.length>1?html\`<div class="raw-section">
+      <p class="raw-title" title="Time-to-first-token (seconds) at each tested prompt depth. Grows with prompt length because prefill is O(n).">TTFT</p>
+      <div class="depth-pills">\${m.ttftCurve.map(({depth,ms})=>pill(Math.round(depth/1024)+'k',(ms/1000).toFixed(1)+'s'))}</div>
+    </div>\`:''}
+  </div>\`;
+}
+
 function renderEnv(){
   const e=DATA.environment;
   const s = e ? ('runner '+esc(e.runner)+' · '+esc(e.gpu)+' · '+esc(e.backend)+' · fa='+esc(e.server_flags&&e.server_flags.flash_attn)+' · kv='+esc(e.server_flags&&e.server_flags.cache_type_k)) : 'no server fingerprint (pre-fingerprint data)';
   $('env').innerHTML = s+' · sources: '+DATA.sources.map(esc).join(', ');
   const envs=DATA.environments.filter(Boolean); let consistent=true;
   // KV cache type (cache_type_k/v) is an INTENDED per-configuration axis now — q8 and q4
-  // rank as separate rows — so ignore it when judging whether merged runs are comparable,
-  // else the banner fires permanently on any multi-KV dashboard.
+  // rank as separate rows — so ignore it when judging whether merged runs are comparable.
   const envKey=(e)=>{ const c=JSON.parse(JSON.stringify(e)); if(c&&c.server_flags){ delete c.server_flags.cache_type_k; delete c.server_flags.cache_type_v; } return JSON.stringify(c); };
   for (let i=1;i<envs.length;i++){ if (envKey(envs[i])!==envKey(envs[0])) consistent=false; }
   $('banner').innerHTML = consistent ? '' : '<div class="warn">⚠ merged runs have different server configs — numbers may not be comparable.</div>';
 }
+
 function recompute(){
   const dials=getDials();
   const ranking=scoreGroups(DATA.models, dials);
-  // Capability rank drives the star badges shown in EVERY table (top 5 only).
   CAPRANK={}; ranking.forEach((m,i)=>{ if(i<5) CAPRANK[mkey(m)]=i+1; });
   const fleetRes=computeFleet(DATA.models, dials);
   renderCap(ranking); renderFleet(fleetRes); renderCtx(); renderBreakdown(); renderRequired(dials);
 }
+
 const CAP_HEADERS=[
   ['#','Overall capability rank (1 = best)'],
   ['★','Top-5 capability badge — ★★★★★ = rank 1'],
@@ -208,39 +281,52 @@ const CAP_HEADERS=[
   ['competence','Coding competence: pass rate × solution quality grade (penalises low-quality solutions that happen to pass)'],
   ['quality↓','Quality at depth: mean recall accuracy across all tested context lengths (0 k–96 k). Higher = retains quality deeper into long contexts. Click row to see per-depth breakdown.'],
 ];
+
 function renderCap(ranking){
   const openIds=new Set([...document.querySelectorAll('.raw-row.open')].map(r=>r.id));
-  let h='<table><thead><tr>';
-  for(const x of CAP_HEADERS) h+=th(x);
-  h+='</tr></thead><tbody>';
-  for(const [i,m] of ranking.entries()){
-    const rid='raw_'+slugify(m.model+'_'+m.think);
-    const cls=[topClass(m),'model-row'].filter(Boolean).join(' ');
-    h+='<tr class="'+cls+'" data-rawid="'+rid+'" onclick="toggleRaw(this)">';
-    h+='<td>'+(i+1)+'</td><td>'+stars(i+1)+'</td><td>'+esc(m.label)+'</td>';
-    h+='<td>'+fmt(m.score)+'</td><td>'+pct(m.comprehension)+'</td><td>'+pct(m.coding)+'</td><td>'+pct(m.codingCompetence)+'</td>';
-    h+='<td>'+(m.qualityMean!=null?fmt(m.qualityMean,1)+'%':'<span class="dim">–</span>')+'</td>';
-    h+='</tr>';
-    h+='<tr class="raw-row'+(openIds.has(rid)?' open':'')+'" id="'+rid+'"><td colspan="8">'+renderRawMetrics(m)+'</td></tr>';
-  }
-  h+='</tbody></table>';
-  $('cap').innerHTML=h;
+  $('cap').innerHTML=html\`<table>
+    <thead><tr>\${CAP_HEADERS.map(th)}</tr></thead>
+    <tbody>\${ranking.map((m,i)=>{
+      const rid='raw_'+slugify(m.model+'_'+m.think);
+      const cls=[topClass(m),'model-row'].filter(Boolean).join(' ');
+      return html\`
+        <tr class="\${cls}" data-rawid="\${rid}" onclick="toggleRaw(this)">
+          <td>\${i+1}</td>
+          <td>\${html.raw(stars(i+1))}</td>
+          <td>\${m.label}</td>
+          <td>\${fmt(m.score)}</td>
+          <td>\${pct(m.comprehension)}</td>
+          <td>\${pct(m.coding)}</td>
+          <td>\${pct(m.codingCompetence)}</td>
+          <td>\${m.qualityMean!=null?html\`\${fmt(m.qualityMean,1)}%\`:html\`<span class="dim">–</span>\`}</td>
+        </tr>
+        <tr class="raw-row\${openIds.has(rid)?' open':''}" id="\${rid}">
+          <td colspan="8">\${renderRawMetrics(m)}</td>
+        </tr>\`;
+    })}</tbody>
+  </table>\`;
 }
+
 function renderFleet(res){
-  // Ranked by the blended fleet_suitability score: capability^w_cap × ctx_norm^w_ctx ×
-  // slots_norm^w_slots × throughput^w_thru. Capability dominates (w_cap=2 default) so
-  // capable all-rounders rise, while context reach (ctx clamped at the 100k tier) and
-  // slot count strongly modulate. Tune the exponents in the fleet controls above.
   const fv=(p)=>p.fleet_suitability==null?-Infinity:p.fleet_suitability;
   const sorted=res.fleet.slice().sort((a,b)=>fv(b)-fv(a));
   const mainCtx=(p)=>p.main_ctx==null?'–':p.main_ctx.toLocaleString();
-  const workers=(p)=>p.n_workers==null?'–':('+'+p.n_workers+'×'+Math.round((p.worker_ctx||0)/1024)+'k');
-  const rows=sorted.map((p,i)=>{
-    const st=stars(CAPRANK[mkey(p)]);
-    const fleetCell=p.fleet_suitability==null?'<span class="dim">'+esc(p.reason||'–')+'</span>':fmt(p.fleet_suitability,3);
-    return [i+1, st, esc(p.label), pct(p.capability), fleetCell, mainCtx(p), workers(p), p.agg_tps==null?'–':fmt(p.agg_tps,0), pct(p.capacity_norm), pct(p.latency_norm)];
-  });
-  $('fleet').innerHTML=table([
+  const workers=(p)=>p.n_workers==null?'–':'+'+p.n_workers+'×'+Math.round((p.worker_ctx||0)/1024)+'k';
+  const rows=sorted.map((p,i)=>[
+    String(i+1),
+    html.raw(stars(CAPRANK[mkey(p)])),
+    p.label,
+    pct(p.capability),
+    p.fleet_suitability==null
+      ? html\`<span class="dim">\${p.reason||'–'}</span>\`
+      : html.raw(fmt(p.fleet_suitability,3)),
+    mainCtx(p),
+    workers(p),
+    p.agg_tps==null?'–':fmt(p.agg_tps,0),
+    pct(p.capacity_norm),
+    pct(p.latency_norm),
+  ]);
+  $('fleet').innerHTML=tbl([
     ['#','Fleet-suitability rank'],
     ['★','Top-5 capability badge'],
     ['model','Model name and variant'],
@@ -253,10 +339,17 @@ function renderFleet(res){
     ['latency','Normalised latency: decode speed + TTFT at depth (higher = faster responses)'],
   ], rows, sorted.map(topClass));
 }
+
 function renderCtx(){
   const list=DATA.models.slice().filter(m=>m.maxctx).sort((a,b)=>(b.maxctx||0)-(a.maxctx||0));
-  const rows=list.map(m=>[stars(CAPRANK[mkey(m)]), esc(m.label), m.maxctx.toLocaleString(), m.maxctxVram==null?'–':Math.round(m.maxctxVram)+'M', m.kvPerTokMiB==null?'–':(m.kvPerTokMiB*1024).toFixed(1)]);
-  $('ctx').innerHTML=table([
+  const rows=list.map(m=>[
+    html.raw(stars(CAPRANK[mkey(m)])),
+    m.label,
+    m.maxctx.toLocaleString(),
+    m.maxctxVram==null?'–':Math.round(m.maxctxVram)+'M',
+    m.kvPerTokMiB==null?'–':(m.kvPerTokMiB*1024).toFixed(1),
+  ]);
+  $('ctx').innerHTML=tbl([
     ['★','Top-5 capability badge'],
     ['model','Model name and variant'],
     ['max ctx','Maximum tokens that fit coherently in VRAM, verified by coherence probe (OOM or incoherent outputs cut it lower)'],
@@ -264,6 +357,7 @@ function renderCtx(){
     ['KV KiB/tok','KV-cache memory per token (KiB). Lower = more context fits in the same VRAM.'],
   ], rows, list.map(topClass));
 }
+
 const BKEYS=['triage','summarization','docqa','reasoning','grade','agentic_loop','instruction_following','toolcalling','struct_output','e2e_throughput','cold_ttft','warm_ttft'];
 const BKEY_TIPS={
   triage:'Triage: structured JSON extraction + hallucination detection across varied prompts. Scores penalise missing fields and hallucinated content.',
@@ -279,12 +373,18 @@ const BKEY_TIPS={
   cold_ttft:'Cold TTFT: time-to-first-token at 8 k depth with empty KV cache. Normalised: higher = faster.',
   warm_ttft:'Warm TTFT: time-to-first-token with prefix already cached. Measures prefix-cache effectiveness. Normalised: higher = faster.',
 };
+
 function renderBreakdown(){
   const list=DATA.models.slice().sort((a,b)=>(b.capability==null?-1:b.capability)-(a.capability==null?-1:a.capability));
-  const rows=list.map(m=>[stars(CAPRANK[mkey(m)]), esc(m.label)].concat(BKEYS.map(k=> m.norm[k]==null?'<span class="dim">–</span>':pct(m.norm[k]))));
-  const headers=[['★','Top-5 capability badge'],['model','Model name and variant']].concat(BKEYS.map(k=>[k,BKEY_TIPS[k]||k]));
-  $('breakdown').innerHTML=table(headers, rows, list.map(topClass));
+  const rows=list.map(m=>[
+    html.raw(stars(CAPRANK[mkey(m)])),
+    m.label,
+    ...BKEYS.map(k=>m.norm[k]==null?html\`<span class="dim">–</span>\`:html.raw(pct(m.norm[k]))),
+  ]);
+  const headers=[['★','Top-5 capability badge'],['model','Model name and variant'],...BKEYS.map(k=>[k,BKEY_TIPS[k]||k])];
+  $('breakdown').innerHTML=tbl(headers, rows, list.map(topClass));
 }
+
 function renderRequired(dials){
   const used=new Set();
   for (const g of ['comprehension','coding','speed']) for (const k in (dials[g].weights||{})) if (dials[g].weights[k]>0) used.add(k);
@@ -293,10 +393,23 @@ function renderRequired(dials){
   const byRunner={};
   for (const k of used){ const e=DATA.registry[k]; if(!e) continue; byRunner[e.runner]=byRunner[e.runner]||{command:e.command,metrics:new Set(),missing:new Set()}; byRunner[e.runner].metrics.add(k); }
   for (const base in DATA.coverage){ for (const k of DATA.coverage[base].missing){ if(used.has(k)){ const e=DATA.registry[k]; if(e&&byRunner[e.runner]) byRunner[e.runner].missing.add(base); } } }
-  let h='<table><thead><tr><th>runner</th><th>command</th><th>feeds</th><th>missing for</th></tr></thead><tbody>';
-  for (const r in byRunner){ const o=byRunner[r]; const miss=[...o.missing]; h+='<tr><td>'+esc(r)+'</td><td><code>'+esc(o.command)+'</code></td><td>'+[...o.metrics].map(esc).join(', ')+'</td><td>'+(miss.length?('<span class="warn-t">'+miss.length+': '+miss.map(esc).join(', ')+'</span>'):'<span class="ok-t">complete</span>')+'</td></tr>'; }
-  $('required').innerHTML=h+'</tbody></table>';
+  $('required').innerHTML=html\`<table>
+    <thead><tr><th>runner</th><th>command</th><th>feeds</th><th>missing for</th></tr></thead>
+    <tbody>\${Object.entries(byRunner).map(([r,o])=>{
+      const miss=[...o.missing];
+      return html\`<tr>
+        <td>\${r}</td>
+        <td><code>\${o.command}</code></td>
+        <td>\${html.raw([...o.metrics].join(', '))}</td>
+        <td>\${miss.length
+          ?html\`<span class="warn-t">\${miss.length}: \${html.raw(miss.map(esc).join(', '))}</span>\`
+          :html\`<span class="ok-t">complete</span>\`}
+        </td>
+      </tr>\`;
+    })}</tbody>
+  </table>\`;
 }
+
 const RAWOF={triage:'triage',summarization:'summ',docqa:'docqa',reasoning:'reasoning',grade:'codingGrade',agentic_loop:'agenticScore',instruction_following:'ifScore',toolcalling:'toolcall',struct_output:'structScore',e2e_throughput:'e2eThroughput',cold_ttft:'ttft8kMs',decode_retention:'decodeRetentionPct',maxctx:'maxctx'};
 function exportCSV(){
   const keys=BKEYS.concat(['decode_retention','maxctx']);
@@ -305,6 +418,7 @@ function exportCSV(){
   const blob=new Blob([lines.join('\\n')],{type:'text/csv'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='dashboard-data.csv'; a.click();
 }
+
 function resetDials(){
   const d=DATA.defaultDials;
   const set=(id,v)=>{ const e=$(id); if(e){ e.value=v; const o=$(id+'_out'); if(o)o.textContent=v; } };
@@ -313,6 +427,7 @@ function resetDials(){
   for (const k in d.fleet) set('d_fleet_'+k, d.fleet[k]);
   if(d.quality_decay) set('d_quality_decay_weight', d.quality_decay.weight);
 }
+
 function wire(){
   document.querySelectorAll('.dial').forEach(inp=>{ inp.addEventListener('input', ()=>{ const o=$(inp.id+'_out'); if(o)o.textContent=inp.value; recompute(); }); });
   $('reset').addEventListener('click', ()=>{ resetDials(); recompute(); });
@@ -354,10 +469,7 @@ for (const [base, present] of okByBase) {
    coverage[base] = { present: [...present].sort(), missing };
 }
 
-// Attach capability_note/tools per model for the breakdown. caps are keyed by the
-// underlying GGUF, so strip any `--kv<quant>` variant tag — both KV variants of a
-// model share the same declared capabilities.
-// Also replace the raw internal model ID label with the human-readable config label.
+// Attach capability_note/tools per model for the breakdown.
 for (const m of models) {
    const c = caps.get(m.base_model) ?? caps.get(stripVariant(m.base_model));
    m.tools = c?.tools ?? null;
@@ -390,76 +502,86 @@ const data = {
 // the exact same code path as Node — the no-drift guarantee.
 const scoringSrc = readFileSync(join(ROOT, 'shared/scoring.mjs'), 'utf8').replace(/^(\s*)export\s+/gm, '$1');
 
-// ── Controls: generate dial inputs from DEFAULT_DIALS (mirrors getDials in the UI) ──
+// ── Controls: generate dial inputs from DEFAULT_DIALS ─────────────────────────
 function slider(id, value, { min = 0, max = 1, step = 0.01 } = {}) {
-   return `<label class="dial-row"><span class="dial-name">${id.replace(/^d_(w_)?/, '').replace(/_/g, ' ')}</span>
-     <input class="dial" type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${value}">
-     <output id="${id}_out">${value}</output></label>`;
+   const name = id.replace(/^d_(w_)?/, '').replace(/_/g, ' ');
+   return html`<label class="dial-row">
+      <span class="dial-name">${name}</span>
+      <input class="dial" type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${value}">
+      <output id="${id}_out">${value}</output>
+   </label>`;
 }
+
 function numField(id, value, step) {
-   return `<label class="dial-row"><span class="dial-name">${id.replace('d_fleet_', '').replace(/_/g, ' ')}</span>
-     <input class="dial" type="number" id="${id}" value="${value}" step="${step}"></label>`;
+   const name = id.replace('d_fleet_', '').replace(/_/g, ' ');
+   return html`<label class="dial-row">
+      <span class="dial-name">${name}</span>
+      <input class="dial" type="number" id="${id}" value="${value}" step="${step}">
+   </label>`;
 }
+
 function groupControls(name) {
    const g = DEFAULT_DIALS[name];
-   let h = `<fieldset><legend>${name}${g.strength !== undefined ? ' · contribution' : ''}</legend>`;
-   if (g.strength !== undefined) {
-      h += slider(`d_${name}_strength`, g.strength, { min: 0, max: 2, step: 0.05 });
-   }
-   for (const [k, v] of Object.entries(g.weights ?? {})) {
-      h += slider(`d_w_${name}_${k}`, v);
-   }
-   h += '</fieldset>';
-   return h;
+   return html`<fieldset>
+      <legend>${name}${g.strength !== undefined ? ' · contribution' : ''}</legend>
+      ${g.strength !== undefined ? slider(`d_${name}_strength`, g.strength, { min: 0, max: 2, step: 0.05 }) : ''}
+      ${Object.entries(g.weights ?? {}).map(([k, v]) => slider(`d_w_${name}_${k}`, v))}
+   </fieldset>`;
 }
+
 const fleetControls = (() => {
    const f = DEFAULT_DIALS.fleet;
-   let h = '<fieldset><legend>fleet</legend>';
-   h += numField('d_fleet_worker_ctx', f.worker_ctx, 1024);
-   h += numField('d_fleet_parallel_overhead', f.parallel_overhead, 64);
-   h += numField('d_fleet_reserve', f.reserve, 64);
-   h += slider('d_fleet_w_thru', f.w_thru);
-   h += '</fieldset>';
-   return h;
+   return html`<fieldset>
+      <legend>fleet</legend>
+      ${numField('d_fleet_worker_ctx', f.worker_ctx, 1024)}
+      ${numField('d_fleet_parallel_overhead', f.parallel_overhead, 64)}
+      ${numField('d_fleet_reserve', f.reserve, 64)}
+      ${slider('d_fleet_w_thru', f.w_thru)}
+   </fieldset>`;
 })();
-// Controls are split by the section they drive: capability weights above the capability
-// ranking; speed + fleet-memory dials above the fleet table.
+
 const qdWeight = DEFAULT_DIALS.quality_decay.weight;
-const qdControls = `<fieldset><legend>quality decay blend</legend>${slider('d_quality_decay_weight', qdWeight)}</fieldset>`;
-const capControls = groupControls('comprehension') + groupControls('coding') + qdControls;
-const fleetControlsHtml = groupControls('speed') + fleetControls;
+const qdControls = html`<fieldset><legend>quality decay blend</legend>${slider('d_quality_decay_weight', qdWeight)}</fieldset>`;
+const capControls = html`${groupControls('comprehension')}${groupControls('coding')}${qdControls}`;
+const fleetControlsHtml = html`${groupControls('speed')}${fleetControls}`;
 
-const html = buildHtml({ data, scoringSrc, capControls, fleetControlsHtml });
-writeFileSync(flags.output, html, 'utf8');
-console.log(`Dashboard written: ${flags.output}  (${(html.length / 1024).toFixed(1)} KB, ${models.length} model variants)`);
+const htmlOut = buildHtml({ data, scoringSrc, capControls, fleetControlsHtml });
+writeFileSync(flags.output, String(htmlOut), 'utf8');
+console.log(`Dashboard written: ${flags.output}  (${(String(htmlOut).length / 1024).toFixed(1)} KB, ${models.length} model variants)`);
 
-// ── HTML assembly ────────────────────────────────────────────────────────────────
+// ── HTML assembly ─────────────────────────────────────────────────────────────
 function buildHtml({ data, scoringSrc, capControls, fleetControlsHtml }) {
-   return [
-      '<!doctype html><html lang="en"><head><meta charset="utf-8">',
-      '<meta name="viewport" content="width=device-width, initial-scale=1">',
-      '<title>llm-bench dashboard</title>',
-      `<style>${CSS}</style></head><body>`,
-      '<header><h1>llm-bench dashboard</h1><div id="env"></div><div id="banner"></div></header>',
-      '<main>',
-      '<div class="toolbar"><button id="reset">reset dials</button><button id="csv">CSV</button>',
-      `<p class="note">Structure: <code>score = 0.8×(coding×comprehension) + 0.2×quality_decay_norm</code>; fleet = score × speed_term. Dials only re-rank — nothing is written back. Click any row to expand raw metrics.</p></div>`,
-      // Capability ranking + the weights that drive it (collapsible, above the table).
-      '<section class="panel"><h2>Capability ranking</h2>',
-      `<details class="controls" open><summary>Adjust capability weights</summary><div class="dials">${capControls}</div></details>`,
-      '<div id="cap" class="tbl"></div></section>',
-      // Fleet suitability + the speed / fleet-memory dials that drive it.
-      '<section class="panel"><h2>Fleet suitability</h2>',
-      `<details class="controls" open><summary>Adjust fleet &amp; speed weights</summary><div class="dials">${fleetControlsHtml}</div></details>`,
-      '<div id="fleet" class="tbl"></div></section>',
-      '<section class="panel"><h2>Context size</h2><div id="ctx" class="tbl"></div></section>',
-      '<section class="panel"><h2>Per-model breakdown</h2><div id="breakdown" class="tbl"></div></section>',
-      '<section class="panel"><h2>Data sources / required runs</h2><div id="required" class="tbl"></div></section>',
-      '</main>',
-      `<script type="module">`,
-      scoringSrc,
-      `\nconst DATA = ${JSON.stringify(data)};\n`,
-      UI_JS,
-      '</script></body></html>',
-   ].join('\n');
+   return html`<!doctype html><html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>llm-bench dashboard</title>
+<style>${html.raw(CSS)}</style>
+</head>
+<body>
+<header><h1>llm-bench dashboard</h1><div id="env"></div><div id="banner"></div></header>
+<main>
+<div class="toolbar">
+   <button id="reset">reset dials</button><button id="csv">CSV</button>
+   <p class="note">Structure: <code>score = 0.8×(coding×comprehension) + 0.2×quality_decay_norm</code>; fleet = score × speed_term. Dials only re-rank — nothing is written back. Click any row to expand raw metrics.</p>
+</div>
+<section class="panel"><h2>Capability ranking</h2>
+   <details class="controls" open><summary>Adjust capability weights</summary><div class="dials">${capControls}</div></details>
+   <div id="cap" class="tbl"></div>
+</section>
+<section class="panel"><h2>Fleet suitability</h2>
+   <details class="controls" open><summary>Adjust fleet &amp; speed weights</summary><div class="dials">${fleetControlsHtml}</div></details>
+   <div id="fleet" class="tbl"></div>
+</section>
+<section class="panel"><h2>Context size</h2><div id="ctx" class="tbl"></div></section>
+<section class="panel"><h2>Per-model breakdown</h2><div id="breakdown" class="tbl"></div></section>
+<section class="panel"><h2>Data sources / required runs</h2><div id="required" class="tbl"></div></section>
+</main>
+<script type="module">
+${html.raw(scoringSrc)}
+const DATA = ${html.raw(JSON.stringify(data))};
+${html.raw(UI_JS)}
+</script>
+</body>
+</html>`;
 }
