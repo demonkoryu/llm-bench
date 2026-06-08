@@ -80,6 +80,21 @@ code{color:#9fe7d6;font-size:11px}
 .dim{color:var(--dim)} .warn-t{color:var(--warn)} .ok-t{color:var(--good)}
 .stars{color:#ffd54a;letter-spacing:1px;white-space:nowrap}
 tr.top5 td{background:rgba(255,213,74,0.06)}
+tr.model-row{cursor:pointer}
+tr.model-row:hover td{background:rgba(200,182,255,0.04)}
+tr.raw-row{display:none}
+tr.raw-row.open{display:table-row}
+tr.raw-row>td{padding:8px 14px 12px;border-top:none;background:#111118}
+.raw-grid{display:flex;flex-wrap:wrap;gap:10px 20px}
+.raw-section{min-width:150px}
+.raw-title{color:var(--accent);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin:0 0 4px}
+.raw-dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:1px 8px;font-size:11px}
+.raw-dl dt{color:var(--dim);white-space:nowrap}
+.raw-dl dd{margin:0;font-variant-numeric:tabular-nums}
+.depth-pills{display:flex;flex-wrap:wrap;gap:3px}
+.depth-pill{display:flex;flex-direction:column;align-items:center;background:#1a1a22;border:1px solid #2a2a38;border-radius:4px;padding:2px 6px;min-width:34px}
+.depth-pill .dk{font-size:9px;color:var(--dim)}
+.depth-pill .dv{font-size:11px;font-variant-numeric:tabular-nums}
 @media(max-width:640px){
   header{padding:10px 12px}
   h1{font-size:16px}
@@ -108,7 +123,49 @@ function getDials(){
   }
   for (const k in d.speed.weights) d.speed.weights[k] = num('d_w_speed_'+k, d.speed.weights[k]);
   for (const k in d.fleet) d.fleet[k] = num('d_fleet_'+k, d.fleet[k]);
+  if (d.quality_decay) d.quality_decay.weight = num('d_quality_decay_weight', d.quality_decay.weight);
   return d;
+}
+function toggleRaw(id){
+  const r=document.getElementById(id); if(r) r.classList.toggle('open');
+}
+function pill(label, val){ return '<span class="depth-pill"><span class="dk">'+esc(label)+'</span><span class="dv">'+esc(val)+'</span></span>'; }
+function renderRawMetrics(m){
+  let h='<div class="raw-grid">';
+  // Speed
+  h+='<div class="raw-section"><p class="raw-title">Speed</p><dl class="raw-dl">';
+  if(m.speedTg!=null) h+='<dt>Decode</dt><dd>'+fmt(m.speedTg)+' tok/s</dd>';
+  if(m.prefill4k!=null) h+='<dt>Prefill @4k</dt><dd>'+fmt(m.prefill4k,0)+' tok/s</dd>';
+  if(m.prefill12k!=null) h+='<dt>Prefill @12k</dt><dd>'+fmt(m.prefill12k,0)+' tok/s</dd>';
+  if(m.decodeRetentionPct!=null) h+='<dt>Decay@'+(m.decodeRefDepth!=null?Math.round(m.decodeRefDepth/1024)+'k':'?')+'</dt><dd>'+m.decodeRetentionPct+'% · '+(m.decodeRef!=null?fmt(m.decodeRef):'–')+' tok/s</dd>';
+  h+='</dl></div>';
+  // Context
+  h+='<div class="raw-section"><p class="raw-title">Context</p><dl class="raw-dl">';
+  if(m.maxctx) h+='<dt>Max ctx</dt><dd>'+m.maxctx.toLocaleString()+' tok</dd>';
+  if(m.ttft8kMs!=null) h+='<dt>TTFT @8k</dt><dd>'+(m.ttft8kMs/1000).toFixed(1)+' s</dd>';
+  if(m.prefixCache&&m.prefixCache.speedup!=null) h+='<dt>Cache speedup</dt><dd>'+fmt(m.prefixCache.speedup,0)+'×</dd>';
+  if(m.pargenCurve&&m.pargenCurve.length) h+='<dt>Parallel gen</dt><dd>'+m.pargenCurve.map(p=>fmt(p.tps,0)+'@K'+p.conc).join(' · ')+' tok/s</dd>';
+  h+='</dl></div>';
+  // Memory
+  h+='<div class="raw-section"><p class="raw-title">Memory</p><dl class="raw-dl">';
+  if(m.kvPerTokMiB!=null) h+='<dt>KV/tok</dt><dd>'+(m.kvPerTokMiB*1024).toFixed(1)+' KiB</dd>';
+  if(m.maxctxVram!=null) h+='<dt>VRAM @max ctx</dt><dd>'+Math.round(m.maxctxVram)+' MiB</dd>';
+  if(m.powerEff!=null) h+='<dt>Power</dt><dd>'+fmt(m.powerEff,0)+' W</dd>';
+  h+='</dl></div>';
+  // Quality at depth
+  if(m.qualityCurve&&m.qualityCurve.length){
+    h+='<div class="raw-section"><p class="raw-title">Quality at depth</p><div class="depth-pills">';
+    for(const {depth,acc} of m.qualityCurve) h+=pill(Math.round(depth/1024)+'k', Math.round(acc)+'%');
+    h+='</div></div>';
+  }
+  // TTFT curve
+  if(m.ttftCurve&&m.ttftCurve.length>1){
+    h+='<div class="raw-section"><p class="raw-title">TTFT</p><div class="depth-pills">';
+    for(const {depth,ms} of m.ttftCurve) h+=pill(Math.round(depth/1024)+'k', (ms/1000).toFixed(1)+'s');
+    h+='</div></div>';
+  }
+  h+='</div>';
+  return h;
 }
 function table(headers, rows, rowClasses){
   let h='<table><thead><tr>';
@@ -138,8 +195,22 @@ function recompute(){
   renderCap(ranking); renderFleet(fleetRes); renderCtx(); renderBreakdown(); renderRequired(dials);
 }
 function renderCap(ranking){
-  const rows=ranking.map((m,i)=>[i+1, stars(i+1), esc(m.label), fmt(m.score), pct(m.comprehension), pct(m.coding), pct(m.codingCompetence)]);
-  $('cap').innerHTML=table(['#','★','model','capability','comprehension','coding','competence'], rows, ranking.map(topClass));
+  const openIds=new Set([...document.querySelectorAll('.raw-row.open')].map(r=>r.id));
+  let h='<table><thead><tr>';
+  for(const x of ['#','★','model','score','compr.','coding','competence','quality↓']) h+='<th>'+esc(x)+'</th>';
+  h+='</tr></thead><tbody>';
+  for(const [i,m] of ranking.entries()){
+    const rid='raw_'+slugify(m.model+'_'+m.think);
+    const cls=[topClass(m),'model-row'].filter(Boolean).join(' ');
+    h+='<tr class="'+cls+'" onclick="toggleRaw(''+rid+'')">';
+    h+='<td>'+(i+1)+'</td><td>'+stars(i+1)+'</td><td>'+esc(m.label)+'</td>';
+    h+='<td>'+fmt(m.score)+'</td><td>'+pct(m.comprehension)+'</td><td>'+pct(m.coding)+'</td><td>'+pct(m.codingCompetence)+'</td>';
+    h+='<td>'+(m.qualityMean!=null?fmt(m.qualityMean,1)+'%':'<span class="dim">–</span>')+'</td>';
+    h+='</tr>';
+    h+='<tr class="raw-row'+(openIds.has(rid)?' open':'')+'" id="'+rid+'"><td colspan="8">'+renderRawMetrics(m)+'</td></tr>';
+  }
+  h+='</tbody></table>';
+  $('cap').innerHTML=h;
 }
 function renderFleet(res){
   // Ranked by the blended fleet_suitability score: capability^w_cap × ctx_norm^w_ctx ×
@@ -194,6 +265,7 @@ function resetDials(){
   for (const g of ['comprehension','coding']){ if(d[g].strength!==undefined) set('d_'+g+'_strength', d[g].strength); for(const k in d[g].weights) set('d_w_'+g+'_'+k, d[g].weights[k]); }
   for (const k in d.speed.weights) set('d_w_speed_'+k, d.speed.weights[k]);
   for (const k in d.fleet) set('d_fleet_'+k, d.fleet[k]);
+  if(d.quality_decay) set('d_quality_decay_weight', d.quality_decay.weight);
 }
 function wire(){
   document.querySelectorAll('.dial').forEach(inp=>{ inp.addEventListener('input', ()=>{ const o=$(inp.id+'_out'); if(o)o.textContent=inp.value; recompute(); }); });
@@ -300,7 +372,9 @@ const fleetControls = (() => {
 })();
 // Controls are split by the section they drive: capability weights above the capability
 // ranking; speed + fleet-memory dials above the fleet table.
-const capControls = groupControls('comprehension') + groupControls('coding');
+const qdWeight = DEFAULT_DIALS.quality_decay.weight;
+const qdControls = `<fieldset><legend>quality decay blend</legend>${slider('d_quality_decay_weight', qdWeight)}</fieldset>`;
+const capControls = groupControls('comprehension') + groupControls('coding') + qdControls;
 const fleetControlsHtml = groupControls('speed') + fleetControls;
 
 const html = buildHtml({ data, scoringSrc, capControls, fleetControlsHtml });
@@ -317,7 +391,7 @@ function buildHtml({ data, scoringSrc, capControls, fleetControlsHtml }) {
       '<header><h1>llm-bench dashboard</h1><div id="env"></div><div id="banner"></div></header>',
       '<main>',
       '<div class="toolbar"><button id="reset">reset dials</button><button id="csv">CSV</button>',
-      `<p class="note">Structure is fixed: <code>capability = coding × comprehension</code>; fleet = capability × speed_term. Dials only re-rank — nothing is written back.</p></div>`,
+      `<p class="note">Structure: <code>score = 0.8×(coding×comprehension) + 0.2×quality_decay_norm</code>; fleet = score × speed_term. Dials only re-rank — nothing is written back. Click any row to expand raw metrics.</p></div>`,
       // Capability ranking + the weights that drive it (collapsible, above the table).
       '<section class="panel"><h2>Capability ranking</h2>',
       `<details class="controls" open><summary>Adjust capability weights</summary><div class="dials">${capControls}</div></details>`,

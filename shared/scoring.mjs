@@ -70,15 +70,23 @@ export const DEFAULT_DIALS = {
       w_slots: 1, // slot-count exponent — "several of them" parallel capacity
       w_thru: 0.5, // measured-throughput exponent (pargen aggregate); modulates without overtaking capability (w_cap=2)
    },
+   quality_decay: {
+      // Additive blend into capability: final = (1−w)×capability_raw + w×qd_norm.
+      // qd_norm is fleet min-max of mean accuracy across all tested depths; missing = fleet mean (neutral).
+      // w=0.2 → worst-to-best spread of 20 percentage points in the final score.
+      weight: 0.2,
+   },
 };
 
 // Self-describing scoring shape for report.json + the chart subtitle.
 export const SCORING = {
-   formula: 'capability = coding × comprehension   (fleet: see scoring.fleet)',
+   formula: 'capability = 0.8×(coding×comprehension) + 0.2×qd_norm   (fleet: see scoring.fleet)',
    groups: {
       comprehension: 'additive: triage, summarization, docqa, reasoning',
       coding: 'multiplicative: gate(toolcalling) × gate(struct_output) × gate(instruction_following) × gate(agentic_loop) × grade',
       speed: 'additive (display): e2e_throughput, cold_ttft, warm_ttft, decode_retention',
+      quality_decay:
+         'additive blend: (1−w)×capability_raw + w×qd_norm; qd_norm=fleet min-max of mean accuracy@depth; missing=fleet mean (neutral)',
    },
    fleet: 'fleet_suitability = capability^w_cap × ctx_norm^w_ctx × slots_norm^w_slots × throughput^w_thru (geometric blend; capability dominates, context/slots modulate; ctx clamped at ctx_tier)',
    default_dials: DEFAULT_DIALS,
@@ -360,6 +368,7 @@ export function computeMetrics(rows) {
          const qualityBase = qMap?.get(0) ?? null;
          const qRef = [...qualityCurve].filter((x) => x.depth > 0 && x.depth <= 32768).pop() ?? null;
          const qualityRetentionPct = qualityBase && qRef?.acc != null ? Math.min(100, Math.round((qRef.acc / qualityBase) * 100)) : null;
+         const qualityMean = qualityCurve.length ? qualityCurve.reduce((sum, pt) => sum + pt.acc, 0) / qualityCurve.length : null;
          const tMap = ttftByModel.get(base);
          const ttftCurve = tMap ? [...tMap.entries()].map(([depth, ms]) => ({ depth, ms })).sort((a, b) => a.depth - b.depth) : [];
          const ttftRefPt = [...ttftCurve].filter((x) => x.depth > 0 && x.depth <= 32768).pop() ?? null;
@@ -409,6 +418,7 @@ export function computeMetrics(rows) {
             pargenSpeedup,
             qualityCurve,
             qualityBase,
+            qualityMean,
             qualityRetentionPct,
             ttftCurve,
             ttftRefMs,
@@ -490,6 +500,21 @@ export function computeMetrics(rows) {
       m.codingGradeNorm = m.norm.grade;
    }
 
+   // Quality-decay fleet normalization (second pass — needs all qualityMean values first).
+   // qd_norm = (qualityMean − fleet_min) / (fleet_max − fleet_min); missing models get
+   // fleet mean (neutral: neither penalised nor boosted relative to the measured fleet).
+   const qdMeans = models.map((m) => m.qualityMean).filter((v) => v != null && Number.isFinite(v));
+   if (qdMeans.length) {
+      const qdMin = Math.min(...qdMeans);
+      const qdMax = Math.max(...qdMeans);
+      const qdMeanVal = qdMeans.reduce((a, b) => a + b, 0) / qdMeans.length;
+      const qdRange = qdMax - qdMin || 1; // guard: all models identical → everyone gets 0 spread
+      const neutralNorm = (qdMeanVal - qdMin) / qdRange;
+      for (const m of models) {
+         m.norm.quality_decay = m.qualityMean != null ? (m.qualityMean - qdMin) / qdRange : neutralNorm;
+      }
+   }
+
    return { models, denom };
 }
 
@@ -528,6 +553,7 @@ const dialsOrDefault = (dials) => ({
    coding: { ...DEFAULT_DIALS.coding, ...(dials?.coding ?? {}) },
    speed: { ...DEFAULT_DIALS.speed, ...(dials?.speed ?? {}) },
    fleet: { ...DEFAULT_DIALS.fleet, ...(dials?.fleet ?? {}) },
+   quality_decay: { ...DEFAULT_DIALS.quality_decay, ...(dials?.quality_decay ?? {}) },
 });
 
 /**
@@ -544,7 +570,12 @@ export function scoreGroups(models, dials = DEFAULT_DIALS) {
          (m.norm.toolcalling ?? 0) * (m.norm.struct_output ?? 0) * (m.norm.instruction_following ?? 0) * (m.norm.agentic_loop ?? 0);
       const coding = competence == null ? 0 : gate * competence;
       const speed = additive(m.norm, d.speed.weights);
-      const capability = comp ** (d.comprehension.strength ?? 1) * coding ** (d.coding.strength ?? 1);
+      const capabilityRaw = comp ** (d.comprehension.strength ?? 1) * coding ** (d.coding.strength ?? 1);
+      // Quality-decay additive blend: final = (1−w)×raw + w×qd_norm.
+      // qd_norm is null only when the entire fleet has no quality-decay data; fall back to raw.
+      const wQd = d.quality_decay?.weight ?? 0.2;
+      const qdNorm = m.norm.quality_decay;
+      const capability = qdNorm != null ? (1 - wQd) * capabilityRaw + wQd * qdNorm : capabilityRaw;
       m.comprehension = comp;
       m.coding = coding;
       m.codingCompetence = competence;
