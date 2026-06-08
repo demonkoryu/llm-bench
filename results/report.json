@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-08T16:35:27.851Z",
+  "generated": "2026-06-08T17:50:02.548Z",
   "sources": [
     "rose-rx7900xt-vulkan-20260608-132845 (suite/complete)",
     "rose-rx7900xt-vulkan-20260608-135655 (suite/complete)",
@@ -17,7 +17,13 @@
     "rose-rx7900xt-vulkan-20260608-174911-kvprobe (kvprobe/complete)",
     "rose-rx7900xt-vulkan-20260608-175223-parallelgen (parallel-gen/complete)",
     "rose-rx7900xt-vulkan-20260608-183238-kvprobe (kvprobe/complete)",
-    "rose-rx7900xt-vulkan-20260608-183443-kvprobe (kvprobe/complete)"
+    "rose-rx7900xt-vulkan-20260608-183443-kvprobe (kvprobe/complete)",
+    "rose-rx7900xt-vulkan-20260608-184452-qualitydecay (quality-decay/complete)",
+    "rose-rx7900xt-vulkan-20260608-185607-throughputttft (throughput-ttft/complete)",
+    "rose-rx7900xt-vulkan-20260608-190046-qualitydecay (quality-decay/complete)",
+    "rose-rx7900xt-vulkan-20260608-192702-throughputttft (throughput-ttft/complete)",
+    "rose-rx7900xt-vulkan-20260608-194111-qualitydecay (quality-decay/complete)",
+    "rose-rx7900xt-vulkan-20260608-194723-throughputttft (throughput-ttft/complete)"
   ],
   "environment": {
     "host": "rose",
@@ -44,6 +50,108 @@
   "provenance": {
     "consistent": true,
     "environments": [
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
       {
         "runner": "llama.cpp",
         "backend": "vulkan",
@@ -391,11 +499,11 @@
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi [no_think]",
       "think": "no_think",
       "capability": {
-        "score": 0.5675657809841369,
+        "score": 0.5010191623366776,
         "comprehension": 0.8378333333333332,
         "coding": 0.7473131803025711,
         "coding_competence": 0.9690264267408857,
-        "speed_group": 0
+        "speed_group": 0.6788995851217258
       },
       "maxctx": 102400,
       "maxctx_shared_from": null,
@@ -420,16 +528,29 @@
         "12k": 1248.0344522968198
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 1074.8666666666668,
+        "ref": 907.5,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 916.2
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1400.9
+          },
+          {
+            "depth": 32768,
+            "tok_s": 907.5
+          }
+        ]
       },
       "performance": {
-        "speed_group": 0,
-        "throughput_norm": null,
-        "latency_norm": null,
+        "speed_group": 0.6788995851217258,
+        "throughput_norm": 0.8310610551274453,
+        "latency_norm": 0.7699448068238836,
         "warm_latency_norm": null,
-        "ttft_8k_ms": null,
+        "ttft_8k_ms": 3986,
         "warm_ttft_ms": null
       },
       "vram_at_maxctx_mib": {
@@ -466,13 +587,63 @@
         ]
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 66.7,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 66.7
+          },
+          {
+            "depth": 16384,
+            "acc": 66.7
+          },
+          {
+            "depth": 32768,
+            "acc": 66.7
+          },
+          {
+            "depth": 65536,
+            "acc": 66.7
+          },
+          {
+            "depth": 98304,
+            "acc": 66.7
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 31618,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 689
+          },
+          {
+            "depth": 2048,
+            "ms": 846
+          },
+          {
+            "depth": 8192,
+            "ms": 3986
+          },
+          {
+            "depth": 16384,
+            "ms": 8363
+          },
+          {
+            "depth": 32768,
+            "ms": 31618
+          },
+          {
+            "depth": 65536,
+            "ms": 90286
+          },
+          {
+            "depth": 98304,
+            "ms": 193713
+          }
+        ]
       },
       "struct_output_pct": 100,
       "instruction_following_pct": 96.4,
@@ -489,7 +660,7 @@
         "instruction_following_pct": 96.4
       },
       "power_eff_tok_s_per_w": 0.432,
-      "weighted_score": 56.8
+      "weighted_score": 50.1
     },
     {
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi",
@@ -497,11 +668,11 @@
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi [no_think]",
       "think": "no_think",
       "capability": {
-        "score": 0.5656444194704122,
+        "score": 0.49909780082295296,
         "comprehension": 0.8471222222222221,
         "coding": 0.7362835900686159,
         "coding_competence": 0.9547245721844084,
-        "speed_group": 0
+        "speed_group": 0.6810901114842933
       },
       "maxctx": 102400,
       "maxctx_shared_from": null,
@@ -526,16 +697,29 @@
         "12k": 1209.1303087203844
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 1078.5666666666668,
+        "ref": 916.4,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 908
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1411.3
+          },
+          {
+            "depth": 32768,
+            "tok_s": 916.4
+          }
+        ]
       },
       "performance": {
-        "speed_group": 0,
-        "throughput_norm": null,
-        "latency_norm": null,
+        "speed_group": 0.6810901114842933,
+        "throughput_norm": 0.8339218061390172,
+        "latency_norm": 0.772269753397081,
         "warm_latency_norm": null,
-        "ttft_8k_ms": null,
+        "ttft_8k_ms": 3974,
         "warm_ttft_ms": null
       },
       "vram_at_maxctx_mib": {
@@ -572,13 +756,63 @@
         ]
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 66.7,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 66.7
+          },
+          {
+            "depth": 16384,
+            "acc": 66.7
+          },
+          {
+            "depth": 32768,
+            "acc": 66.7
+          },
+          {
+            "depth": 65536,
+            "acc": 66.7
+          },
+          {
+            "depth": 98304,
+            "acc": 66.7
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 31370,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 666
+          },
+          {
+            "depth": 2048,
+            "ms": 847
+          },
+          {
+            "depth": 8192,
+            "ms": 3974
+          },
+          {
+            "depth": 16384,
+            "ms": 9132
+          },
+          {
+            "depth": 32768,
+            "ms": 31370
+          },
+          {
+            "depth": 65536,
+            "ms": 92521
+          },
+          {
+            "depth": 98304,
+            "ms": 197067
+          }
+        ]
       },
       "struct_output_pct": 100,
       "instruction_following_pct": 96.4,
@@ -595,7 +829,7 @@
         "instruction_following_pct": 96.4
       },
       "power_eff_tok_s_per_w": 0.46,
-      "weighted_score": 56.6
+      "weighted_score": 49.9
     },
     {
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi",
@@ -607,7 +841,7 @@
         "comprehension": 0.8749444444444443,
         "coding": 0.9491504312601615,
         "coding_competence": 0.98459588304996,
-        "speed_group": 0.8289410412949514
+        "speed_group": 0.8140646231070454
       },
       "maxctx": 102400,
       "maxctx_shared_from": null,
@@ -650,9 +884,9 @@
         ]
       },
       "performance": {
-        "speed_group": 0.8289410412949514,
-        "throughput_norm": 0.7226333519004801,
-        "latency_norm": 0.9448484848484848,
+        "speed_group": 0.8140646231070454,
+        "throughput_norm": 0.7021468518852607,
+        "latency_norm": 0.93,
         "warm_latency_norm": 0.7647058823529411,
         "ttft_8k_ms": 3300,
         "warm_ttft_ms": 17
@@ -760,7 +994,7 @@
         "comprehension": 0.8926888888888889,
         "coding": 0.9445547686626803,
         "coding_competence": 0.979828598197801,
-        "speed_group": 0.9417744821488603
+        "speed_group": 0.9243373155313214
       },
       "maxctx": 131072,
       "maxctx_shared_from": null,
@@ -803,9 +1037,9 @@
         ]
       },
       "performance": {
-        "speed_group": 0.9417744821488603,
-        "throughput_norm": 0.9260231824089546,
-        "latency_norm": 0.9808115759672853,
+        "speed_group": 0.9243373155313214,
+        "throughput_norm": 0.8997706244684416,
+        "latency_norm": 0.9653979238754326,
         "warm_latency_norm": 0.8666666666666667,
         "ttft_8k_ms": 3179,
         "warm_ttft_ms": 15
@@ -909,11 +1143,11 @@
       "label": "gemma-4-26B_q4_0-it--kvq5_0--nothi [no_think]",
       "think": "no_think",
       "capability": {
-        "score": 0.7001828859066568,
+        "score": 0.8002429099162607,
         "comprehension": 0.8915666666666666,
         "coding": 0.9816748877070187,
         "coding_competence": 0.9816748877070187,
-        "speed_group": 0.9837010016432254
+        "speed_group": 0.965679305174506
       },
       "maxctx": 102400,
       "maxctx_shared_from": null,
@@ -956,9 +1190,9 @@
         ]
       },
       "performance": {
-        "speed_group": 0.9837010016432254,
-        "throughput_norm": 0.9735020291238959,
-        "latency_norm": 0.987333755541482,
+        "speed_group": 0.965679305174506,
+        "throughput_norm": 0.9459034560964925,
+        "latency_norm": 0.9718176060797974,
         "warm_latency_norm": 1,
         "ttft_8k_ms": 3158,
         "warm_ttft_ms": 13
@@ -1054,7 +1288,7 @@
         "instruction_following_pct": 100
       },
       "power_eff_tok_s_per_w": 0.416,
-      "weighted_score": 70
+      "weighted_score": 80
     },
     {
       "model": "gemma-4-26B_q4_0-it--kvq5_1--nothi",
@@ -1062,11 +1296,11 @@
       "label": "gemma-4-26B_q4_0-it--kvq5_1--nothi [no_think]",
       "think": "no_think",
       "capability": {
-        "score": 0.6847847329310076,
+        "score": 0.7848447569406114,
         "comprehension": 0.8739222222222223,
         "coding": 0.9794703629198931,
         "coding_competence": 0.9794703629198931,
-        "speed_group": 0.9956224135268498
+        "speed_group": 0.977332939438046
       },
       "maxctx": 131072,
       "maxctx_shared_from": null,
@@ -1109,9 +1343,9 @@
         ]
       },
       "performance": {
-        "speed_group": 0.9956224135268498,
-        "throughput_norm": 0.9894167263467811,
-        "latency_norm": 0.9996793844180827,
+        "speed_group": 0.977332939438046,
+        "throughput_norm": 0.9613669750779619,
+        "latency_norm": 0.983969220904136,
         "warm_latency_norm": 1,
         "ttft_8k_ms": 3119,
         "warm_ttft_ms": 13
@@ -1207,7 +1441,7 @@
         "instruction_following_pct": 100
       },
       "power_eff_tok_s_per_w": 0.418,
-      "weighted_score": 68.5
+      "weighted_score": 78.5
     },
     {
       "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi",
@@ -1215,11 +1449,11 @@
       "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi [no_think]",
       "think": "no_think",
       "capability": {
-        "score": 0.6767863388048414,
+        "score": 0.7768463628144453,
         "comprehension": 0.8509777777777778,
         "coding": 0.9941304527542781,
         "coding_competence": 0.9941304527542781,
-        "speed_group": 0.9875869953247406
+        "speed_group": 0.9694569098986009
       },
       "maxctx": 131072,
       "maxctx_shared_from": null,
@@ -1262,9 +1496,9 @@
         ]
       },
       "performance": {
-        "speed_group": 0.9875869953247406,
-        "throughput_norm": 0.9828651759900268,
-        "latency_norm": 0.9876464998416218,
+        "speed_group": 0.9694569098986009,
+        "throughput_norm": 0.9550011597639237,
+        "latency_norm": 0.9721254355400697,
         "warm_latency_norm": 1,
         "ttft_8k_ms": 3157,
         "warm_ttft_ms": 13
@@ -1360,7 +1594,7 @@
         "instruction_following_pct": 100
       },
       "power_eff_tok_s_per_w": 0.433,
-      "weighted_score": 67.7
+      "weighted_score": 77.7
     },
     {
       "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi",
@@ -1368,11 +1602,11 @@
       "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi [no_think]",
       "think": "no_think",
       "capability": {
-        "score": 0.6902814871969163,
+        "score": 0.7903415112065202,
         "comprehension": 0.8724444444444446,
         "coding": 0.9890049326242112,
         "coding_competence": 0.9890049326242112,
-        "speed_group": 1
+        "speed_group": 0.9815882451565868
       },
       "maxctx": 131072,
       "maxctx_shared_from": null,
@@ -1415,9 +1649,9 @@
         ]
       },
       "performance": {
-        "speed_group": 1,
-        "throughput_norm": 1,
-        "latency_norm": 1,
+        "speed_group": 0.9815882451565868,
+        "throughput_norm": 0.9716502152006393,
+        "latency_norm": 0.9842847979474022,
         "warm_latency_norm": 1,
         "ttft_8k_ms": 3118,
         "warm_ttft_ms": 13
@@ -1513,7 +1747,7 @@
         "instruction_following_pct": 100
       },
       "power_eff_tok_s_per_w": 0.429,
-      "weighted_score": 69
+      "weighted_score": 79
     },
     {
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
@@ -1521,11 +1755,11 @@
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
       "think": "no_think",
       "capability": {
-        "score": 0.5942289297489234,
+        "score": 0.5276823111014641,
         "comprehension": 0.8906888888888889,
         "coding": 0.7403851525255588,
         "coding_competence": 0.960042988233349,
-        "speed_group": 0
+        "speed_group": 0.7503219701917725
       },
       "maxctx": 102400,
       "maxctx_shared_from": null,
@@ -1550,16 +1784,29 @@
         "12k": 1302.3297126652042
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 1151.7,
+        "ref": 980.7,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 938.1
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1536.3
+          },
+          {
+            "depth": 32768,
+            "tok_s": 980.7
+          }
+        ]
       },
       "performance": {
-        "speed_group": 0,
-        "throughput_norm": null,
-        "latency_norm": null,
+        "speed_group": 0.7503219701917725,
+        "throughput_norm": 0.8904667405479242,
+        "latency_norm": 0.8758561643835616,
         "warm_latency_norm": null,
-        "ttft_8k_ms": null,
+        "ttft_8k_ms": 3504,
         "warm_ttft_ms": null
       },
       "vram_at_maxctx_mib": {
@@ -1596,13 +1843,63 @@
         ]
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 66.7,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 66.7
+          },
+          {
+            "depth": 16384,
+            "acc": 66.7
+          },
+          {
+            "depth": 32768,
+            "acc": 66.7
+          },
+          {
+            "depth": 65536,
+            "acc": 66.7
+          },
+          {
+            "depth": 98304,
+            "acc": 66.7
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 29186,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 661
+          },
+          {
+            "depth": 2048,
+            "ms": 737
+          },
+          {
+            "depth": 8192,
+            "ms": 3504
+          },
+          {
+            "depth": 16384,
+            "ms": 8268
+          },
+          {
+            "depth": 32768,
+            "ms": 29186
+          },
+          {
+            "depth": 65536,
+            "ms": 88436
+          },
+          {
+            "depth": 98304,
+            "ms": 189265
+          }
+        ]
       },
       "struct_output_pct": 100,
       "instruction_following_pct": 96.4,
@@ -1619,7 +1916,7 @@
         "instruction_following_pct": 96.4
       },
       "power_eff_tok_s_per_w": 0.375,
-      "weighted_score": 59.4
+      "weighted_score": 52.8
     },
     {
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
@@ -1627,11 +1924,11 @@
       "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
       "think": "no_think",
       "capability": {
-        "score": 0.7464599826699861,
+        "score": 0.859745296795636,
         "comprehension": 0.8574444444444445,
         "coding": 0.9910165614924633,
         "coding_competence": 0.9910165614924633,
-        "speed_group": 0
+        "speed_group": 0.8055120466471049
       },
       "maxctx": 102400,
       "maxctx_shared_from": null,
@@ -1656,16 +1953,29 @@
         "12k": 1229.761450987866
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 1187.8333333333333,
+        "ref": 1576,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 633.8
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1353.7
+          },
+          {
+            "depth": 32768,
+            "tok_s": 1576
+          }
+        ]
       },
       "performance": {
-        "speed_group": 0,
-        "throughput_norm": null,
-        "latency_norm": null,
+        "speed_group": 0.8055120466471049,
+        "throughput_norm": 0.9184041648411123,
+        "latency_norm": 0.9736675126903553,
         "warm_latency_norm": null,
-        "ttft_8k_ms": null,
+        "ttft_8k_ms": 3152,
         "warm_ttft_ms": null
       },
       "vram_at_maxctx_mib": {
@@ -1702,13 +2012,63 @@
         ]
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 100,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 100
+          },
+          {
+            "depth": 16384,
+            "acc": 100
+          },
+          {
+            "depth": 32768,
+            "acc": 100
+          },
+          {
+            "depth": 65536,
+            "acc": 100
+          },
+          {
+            "depth": 98304,
+            "acc": 83.3
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 17043,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 536
+          },
+          {
+            "depth": 2048,
+            "ms": 740
+          },
+          {
+            "depth": 8192,
+            "ms": 3152
+          },
+          {
+            "depth": 16384,
+            "ms": 6410
+          },
+          {
+            "depth": 32768,
+            "ms": 17043
+          },
+          {
+            "depth": 65536,
+            "ms": 40889
+          },
+          {
+            "depth": 98304,
+            "ms": 76985
+          }
+        ]
       },
       "struct_output_pct": 100,
       "instruction_following_pct": 100,
@@ -1725,7 +2085,7 @@
         "instruction_following_pct": 100
       },
       "power_eff_tok_s_per_w": 0.302,
-      "weighted_score": 74.6
+      "weighted_score": 86
     },
     {
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi",
@@ -1733,11 +2093,11 @@
       "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi [no_think]",
       "think": "no_think",
       "capability": {
-        "score": 0.7519892622222226,
+        "score": 0.8652745763478725,
         "comprehension": 0.8886444444444443,
         "coding": 0.9640000000000001,
         "coding_competence": 1,
-        "speed_group": 0
+        "speed_group": 0.8053956508816313
       },
       "maxctx": 131072,
       "maxctx_shared_from": null,
@@ -1762,16 +2122,29 @@
         "12k": 1252.2882253942528
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 1196.8333333333333,
+        "ref": 1569.9,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 652.6
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1368
+          },
+          {
+            "depth": 32768,
+            "tok_s": 1569.9
+          }
+        ]
       },
       "performance": {
-        "speed_group": 0,
-        "throughput_norm": null,
-        "latency_norm": null,
+        "speed_group": 0.8053956508816313,
+        "throughput_norm": 0.9253627483827737,
+        "latency_norm": 0.9672234478411598,
         "warm_latency_norm": null,
-        "ttft_8k_ms": null,
+        "ttft_8k_ms": 3173,
         "warm_ttft_ms": null
       },
       "vram_at_maxctx_mib": {
@@ -1808,13 +2181,63 @@
         ]
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 100,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 100
+          },
+          {
+            "depth": 16384,
+            "acc": 100
+          },
+          {
+            "depth": 32768,
+            "acc": 100
+          },
+          {
+            "depth": 65536,
+            "acc": 100
+          },
+          {
+            "depth": 98304,
+            "acc": 83.3
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 17198,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 550
+          },
+          {
+            "depth": 2048,
+            "ms": 747
+          },
+          {
+            "depth": 8192,
+            "ms": 3173
+          },
+          {
+            "depth": 16384,
+            "ms": 6414
+          },
+          {
+            "depth": 32768,
+            "ms": 17198
+          },
+          {
+            "depth": 65536,
+            "ms": 41238
+          },
+          {
+            "depth": 98304,
+            "ms": 78245
+          }
+        ]
       },
       "struct_output_pct": 100,
       "instruction_following_pct": 96.4,
@@ -1831,7 +2254,7 @@
         "instruction_following_pct": 96.4
       },
       "power_eff_tok_s_per_w": 0.373,
-      "weighted_score": 75.2
+      "weighted_score": 86.5
     },
     {
       "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
@@ -1839,11 +2262,11 @@
       "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
       "think": "no_think",
       "capability": {
-        "score": 0.7220194990217425,
+        "score": 0.7152567939397093,
         "comprehension": 0.8348111111111112,
         "coding": 0.9812890958692716,
         "coding_competence": 0.9812890958692716,
-        "speed_group": 0
+        "speed_group": 0.8437565727506218
       },
       "maxctx": 131072,
       "maxctx_shared_from": null,
@@ -1868,16 +2291,29 @@
         "12k": 1350.5481355152722
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 1274.6,
+        "ref": 1633.1,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 721.3
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1469.4
+          },
+          {
+            "depth": 32768,
+            "tok_s": 1633.1
+          }
+        ]
       },
       "performance": {
-        "speed_group": 0,
-        "throughput_norm": null,
-        "latency_norm": null,
+        "speed_group": 0.8437565727506218,
+        "throughput_norm": 0.9854900646890544,
+        "latency_norm": 0.9990234375,
         "warm_latency_norm": null,
-        "ttft_8k_ms": null,
+        "ttft_8k_ms": 3072,
         "warm_ttft_ms": null
       },
       "vram_at_maxctx_mib": {
@@ -1914,13 +2350,63 @@
         ]
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 100,
+        "retention_pct": 83,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 100
+          },
+          {
+            "depth": 16384,
+            "acc": 83.3
+          },
+          {
+            "depth": 32768,
+            "acc": 83.3
+          },
+          {
+            "depth": 65536,
+            "acc": 66.7
+          },
+          {
+            "depth": 98304,
+            "acc": 50
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 16742,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 534
+          },
+          {
+            "depth": 2048,
+            "ms": 716
+          },
+          {
+            "depth": 8192,
+            "ms": 3072
+          },
+          {
+            "depth": 16384,
+            "ms": 6248
+          },
+          {
+            "depth": 32768,
+            "ms": 16742
+          },
+          {
+            "depth": 65536,
+            "ms": 40255
+          },
+          {
+            "depth": 98304,
+            "ms": 76084
+          }
+        ]
       },
       "struct_output_pct": 100,
       "instruction_following_pct": 100,
@@ -1937,7 +2423,7 @@
         "instruction_following_pct": 100
       },
       "power_eff_tok_s_per_w": 0.367,
-      "weighted_score": 72.2
+      "weighted_score": 71.5
     },
     {
       "model": "gemma-4-26B_q4_0-it--kvq8_0--nothi",
@@ -1945,11 +2431,11 @@
       "label": "gemma-4-26B_q4_0-it--kvq8_0--nothi [no_think]",
       "think": "no_think",
       "capability": {
-        "score": 0.7416480968521229,
+        "score": 0.7149574205816144,
         "comprehension": 0.8582000000000001,
         "coding": 0.9831353853784894,
         "coding_competence": 0.9831353853784894,
-        "speed_group": 0
+        "speed_group": 0.8393532481929751
       },
       "maxctx": 131072,
       "maxctx_shared_from": null,
@@ -1974,16 +2460,29 @@
         "12k": 1373.2047438827897
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 1282.2666666666667,
+        "ref": 1617.4,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 745.4
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1484
+          },
+          {
+            "depth": 32768,
+            "tok_s": 1617.4
+          }
+        ]
       },
       "performance": {
-        "speed_group": 0,
-        "throughput_norm": null,
-        "latency_norm": null,
+        "speed_group": 0.8393532481929751,
+        "throughput_norm": 0.9914177469652845,
+        "latency_norm": 0.983969220904136,
         "warm_latency_norm": null,
-        "ttft_8k_ms": null,
+        "ttft_8k_ms": 3119,
         "warm_ttft_ms": null
       },
       "vram_at_maxctx_mib": {
@@ -2020,13 +2519,63 @@
         ]
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 100,
+        "retention_pct": 83,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 100
+          },
+          {
+            "depth": 16384,
+            "acc": 66.7
+          },
+          {
+            "depth": 32768,
+            "acc": 83.3
+          },
+          {
+            "depth": 65536,
+            "acc": 50
+          },
+          {
+            "depth": 98304,
+            "acc": 66.7
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 16992,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 560
+          },
+          {
+            "depth": 2048,
+            "ms": 728
+          },
+          {
+            "depth": 8192,
+            "ms": 3119
+          },
+          {
+            "depth": 16384,
+            "ms": 6331
+          },
+          {
+            "depth": 32768,
+            "ms": 16992
+          },
+          {
+            "depth": 65536,
+            "ms": 40928
+          },
+          {
+            "depth": 98304,
+            "ms": 77789
+          }
+        ]
       },
       "struct_output_pct": 100,
       "instruction_following_pct": 100,
@@ -2043,7 +2592,7 @@
         "instruction_following_pct": 100
       },
       "power_eff_tok_s_per_w": 0.458,
-      "weighted_score": 74.2
+      "weighted_score": 71.5
     },
     {
       "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
@@ -2051,11 +2600,11 @@
       "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
       "think": "no_think",
       "capability": {
-        "score": 0.7423014212448834,
+        "score": 0.6955627257666919,
         "comprehension": 0.8604777777777779,
         "coding": 0.9814819917881452,
         "coding_competence": 0.9814819917881452,
-        "speed_group": 0
+        "speed_group": 0.8482371588361124
       },
       "maxctx": 131072,
       "maxctx_shared_from": null,
@@ -2080,16 +2629,29 @@
         "12k": 1367.629452740075
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 1287.6666666666665,
+        "ref": 1638.1,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 739.3
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1485.6
+          },
+          {
+            "depth": 32768,
+            "tok_s": 1638.1
+          }
+        ]
       },
       "performance": {
-        "speed_group": 0,
-        "throughput_norm": null,
-        "latency_norm": null,
+        "speed_group": 0.8482371588361124,
+        "throughput_norm": 0.9955928970902811,
+        "latency_norm": 1,
         "warm_latency_norm": null,
-        "ttft_8k_ms": null,
+        "ttft_8k_ms": 3069,
         "warm_ttft_ms": null
       },
       "vram_at_maxctx_mib": {
@@ -2126,13 +2688,63 @@
         ]
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 100,
+        "retention_pct": 83,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 100
+          },
+          {
+            "depth": 16384,
+            "acc": 50
+          },
+          {
+            "depth": 32768,
+            "acc": 83.3
+          },
+          {
+            "depth": 65536,
+            "acc": 66.7
+          },
+          {
+            "depth": 98304,
+            "acc": 50
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 16745,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 529
+          },
+          {
+            "depth": 2048,
+            "ms": 711
+          },
+          {
+            "depth": 8192,
+            "ms": 3069
+          },
+          {
+            "depth": 16384,
+            "ms": 6244
+          },
+          {
+            "depth": 32768,
+            "ms": 16745
+          },
+          {
+            "depth": 65536,
+            "ms": 40281
+          },
+          {
+            "depth": 98304,
+            "ms": 76164
+          }
+        ]
       },
       "struct_output_pct": 100,
       "instruction_following_pct": 100,
@@ -2149,7 +2761,7 @@
         "instruction_following_pct": 100
       },
       "power_eff_tok_s_per_w": 0.37,
-      "weighted_score": 74.2
+      "weighted_score": 69.6
     },
     {
       "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi",
@@ -2157,11 +2769,11 @@
       "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi [no_think]",
       "think": "no_think",
       "capability": {
-        "score": 0.749054983665084,
+        "score": 0.6823883169984171,
         "comprehension": 0.8562888888888889,
         "coding": 0.9961420816225303,
         "coding_competence": 0.9961420816225303,
-        "speed_group": 0
+        "speed_group": 0.842928159076331
       },
       "maxctx": 131072,
       "maxctx_shared_from": null,
@@ -2186,16 +2798,29 @@
         "12k": 1392.4332977588047
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 1293.3666666666666,
+        "ref": 1622.6,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 759.9
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1497.6
+          },
+          {
+            "depth": 32768,
+            "tok_s": 1622.6
+          }
+        ]
       },
       "performance": {
-        "speed_group": 0,
-        "throughput_norm": null,
-        "latency_norm": null,
+        "speed_group": 0.842928159076331,
+        "throughput_norm": 1,
+        "latency_norm": 0.9842847979474022,
         "warm_latency_norm": null,
-        "ttft_8k_ms": null,
+        "ttft_8k_ms": 3118,
         "warm_ttft_ms": null
       },
       "vram_at_maxctx_mib": {
@@ -2232,13 +2857,63 @@
         ]
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 100,
+        "retention_pct": 67,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 100
+          },
+          {
+            "depth": 16384,
+            "acc": 50
+          },
+          {
+            "depth": 32768,
+            "acc": 66.7
+          },
+          {
+            "depth": 65536,
+            "acc": 66.7
+          },
+          {
+            "depth": 98304,
+            "acc": 50
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 16997,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 549
+          },
+          {
+            "depth": 2048,
+            "ms": 731
+          },
+          {
+            "depth": 8192,
+            "ms": 3118
+          },
+          {
+            "depth": 16384,
+            "ms": 6320
+          },
+          {
+            "depth": 32768,
+            "ms": 16997
+          },
+          {
+            "depth": 65536,
+            "ms": 40936
+          },
+          {
+            "depth": 98304,
+            "ms": 77754
+          }
+        ]
       },
       "struct_output_pct": 100,
       "instruction_following_pct": 100,
@@ -2255,7 +2930,7 @@
         "instruction_following_pct": 100
       },
       "power_eff_tok_s_per_w": 0.477,
-      "weighted_score": 74.9
+      "weighted_score": 68.2
     },
     {
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
@@ -2263,11 +2938,11 @@
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi [no_think]",
       "think": "no_think",
       "capability": {
-        "score": 0.569546084854756,
+        "score": 0.5029994662072967,
         "comprehension": 0.8436888888888889,
         "coding": 0.7450605086940948,
         "coding_competence": 0.9661054313979444,
-        "speed_group": 0
+        "speed_group": 0.6735291417945215
       },
       "maxctx": 102400,
       "maxctx_shared_from": null,
@@ -2292,16 +2967,29 @@
         "12k": 1231.414893617021
       },
       "e2e_throughput_tok_s": {
-        "mean": null,
-        "ref": null,
-        "curve": []
+        "mean": 1069.7333333333333,
+        "ref": 923,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 913.8
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1372.4
+          },
+          {
+            "depth": 32768,
+            "tok_s": 923
+          }
+        ]
       },
       "performance": {
-        "speed_group": 0,
-        "throughput_norm": null,
-        "latency_norm": null,
+        "speed_group": 0.6735291417945215,
+        "throughput_norm": 0.8270920852555347,
+        "latency_norm": 0.7615384615384615,
         "warm_latency_norm": null,
-        "ttft_8k_ms": null,
+        "ttft_8k_ms": 4030,
         "warm_ttft_ms": null
       },
       "vram_at_maxctx_mib": {
@@ -2338,13 +3026,63 @@
         ]
       },
       "quality_decay": {
-        "base_acc": null,
-        "retention_pct": null,
-        "curve": []
+        "base_acc": 66.7,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 66.7
+          },
+          {
+            "depth": 16384,
+            "acc": 66.7
+          },
+          {
+            "depth": 32768,
+            "acc": 66.7
+          },
+          {
+            "depth": 65536,
+            "acc": 66.7
+          },
+          {
+            "depth": 98304,
+            "acc": 66.7
+          }
+        ]
       },
       "ttft_ms": {
-        "ref": null,
-        "curve": []
+        "ref": 31078,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 780
+          },
+          {
+            "depth": 2048,
+            "ms": 842
+          },
+          {
+            "depth": 8192,
+            "ms": 4030
+          },
+          {
+            "depth": 16384,
+            "ms": 9284
+          },
+          {
+            "depth": 32768,
+            "ms": 31078
+          },
+          {
+            "depth": 65536,
+            "ms": 98510
+          },
+          {
+            "depth": 98304,
+            "ms": 212962
+          }
+        ]
       },
       "struct_output_pct": 100,
       "instruction_following_pct": 96.4,
@@ -2361,7 +3099,7 @@
         "instruction_following_pct": 96.4
       },
       "power_eff_tok_s_per_w": 0.461,
-      "weighted_score": 57
+      "weighted_score": 50.3
     }
   ],
   "ranking": [
@@ -2374,108 +3112,108 @@
     },
     {
       "rank": 2,
+      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi [no_think]",
+      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi",
+      "think": "no_think",
+      "weighted_score": 86.5
+    },
+    {
+      "rank": 3,
       "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi [no_think]",
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi",
       "think": "no_think",
       "weighted_score": 86.4
     },
     {
-      "rank": 3,
-      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi [no_think]",
-      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi",
-      "think": "no_think",
-      "weighted_score": 75.2
-    },
-    {
       "rank": 4,
-      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi [no_think]",
-      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi",
-      "think": "no_think",
-      "weighted_score": 74.9
-    },
-    {
-      "rank": 5,
       "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
       "think": "no_think",
-      "weighted_score": 74.6
+      "weighted_score": 86
     },
     {
-      "rank": 6,
-      "label": "gemma-4-26B_q4_0-it--kvq8_0--nothi [no_think]",
-      "model": "gemma-4-26B_q4_0-it--kvq8_0--nothi",
-      "think": "no_think",
-      "weighted_score": 74.2
-    },
-    {
-      "rank": 7,
-      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
-      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
-      "think": "no_think",
-      "weighted_score": 74.2
-    },
-    {
-      "rank": 8,
-      "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
-      "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
-      "think": "no_think",
-      "weighted_score": 72.2
-    },
-    {
-      "rank": 9,
+      "rank": 5,
       "label": "gemma-4-26B_q4_0-it--kvq5_0--nothi [no_think]",
       "model": "gemma-4-26B_q4_0-it--kvq5_0--nothi",
       "think": "no_think",
-      "weighted_score": 70
+      "weighted_score": 80
     },
     {
-      "rank": 10,
+      "rank": 6,
       "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi [no_think]",
       "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi",
       "think": "no_think",
-      "weighted_score": 69
+      "weighted_score": 79
     },
     {
-      "rank": 11,
+      "rank": 7,
       "label": "gemma-4-26B_q4_0-it--kvq5_1--nothi [no_think]",
       "model": "gemma-4-26B_q4_0-it--kvq5_1--nothi",
       "think": "no_think",
-      "weighted_score": 68.5
+      "weighted_score": 78.5
     },
     {
-      "rank": 12,
+      "rank": 8,
       "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi [no_think]",
       "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi",
       "think": "no_think",
-      "weighted_score": 67.7
+      "weighted_score": 77.7
+    },
+    {
+      "rank": 9,
+      "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
+      "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+      "think": "no_think",
+      "weighted_score": 71.5
+    },
+    {
+      "rank": 10,
+      "label": "gemma-4-26B_q4_0-it--kvq8_0--nothi [no_think]",
+      "model": "gemma-4-26B_q4_0-it--kvq8_0--nothi",
+      "think": "no_think",
+      "weighted_score": 71.5
+    },
+    {
+      "rank": 11,
+      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+      "think": "no_think",
+      "weighted_score": 69.6
+    },
+    {
+      "rank": 12,
+      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi [no_think]",
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi",
+      "think": "no_think",
+      "weighted_score": 68.2
     },
     {
       "rank": 13,
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
       "think": "no_think",
-      "weighted_score": 59.4
+      "weighted_score": 52.8
     },
     {
       "rank": 14,
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi [no_think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
       "think": "no_think",
-      "weighted_score": 57
+      "weighted_score": 50.3
     },
     {
       "rank": 15,
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi [no_think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi",
       "think": "no_think",
-      "weighted_score": 56.8
+      "weighted_score": 50.1
     },
     {
       "rank": 16,
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi [no_think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi",
       "think": "no_think",
-      "weighted_score": 56.6
+      "weighted_score": 49.9
     }
   ],
   "fleet": [
@@ -2483,7 +3221,7 @@
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi",
       "think": "no_think",
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi [no_think]",
-      "capability": 0.5675657809841369,
+      "capability": 0.5010191623366776,
       "main_ctx": 102400,
       "weights_mib": 18450.3,
       "worker_ctx": 65536,
@@ -2493,8 +3231,8 @@
       "ctx_norm": 1,
       "slots_norm": 0.5,
       "capacity_norm": 0.5449982072427394,
-      "latency_norm": null,
-      "fleet_suitability": 0.1189049537626297,
+      "latency_norm": 0.7699448068238836,
+      "fleet_suitability": 0.09265656892272031,
       "needs_pargen": false,
       "reason": null
     },
@@ -2502,7 +3240,7 @@
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi",
       "think": "no_think",
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi [no_think]",
-      "capability": 0.5656444194704122,
+      "capability": 0.49909780082295296,
       "main_ctx": 102400,
       "weights_mib": 18661.3,
       "worker_ctx": 65536,
@@ -2512,8 +3250,8 @@
       "ctx_norm": 1,
       "slots_norm": 0.5,
       "capacity_norm": 0.4754392255288634,
-      "latency_norm": null,
-      "fleet_suitability": 0.11030736817777936,
+      "latency_norm": 0.772269753397081,
+      "fleet_suitability": 0.08587936443602348,
       "needs_pargen": false,
       "reason": null
     },
@@ -2531,7 +3269,7 @@
       "ctx_norm": 1,
       "slots_norm": 0.8,
       "capacity_norm": 0.5496593761204733,
-      "latency_norm": 0.9448484848484848,
+      "latency_norm": 0.93,
       "fleet_suitability": 0.4431280702668835,
       "needs_pargen": false,
       "reason": null
@@ -2550,7 +3288,7 @@
       "ctx_norm": 1,
       "slots_norm": 0.8,
       "capacity_norm": 0.5439225528863392,
-      "latency_norm": 0.9808115759672853,
+      "latency_norm": 0.9653979238754326,
       "fleet_suitability": 0.45126599959135577,
       "needs_pargen": false,
       "reason": null
@@ -2559,7 +3297,7 @@
       "model": "gemma-4-26B_q4_0-it--kvq5_0--nothi",
       "think": "no_think",
       "label": "gemma-4-26B_q4_0-it--kvq5_0--nothi [no_think]",
-      "capability": 0.7001828859066568,
+      "capability": 0.8002429099162607,
       "main_ctx": 102400,
       "weights_mib": 14099.8,
       "worker_ctx": 65536,
@@ -2569,8 +3307,8 @@
       "ctx_norm": 1,
       "slots_norm": 0.975,
       "capacity_norm": 0.976335604159197,
-      "latency_norm": 0.987333755541482,
-      "fleet_suitability": 0.47231002309424847,
+      "latency_norm": 0.9718176060797974,
+      "fleet_suitability": 0.6169469893910833,
       "needs_pargen": false,
       "reason": null
     },
@@ -2578,7 +3316,7 @@
       "model": "gemma-4-26B_q4_0-it--kvq5_1--nothi",
       "think": "no_think",
       "label": "gemma-4-26B_q4_0-it--kvq5_1--nothi [no_think]",
-      "capability": 0.6847847329310076,
+      "capability": 0.7848447569406114,
       "main_ctx": 131072,
       "weights_mib": 14168,
       "worker_ctx": 65536,
@@ -2588,8 +3326,8 @@
       "ctx_norm": 1,
       "slots_norm": 0.975,
       "capacity_norm": 0.961276443169595,
-      "latency_norm": 0.9996793844180827,
-      "fleet_suitability": 0.4482671398872916,
+      "latency_norm": 0.983969220904136,
+      "fleet_suitability": 0.5888386228106741,
       "needs_pargen": false,
       "reason": null
     },
@@ -2597,7 +3335,7 @@
       "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi",
       "think": "no_think",
       "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi [no_think]",
-      "capability": 0.6767863388048414,
+      "capability": 0.7768463628144453,
       "main_ctx": 131072,
       "weights_mib": 13988.224,
       "worker_ctx": 65536,
@@ -2607,8 +3345,8 @@
       "ctx_norm": 1,
       "slots_norm": 0.975,
       "capacity_norm": 0.9949802796701327,
-      "latency_norm": 0.9876464998416218,
-      "fleet_suitability": 0.4454664691958541,
+      "latency_norm": 0.9721254355400697,
+      "fleet_suitability": 0.5869243473866784,
       "needs_pargen": false,
       "reason": null
     },
@@ -2616,7 +3354,7 @@
       "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi",
       "think": "no_think",
       "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi [no_think]",
-      "capability": 0.6902814871969163,
+      "capability": 0.7903415112065202,
       "main_ctx": 131072,
       "weights_mib": 13987,
       "worker_ctx": 65536,
@@ -2626,8 +3364,8 @@
       "ctx_norm": 1,
       "slots_norm": 0.975,
       "capacity_norm": 0.9766941556113302,
-      "latency_norm": 1,
-      "fleet_suitability": 0.45913073103417235,
+      "latency_norm": 0.9842847979474022,
+      "fleet_suitability": 0.6018849669725026,
       "needs_pargen": false,
       "reason": null
     },
@@ -2635,7 +3373,7 @@
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
       "think": "no_think",
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
-      "capability": 0.5942289297489234,
+      "capability": 0.5276823111014641,
       "main_ctx": 102400,
       "weights_mib": 18411.8,
       "worker_ctx": 65536,
@@ -2645,8 +3383,8 @@
       "ctx_norm": 1,
       "slots_norm": 0.5,
       "capacity_norm": 0.5026891358910004,
-      "latency_norm": null,
-      "fleet_suitability": 0.12517780641594972,
+      "latency_norm": 0.8758561643835616,
+      "fleet_suitability": 0.098710835111446,
       "needs_pargen": false,
       "reason": null
     },
@@ -2654,7 +3392,7 @@
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
       "think": "no_think",
       "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
-      "capability": 0.7464599826699861,
+      "capability": 0.859745296795636,
       "main_ctx": 102400,
       "weights_mib": 16505.9,
       "worker_ctx": 65536,
@@ -2664,8 +3402,8 @@
       "ctx_norm": 1,
       "slots_norm": 0.9,
       "capacity_norm": 0.4284689852993905,
-      "latency_norm": null,
-      "fleet_suitability": 0.3282579596412123,
+      "latency_norm": 0.9736675126903553,
+      "fleet_suitability": 0.4354535368786615,
       "needs_pargen": false,
       "reason": null
     },
@@ -2673,7 +3411,7 @@
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi",
       "think": "no_think",
       "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi [no_think]",
-      "capability": 0.7519892622222226,
+      "capability": 0.8652745763478725,
       "main_ctx": 131072,
       "weights_mib": 16896,
       "worker_ctx": 65536,
@@ -2683,8 +3421,8 @@
       "ctx_norm": 1,
       "slots_norm": 0.5,
       "capacity_norm": 0.33990677662244534,
-      "latency_norm": null,
-      "fleet_suitability": 0.16484401902576545,
+      "latency_norm": 0.9672234478411598,
+      "fleet_suitability": 0.21825178415378788,
       "needs_pargen": false,
       "reason": null
     },
@@ -2692,7 +3430,7 @@
       "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
       "think": "no_think",
       "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
-      "capability": 0.7220194990217425,
+      "capability": 0.7152567939397093,
       "main_ctx": 131072,
       "weights_mib": 14352,
       "worker_ctx": 65536,
@@ -2702,8 +3440,8 @@
       "ctx_norm": 1,
       "slots_norm": 1,
       "capacity_norm": 0.7518823951237003,
-      "latency_norm": null,
-      "fleet_suitability": 0.4520357789289813,
+      "latency_norm": 0.9990234375,
+      "fleet_suitability": 0.44360756270533835,
       "needs_pargen": false,
       "reason": null
     },
@@ -2711,7 +3449,7 @@
       "model": "gemma-4-26B_q4_0-it--kvq8_0--nothi",
       "think": "no_think",
       "label": "gemma-4-26B_q4_0-it--kvq8_0--nothi [no_think]",
-      "capability": 0.7416480968521229,
+      "capability": 0.7149574205816144,
       "main_ctx": 131072,
       "weights_mib": 14504,
       "worker_ctx": 65536,
@@ -2721,8 +3459,8 @@
       "ctx_norm": 1,
       "slots_norm": 0.95,
       "capacity_norm": 0.9870921477231984,
-      "latency_norm": null,
-      "fleet_suitability": 0.5191564177572102,
+      "latency_norm": 0.983969220904136,
+      "fleet_suitability": 0.48246166360842574,
       "needs_pargen": false,
       "reason": null
     },
@@ -2730,7 +3468,7 @@
       "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
       "think": "no_think",
       "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
-      "capability": 0.7423014212448834,
+      "capability": 0.6955627257666919,
       "main_ctx": 131072,
       "weights_mib": 14170,
       "worker_ctx": 65536,
@@ -2740,8 +3478,8 @@
       "ctx_norm": 1,
       "slots_norm": 1,
       "capacity_norm": 0.7590534241663679,
-      "latency_norm": null,
-      "fleet_suitability": 0.48006136540074296,
+      "latency_norm": 1,
+      "fleet_suitability": 0.42151086470705545,
       "needs_pargen": false,
       "reason": null
     },
@@ -2749,7 +3487,7 @@
       "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi",
       "think": "no_think",
       "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi [no_think]",
-      "capability": 0.749054983665084,
+      "capability": 0.6823883169984171,
       "main_ctx": 131072,
       "weights_mib": 14322,
       "worker_ctx": 65536,
@@ -2759,8 +3497,8 @@
       "ctx_norm": 1,
       "slots_norm": 0.95,
       "capacity_norm": 1,
-      "latency_norm": null,
-      "fleet_suitability": 0.5330292001258244,
+      "latency_norm": 0.9842847979474022,
+      "fleet_suitability": 0.4423711244171355,
       "needs_pargen": false,
       "reason": null
     },
@@ -2768,7 +3506,7 @@
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
       "think": "no_think",
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi [no_think]",
-      "capability": 0.569546084854756,
+      "capability": 0.5029994662072967,
       "main_ctx": 102400,
       "weights_mib": 18414.7,
       "worker_ctx": 65536,
@@ -2778,8 +3516,8 @@
       "ctx_norm": 1,
       "slots_norm": 0.5,
       "capacity_norm": 0.4596629616349946,
-      "latency_norm": null,
-      "fleet_suitability": 0.10996323336926546,
+      "latency_norm": 0.7615384615384615,
+      "fleet_suitability": 0.08576790622069384,
       "needs_pargen": false,
       "reason": null
     }
@@ -2787,54 +3525,46 @@
   "fleet_ranking": [
     {
       "rank": 1,
-      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi [no_think]",
-      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi",
-      "think": "no_think",
-      "fleet_suitability": 0.5330292001258244,
-      "slots": 4
-    },
-    {
-      "rank": 2,
-      "label": "gemma-4-26B_q4_0-it--kvq8_0--nothi [no_think]",
-      "model": "gemma-4-26B_q4_0-it--kvq8_0--nothi",
-      "think": "no_think",
-      "fleet_suitability": 0.5191564177572102,
-      "slots": 4
-    },
-    {
-      "rank": 3,
-      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
-      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
-      "think": "no_think",
-      "fleet_suitability": 0.48006136540074296,
-      "slots": 7
-    },
-    {
-      "rank": 4,
       "label": "gemma-4-26B_q4_0-it--kvq5_0--nothi [no_think]",
       "model": "gemma-4-26B_q4_0-it--kvq5_0--nothi",
       "think": "no_think",
-      "fleet_suitability": 0.47231002309424847,
+      "fleet_suitability": 0.6169469893910833,
+      "slots": 5
+    },
+    {
+      "rank": 2,
+      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi [no_think]",
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi",
+      "think": "no_think",
+      "fleet_suitability": 0.6018849669725026,
+      "slots": 5
+    },
+    {
+      "rank": 3,
+      "label": "gemma-4-26B_q4_0-it--kvq5_1--nothi [no_think]",
+      "model": "gemma-4-26B_q4_0-it--kvq5_1--nothi",
+      "think": "no_think",
+      "fleet_suitability": 0.5888386228106741,
+      "slots": 5
+    },
+    {
+      "rank": 4,
+      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi [no_think]",
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi",
+      "think": "no_think",
+      "fleet_suitability": 0.5869243473866784,
       "slots": 5
     },
     {
       "rank": 5,
-      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi [no_think]",
-      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi",
+      "label": "gemma-4-26B_q4_0-it--kvq8_0--nothi [no_think]",
+      "model": "gemma-4-26B_q4_0-it--kvq8_0--nothi",
       "think": "no_think",
-      "fleet_suitability": 0.45913073103417235,
-      "slots": 5
+      "fleet_suitability": 0.48246166360842574,
+      "slots": 4
     },
     {
       "rank": 6,
-      "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
-      "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
-      "think": "no_think",
-      "fleet_suitability": 0.4520357789289813,
-      "slots": 7
-    },
-    {
-      "rank": 7,
       "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi [no_think]",
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi",
       "think": "no_think",
@@ -2842,23 +3572,15 @@
       "slots": 2
     },
     {
+      "rank": 7,
+      "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
+      "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+      "think": "no_think",
+      "fleet_suitability": 0.44360756270533835,
+      "slots": 7
+    },
+    {
       "rank": 8,
-      "label": "gemma-4-26B_q4_0-it--kvq5_1--nothi [no_think]",
-      "model": "gemma-4-26B_q4_0-it--kvq5_1--nothi",
-      "think": "no_think",
-      "fleet_suitability": 0.4482671398872916,
-      "slots": 5
-    },
-    {
-      "rank": 9,
-      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi [no_think]",
-      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi",
-      "think": "no_think",
-      "fleet_suitability": 0.4454664691958541,
-      "slots": 5
-    },
-    {
-      "rank": 10,
       "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi [no_think]",
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi",
       "think": "no_think",
@@ -2866,19 +3588,35 @@
       "slots": 2
     },
     {
-      "rank": 11,
+      "rank": 9,
+      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi [no_think]",
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi",
+      "think": "no_think",
+      "fleet_suitability": 0.4423711244171355,
+      "slots": 4
+    },
+    {
+      "rank": 10,
       "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
       "think": "no_think",
-      "fleet_suitability": 0.3282579596412123,
+      "fleet_suitability": 0.4354535368786615,
       "slots": 3
+    },
+    {
+      "rank": 11,
+      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+      "think": "no_think",
+      "fleet_suitability": 0.42151086470705545,
+      "slots": 7
     },
     {
       "rank": 12,
       "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi [no_think]",
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi",
       "think": "no_think",
-      "fleet_suitability": 0.16484401902576545,
+      "fleet_suitability": 0.21825178415378788,
       "slots": 1
     },
     {
@@ -2886,7 +3624,7 @@
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
       "think": "no_think",
-      "fleet_suitability": 0.12517780641594972,
+      "fleet_suitability": 0.098710835111446,
       "slots": 1
     },
     {
@@ -2894,7 +3632,7 @@
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi [no_think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi",
       "think": "no_think",
-      "fleet_suitability": 0.1189049537626297,
+      "fleet_suitability": 0.09265656892272031,
       "slots": 1
     },
     {
@@ -2902,7 +3640,7 @@
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi [no_think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi",
       "think": "no_think",
-      "fleet_suitability": 0.11030736817777936,
+      "fleet_suitability": 0.08587936443602348,
       "slots": 1
     },
     {
@@ -2910,7 +3648,7 @@
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi [no_think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
       "think": "no_think",
-      "fleet_suitability": 0.10996323336926546,
+      "fleet_suitability": 0.08576790622069384,
       "slots": 1
     }
   ],
@@ -4286,41 +5024,111 @@
     "e2e_throughput_tok_s": [
       {
         "rank": 1,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 1293.3666666666666
+      },
+      {
+        "rank": 2,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 1287.6666666666665
+      },
+      {
+        "rank": 3,
+        "label": "gemma-4-26B_q4_0-it--kvq8_0--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 1282.2666666666667
+      },
+      {
+        "rank": 4,
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 1274.6
+      },
+      {
+        "rank": 5,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi",
         "think": "no_think",
         "score": 1256.7
       },
       {
-        "rank": 2,
+        "rank": 6,
         "label": "gemma-4-26B_q4_0-it--kvq5_1--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq5_1--nothi",
         "think": "no_think",
         "score": 1243.3999999999999
       },
       {
-        "rank": 3,
+        "rank": 7,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi",
         "think": "no_think",
         "score": 1235.1666666666667
       },
       {
-        "rank": 4,
+        "rank": 8,
         "label": "gemma-4-26B_q4_0-it--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq5_0--nothi",
         "think": "no_think",
         "score": 1223.4
       },
       {
-        "rank": 5,
+        "rank": 9,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 1196.8333333333333
+      },
+      {
+        "rank": 10,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 1187.8333333333333
+      },
+      {
+        "rank": 11,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi",
         "think": "no_think",
         "score": 1163.7333333333333
       },
       {
-        "rank": 6,
+        "rank": 12,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 1151.7
+      },
+      {
+        "rank": 13,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 1078.5666666666668
+      },
+      {
+        "rank": 14,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 1074.8666666666668
+      },
+      {
+        "rank": 15,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 1069.7333333333333
+      },
+      {
+        "rank": 16,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi",
         "think": "no_think",
@@ -4333,112 +5141,112 @@
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi",
         "think": "no_think",
-        "score": 1
+        "score": 0.9815882451565868
       },
       {
         "rank": 2,
         "label": "gemma-4-26B_q4_0-it--kvq5_1--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq5_1--nothi",
         "think": "no_think",
-        "score": 0.9956224135268498
+        "score": 0.977332939438046
       },
       {
         "rank": 3,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi",
         "think": "no_think",
-        "score": 0.9875869953247406
+        "score": 0.9694569098986009
       },
       {
         "rank": 4,
         "label": "gemma-4-26B_q4_0-it--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq5_0--nothi",
         "think": "no_think",
-        "score": 0.9837010016432254
+        "score": 0.965679305174506
       },
       {
         "rank": 5,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi",
         "think": "no_think",
-        "score": 0.9417744821488603
+        "score": 0.9243373155313214
       },
       {
         "rank": 6,
-        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi [no_think]",
-        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi",
-        "think": "no_think",
-        "score": 0.8289410412949514
-      },
-      {
-        "rank": 7,
-        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi [no_think]",
-        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi",
-        "think": "no_think",
-        "score": 0
-      },
-      {
-        "rank": 8,
-        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi [no_think]",
-        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi",
-        "think": "no_think",
-        "score": 0
-      },
-      {
-        "rank": 9,
-        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
-        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
-        "think": "no_think",
-        "score": 0
-      },
-      {
-        "rank": 10,
-        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
-        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
-        "think": "no_think",
-        "score": 0
-      },
-      {
-        "rank": 11,
-        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi [no_think]",
-        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi",
-        "think": "no_think",
-        "score": 0
-      },
-      {
-        "rank": 12,
-        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
-        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
-        "think": "no_think",
-        "score": 0
-      },
-      {
-        "rank": 13,
-        "label": "gemma-4-26B_q4_0-it--kvq8_0--nothi [no_think]",
-        "model": "gemma-4-26B_q4_0-it--kvq8_0--nothi",
-        "think": "no_think",
-        "score": 0
-      },
-      {
-        "rank": 14,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
-        "score": 0
+        "score": 0.8482371588361124
       },
       {
-        "rank": 15,
+        "rank": 7,
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.8437565727506218
+      },
+      {
+        "rank": 8,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi",
         "think": "no_think",
-        "score": 0
+        "score": 0.842928159076331
+      },
+      {
+        "rank": 9,
+        "label": "gemma-4-26B_q4_0-it--kvq8_0--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 0.8393532481929751
+      },
+      {
+        "rank": 10,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 0.8140646231070454
+      },
+      {
+        "rank": 11,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.8055120466471049
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 0.8053956508816313
+      },
+      {
+        "rank": 13,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.7503219701917725
+      },
+      {
+        "rank": 14,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 0.6810901114842933
+      },
+      {
+        "rank": 15,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 0.6788995851217258
       },
       {
         "rank": 16,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
         "think": "no_think",
-        "score": 0
+        "score": 0.6735291417945215
       }
     ],
     "capability": [
@@ -4451,108 +5259,108 @@
       },
       {
         "rank": 2,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 0.8652745763478725
+      },
+      {
+        "rank": 3,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi",
         "think": "no_think",
         "score": 0.8643631174185014
       },
       {
-        "rank": 3,
-        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi [no_think]",
-        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi",
-        "think": "no_think",
-        "score": 0.7519892622222226
-      },
-      {
         "rank": 4,
-        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi [no_think]",
-        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi",
-        "think": "no_think",
-        "score": 0.749054983665084
-      },
-      {
-        "rank": 5,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
-        "score": 0.7464599826699861
+        "score": 0.859745296795636
       },
       {
-        "rank": 6,
-        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
-        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
-        "think": "no_think",
-        "score": 0.7423014212448834
-      },
-      {
-        "rank": 7,
-        "label": "gemma-4-26B_q4_0-it--kvq8_0--nothi [no_think]",
-        "model": "gemma-4-26B_q4_0-it--kvq8_0--nothi",
-        "think": "no_think",
-        "score": 0.7416480968521229
-      },
-      {
-        "rank": 8,
-        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
-        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
-        "think": "no_think",
-        "score": 0.7220194990217425
-      },
-      {
-        "rank": 9,
+        "rank": 5,
         "label": "gemma-4-26B_q4_0-it--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq5_0--nothi",
         "think": "no_think",
-        "score": 0.7001828859066568
+        "score": 0.8002429099162607
       },
       {
-        "rank": 10,
+        "rank": 6,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi",
         "think": "no_think",
-        "score": 0.6902814871969163
+        "score": 0.7903415112065202
       },
       {
-        "rank": 11,
+        "rank": 7,
         "label": "gemma-4-26B_q4_0-it--kvq5_1--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq5_1--nothi",
         "think": "no_think",
-        "score": 0.6847847329310076
+        "score": 0.7848447569406114
       },
       {
-        "rank": 12,
+        "rank": 8,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi",
         "think": "no_think",
-        "score": 0.6767863388048414
+        "score": 0.7768463628144453
+      },
+      {
+        "rank": 9,
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.7152567939397093
+      },
+      {
+        "rank": 10,
+        "label": "gemma-4-26B_q4_0-it--kvq8_0--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 0.7149574205816144
+      },
+      {
+        "rank": 11,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.6955627257666919
+      },
+      {
+        "rank": 12,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 0.6823883169984171
       },
       {
         "rank": 13,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
-        "score": 0.5942289297489234
+        "score": 0.5276823111014641
       },
       {
         "rank": 14,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
         "think": "no_think",
-        "score": 0.569546084854756
+        "score": 0.5029994662072967
       },
       {
         "rank": 15,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi",
         "think": "no_think",
-        "score": 0.5675657809841369
+        "score": 0.5010191623366776
       },
       {
         "rank": 16,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi",
         "think": "no_think",
-        "score": 0.5656444194704122
+        "score": 0.49909780082295296
       }
     ],
     "comprehension": [
@@ -4786,45 +5594,115 @@
     "latency_rel_8k": [
       {
         "rank": 1,
-        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi [no_think]",
-        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 1
       },
       {
         "rank": 2,
-        "label": "gemma-4-26B_q4_0-it--kvq5_1--nothi [no_think]",
-        "model": "gemma-4-26B_q4_0-it--kvq5_1--nothi",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
-        "score": 0.9996793844180827
+        "score": 0.9990234375
       },
       {
         "rank": 3,
-        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi [no_think]",
-        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi",
         "think": "no_think",
-        "score": 0.9876464998416218
+        "score": 0.9842847979474022
       },
       {
         "rank": 4,
-        "label": "gemma-4-26B_q4_0-it--kvq5_0--nothi [no_think]",
-        "model": "gemma-4-26B_q4_0-it--kvq5_0--nothi",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi",
         "think": "no_think",
-        "score": 0.987333755541482
+        "score": 0.9842847979474022
       },
       {
         "rank": 5,
-        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi [no_think]",
-        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi",
+        "label": "gemma-4-26B_q4_0-it--kvq5_1--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq5_1--nothi",
         "think": "no_think",
-        "score": 0.9808115759672853
+        "score": 0.983969220904136
       },
       {
         "rank": 6,
+        "label": "gemma-4-26B_q4_0-it--kvq8_0--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 0.983969220904136
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.9736675126903553
+      },
+      {
+        "rank": 8,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 0.9721254355400697
+      },
+      {
+        "rank": 9,
+        "label": "gemma-4-26B_q4_0-it--kvq5_0--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 0.9718176060797974
+      },
+      {
+        "rank": 10,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 0.9672234478411598
+      },
+      {
+        "rank": 11,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 0.9653979238754326
+      },
+      {
+        "rank": 12,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi",
         "think": "no_think",
-        "score": 0.9448484848484848
+        "score": 0.93
+      },
+      {
+        "rank": 13,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.8758561643835616
+      },
+      {
+        "rank": 14,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 0.772269753397081
+      },
+      {
+        "rank": 15,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 0.7699448068238836
+      },
+      {
+        "rank": 16,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 0.7615384615384615
       }
     ],
     "vram_free_at_maxctx_mib": [
@@ -5171,7 +6049,78 @@
         "score": 1.1
       }
     ],
-    "quality_retention_pct": [],
+    "quality_retention_pct": [
+      {
+        "rank": 1,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 4,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 5,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 7,
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 83
+      },
+      {
+        "rank": 8,
+        "label": "gemma-4-26B_q4_0-it--kvq8_0--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 83
+      },
+      {
+        "rank": 9,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 83
+      },
+      {
+        "rank": 10,
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 67
+      }
+    ],
     "struct_output_pct": [
       {
         "rank": 1,
