@@ -277,10 +277,11 @@ export function loadCapabilities(modelsYamlPath) {
             continue;
          }
          const cfgLabel = m.label ?? base;
-         caps.set(base, { tools: m.tools === true, note: m.capability_note ?? null, label: cfgLabel });
+         const capEntry = { tools: m.tools === true, note: m.capability_note ?? null, label: cfgLabel, disabled: m.disabled === true };
+         caps.set(base, capEntry);
          // Expand kv_variants so each variant ID gets a labelled entry too.
          for (const q of m.kv_variants ?? []) {
-            caps.set(`${base}--kv${q}`, { tools: m.tools === true, note: m.capability_note ?? null, label: `${cfgLabel} · KV ${q}` });
+            caps.set(`${base}--kv${q}`, { ...capEntry, label: `${cfgLabel} · KV ${q}` });
          }
       }
    } catch {

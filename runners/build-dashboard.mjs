@@ -361,10 +361,16 @@ for (const m of models) {
    const c = caps.get(m.base_model) ?? caps.get(stripVariant(m.base_model));
    m.tools = c?.tools ?? null;
    m.capability_note = c?.note ?? null;
+   m.disabled = c?.disabled ?? false;
    if (c?.label) {
       m.label = m.think !== 'n/a' ? `${c.label} [${m.think}]` : c.label;
    }
 }
+
+// Drop disabled models and think=true variants (thinking is off fleet-wide via --skip-think).
+const visibleModels = models.filter((m) => !m.disabled && m.think !== 'think');
+models.length = 0;
+models.push(...visibleModels);
 
 const data = {
    generated: new Date().toISOString(),
