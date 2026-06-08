@@ -459,9 +459,24 @@ async function runTriage(client, model, thinkState) {
       });
    }
 
-   const { total: score } = triageComputeScore(itemResults);
+   const { perRule } = triageComputeScore(itemResults);
    const avgTps = tokList.length ? tokList.reduce((a, b) => a + b, 0) / tokList.length : 0;
-   return { score: score.toFixed(1), halls, json_fail: jsonFail, tok_s: avgTps.toFixed(1), wall_s: (totalMs / 1000).toFixed(0) };
+   // score omitted — computed from sub-scores at analysis time in scoring.mjs.
+   return {
+      triage_R1: perRule.R1 ?? null,
+      triage_R2: perRule.R2 ?? null,
+      triage_R3: perRule.R3 ?? null,
+      triage_R4: perRule.R4 ?? null,
+      triage_R5: perRule.R5 ?? null,
+      triage_R6: perRule.R6 ?? null,
+      triage_R7: perRule.R7 ?? null,
+      triage_C1: perRule.C1 ?? null,
+      triage_C2: perRule.C2 ?? null,
+      halls,
+      json_fail: jsonFail,
+      tok_s: avgTps.toFixed(1),
+      wall_s: (totalMs / 1000).toFixed(0),
+   };
 }
 
 async function runReasoning(client, model, thinkState) {
@@ -524,8 +539,10 @@ async function runReasoning(client, model, thinkState) {
 
    const total = Object.keys(REASON_CASES).length;
    const avgTps = tokList.length ? tokList.reduce((a, b) => a + b, 0) / tokList.length : 0;
+   // score omitted — derived from reasoning_correct / reasoning_total at analysis time.
    return {
-      score: ((correct / total) * 100).toFixed(1),
+      reasoning_correct: correct,
+      reasoning_total: total,
       halls: '-',
       json_fail: errors,
       tok_s: avgTps.toFixed(1),
@@ -587,7 +604,8 @@ async function runToolcalling(client, model, thinkState) {
    }
 
    const total = Object.keys(TOOL_CASES).length;
-   return { score: ((pass / total) * 100).toFixed(1), halls: '-', json_fail: '-', tok_s: '-', wall_s: (totalMs / 1000).toFixed(0) };
+   // score omitted — derived from toolcall_pass / toolcall_total at analysis time.
+   return { toolcall_pass: pass, toolcall_total: total, halls: '-', json_fail: '-', tok_s: '-', wall_s: (totalMs / 1000).toFixed(0) };
 }
 
 async function runSummarization(client, model, thinkState) {
@@ -691,9 +709,20 @@ async function runDocqa(client, model, thinkState) {
       answers[q.id] = raw;
    }
 
-   const { mean_score, per_question } = docqaGradeAll(questions ?? [], answers);
+   const { per_question } = docqaGradeAll(questions ?? [], answers);
    const trapHits = per_question.filter((r) => r.trap_hits?.length > 0).length;
-   return { score: mean_score.toFixed(2), halls: trapHits, json_fail: '-', tok_s: '-', wall_s: '-' };
+   const n = per_question.length || 1;
+   const avgOf = (field) => per_question.reduce((s, q) => s + (q[field] ?? 0), 0) / n;
+   // score omitted — derived from sub-scores at analysis time. Total per question = correctness+coverage+faithfulness (0–10).
+   return {
+      docqa_correctness: avgOf('correctness'),
+      docqa_coverage: avgOf('coverage'),
+      docqa_faithfulness: avgOf('faithfulness'),
+      halls: trapHits,
+      json_fail: '-',
+      tok_s: '-',
+      wall_s: '-',
+   };
 }
 
 async function runCoding(
@@ -790,15 +819,16 @@ async function runCoding(
 
    const total = Object.keys(cases).length;
    const avgTps = tokList.length ? tokList.reduce((a, b) => a + b, 0) / tokList.length : 0;
-   // score = pass@1 %; notes carries the partial-credit test-pass rate for context.
-   const testRate = testsTotal ? ((testsPassed / testsTotal) * 100).toFixed(1) : '0.0';
+   // score/notes omitted — derived from raw counts at analysis time.
    return {
-      score: ((passAt1 / total) * 100).toFixed(1),
+      coding_pass_at_1: passAt1,
+      coding_total: total,
+      coding_tests_passed: testsPassed,
+      coding_tests_total: testsTotal,
+      coding_no_code: noCode,
       halls: '-',
-      json_fail: noCode,
       tok_s: avgTps.toFixed(1),
       wall_s: (totalMs / 1000).toFixed(0),
-      notes: `tests ${testRate}%`,
    };
 }
 

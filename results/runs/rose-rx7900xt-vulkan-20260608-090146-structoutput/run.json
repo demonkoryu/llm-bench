@@ -1,0 +1,55 @@
+{
+  "run_id": "rose-rx7900xt-vulkan-20260608-090146-structoutput",
+  "kind": "struct-output",
+  "host": "rose",
+  "gpu": "RX 7900 XT",
+  "backend": "vulkan",
+  "environment": {
+    "runner": "llama.cpp",
+    "backend": "vulkan",
+    "gpu": "RX 7900 XT",
+    "server_flags": {
+      "flash_attn": "on",
+      "cache_type_k": null,
+      "cache_type_v": null,
+      "ngl": 99,
+      "np": 1
+    },
+    "defaults_extra_flags": {
+      "batch-size": 2048,
+      "ubatch-size": 2048
+    },
+    "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+  },
+  "started": "2026-06-08T07:01:46.199Z",
+  "finished": "2026-06-08T07:02:33.859Z",
+  "status": "complete",
+  "seed": "rose-rx7900xt-vulkan-20260608-083320",
+  "planned": [],
+  "results": [
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.5-27B-IQ4_XS",
+      "think": "n/a",
+      "bench": "power_eff",
+      "score": "0.120",
+      "tok_s": "33.4",
+      "status": "ok",
+      "notes": "W=278 tps=33.4 n=101",
+      "ts": "2026-06-08T07:02:17.860Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.5-27B-IQ4_XS",
+      "think": "n/a",
+      "bench": "struct_output",
+      "score": "100.0",
+      "json_fail": 0,
+      "status": "ok",
+      "notes": "parse=100% schema=100%",
+      "ts": "2026-06-08T07:02:30.086Z"
+    }
+  ]
+}

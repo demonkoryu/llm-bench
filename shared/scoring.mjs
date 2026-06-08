@@ -266,12 +266,22 @@ export function computeMetrics(rows) {
             kvPerTokByModel.set(baseModel(r.model), v / 1024);
          }
       } else if (bench === 'coding_multipl') {
-         const tr = /tests\s+([\d.]+)%/.exec(r.notes ?? '');
-         if (Number.isFinite(v) || tr) {
-            codingByMT.set(`${baseModel(r.model)}|${r.think}`, {
-               pass1: Number.isFinite(v) ? v : null,
-               testRate: tr ? Number(tr[1]) : null,
-            });
+         // New runs store raw counts; legacy runs store score + notes regex.
+         const p1raw = parseFloat(r.coding_pass_at_1);
+         const totRaw = parseFloat(r.coding_total);
+         const tpRaw = parseFloat(r.coding_tests_passed);
+         const ttRaw = parseFloat(r.coding_tests_total);
+         const pass1 =
+            Number.isFinite(p1raw) && Number.isFinite(totRaw) && totRaw > 0 ? (p1raw / totRaw) * 100 : Number.isFinite(v) ? v : null;
+         const testRate =
+            Number.isFinite(tpRaw) && Number.isFinite(ttRaw) && ttRaw > 0
+               ? (tpRaw / ttRaw) * 100
+               : (() => {
+                    const tr = /tests\s+([\d.]+)%/.exec(r.notes ?? '');
+                    return tr ? Number(tr[1]) : null;
+                 })();
+         if (pass1 != null || testRate != null) {
+            codingByMT.set(`${baseModel(r.model)}|${r.think}`, { pass1, testRate });
          }
       }
       if (r.bench === 'maxctx') {
@@ -310,6 +320,63 @@ export function computeMetrics(rows) {
       return m.length ? m[m.length - 1] : null;
    };
 
+   // ── Per-bench score functions — single source of truth for weights. ────────────
+   // Each function reads raw sub-scores when available (new runs) and falls back to
+   // the legacy baked `score` field (pre-refactor runs). Same pattern as summScore.
+
+   // Triage: 9 rules weighted per triage-rubric.mjs WEIGHTS (sum=100).
+   const TRIAGE_W = { R1: 10, R2: 8, R3: 8, R4: 20, R5: 16, R6: 8, R7: 5, C1: 15, C2: 10 };
+   const triageScore = (rs) => {
+      const r = rs.filter((row) => row.bench === 'triage').at(-1);
+      if (!r) {
+         return null;
+      }
+      if (r.triage_R1 != null) {
+         return Object.entries(TRIAGE_W).reduce((s, [k, w]) => s + (parseFloat(r[`triage_${k}`]) ?? 0) * w, 0);
+      }
+      const s = parseFloat(r.score);
+      return Number.isFinite(s) ? s : null;
+   };
+
+   // Reasoning: correct / total × 100.
+   const reasoningScore = (rs) => {
+      const r = rs.filter((row) => row.bench === 'reasoning').at(-1);
+      if (!r) {
+         return null;
+      }
+      if (r.reasoning_total != null && r.reasoning_total > 0) {
+         return (r.reasoning_correct / r.reasoning_total) * 100;
+      }
+      const s = parseFloat(r.score);
+      return Number.isFinite(s) ? s : null;
+   };
+
+   // Tool calling: pass / total × 100.
+   const toolcallScore = (rs) => {
+      const r = rs.filter((row) => row.bench === 'toolcalling').at(-1);
+      if (!r) {
+         return null;
+      }
+      if (r.toolcall_total != null && r.toolcall_total > 0) {
+         return (r.toolcall_pass / r.toolcall_total) * 100;
+      }
+      const s = parseFloat(r.score);
+      return Number.isFinite(s) ? s : null;
+   };
+
+   // Docqa: correctness (0–5) + coverage (0–3) + faithfulness (0–2) = 0–10 per question.
+   const docqaScore = (rs) => {
+      const r = rs.filter((row) => row.bench === 'docqa').at(-1);
+      if (!r) {
+         return null;
+      }
+      if (r.docqa_correctness != null) {
+         return parseFloat(r.docqa_correctness) + parseFloat(r.docqa_coverage) + parseFloat(r.docqa_faithfulness);
+      }
+      const s = parseFloat(r.score);
+      return Number.isFinite(s) ? s : null;
+   };
+
    // Summarization sub-score weights — single source of truth.
    // New runs store raw summ_kw/area/tags/length; old runs store a baked score.
    const SUMM_W = { kw: 0.25, area: 0.3, tags: 0.3, length: 0.15 };
@@ -343,11 +410,11 @@ export function computeMetrics(rows) {
          const base = baseModel(model);
          const maxctx = maxctxByModel.get(base) ?? null;
          const maxctxVram = maxctxVramByModel.get(base) ?? null;
-         const triage = latestScore(rs, 'triage');
-         const reasoning = latestScore(rs, 'reasoning');
-         const toolcall = latestScore(rs, 'toolcalling');
+         const triage = triageScore(rs);
+         const reasoning = reasoningScore(rs);
+         const toolcall = toolcallScore(rs);
          const summ = summScore(rs);
-         const docqa = latestScore(rs, 'docqa');
+         const docqa = docqaScore(rs);
          const speedTg =
             Math.max(latestScore(rs, 'speed_short') ?? 0, latestScore(rs, 'speed_long-32k') ?? 0, latestScore(rs, 'speed') ?? 0) || null;
          const latestField = (bench, field) => {

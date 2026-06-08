@@ -1,0 +1,76 @@
+{
+  "run_id": "rose-rx7900xt-vulkan-20260608-113611-speeddecay",
+  "kind": "speed-decay",
+  "host": "rose",
+  "gpu": "RX 7900 XT",
+  "backend": "vulkan",
+  "environment": {
+    "runner": "llama.cpp",
+    "backend": "vulkan",
+    "gpu": "RX 7900 XT",
+    "server_flags": {
+      "flash_attn": "on",
+      "cache_type_k": null,
+      "cache_type_v": null,
+      "ngl": 99,
+      "np": 1
+    },
+    "defaults_extra_flags": {
+      "batch-size": 2048,
+      "ubatch-size": 2048
+    },
+    "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+  },
+  "started": "2026-06-08T09:36:11.526Z",
+  "finished": "2026-06-08T09:38:07.517Z",
+  "status": "complete",
+  "seed": "rose-rx7900xt-vulkan-20260608-092212",
+  "planned": [],
+  "results": [
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-UD-Q4_K_XL",
+      "think": "n/a",
+      "bench": "speed_decay-0k",
+      "score": "24.8",
+      "tok_s": "24.8",
+      "prefill_tps": "114.9",
+      "vram_mib": 19991,
+      "ctx_loaded": 65536,
+      "status": "ok",
+      "notes": "decode@0",
+      "ts": "2026-06-08T09:36:23.503Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-UD-Q4_K_XL",
+      "think": "n/a",
+      "bench": "speed_decay-16k",
+      "score": "24.0",
+      "tok_s": "24.0",
+      "prefill_tps": "559.0",
+      "vram_mib": 19991,
+      "ctx_loaded": 65536,
+      "status": "ok",
+      "notes": "decode@16384",
+      "ts": "2026-06-08T09:36:56.194Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-UD-Q4_K_XL",
+      "think": "n/a",
+      "bench": "speed_decay-32k",
+      "score": "23.2",
+      "tok_s": "23.2",
+      "prefill_tps": "500.7",
+      "vram_mib": 19991,
+      "ctx_loaded": 65536,
+      "status": "ok",
+      "notes": "decode@32768",
+      "ts": "2026-06-08T09:38:03.623Z"
+    }
+  ]
+}
