@@ -3,9 +3,9 @@
  * Case metadata (expected_area, tags_prefix, must_mention) in summcases.mjs.
  *
  * Score breakdown (0-1):
- *   0.40  keyword coverage (must_mention / total)
- *   0.25  area correct
- *   0.20  tag prefix discipline
+ *   0.25  keyword coverage (must_mention / total)
+ *   0.30  area correct
+ *   0.30  tag prefix discipline
  *   0.15  summary length ok (10-100 words)
  */
 
@@ -40,7 +40,7 @@ export default function (output, context) {
    const wordCount = summary.trim().split(/\s+/).length;
    const lengthOk = wordCount >= 10 && wordCount <= 100;
 
-   const score = kwScore * 0.4 + (areaOk ? 0.25 : 0) + (tagsOk ? 0.2 : 0) + (lengthOk ? 0.15 : 0);
+   const score = kwScore * 0.25 + (areaOk ? 0.3 : 0) + (tagsOk ? 0.3 : 0) + (lengthOk ? 0.15 : 0);
    const missing = c.must_mention.filter((kw) => !summaryLower.includes(kw.toLowerCase()));
 
    const reason = [
