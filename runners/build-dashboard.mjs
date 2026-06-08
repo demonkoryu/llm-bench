@@ -150,7 +150,7 @@ function renderRawMetrics(m){
   // Memory
   h+='<div class="raw-section"><p class="raw-title" title="VRAM usage and power draw during inference">Memory</p><dl class="raw-dl">';
   if(m.kvPerTokMiB!=null) h+='<dt title="KV-cache memory per token (KiB). Lower = more context fits in the same VRAM.">KV/tok</dt><dd>'+(m.kvPerTokMiB*1024).toFixed(1)+' KiB</dd>';
-  if(m.maxctxVram!=null) h+='<dt title="GPU memory used when running at this model's maximum supported context">VRAM @max ctx</dt><dd>'+Math.round(m.maxctxVram)+' MiB</dd>';
+  if(m.maxctxVram!=null) h+='<dt title="GPU memory used when running at the maximum supported context">VRAM @max ctx</dt><dd>'+Math.round(m.maxctxVram)+' MiB</dd>';
   if(m.powerEff!=null) h+='<dt title="GPU power draw during inference (watts). Measured via struct-output bench.">Power</dt><dd>'+fmt(m.powerEff,0)+' W</dd>';
   h+='</dl></div>';
   // Quality at depth
@@ -267,7 +267,7 @@ const BKEYS=['triage','summarization','docqa','reasoning','grade','agentic_loop'
 const BKEY_TIPS={
   triage:'Triage: structured JSON extraction + hallucination detection across varied prompts. Scores penalise missing fields and hallucinated content.',
   summarization:'Summarization: LLM-graded quality of summaries on reference documents (0–10, fleet-normalised).',
-  docqa:'Document Q&A: accuracy on long-document questions including recall at or near the model's max context.',
+  docqa:'Document Q&A: accuracy on long-document questions including recall at or near the maximum context limit.',
   reasoning:'Reasoning: accuracy on logic, math and multi-step deduction problems.',
   grade:'Coding grade: average quality score (0–10) for solutions that pass all tests — separates elegant from barely-passing code.',
   agentic_loop:'Agentic loop: success rate on multi-step tool-call chains, including tasks that require error recovery.',
