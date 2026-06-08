@@ -3,8 +3,7 @@
   "configurations": [
     {
       "name": "dashboard",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["-y", "http-server", "results", "-p", "8099", "-c-1", "--silent"],
+      "program": "serve-dashboard.mjs",
       "port": 8099
     }
   ]
