@@ -1645,6 +1645,7 @@ if (FULL) {
       ['instruction-following', 'runners/instruction-following.mjs'],
       ['prompt-cache', 'runners/prompt-cache.mjs'],
       ['agentic-loop', 'runners/agentic-loop.mjs'],
+      ['parallel-gen', 'runners/parallel-gen.mjs'],
    ];
    console.log(`\n[run-suite] --full: chaining ${secondaries.length} secondary runners against ${run.runId}\n`);
    // --depths caps the two depth sweeps (speed-decay, quality-decay); other secondaries ignore it.
