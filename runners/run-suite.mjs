@@ -1329,27 +1329,20 @@ for (const model of models) {
       {
          const res = await skipOrRun('triage', () => runTriage(client, model, thinkState));
          if (res) {
-            console.log(
-               `score=${res.r.score}  halls=${res.r.halls}  json_fail=${res.r.json_fail}  tok/s=${res.r.tok_s}  vram=${res.curVram ?? '?'}MiB`,
-            );
+            console.log(`halls=${res.r.halls}  json_fail=${res.r.json_fail}  tok/s=${res.r.tok_s}  vram=${res.curVram ?? '?'}MiB`);
             appendTsv({
                target: TARGET,
                backend: BACKEND,
                model: passId,
                think: tl,
                bench: 'triage',
-               score: res.r.score,
-               halls: res.r.halls,
-               json_fail: res.r.json_fail,
-               tok_s: res.r.tok_s,
                prefill_tps: '-',
                vram_mib: res.curVram ?? '?',
                ctx_loaded: ctxLoaded ?? '?',
                oom_ceiling: oomCeiling ?? '?',
                coherence_ceiling: coherenceCeiling ?? '?',
                status: 'ok',
-               wall_s: res.r.wall_s,
-               notes: '',
+               ...res.r,
             });
          }
       }
@@ -1358,25 +1351,20 @@ for (const model of models) {
       {
          const res = await skipOrRun('reasoning', () => runReasoning(client, model, thinkState));
          if (res) {
-            console.log(`accuracy=${res.r.score}%  tok/s=${res.r.tok_s}`);
+            console.log(`accuracy=${res.r.reasoning_correct}/${res.r.reasoning_total}  tok/s=${res.r.tok_s}`);
             appendTsv({
                target: TARGET,
                backend: BACKEND,
                model: passId,
                think: tl,
                bench: 'reasoning',
-               score: res.r.score,
-               halls: '-',
-               json_fail: res.r.json_fail,
-               tok_s: res.r.tok_s,
                prefill_tps: '-',
                vram_mib: vramMib ?? '?',
                ctx_loaded: ctxLoaded ?? '?',
                oom_ceiling: oomCeiling ?? '?',
                coherence_ceiling: coherenceCeiling ?? '?',
                status: 'ok',
-               wall_s: res.r.wall_s,
-               notes: '',
+               ...res.r,
             });
          }
       }
@@ -1386,25 +1374,20 @@ for (const model of models) {
       if (model.tools) {
          const res = await skipOrRun('toolcalling', () => runToolcalling(client, model, thinkState));
          if (res) {
-            console.log(`accuracy=${res.r.score}%`);
+            console.log(`accuracy=${res.r.toolcall_pass}/${res.r.toolcall_total}`);
             appendTsv({
                target: TARGET,
                backend: BACKEND,
                model: passId,
                think: tl,
                bench: 'toolcalling',
-               score: res.r.score,
-               halls: '-',
-               json_fail: '-',
-               tok_s: '-',
                prefill_tps: '-',
                vram_mib: vramMib ?? '?',
                ctx_loaded: ctxLoaded ?? '?',
                oom_ceiling: oomCeiling ?? '?',
                coherence_ceiling: coherenceCeiling ?? '?',
                status: 'ok',
-               wall_s: res.r.wall_s,
-               notes: '',
+               ...res.r,
             });
          }
       }
@@ -1413,25 +1396,22 @@ for (const model of models) {
       {
          const res = await skipOrRun('docqa', () => runDocqa(client, model, thinkState));
          if (res) {
-            console.log(`mean=${res.r.score}/10  trap_hits=${res.r.halls}`);
+            const docqaTotal = (res.r.docqa_correctness ?? 0) + (res.r.docqa_coverage ?? 0) + (res.r.docqa_faithfulness ?? 0);
+            console.log(`mean=${docqaTotal.toFixed(2)}/10  trap_hits=${res.r.halls}`);
             appendTsv({
                target: TARGET,
                backend: BACKEND,
                model: passId,
                think: tl,
                bench: 'docqa',
-               score: res.r.score,
-               halls: res.r.halls,
-               json_fail: '-',
-               tok_s: '-',
                prefill_tps: '-',
                vram_mib: vramMib ?? '?',
                ctx_loaded: ctxLoaded ?? '?',
                oom_ceiling: oomCeiling ?? '?',
                coherence_ceiling: coherenceCeiling ?? '?',
                status: 'ok',
-               wall_s: res.wallS,
-               notes: '',
+               ...res.r,
+               wall_s: res.wallS, // runDocqa doesn't measure wall time; skipOrRun's timer is authoritative
             });
          }
       }
@@ -1451,25 +1431,22 @@ for (const model of models) {
             ),
          );
          if (res) {
-            console.log(`pass@1=${res.r.score}%  ${res.r.notes}  tok/s=${res.r.tok_s}`);
+            const p1pct = res.r.coding_total > 0 ? ((res.r.coding_pass_at_1 / res.r.coding_total) * 100).toFixed(1) : '?';
+            const testsPct = res.r.coding_tests_total > 0 ? ((res.r.coding_tests_passed / res.r.coding_tests_total) * 100).toFixed(1) : '?';
+            console.log(`pass@1=${p1pct}%  tests=${testsPct}%  noCode=${res.r.coding_no_code}  tok/s=${res.r.tok_s}`);
             appendTsv({
                target: TARGET,
                backend: BACKEND,
                model: passId,
                think: tl,
                bench: 'coding_multipl',
-               score: res.r.score,
-               halls: '-',
-               json_fail: res.r.json_fail,
-               tok_s: res.r.tok_s,
                prefill_tps: '-',
                vram_mib: vramMib ?? '?',
                ctx_loaded: ctxLoaded ?? '?',
                oom_ceiling: oomCeiling ?? '?',
                coherence_ceiling: coherenceCeiling ?? '?',
                status: 'ok',
-               wall_s: res.r.wall_s,
-               notes: res.r.notes ?? '',
+               ...res.r,
             });
          }
       }
@@ -1478,25 +1455,20 @@ for (const model of models) {
       {
          const res = await skipOrRun('summarization', () => runSummarization(client, model, thinkState));
          if (res) {
-            console.log(`score=${res.r.score}`);
+            console.log(`kw=${res.r.summ_kw?.toFixed(2)}  area=${res.r.summ_area?.toFixed(2)}  tags=${res.r.summ_tags?.toFixed(2)}`);
             appendTsv({
                target: TARGET,
                backend: BACKEND,
                model: passId,
                think: tl,
                bench: 'summarization',
-               score: res.r.score,
-               halls: '-',
-               json_fail: '-',
-               tok_s: '-',
                prefill_tps: '-',
                vram_mib: vramMib ?? '?',
                ctx_loaded: ctxLoaded ?? '?',
                oom_ceiling: oomCeiling ?? '?',
                coherence_ceiling: coherenceCeiling ?? '?',
                status: 'ok',
-               wall_s: res.r.wall_s,
-               notes: '',
+               ...res.r,
             });
          }
       }
