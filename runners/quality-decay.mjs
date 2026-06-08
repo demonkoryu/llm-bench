@@ -104,7 +104,7 @@ for (const m of wanted) {
    // budget. 512 tokens gets fully consumed by reasoning → empty `content` → 0%. Give
    // them a much larger budget so they finish reasoning AND emit the A1: answers.
    const reasons = m.think === 'reasoning' || m.think === 'required';
-   const maxTokens = reasons ? 8192 : 512;
+   const maxTokens = reasons ? 8192 : 1024;
    console.log(
       `\n══ ${m.label ?? id}  (ctx ${maxctx.toLocaleString()}, depths ${depths.map((d) => `${Math.round(d / 1024)}k`).join(',')})`,
    );
