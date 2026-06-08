@@ -37,7 +37,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs, promisify } from 'node:util';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
 import { loadModelsConfig, modelBaseId } from '../shared/models-config.mjs';
-import { createRun, latestRun, readRun } from '../shared/results-store.mjs';
+import { createRun, latestRun, listRuns, readRun } from '../shared/results-store.mjs';
 import { buildEnvironment, environmentDiff } from '../shared/run-fingerprint.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
@@ -1670,9 +1670,11 @@ if (FULL) {
    }
 }
 
-// report/main chart merge suite + struct + depth runs; fleet additionally needs kv-probe.
-const baseIds = [run.runId, ...(flags.resume && PRIOR_RUN ? [PRIOR_RUN] : [])];
-const allIds = [...baseIds, ...secondaryInputs];
+// report/main chart merge ALL historical runs so partial/filtered runs don't wipe the fleet.
+// The current run + its secondaries are always included; all other on-disk runs contribute
+// their data via timestamp-arbitrated deduplication in build-report.mjs.
+const sessionIds = new Set([run.runId, ...(flags.resume && PRIOR_RUN ? [PRIOR_RUN] : []), ...secondaryInputs]);
+const allIds = [...sessionIds, ...listRuns(RESULTS_DIR).filter((id) => !sessionIds.has(id))];
 const reportInputs = allIds.flatMap((id) => ['--input', id]);
 try {
    await execP('node', [join(ROOT, 'runners/build-report.mjs'), ...reportInputs, '--output', REPORT_JSON]);
