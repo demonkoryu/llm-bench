@@ -126,8 +126,8 @@ function getDials(){
   if (d.quality_decay) d.quality_decay.weight = num('d_quality_decay_weight', d.quality_decay.weight);
   return d;
 }
-function toggleRaw(id){
-  const r=document.getElementById(id); if(r) r.classList.toggle('open');
+function toggleRaw(el){
+  const id=el.dataset.rawid; const r=document.getElementById(id); if(r) r.classList.toggle('open');
 }
 function pill(label, val){ return '<span class="depth-pill"><span class="dk">'+esc(label)+'</span><span class="dv">'+esc(val)+'</span></span>'; }
 function renderRawMetrics(m){
@@ -202,7 +202,7 @@ function renderCap(ranking){
   for(const [i,m] of ranking.entries()){
     const rid='raw_'+slugify(m.model+'_'+m.think);
     const cls=[topClass(m),'model-row'].filter(Boolean).join(' ');
-    h+='<tr class="'+cls+'" onclick="toggleRaw(''+rid+'')">';
+    h+='<tr class="'+cls+'" data-rawid="'+rid+'" onclick="toggleRaw(this)">';
     h+='<td>'+(i+1)+'</td><td>'+stars(i+1)+'</td><td>'+esc(m.label)+'</td>';
     h+='<td>'+fmt(m.score)+'</td><td>'+pct(m.comprehension)+'</td><td>'+pct(m.coding)+'</td><td>'+pct(m.codingCompetence)+'</td>';
     h+='<td>'+(m.qualityMean!=null?fmt(m.qualityMean,1)+'%':'<span class="dim">–</span>')+'</td>';
