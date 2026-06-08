@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-08T17:50:02.548Z",
+  "generated": "2026-06-08T21:20:21.915Z",
   "sources": [
     "rose-rx7900xt-vulkan-20260608-132845 (suite/complete)",
     "rose-rx7900xt-vulkan-20260608-135655 (suite/complete)",
@@ -23,7 +23,14 @@
     "rose-rx7900xt-vulkan-20260608-190046-qualitydecay (quality-decay/complete)",
     "rose-rx7900xt-vulkan-20260608-192702-throughputttft (throughput-ttft/complete)",
     "rose-rx7900xt-vulkan-20260608-194111-qualitydecay (quality-decay/complete)",
-    "rose-rx7900xt-vulkan-20260608-194723-throughputttft (throughput-ttft/complete)"
+    "rose-rx7900xt-vulkan-20260608-194723-throughputttft (throughput-ttft/complete)",
+    "rose-rx7900xt-vulkan-20260608-195714 (suite/complete)",
+    "rose-rx7900xt-vulkan-20260608-220215-kvprobe (kvprobe/complete)",
+    "rose-rx7900xt-vulkan-20260608-220315-structoutput (struct-output/complete)",
+    "rose-rx7900xt-vulkan-20260608-221233-throughputttft (throughput-ttft/complete)",
+    "rose-rx7900xt-vulkan-20260608-223341-qualitydecay (quality-decay/complete)",
+    "rose-rx7900xt-vulkan-20260608-230629-instructionfollowing (instruction-following/complete)",
+    "rose-rx7900xt-vulkan-20260608-231313-agenticloop (agentic-loop/complete)"
   ],
   "environment": {
     "host": "rose",
@@ -50,6 +57,125 @@
   "provenance": {
     "consistent": true,
     "environments": [
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
       {
         "runner": "llama.cpp",
         "backend": "vulkan",
@@ -659,7 +785,7 @@
         "agentic_pct": 80,
         "instruction_following_pct": 96.4
       },
-      "power_eff_tok_s_per_w": 0.432,
+      "power_eff_tok_s_per_w": 0.442,
       "weighted_score": 50.1
     },
     {
@@ -828,7 +954,7 @@
         "agentic_pct": 80,
         "instruction_following_pct": 96.4
       },
-      "power_eff_tok_s_per_w": 0.46,
+      "power_eff_tok_s_per_w": 0.47,
       "weighted_score": 49.9
     },
     {
@@ -981,7 +1107,7 @@
         "agentic_pct": 100,
         "instruction_following_pct": 96.4
       },
-      "power_eff_tok_s_per_w": 0.342,
+      "power_eff_tok_s_per_w": 0.341,
       "weighted_score": 86.4
     },
     {
@@ -1134,7 +1260,7 @@
         "agentic_pct": 100,
         "instruction_following_pct": 96.4
       },
-      "power_eff_tok_s_per_w": 0.345,
+      "power_eff_tok_s_per_w": 0.338,
       "weighted_score": 87.5
     },
     {
@@ -1287,7 +1413,7 @@
         "agentic_pct": 100,
         "instruction_following_pct": 100
       },
-      "power_eff_tok_s_per_w": 0.416,
+      "power_eff_tok_s_per_w": 0.413,
       "weighted_score": 80
     },
     {
@@ -1440,7 +1566,7 @@
         "agentic_pct": 100,
         "instruction_following_pct": 100
       },
-      "power_eff_tok_s_per_w": 0.418,
+      "power_eff_tok_s_per_w": 0.423,
       "weighted_score": 78.5
     },
     {
@@ -1593,7 +1719,7 @@
         "agentic_pct": 100,
         "instruction_following_pct": 100
       },
-      "power_eff_tok_s_per_w": 0.433,
+      "power_eff_tok_s_per_w": 0.437,
       "weighted_score": 77.7
     },
     {
@@ -1746,7 +1872,7 @@
         "agentic_pct": 100,
         "instruction_following_pct": 100
       },
-      "power_eff_tok_s_per_w": 0.429,
+      "power_eff_tok_s_per_w": 0.427,
       "weighted_score": 79
     },
     {
@@ -1915,7 +2041,7 @@
         "agentic_pct": 80,
         "instruction_following_pct": 96.4
       },
-      "power_eff_tok_s_per_w": 0.375,
+      "power_eff_tok_s_per_w": 0.486,
       "weighted_score": 52.8
     },
     {
@@ -2084,7 +2210,7 @@
         "agentic_pct": 100,
         "instruction_following_pct": 100
       },
-      "power_eff_tok_s_per_w": 0.302,
+      "power_eff_tok_s_per_w": 0.366,
       "weighted_score": 86
     },
     {
@@ -2253,7 +2379,7 @@
         "agentic_pct": 100,
         "instruction_following_pct": 96.4
       },
-      "power_eff_tok_s_per_w": 0.373,
+      "power_eff_tok_s_per_w": 0.369,
       "weighted_score": 86.5
     },
     {
@@ -2422,7 +2548,7 @@
         "agentic_pct": 100,
         "instruction_following_pct": 100
       },
-      "power_eff_tok_s_per_w": 0.367,
+      "power_eff_tok_s_per_w": 0.358,
       "weighted_score": 71.5
     },
     {
@@ -2591,7 +2717,7 @@
         "agentic_pct": 100,
         "instruction_following_pct": 100
       },
-      "power_eff_tok_s_per_w": 0.458,
+      "power_eff_tok_s_per_w": 0.462,
       "weighted_score": 71.5
     },
     {
@@ -2760,7 +2886,7 @@
         "agentic_pct": 100,
         "instruction_following_pct": 100
       },
-      "power_eff_tok_s_per_w": 0.37,
+      "power_eff_tok_s_per_w": 0.367,
       "weighted_score": 69.6
     },
     {
@@ -2929,7 +3055,7 @@
         "agentic_pct": 100,
         "instruction_following_pct": 100
       },
-      "power_eff_tok_s_per_w": 0.477,
+      "power_eff_tok_s_per_w": 0.486,
       "weighted_score": 68.2
     },
     {
@@ -3098,8 +3224,705 @@
         "agentic_pct": 80,
         "instruction_following_pct": 96.4
       },
-      "power_eff_tok_s_per_w": 0.461,
+      "power_eff_tok_s_per_w": 0.442,
       "weighted_score": 50.3
+    },
+    {
+      "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+      "base_model": "Qwen3.5-27B-IQ4_XS--kvq4_0",
+      "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+      "think": "no_think",
+      "capability": {
+        "score": 0.7306359758595221,
+        "comprehension": 0.9228000000000001,
+        "coding": 0.9355493951335115,
+        "coding_competence": 0.9704869244123563,
+        "speed_group": 0.21432829122506192
+      },
+      "maxctx": 102400,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 88.44444444444444,
+        "reasoning": 91.66666666666666,
+        "toolcalling": 100,
+        "docqa": 10,
+        "summarization": 90.83333333333333
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 33.6,
+      "prefill_tok_s": {
+        "4k": 587.2,
+        "12k": 574.9
+      },
+      "total_tok_s": {
+        "4k": 207.4407476635514,
+        "12k": 349.6097878809817
+      },
+      "e2e_throughput_tok_s": {
+        "mean": 342.0333333333333,
+        "ref": 448.9,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 193.6
+          },
+          {
+            "depth": 8192,
+            "tok_s": 383.6
+          },
+          {
+            "depth": 32768,
+            "tok_s": 448.9
+          }
+        ]
+      },
+      "performance": {
+        "speed_group": 0.21432829122506192,
+        "throughput_norm": 0.2644519471147651,
+        "latency_norm": 0.2412166941759019,
+        "warm_latency_norm": null,
+        "ttft_8k_ms": 12723,
+        "warm_ttft_ms": null
+      },
+      "vram_at_maxctx_mib": {
+        "used": 17395,
+        "free": 3069
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": null,
+        "max_slots": null,
+        "speedup": null,
+        "curve": []
+      },
+      "quality_decay": {
+        "base_acc": 66.7,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 66.7
+          },
+          {
+            "depth": 16384,
+            "acc": 66.7
+          },
+          {
+            "depth": 32768,
+            "acc": 83.3
+          },
+          {
+            "depth": 65536,
+            "acc": 66.7
+          },
+          {
+            "depth": 98304,
+            "acc": 83.3
+          }
+        ]
+      },
+      "ttft_ms": {
+        "ref": 54406,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 2181
+          },
+          {
+            "depth": 2048,
+            "ms": 3091
+          },
+          {
+            "depth": 8192,
+            "ms": 12723
+          },
+          {
+            "depth": 16384,
+            "ms": 24736
+          },
+          {
+            "depth": 32768,
+            "ms": 54406
+          },
+          {
+            "depth": 65536,
+            "ms": 131298
+          },
+          {
+            "depth": 98304,
+            "ms": 230481
+          }
+        ]
+      },
+      "struct_output_pct": 100,
+      "instruction_following_pct": 96.4,
+      "agentic_loop": {
+        "completion_pct": 100,
+        "mean_steps": 3.6
+      },
+      "prefix_cache": null,
+      "coding_grade": 94.67204301075267,
+      "coding_mult": {
+        "mult": 0.9355493951335115,
+        "grade_norm": 0.9704869244123563,
+        "agentic_pct": 100,
+        "instruction_following_pct": 96.4
+      },
+      "power_eff_tok_s_per_w": 0.092,
+      "weighted_score": 73.1
+    },
+    {
+      "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+      "base_model": "Qwen3.5-27B-IQ4_XS--kvq5_0",
+      "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+      "think": "no_think",
+      "capability": {
+        "score": 0.7044633567038943,
+        "comprehension": 0.9174,
+        "coding": 0.9325476039571221,
+        "coding_competence": 0.9673730331505416,
+        "speed_group": 0.2121627019922167
+      },
+      "maxctx": 102400,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 86.44444444444444,
+        "reasoning": 91.66666666666666,
+        "toolcalling": 100,
+        "docqa": 10,
+        "summarization": 90.83333333333333
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 33.6,
+      "prefill_tok_s": {
+        "4k": 585.3,
+        "12k": 569.3
+      },
+      "total_tok_s": {
+        "4k": 207.22950474183352,
+        "12k": 347.61357854183325
+      },
+      "e2e_throughput_tok_s": {
+        "mean": 338.06666666666666,
+        "ref": 438.8,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 194.1
+          },
+          {
+            "depth": 8192,
+            "tok_s": 381.3
+          },
+          {
+            "depth": 32768,
+            "tok_s": 438.8
+          }
+        ]
+      },
+      "performance": {
+        "speed_group": 0.2121627019922167,
+        "throughput_norm": 0.261385015850107,
+        "latency_norm": 0.2391304347826087,
+        "warm_latency_norm": null,
+        "ttft_8k_ms": 12834,
+        "warm_ttft_ms": null
+      },
+      "vram_at_maxctx_mib": {
+        "used": 17795,
+        "free": 2669
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": null,
+        "max_slots": null,
+        "speedup": null,
+        "curve": []
+      },
+      "quality_decay": {
+        "base_acc": 66.7,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 66.7
+          },
+          {
+            "depth": 16384,
+            "acc": 66.7
+          },
+          {
+            "depth": 32768,
+            "acc": 66.7
+          },
+          {
+            "depth": 65536,
+            "acc": 66.7
+          },
+          {
+            "depth": 98304,
+            "acc": 83.3
+          }
+        ]
+      },
+      "ttft_ms": {
+        "ref": 55772,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 2190
+          },
+          {
+            "depth": 2048,
+            "ms": 3088
+          },
+          {
+            "depth": 8192,
+            "ms": 12834
+          },
+          {
+            "depth": 16384,
+            "ms": 25097
+          },
+          {
+            "depth": 32768,
+            "ms": 55772
+          },
+          {
+            "depth": 65536,
+            "ms": 136172
+          },
+          {
+            "depth": 98304,
+            "ms": 240812
+          }
+        ]
+      },
+      "struct_output_pct": 100,
+      "instruction_following_pct": 96.4,
+      "agentic_loop": {
+        "completion_pct": 100,
+        "mean_steps": 3.6
+      },
+      "prefix_cache": null,
+      "coding_grade": 94.36827956989248,
+      "coding_mult": {
+        "mult": 0.9325476039571221,
+        "grade_norm": 0.9673730331505416,
+        "agentic_pct": 100,
+        "instruction_following_pct": 96.4
+      },
+      "power_eff_tok_s_per_w": 0.092,
+      "weighted_score": 70.4
+    },
+    {
+      "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+      "base_model": "Qwen3.5-27B-IQ4_XS--kvq5_1",
+      "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+      "think": "no_think",
+      "capability": {
+        "score": 0.6955877067171299,
+        "comprehension": 0.9348777777777779,
+        "coding": 0.9298911515886358,
+        "coding_competence": 0.9646173771666345,
+        "speed_group": 0.21294149110363683
+      },
+      "maxctx": 102400,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 88.55555555555556,
+        "reasoning": 100,
+        "toolcalling": 100,
+        "docqa": 10,
+        "summarization": 84.44444444444444
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 33.6,
+      "prefill_tok_s": {
+        "4k": 586.1,
+        "12k": 571
+      },
+      "total_tok_s": {
+        "4k": 207.31856357468712,
+        "12k": 348.2212864817772
+      },
+      "e2e_throughput_tok_s": {
+        "mean": 339.6333333333333,
+        "ref": 442.1,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 194.5
+          },
+          {
+            "depth": 8192,
+            "tok_s": 382.3
+          },
+          {
+            "depth": 32768,
+            "tok_s": 442.1
+          }
+        ]
+      },
+      "performance": {
+        "speed_group": 0.21294149110363683,
+        "throughput_norm": 0.26259632483698875,
+        "latency_norm": 0.23978435815298071,
+        "warm_latency_norm": null,
+        "ttft_8k_ms": 12799,
+        "warm_ttft_ms": null
+      },
+      "vram_at_maxctx_mib": {
+        "used": 17995,
+        "free": 2469
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": null,
+        "max_slots": null,
+        "speedup": null,
+        "curve": []
+      },
+      "quality_decay": {
+        "base_acc": 66.7,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 66.7
+          },
+          {
+            "depth": 16384,
+            "acc": 66.7
+          },
+          {
+            "depth": 32768,
+            "acc": 66.7
+          },
+          {
+            "depth": 65536,
+            "acc": 66.7
+          },
+          {
+            "depth": 98304,
+            "acc": 66.7
+          }
+        ]
+      },
+      "ttft_ms": {
+        "ref": 55131,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 2183
+          },
+          {
+            "depth": 2048,
+            "ms": 3088
+          },
+          {
+            "depth": 8192,
+            "ms": 12799
+          },
+          {
+            "depth": 16384,
+            "ms": 24933
+          },
+          {
+            "depth": 32768,
+            "ms": 55131
+          },
+          {
+            "depth": 65536,
+            "ms": 133970
+          },
+          {
+            "depth": 98304,
+            "ms": 236406
+          }
+        ]
+      },
+      "struct_output_pct": 100,
+      "instruction_following_pct": 96.4,
+      "agentic_loop": {
+        "completion_pct": 100,
+        "mean_steps": 3.6
+      },
+      "prefix_cache": null,
+      "coding_grade": 94.09946236559139,
+      "coding_mult": {
+        "mult": 0.9298911515886358,
+        "grade_norm": 0.9646173771666345,
+        "agentic_pct": 100,
+        "instruction_following_pct": 96.4
+      },
+      "power_eff_tok_s_per_w": 0.092,
+      "weighted_score": 69.6
+    },
+    {
+      "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+      "base_model": "Qwen3.5-27B-IQ4_XS--kvq8_0",
+      "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+      "think": "no_think",
+      "capability": {
+        "score": 0.7266263501497197,
+        "comprehension": 0.951988888888889,
+        "coding": 0.9277659896938467,
+        "coding_competence": 0.9624128523795089,
+        "speed_group": 0.2145832371362461
+      },
+      "maxctx": 102400,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 88.55555555555556,
+        "reasoning": 100,
+        "toolcalling": 100,
+        "docqa": 10,
+        "summarization": 92.22222222222221
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 33.6,
+      "prefill_tok_s": {
+        "4k": 587.6,
+        "12k": 574.3
+      },
+      "total_tok_s": {
+        "4k": 207.48510042036432,
+        "12k": 349.3966828420366
+      },
+      "e2e_throughput_tok_s": {
+        "mean": 342.1666666666667,
+        "ref": 447.5,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 194.8
+          },
+          {
+            "depth": 8192,
+            "tok_s": 384.2
+          },
+          {
+            "depth": 32768,
+            "tok_s": 447.5
+          }
+        ]
+      },
+      "performance": {
+        "speed_group": 0.2145832371362461,
+        "throughput_norm": 0.26455503724130824,
+        "latency_norm": 0.24169160497716174,
+        "warm_latency_norm": null,
+        "ttft_8k_ms": 12698,
+        "warm_ttft_ms": null
+      },
+      "vram_at_maxctx_mib": {
+        "used": 18995,
+        "free": 1469
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": null,
+        "max_slots": null,
+        "speedup": null,
+        "curve": []
+      },
+      "quality_decay": {
+        "base_acc": 66.7,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 66.7
+          },
+          {
+            "depth": 16384,
+            "acc": 66.7
+          },
+          {
+            "depth": 32768,
+            "acc": 66.7
+          },
+          {
+            "depth": 65536,
+            "acc": 66.7
+          },
+          {
+            "depth": 98304,
+            "acc": 83.3
+          }
+        ]
+      },
+      "ttft_ms": {
+        "ref": 54629,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 2181
+          },
+          {
+            "depth": 2048,
+            "ms": 3069
+          },
+          {
+            "depth": 8192,
+            "ms": 12698
+          },
+          {
+            "depth": 16384,
+            "ms": 24782
+          },
+          {
+            "depth": 32768,
+            "ms": 54629
+          },
+          {
+            "depth": 65536,
+            "ms": 132222
+          },
+          {
+            "depth": 98304,
+            "ms": 232345
+          }
+        ]
+      },
+      "struct_output_pct": 100,
+      "instruction_following_pct": 96.4,
+      "agentic_loop": {
+        "completion_pct": 100,
+        "mean_steps": 3.6
+      },
+      "prefix_cache": null,
+      "coding_grade": 93.88440860215053,
+      "coding_mult": {
+        "mult": 0.9277659896938467,
+        "grade_norm": 0.9624128523795089,
+        "agentic_pct": 100,
+        "instruction_following_pct": 96.4
+      },
+      "power_eff_tok_s_per_w": 0.12,
+      "weighted_score": 72.7
+    },
+    {
+      "model": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi",
+      "base_model": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0",
+      "label": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+      "think": "no_think",
+      "capability": {
+        "score": 0.068031212484994,
+        "comprehension": 0.75105,
+        "coding": 0,
+        "coding_competence": 0.585448299300982,
+        "speed_group": 0
+      },
+      "maxctx": 102400,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 89.27777777777777,
+        "reasoning": 100,
+        "toolcalling": 100,
+        "docqa": 10,
+        "summarization": null
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": null,
+      "prefill_tok_s": {
+        "4k": null,
+        "12k": null
+      },
+      "total_tok_s": {
+        "4k": null,
+        "12k": null
+      },
+      "e2e_throughput_tok_s": {
+        "mean": null,
+        "ref": null,
+        "curve": []
+      },
+      "performance": {
+        "speed_group": 0,
+        "throughput_norm": null,
+        "latency_norm": null,
+        "warm_latency_norm": null,
+        "ttft_8k_ms": null,
+        "warm_ttft_ms": null
+      },
+      "vram_at_maxctx_mib": {
+        "used": 19908,
+        "free": 556
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": null,
+        "max_slots": null,
+        "speedup": null,
+        "curve": []
+      },
+      "quality_decay": {
+        "base_acc": null,
+        "retention_pct": null,
+        "curve": []
+      },
+      "ttft_ms": {
+        "ref": null,
+        "curve": []
+      },
+      "struct_output_pct": null,
+      "instruction_following_pct": null,
+      "agentic_loop": {
+        "completion_pct": null,
+        "mean_steps": null
+      },
+      "prefix_cache": null,
+      "coding_grade": 57.11111111111111,
+      "coding_mult": {
+        "mult": 0,
+        "grade_norm": 0.585448299300982,
+        "agentic_pct": null,
+        "instruction_following_pct": null
+      },
+      "power_eff_tok_s_per_w": null,
+      "weighted_score": 6.8
     }
   ],
   "ranking": [
@@ -3161,59 +3984,94 @@
     },
     {
       "rank": 9,
+      "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+      "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+      "think": "no_think",
+      "weighted_score": 73.1
+    },
+    {
+      "rank": 10,
+      "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+      "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+      "think": "no_think",
+      "weighted_score": 72.7
+    },
+    {
+      "rank": 11,
       "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
       "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
       "think": "no_think",
       "weighted_score": 71.5
     },
     {
-      "rank": 10,
+      "rank": 12,
       "label": "gemma-4-26B_q4_0-it--kvq8_0--nothi [no_think]",
       "model": "gemma-4-26B_q4_0-it--kvq8_0--nothi",
       "think": "no_think",
       "weighted_score": 71.5
     },
     {
-      "rank": 11,
+      "rank": 13,
+      "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+      "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+      "think": "no_think",
+      "weighted_score": 70.4
+    },
+    {
+      "rank": 14,
       "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
       "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
       "think": "no_think",
       "weighted_score": 69.6
     },
     {
-      "rank": 12,
+      "rank": 15,
+      "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+      "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+      "think": "no_think",
+      "weighted_score": 69.6
+    },
+    {
+      "rank": 16,
       "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi [no_think]",
       "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi",
       "think": "no_think",
       "weighted_score": 68.2
     },
     {
-      "rank": 13,
+      "rank": 17,
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
       "think": "no_think",
       "weighted_score": 52.8
     },
     {
-      "rank": 14,
+      "rank": 18,
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi [no_think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
       "think": "no_think",
       "weighted_score": 50.3
     },
     {
-      "rank": 15,
+      "rank": 19,
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi [no_think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi",
       "think": "no_think",
       "weighted_score": 50.1
     },
     {
-      "rank": 16,
+      "rank": 20,
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi [no_think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi",
       "think": "no_think",
       "weighted_score": 49.9
+    },
+    {
+      "rank": 21,
+      "label": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+      "model": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi",
+      "think": "no_think",
+      "weighted_score": 6.8
     }
   ],
   "fleet": [
@@ -3520,6 +4378,101 @@
       "fleet_suitability": 0.08576790622069384,
       "needs_pargen": false,
       "reason": null
+    },
+    {
+      "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+      "think": "no_think",
+      "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+      "capability": 0.7306359758595221,
+      "main_ctx": 102400,
+      "weights_mib": 15033,
+      "worker_ctx": 65536,
+      "n_workers": 1,
+      "slots": 2,
+      "agg_tok_s": null,
+      "ctx_norm": 1,
+      "slots_norm": 0.8,
+      "capacity_norm": null,
+      "latency_norm": 0.2412166941759019,
+      "fleet_suitability": null,
+      "needs_pargen": true,
+      "reason": "needs pargen run"
+    },
+    {
+      "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+      "think": "no_think",
+      "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+      "capability": 0.7044633567038943,
+      "main_ctx": 102400,
+      "weights_mib": 15033,
+      "worker_ctx": 65536,
+      "n_workers": 0,
+      "slots": 1,
+      "agg_tok_s": null,
+      "ctx_norm": 1,
+      "slots_norm": 0.5,
+      "capacity_norm": null,
+      "latency_norm": 0.2391304347826087,
+      "fleet_suitability": null,
+      "needs_pargen": true,
+      "reason": "needs pargen run"
+    },
+    {
+      "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+      "think": "no_think",
+      "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+      "capability": 0.6955877067171299,
+      "main_ctx": 102400,
+      "weights_mib": 15033,
+      "worker_ctx": 65536,
+      "n_workers": 0,
+      "slots": 1,
+      "agg_tok_s": null,
+      "ctx_norm": 1,
+      "slots_norm": 0.5,
+      "capacity_norm": null,
+      "latency_norm": 0.23978435815298071,
+      "fleet_suitability": null,
+      "needs_pargen": true,
+      "reason": "needs pargen run"
+    },
+    {
+      "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+      "think": "no_think",
+      "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+      "capability": 0.7266263501497197,
+      "main_ctx": 102400,
+      "weights_mib": 15195,
+      "worker_ctx": 65536,
+      "n_workers": 0,
+      "slots": 1,
+      "agg_tok_s": null,
+      "ctx_norm": 1,
+      "slots_norm": 0.5,
+      "capacity_norm": null,
+      "latency_norm": 0.24169160497716174,
+      "fleet_suitability": null,
+      "needs_pargen": true,
+      "reason": "needs pargen run"
+    },
+    {
+      "model": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi",
+      "think": "no_think",
+      "label": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+      "capability": 0.068031212484994,
+      "main_ctx": 102400,
+      "weights_mib": null,
+      "worker_ctx": null,
+      "n_workers": null,
+      "slots": null,
+      "agg_tok_s": null,
+      "ctx_norm": null,
+      "slots_norm": null,
+      "capacity_norm": null,
+      "latency_norm": null,
+      "fleet_suitability": null,
+      "needs_pargen": false,
+      "reason": "needs kv-probe + maxctx"
     }
   ],
   "fleet_ranking": [
@@ -3740,27 +4693,62 @@
       },
       {
         "rank": 13,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 14,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 15,
+        "label": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 16,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi",
         "think": "no_think",
         "score": 91.66666666666666
       },
       {
-        "rank": 14,
+        "rank": 17,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 91.66666666666666
       },
       {
-        "rank": 15,
+        "rank": 18,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
         "think": "no_think",
         "score": 91.66666666666666
       },
       {
-        "rank": 16,
+        "rank": 19,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 91.66666666666666
+      },
+      {
+        "rank": 20,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 91.66666666666666
+      },
+      {
+        "rank": 21,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi",
         "think": "no_think",
@@ -3777,104 +4765,139 @@
       },
       {
         "rank": 2,
+        "label": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 89.27777777777777
+      },
+      {
+        "rank": 3,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi",
         "think": "no_think",
         "score": 89.22222222222221
       },
       {
-        "rank": 3,
+        "rank": 4,
         "label": "gemma-4-26B_q4_0-it--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq5_0--nothi",
         "think": "no_think",
         "score": 88.66666666666666
       },
       {
-        "rank": 4,
+        "rank": 5,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 88.55555555555556
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 88.55555555555556
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 88.44444444444444
+      },
+      {
+        "rank": 8,
         "label": "gemma-4-26B_q4_0-it--kvq5_1--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq5_1--nothi",
         "think": "no_think",
         "score": 88.22222222222223
       },
       {
-        "rank": 5,
+        "rank": 9,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi",
         "think": "no_think",
         "score": 88.22222222222223
       },
       {
-        "rank": 6,
+        "rank": 10,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi",
         "think": "no_think",
         "score": 88.22222222222223
       },
       {
-        "rank": 7,
+        "rank": 11,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi",
         "think": "no_think",
         "score": 87.77777777777777
       },
       {
-        "rank": 8,
+        "rank": 12,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 87.66666666666667
       },
       {
-        "rank": 9,
+        "rank": 13,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
         "think": "no_think",
         "score": 87.33333333333333
       },
       {
-        "rank": 10,
+        "rank": 14,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi",
         "think": "no_think",
         "score": 87.22222222222221
       },
       {
-        "rank": 11,
+        "rank": 15,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi",
         "think": "no_think",
         "score": 87.22222222222221
       },
       {
-        "rank": 12,
+        "rank": 16,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi",
         "think": "no_think",
         "score": 87
       },
       {
-        "rank": 13,
+        "rank": 17,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi",
         "think": "no_think",
         "score": 86.77777777777777
       },
       {
-        "rank": 14,
+        "rank": 18,
         "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 86.55555555555556
       },
       {
-        "rank": 15,
+        "rank": 19,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 86.44444444444444
+      },
+      {
+        "rank": 20,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 86.22222222222223
       },
       {
-        "rank": 16,
+        "rank": 21,
         "label": "gemma-4-26B_q4_0-it--kvq8_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq8_0--nothi",
         "think": "no_think",
@@ -3968,31 +4991,66 @@
       },
       {
         "rank": 13,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 94.67204301075267
+      },
+      {
+        "rank": 14,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi",
         "think": "no_think",
         "score": 94.52956989247312
       },
       {
-        "rank": 14,
+        "rank": 15,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 94.36827956989248
+      },
+      {
+        "rank": 16,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
         "think": "no_think",
         "score": 94.24462365591398
       },
       {
-        "rank": 15,
+        "rank": 17,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 94.09946236559139
+      },
+      {
+        "rank": 18,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 93.88440860215053
+      },
+      {
+        "rank": 19,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 93.65322580645162
       },
       {
-        "rank": 16,
+        "rank": 20,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi",
         "think": "no_think",
         "score": 93.13440860215053
+      },
+      {
+        "rank": 21,
+        "label": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 57.11111111111111
       }
     ],
     "toolcalling": [
@@ -4107,6 +5165,41 @@
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
         "think": "no_think",
         "score": 100
+      },
+      {
+        "rank": 17,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 18,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 19,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 20,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 21,
+        "label": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
       }
     ],
     "docqa": [
@@ -4126,97 +5219,132 @@
       },
       {
         "rank": 3,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 10
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 10
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 10
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 10
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 10
+      },
+      {
+        "rank": 8,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
         "think": "no_think",
         "score": 9.25
       },
       {
-        "rank": 4,
+        "rank": 9,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi",
         "think": "no_think",
         "score": 8.833333333333332
       },
       {
-        "rank": 5,
+        "rank": 10,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi",
         "think": "no_think",
         "score": 8.833333333333332
       },
       {
-        "rank": 6,
+        "rank": 11,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi",
         "think": "no_think",
         "score": 8.833333333333332
       },
       {
-        "rank": 7,
+        "rank": 12,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi",
         "think": "no_think",
         "score": 8.666666666666668
       },
       {
-        "rank": 8,
+        "rank": 13,
         "label": "gemma-4-26B_q4_0-it--kvq5_1--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq5_1--nothi",
         "think": "no_think",
         "score": 8.25
       },
       {
-        "rank": 9,
+        "rank": 14,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 8.25
       },
       {
-        "rank": 10,
+        "rank": 15,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi",
         "think": "no_think",
         "score": 8.083333333333334
       },
       {
-        "rank": 11,
+        "rank": 16,
         "label": "gemma-4-26B_q4_0-it--kvq8_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq8_0--nothi",
         "think": "no_think",
         "score": 8.083333333333334
       },
       {
-        "rank": 12,
+        "rank": 17,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi",
         "think": "no_think",
         "score": 8.083333333333334
       },
       {
-        "rank": 13,
+        "rank": 18,
         "label": "gemma-4-26B_q4_0-it--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq5_0--nothi",
         "think": "no_think",
         "score": 7.666666666666666
       },
       {
-        "rank": 14,
+        "rank": 19,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi",
         "think": "no_think",
         "score": 7.5
       },
       {
-        "rank": 15,
+        "rank": 20,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 7.5
       },
       {
-        "rank": 16,
+        "rank": 21,
         "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
@@ -4226,111 +5354,139 @@
     "summarization": [
       {
         "rank": 1,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 92.22222222222221
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 90.83333333333333
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 90.83333333333333
+      },
+      {
+        "rank": 4,
         "label": "gemma-4-26B_q4_0-it--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq5_0--nothi",
         "think": "no_think",
         "score": 85.83333333333333
       },
       {
-        "rank": 2,
+        "rank": 5,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 84.44444444444444
+      },
+      {
+        "rank": 6,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi",
         "think": "no_think",
         "score": 78.05555555555556
       },
       {
-        "rank": 3,
+        "rank": 7,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi",
         "think": "no_think",
         "score": 74.44444444444444
       },
       {
-        "rank": 4,
+        "rank": 8,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 74.44444444444444
       },
       {
-        "rank": 5,
+        "rank": 9,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi",
         "think": "no_think",
         "score": 74.44444444444444
       },
       {
-        "rank": 6,
+        "rank": 10,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 74.44444444444444
       },
       {
-        "rank": 7,
+        "rank": 11,
         "label": "gemma-4-26B_q4_0-it--kvq5_1--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq5_1--nothi",
         "think": "no_think",
         "score": 73.05555555555556
       },
       {
-        "rank": 8,
+        "rank": 12,
         "label": "gemma-4-26B_q4_0-it--kvq8_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq8_0--nothi",
         "think": "no_think",
         "score": 70.83333333333334
       },
       {
-        "rank": 9,
+        "rank": 13,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi",
         "think": "no_think",
         "score": 69.44444444444444
       },
       {
-        "rank": 10,
+        "rank": 14,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi",
         "think": "no_think",
         "score": 69.44444444444444
       },
       {
-        "rank": 11,
+        "rank": 15,
         "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 69.44444444444444
       },
       {
-        "rank": 12,
+        "rank": 16,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi",
         "think": "no_think",
         "score": 68.05555555555556
       },
       {
-        "rank": 13,
+        "rank": 17,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi",
         "think": "no_think",
         "score": 67.22222222222221
       },
       {
-        "rank": 14,
+        "rank": 18,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 67.22222222222221
       },
       {
-        "rank": 15,
+        "rank": 19,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi",
         "think": "no_think",
         "score": 65.83333333333333
       },
       {
-        "rank": 16,
+        "rank": 20,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
         "think": "no_think",
@@ -4449,6 +5605,41 @@
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
         "think": "no_think",
         "score": 102400
+      },
+      {
+        "rank": 17,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 102400
+      },
+      {
+        "rank": 18,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 102400
+      },
+      {
+        "rank": 19,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 102400
+      },
+      {
+        "rank": 20,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 102400
+      },
+      {
+        "rank": 21,
+        "label": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 102400
       }
     ],
     "generation_tok_s": [
@@ -4563,6 +5754,34 @@
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi",
         "think": "no_think",
         "score": 97.3
+      },
+      {
+        "rank": 17,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 33.6
+      },
+      {
+        "rank": 18,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 33.6
+      },
+      {
+        "rank": 19,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 33.6
+      },
+      {
+        "rank": 20,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 33.6
       }
     ],
     "prefill_tok_s_4k": [
@@ -4677,6 +5896,34 @@
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
         "think": "no_think",
         "score": 1923.1
+      },
+      {
+        "rank": 17,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 587.6
+      },
+      {
+        "rank": 18,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 587.2
+      },
+      {
+        "rank": 19,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 586.1
+      },
+      {
+        "rank": 20,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 585.3
       }
     ],
     "prefill_tok_s_12k": [
@@ -4791,6 +6038,34 @@
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
         "think": "no_think",
         "score": 1671.3
+      },
+      {
+        "rank": 17,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 574.9
+      },
+      {
+        "rank": 18,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 574.3
+      },
+      {
+        "rank": 19,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 571
+      },
+      {
+        "rank": 20,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 569.3
       }
     ],
     "total_tok_s_4k": [
@@ -4905,6 +6180,34 @@
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi",
         "think": "no_think",
         "score": 666.3110216870431
+      },
+      {
+        "rank": 17,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 207.48510042036432
+      },
+      {
+        "rank": 18,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 207.4407476635514
+      },
+      {
+        "rank": 19,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 207.31856357468712
+      },
+      {
+        "rank": 20,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 207.22950474183352
       }
     ],
     "total_tok_s_12k": [
@@ -5019,6 +6322,34 @@
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi",
         "think": "no_think",
         "score": 1200.8223833994664
+      },
+      {
+        "rank": 17,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 349.6097878809817
+      },
+      {
+        "rank": 18,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 349.3966828420366
+      },
+      {
+        "rank": 19,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 348.2212864817772
+      },
+      {
+        "rank": 20,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 347.61357854183325
       }
     ],
     "e2e_throughput_tok_s": [
@@ -5133,6 +6464,34 @@
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi",
         "think": "no_think",
         "score": 908.1333333333333
+      },
+      {
+        "rank": 17,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 342.1666666666667
+      },
+      {
+        "rank": 18,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 342.0333333333333
+      },
+      {
+        "rank": 19,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 339.6333333333333
+      },
+      {
+        "rank": 20,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 338.06666666666666
       }
     ],
     "speed_group": [
@@ -5247,6 +6606,41 @@
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
         "think": "no_think",
         "score": 0.6735291417945215
+      },
+      {
+        "rank": 17,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 0.2145832371362461
+      },
+      {
+        "rank": 18,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.21432829122506192
+      },
+      {
+        "rank": 19,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 0.21294149110363683
+      },
+      {
+        "rank": 20,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 0.2121627019922167
+      },
+      {
+        "rank": 21,
+        "label": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0
       }
     ],
     "capability": [
@@ -5308,173 +6702,243 @@
       },
       {
         "rank": 9,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.7306359758595221
+      },
+      {
+        "rank": 10,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 0.7266263501497197
+      },
+      {
+        "rank": 11,
         "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.7152567939397093
       },
       {
-        "rank": 10,
+        "rank": 12,
         "label": "gemma-4-26B_q4_0-it--kvq8_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq8_0--nothi",
         "think": "no_think",
         "score": 0.7149574205816144
       },
       {
-        "rank": 11,
+        "rank": 13,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 0.7044633567038943
+      },
+      {
+        "rank": 14,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 0.6955877067171299
+      },
+      {
+        "rank": 15,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.6955627257666919
       },
       {
-        "rank": 12,
+        "rank": 16,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi",
         "think": "no_think",
         "score": 0.6823883169984171
       },
       {
-        "rank": 13,
+        "rank": 17,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.5276823111014641
       },
       {
-        "rank": 14,
+        "rank": 18,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
         "think": "no_think",
         "score": 0.5029994662072967
       },
       {
-        "rank": 15,
+        "rank": 19,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi",
         "think": "no_think",
         "score": 0.5010191623366776
       },
       {
-        "rank": 16,
+        "rank": 20,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi",
         "think": "no_think",
         "score": 0.49909780082295296
+      },
+      {
+        "rank": 21,
+        "label": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.068031212484994
       }
     ],
     "comprehension": [
       {
         "rank": 1,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 0.951988888888889
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 0.9348777777777779
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.9228000000000001
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 0.9174
+      },
+      {
+        "rank": 5,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi",
         "think": "no_think",
         "score": 0.8926888888888889
       },
       {
-        "rank": 2,
+        "rank": 6,
         "label": "gemma-4-26B_q4_0-it--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq5_0--nothi",
         "think": "no_think",
         "score": 0.8915666666666666
       },
       {
-        "rank": 3,
+        "rank": 7,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.8906888888888889
       },
       {
-        "rank": 4,
+        "rank": 8,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi",
         "think": "no_think",
         "score": 0.8886444444444443
       },
       {
-        "rank": 5,
+        "rank": 9,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi",
         "think": "no_think",
         "score": 0.8749444444444443
       },
       {
-        "rank": 6,
+        "rank": 10,
         "label": "gemma-4-26B_q4_0-it--kvq5_1--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq5_1--nothi",
         "think": "no_think",
         "score": 0.8739222222222223
       },
       {
-        "rank": 7,
+        "rank": 11,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi",
         "think": "no_think",
         "score": 0.8724444444444446
       },
       {
-        "rank": 8,
+        "rank": 12,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.8604777777777779
       },
       {
-        "rank": 9,
+        "rank": 13,
         "label": "gemma-4-26B_q4_0-it--kvq8_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq8_0--nothi",
         "think": "no_think",
         "score": 0.8582000000000001
       },
       {
-        "rank": 10,
+        "rank": 14,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.8574444444444445
       },
       {
-        "rank": 11,
+        "rank": 15,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi",
         "think": "no_think",
         "score": 0.8562888888888889
       },
       {
-        "rank": 12,
+        "rank": 16,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi",
         "think": "no_think",
         "score": 0.8509777777777778
       },
       {
-        "rank": 13,
+        "rank": 17,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi",
         "think": "no_think",
         "score": 0.8471222222222221
       },
       {
-        "rank": 14,
+        "rank": 18,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
         "think": "no_think",
         "score": 0.8436888888888889
       },
       {
-        "rank": 15,
+        "rank": 19,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi",
         "think": "no_think",
         "score": 0.8378333333333332
       },
       {
-        "rank": 16,
+        "rank": 20,
         "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.8348111111111112
+      },
+      {
+        "rank": 21,
+        "label": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.75105
       }
     ],
     "coding": [
@@ -5564,31 +7028,66 @@
       },
       {
         "rank": 13,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.9355493951335115
+      },
+      {
+        "rank": 14,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 0.9325476039571221
+      },
+      {
+        "rank": 15,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 0.9298911515886358
+      },
+      {
+        "rank": 16,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 0.9277659896938467
+      },
+      {
+        "rank": 17,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi",
         "think": "no_think",
         "score": 0.7473131803025711
       },
       {
-        "rank": 14,
+        "rank": 18,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
         "think": "no_think",
         "score": 0.7450605086940948
       },
       {
-        "rank": 15,
+        "rank": 19,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.7403851525255588
       },
       {
-        "rank": 16,
+        "rank": 20,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi",
         "think": "no_think",
         "score": 0.7362835900686159
+      },
+      {
+        "rank": 21,
+        "label": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0
       }
     ],
     "latency_rel_8k": [
@@ -5703,6 +7202,34 @@
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
         "think": "no_think",
         "score": 0.7615384615384615
+      },
+      {
+        "rank": 17,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 0.24169160497716174
+      },
+      {
+        "rank": 18,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.2412166941759019
+      },
+      {
+        "rank": 19,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 0.23978435815298071
+      },
+      {
+        "rank": 20,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 0.2391304347826087
       }
     ],
     "vram_free_at_maxctx_mib": [
@@ -5764,59 +7291,94 @@
       },
       {
         "rank": 9,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 3069
+      },
+      {
+        "rank": 10,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 2757
       },
       {
-        "rank": 10,
+        "rank": 11,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 2669
+      },
+      {
+        "rank": 12,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi",
         "think": "no_think",
         "score": 2595
       },
       {
-        "rank": 11,
+        "rank": 13,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 2469
+      },
+      {
+        "rank": 14,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi",
         "think": "no_think",
         "score": 2192
       },
       {
-        "rank": 12,
+        "rank": 15,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi",
         "think": "no_think",
         "score": 1696
       },
       {
-        "rank": 13,
+        "rank": 16,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 1469
+      },
+      {
+        "rank": 17,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi",
         "think": "no_think",
         "score": 1043
       },
       {
-        "rank": 14,
+        "rank": 18,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi",
         "think": "no_think",
         "score": 981
       },
       {
-        "rank": 15,
+        "rank": 19,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
         "think": "no_think",
         "score": 671
       },
       {
-        "rank": 16,
+        "rank": 20,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 600
+      },
+      {
+        "rank": 21,
+        "label": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.6-27B-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 556
       }
     ],
     "decode_retention_pct": [],
@@ -6094,27 +7656,55 @@
       },
       {
         "rank": 7,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 8,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 9,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 10,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 11,
         "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 83
       },
       {
-        "rank": 8,
+        "rank": 12,
         "label": "gemma-4-26B_q4_0-it--kvq8_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq8_0--nothi",
         "think": "no_think",
         "score": 83
       },
       {
-        "rank": 9,
+        "rank": 13,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 83
       },
       {
-        "rank": 10,
+        "rank": 14,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi",
         "think": "no_think",
@@ -6233,6 +7823,34 @@
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
         "think": "no_think",
         "score": 100
+      },
+      {
+        "rank": 17,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 18,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 19,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 20,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 100
       }
     ],
     "instruction_following_pct": [
@@ -6347,6 +7965,34 @@
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
         "think": "no_think",
         "score": 96.4
+      },
+      {
+        "rank": 17,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 96.4
+      },
+      {
+        "rank": 18,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 96.4
+      },
+      {
+        "rank": 19,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 96.4
+      },
+      {
+        "rank": 20,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 96.4
       }
     ],
     "agentic_loop_pct": [
@@ -6436,27 +8082,55 @@
       },
       {
         "rank": 13,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 14,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 15,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 16,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 17,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi",
         "think": "no_think",
         "score": 80
       },
       {
-        "rank": 14,
+        "rank": 18,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi",
         "think": "no_think",
         "score": 80
       },
       {
-        "rank": 15,
+        "rank": 19,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 80
       },
       {
-        "rank": 16,
+        "rank": 20,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
         "think": "no_think",
@@ -6510,115 +8184,143 @@
     "power_eff_tok_s_per_w": [
       {
         "rank": 1,
-        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi [no_think]",
-        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
-        "score": 0.477
+        "score": 0.486
       },
       {
         "rank": 2,
-        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi [no_think]",
-        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0--nothi",
         "think": "no_think",
-        "score": 0.461
+        "score": 0.486
       },
       {
         "rank": 3,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1--nothi",
         "think": "no_think",
-        "score": 0.46
+        "score": 0.47
       },
       {
         "rank": 4,
         "label": "gemma-4-26B_q4_0-it--kvq8_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq8_0--nothi",
         "think": "no_think",
-        "score": 0.458
+        "score": 0.462
       },
       {
         "rank": 5,
-        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi [no_think]",
-        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi",
-        "think": "no_think",
-        "score": 0.433
-      },
-      {
-        "rank": 6,
         "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0--nothi",
         "think": "no_think",
-        "score": 0.432
+        "score": 0.442
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 0.442
       },
       {
         "rank": 7,
-        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi [no_think]",
-        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0--nothi",
         "think": "no_think",
-        "score": 0.429
+        "score": 0.437
       },
       {
         "rank": 8,
-        "label": "gemma-4-26B_q4_0-it--kvq5_1--nothi [no_think]",
-        "model": "gemma-4-26B_q4_0-it--kvq5_1--nothi",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1--nothi",
         "think": "no_think",
-        "score": 0.418
+        "score": 0.427
       },
       {
         "rank": 9,
-        "label": "gemma-4-26B_q4_0-it--kvq5_0--nothi [no_think]",
-        "model": "gemma-4-26B_q4_0-it--kvq5_0--nothi",
+        "label": "gemma-4-26B_q4_0-it--kvq5_1--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq5_1--nothi",
         "think": "no_think",
-        "score": 0.416
+        "score": 0.423
       },
       {
         "rank": 10,
-        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
-        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "label": "gemma-4-26B_q4_0-it--kvq5_0--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq5_0--nothi",
         "think": "no_think",
-        "score": 0.375
+        "score": 0.413
       },
       {
         "rank": 11,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0--nothi",
         "think": "no_think",
-        "score": 0.373
+        "score": 0.369
       },
       {
         "rank": 12,
         "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
-        "score": 0.37
-      },
-      {
-        "rank": 13,
-        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
-        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
-        "think": "no_think",
         "score": 0.367
       },
       {
-        "rank": 14,
-        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi [no_think]",
-        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi",
+        "rank": 13,
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
-        "score": 0.345
+        "score": 0.366
+      },
+      {
+        "rank": 14,
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.358
       },
       {
         "rank": 15,
         "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0--nothi",
         "think": "no_think",
-        "score": 0.342
+        "score": 0.341
       },
       {
         "rank": 16,
-        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
-        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1--nothi",
         "think": "no_think",
-        "score": 0.302
+        "score": 0.338
+      },
+      {
+        "rank": 17,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq8_0--nothi",
+        "think": "no_think",
+        "score": 0.12
+      },
+      {
+        "rank": 18,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.092
+      },
+      {
+        "rank": 19,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_0--nothi",
+        "think": "no_think",
+        "score": 0.092
+      },
+      {
+        "rank": 20,
+        "label": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq5_1--nothi",
+        "think": "no_think",
+        "score": 0.092
       }
     ]
   }

@@ -149,7 +149,6 @@ models:
    - hf_repo: unsloth/Qwen3.5-27B-GGUF
      hf_file: Qwen3.5-27B-IQ4_XS.gguf
      label: "Qwen3.5-27B IQ4_XS"
-     disabled: true   # parked 2026-06-08 (non-KV; KV-sweep focus)
      family: qwen3.5
      type: moe
      think: optional
@@ -157,6 +156,7 @@ models:
      native_max_ctx: 262144
      kv_bytes_per_token: 16384
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     kv_variants: [q4_0, q5_0, q5_1, q8_0]   # full KV quant sweep
      notes: "kv_bytes_per_token is estimated — kv-probe will calibrate."
 
    # ── Qwen3.6-27B UD-Q4_K_XL ───────────────────────────────────────────────────
@@ -166,7 +166,7 @@ models:
    - hf_repo: unsloth/Qwen3.6-27B-GGUF
      hf_file: Qwen3.6-27B-UD-Q4_K_XL.gguf
      label: "Qwen3.6-27B UD-Q4_K_XL"
-     disabled: true   # parked 2026-06-08 (non-KV; KV-sweep focus)
+     disabled: true   # parked 2026-06-08 (UD-Q4_K_XL too heavy: 19.9 GB at 102k q4_0 KV, no headroom for higher quants)
      family: qwen3.6
      type: moe
      think: optional
@@ -174,6 +174,7 @@ models:
      native_max_ctx: 262144
      kv_bytes_per_token: 49152
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     kv_variants: [q4_0, q5_0, q5_1, q8_0]
      notes: "kv_bytes_per_token matches 35B estimate — kv-probe will calibrate."
 
    # ── Qwen3.6-35B-A3B IQ4_XS ──────────────────────────────────────────────────
