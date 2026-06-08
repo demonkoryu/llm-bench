@@ -1641,7 +1641,6 @@ if (FULL) {
       ['kv-probe', 'runners/kv-probe.mjs'],
       ['struct-output', 'runners/struct-output.mjs'],
       ['throughput-ttft', 'runners/throughput-ttft.mjs'],
-      ['speed-decay', 'runners/speed-decay.mjs'],
       ['quality-decay', 'runners/quality-decay.mjs'],
       ['instruction-following', 'runners/instruction-following.mjs'],
       ['prompt-cache', 'runners/prompt-cache.mjs'],
@@ -1649,7 +1648,7 @@ if (FULL) {
    ];
    console.log(`\n[run-suite] --full: chaining ${secondaries.length} secondary runners against ${run.runId}\n`);
    // --depths caps the two depth sweeps (speed-decay, quality-decay); other secondaries ignore it.
-   const DEPTH_SWEEPS = new Set(['speed-decay', 'quality-decay']);
+   const DEPTH_SWEEPS = new Set(['quality-decay']);
    for (const [kind, script] of secondaries) {
       try {
          console.log(`[run-suite] ▸ ${kind} …`);
