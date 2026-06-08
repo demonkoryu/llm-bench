@@ -596,9 +596,9 @@ async function runSummarization(client, model, thinkState) {
    const SYSTEM =
       'Summarize and categorize content for a personal knowledge vault.\nVault areas: craft (software, AI, hardware, PKM), finance (trading, markets), music (DJing, production), work (career, employer).\n\nRespond with JSON only:\n{"summary": "<1-2 sentence factual summary>", "area": "<craft|finance|music|work>", "tags": ["<area/subtag>", ...]}';
 
-   let totalScore = 0,
-      totalMs = 0,
+   let totalMs = 0,
       count = 0;
+   const totals = { kw: 0, area: 0, tags: 0, length: 0 };
 
    for (const [caseId, item] of Object.entries(SUMM_ITEMS)) {
       const messages = [
@@ -621,7 +621,12 @@ async function runSummarization(client, model, thinkState) {
       totalMs += Date.now() - t0;
       const raw = stripThink(completion.choices?.[0]?.message?.content ?? '');
       const gradingResult = summGrader(raw, { vars: { case_id: caseId } });
-      totalScore += gradingResult.score ?? 0;
+      // Accumulate raw sub-scores; weighting happens at analysis time in scoring.mjs.
+      const rs = gradingResult.rawScores ?? {};
+      totals.kw += rs.kw ?? 0;
+      totals.area += rs.area ?? 0;
+      totals.tags += rs.tags ?? 0;
+      totals.length += rs.length ?? 0;
       count++;
       recordPf({
          bench: 'summarization',
@@ -637,7 +642,11 @@ async function runSummarization(client, model, thinkState) {
    }
 
    return {
-      score: count ? ((totalScore / count) * 100).toFixed(1) : '?',
+      // score is intentionally omitted — computed from sub-scores at analysis time.
+      summ_kw: count ? totals.kw / count : null,
+      summ_area: count ? totals.area / count : null,
+      summ_tags: count ? totals.tags / count : null,
+      summ_length: count ? totals.length / count : null,
       halls: '-',
       json_fail: '-',
       tok_s: '-',

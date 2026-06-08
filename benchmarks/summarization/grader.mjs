@@ -40,6 +40,11 @@ export default function (output, context) {
    const wordCount = summary.trim().split(/\s+/).length;
    const lengthOk = wordCount >= 10 && wordCount <= 100;
 
+   // Raw component scores — weights are applied at analysis time (scoring.mjs), not here.
+   const rawScores = { kw: kwScore, area: areaOk ? 1 : 0, tags: tagsOk ? 1 : 0, length: lengthOk ? 1 : 0 };
+
+   // Compute a weighted score only for the pass threshold and promptfoo reason string.
+   // The canonical weighted score for the dashboard is produced by scoring.mjs.
    const score = kwScore * 0.25 + (areaOk ? 0.3 : 0) + (tagsOk ? 0.3 : 0) + (lengthOk ? 0.15 : 0);
    const missing = c.must_mention.filter((kw) => !summaryLower.includes(kw.toLowerCase()));
 
@@ -51,5 +56,5 @@ export default function (output, context) {
       `words=${wordCount}`,
    ].join(' | ');
 
-   return { pass: score >= 0.75, score, reason };
+   return { pass: score >= 0.75, score, reason, rawScores };
 }

@@ -310,6 +310,22 @@ export function computeMetrics(rows) {
       return m.length ? m[m.length - 1] : null;
    };
 
+   // Summarization sub-score weights — single source of truth.
+   // New runs store raw summ_kw/area/tags/length; old runs store a baked score.
+   const SUMM_W = { kw: 0.25, area: 0.3, tags: 0.3, length: 0.15 };
+   const summScore = (rs) => {
+      const r = rs.filter((row) => row.bench === 'summarization').at(-1);
+      if (!r) {
+         return null;
+      }
+      if (r.summ_kw != null) {
+         return (r.summ_kw * SUMM_W.kw + r.summ_area * SUMM_W.area + r.summ_tags * SUMM_W.tags + r.summ_length * SUMM_W.length) * 100;
+      }
+      // Legacy: baked score stored directly (pre-refactor runs).
+      const s = parseFloat(r.score);
+      return Number.isFinite(s) ? s : null;
+   };
+
    const W_CODE_PASS1 = 0.4;
    const W_CODE_TESTRATE = 0.6;
    const codingGradeOf = (base) => {
@@ -330,7 +346,7 @@ export function computeMetrics(rows) {
          const triage = latestScore(rs, 'triage');
          const reasoning = latestScore(rs, 'reasoning');
          const toolcall = latestScore(rs, 'toolcalling');
-         const summ = latestScore(rs, 'summarization');
+         const summ = summScore(rs);
          const docqa = latestScore(rs, 'docqa');
          const speedTg =
             Math.max(latestScore(rs, 'speed_short') ?? 0, latestScore(rs, 'speed_long-32k') ?? 0, latestScore(rs, 'speed') ?? 0) || null;
