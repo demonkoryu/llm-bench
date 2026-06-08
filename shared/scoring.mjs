@@ -594,8 +594,9 @@ export function scoreGroups(models, dials = DEFAULT_DIALS) {
  * Per-model fleet suitability — a geometric blend that ranks capable all-rounders to
  * the top while context reach and slot count strongly modulate:
  *   fleet = capability^w_cap × ctx_norm^w_ctx × slots_norm^w_slots × throughput^w_thru
- * ctx_norm clamps main ctx at ctx_tier (100k+ counts the same); slots_norm is relative
- * to the fleet's best slot count. The throughput term is OFF by default (w_thru=0) so
+ * ctx_norm clamps main ctx at ctx_tier (100k+ counts the same); slots_norm uses a
+ * staggered scale (0→0, 1→0.5, 2→0.8, 3→0.9, 4→0.95, 5→0.975, 6+→1.0). The
+ * throughput term is OFF by default (w_thru=0) so
  * the board is fully populated without pargen; when w_thru>0, a model lacking a pargen
  * run is flagged needs_pargen and left unscored. Memory (weights/slots) is from the
  * coherence-verified VRAM point and the measured KV slope.
@@ -666,7 +667,21 @@ export function computeFleet(models, dials = DEFAULT_DIALS) {
          continue;
       }
       p.ctx_norm = Math.min(p.main_ctx, tier) / tier;
-      p.slots_norm = p.slots / bestSlots;
+      // Staggered slots score: 0→0, 1→0.5, 2→0.8, 3→0.9, 4→0.95, 5→0.975, 6+→1.0
+      p.slots_norm =
+         p.slots >= 6
+            ? 1.0
+            : p.slots === 5
+              ? 0.975
+              : p.slots === 4
+                ? 0.95
+                : p.slots === 3
+                  ? 0.9
+                  : p.slots === 2
+                    ? 0.8
+                    : p.slots === 1
+                      ? 0.5
+                      : 0;
       // Throughput term: honored only when weighted (w_thru>0) AND measured. When
       // weighted but missing, the model can't satisfy the requested formula → flag it.
       const thruTerm = wThru > 0 ? (p.capacity_norm != null ? p.capacity_norm ** wThru : null) : 1;
