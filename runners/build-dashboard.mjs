@@ -50,7 +50,8 @@ h1{font-size:18px;margin:0 0 4px;color:var(--accent)}
 #env{color:var(--dim);font-size:11px}
 .warn{margin-top:6px;color:#1a1a1a;background:var(--warn);padding:4px 8px;border-radius:4px;display:inline-block}
 /* Single column: no sidebar. Controls live above the section they drive. */
-main{width:100%;margin:0 auto;display:flex;flex-direction:column;gap:16px;padding:16px}
+main{width:80%;margin:0 auto;display:flex;flex-direction:column;gap:16px;padding:16px}
+@media(max-width:900px){main{width:100%}}
 .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 button{background:#26262f;color:var(--text);border:1px solid #3a3a47;border-radius:4px;padding:4px 12px;cursor:pointer}
 button:hover{border-color:var(--accent)}
