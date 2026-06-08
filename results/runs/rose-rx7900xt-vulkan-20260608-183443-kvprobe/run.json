@@ -1,0 +1,44 @@
+{
+  "run_id": "rose-rx7900xt-vulkan-20260608-183443-kvprobe",
+  "kind": "kvprobe",
+  "host": "rose",
+  "gpu": "RX 7900 XT",
+  "backend": "vulkan",
+  "environment": {
+    "runner": "llama.cpp",
+    "backend": "vulkan",
+    "gpu": "RX 7900 XT",
+    "server_flags": {
+      "flash_attn": "on",
+      "cache_type_k": null,
+      "cache_type_v": null,
+      "ngl": 99,
+      "np": 1
+    },
+    "defaults_extra_flags": {
+      "batch-size": 2048,
+      "ubatch-size": 2048
+    },
+    "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+  },
+  "started": "2026-06-08T16:34:43.172Z",
+  "finished": "2026-06-08T16:35:11.892Z",
+  "status": "complete",
+  "seed": "rose-rx7900xt-vulkan-20260608-173201",
+  "planned": [],
+  "results": [
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0",
+      "think": "n/a",
+      "bench": "kv_per_tok",
+      "score": "13.783",
+      "vram_mib": 19794,
+      "ctx_loaded": 102400,
+      "status": "ok",
+      "notes": "lo=8192:18526MiB hi=102400:19794MiB",
+      "ts": "2026-06-08T16:35:08.294Z"
+    }
+  ]
+}
