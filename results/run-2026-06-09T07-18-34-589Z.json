@@ -1,0 +1,1120 @@
+{
+  "results": {
+    "version": 3,
+    "timestamp": "2026-06-09T07:18:34.589Z",
+    "results": [
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Agentic RAG whitepaper\nContent preview:\nWhitepaper on Agentic Retrieval-Augmented Generation. Covers multi-step reasoning with retrieval, tool use, and LLM orchestration.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-ai-rag"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Agentic RAG Whitepaper\",\n  \"suggested_summary\": \"A whitepaper detailing Agentic Retrieval-Augmented Generation, focusing on multi-step reasoning, tool use, and LLM orchestration.\",\n  \"suggested_tags\": [\n    \"craft/ai\",\n    \"craft/rag\",\n    \"craft/llm\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"_AI.md\",\n  \"confidence\": 0.95,\n  \"reasoning\": \"The content is a technical whitepaper on Agentic RAG, which falls squarely under AI/MCP infrastructure and LLM topics defined in the _AI.md anchor within the craft area.\"\n}",
+          "metadata": {
+            "tok_per_sec": "31.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 7917
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: How to profile Python and Rust programs\nContent preview:\nA guide to profiling CPU-bound Python code with cProfile and Rust with cargo flamegraph. Includes tips for reading flamegraphs.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-software-howto"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"How to profile Python and Rust programs\",\n  \"suggested_summary\": \"A guide covering CPU profiling for Python using cProfile and for Rust using cargo flamegraph, including tips on interpreting flamegraphs.\",\n  \"suggested_tags\": [\n    \"craft/software\",\n    \"craft/rust\",\n    \"craft/python\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"_Software.md\",\n  \"confidence\": 0.92,\n  \"reasoning\": \"The content is a technical how-to guide for software engineering tasks (profiling) in specific languages (Python, Rust). This fits squarely into the 'craft' area under the '_Software.md' anchor which covers programming and dev tools.\",\n  \"propose_new_anchor\": null\n}",
+          "metadata": {
+            "tok_per_sec": "31.6"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 8805
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Analyze premarket direction reversal\nContent preview:\nStrategy for identifying when premarket direction is likely to reverse at the open. Uses volume delta and level 2 tape reading.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "finance-trading"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Analyze premarket direction reversal\",\n  \"suggested_summary\": \"A trading strategy for identifying premarket direction reversals at market open using volume delta and Level 2 tape reading.\",\n  \"suggested_tags\": [\n    \"finance/trading\",\n    \"finance/premarket\",\n    \"finance/strategy\"\n  ],\n  \"target_area\": \"finance\",\n  \"target_anchor\": \"_Trading.md\",\n  \"confidence\": 0.95\n,\n  \"reasoning\": \"The content explicitly describes a trading strategy involving market mechanics (premarket, open) and technical tools (volume delta, level 2), which fits perfectly under the finance area and the _Trading.md anchor.\"\n}",
+          "metadata": {
+            "tok_per_sec": "31.5"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 8604
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Access Virus KB Get sound A77\nContent preview:\nReference for getting the A77 patch sound from the Access Virus KB synthesizer. Includes parameter settings and MIDI CC map.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "music-no-anchor"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Access Virus KB A77 Patch Settings\",\n  \"suggested_summary\": \"Reference guide containing parameter settings and MIDI CC mapping for the A77 patch on the Access Virus KB synthesizer.\",\n  \"suggested_tags\": [\n    \"music/synthesis\",\n    \"music/virus-kb\"\n  ],\n  \"target_area\": \"music\",\n  \"target_anchor\": \"_Synthesis.md\",\n  \"confidence\": 0.92,\n  \"reasoning\": \"The content is a technical reference for a specific synthesizer (Access Virus KB) and patch (A77), which fits squarely into the 'music' area under synthesis/production topics.\",\n  \"propose_new_anchor\": {\n    \"filename\": \"_Synthesis.md\",\n    \"title\": \"Synthesis & Sound Design\",\n    \"description\": \"Sub-Topic anchor for synthesizers, sound design techniques, patches, and hardware/software synth references.\"\n  }\n}",
+          "metadata": {
+            "tok_per_sec": "31.6"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 10545
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Keyboard debouncing algorithms for custom firmware\nContent preview:\nOverview of keyboard debounce algorithms: eager, defer-until-idle, and Roland eager-pr. Relevant for QMK and ZMK custom keyboard firmware.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-hardware"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Keyboard Debouncing Algorithms (QMK/ZMK)\",\n  \"suggested_summary\": \"An overview of eager, defer-until-idle, and Roland eager-pr debounce algorithms used in custom keyboard firmware like QMK and ZMK.\",\n  \"suggested_tags\": [\n    \"craft/hardware\",\n    \"craft/firmware\",\n    \"craft/keyboards\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"_Hardware.md\",\n  \"confidence\": 0.95\n,\n  \"reasoning\": \"The content is about keyboard firmware and hardware behavior (debouncing), which fits squarely into the 'Hardware' anchor under the 'craft' area.\"\n}",
+          "metadata": {
+            "tok_per_sec": "31.5"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 8541
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: A Three-Level System for Organizing Information in PKM\nContent preview:\nIntroduces a three-level hierarchy (Topics, Classes, Tags) for personal knowledge management. Contrasts with flat tag systems and PARA.",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "craft-mind"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"promote_resource\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"A Three-Level System for Organizing Information in PKM\",\n  \"suggested_summary\": \"Introduces a hierarchical framework of Topics, Classes, and Tags for personal knowledge management as an alternative to flat tagging or PARA.\",\n  \"suggested_tags\": [\n    \"craft/pkm\",\n    \"craft/mind\"\n  ],\n  \"target_area\": \"craft\",\n  \"target_anchor\": \"_Mind.md\",\n  \"confidence\": 0.92,\n  \"reasoning\": \"The content explicitly discusses Personal Knowledge Management (PKM) methodologies and mental models for organization, which aligns perfectly with the 'mind/productivity-philosophy' scope of the _Mind.md anchor in the craft area.\",\n  \"propose_new_anchor\": null\n}",
+          "metadata": {
+            "tok_per_sec": "31.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100.0/100",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 1,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 8508
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: test123\nContent preview:\nasdf test note ignore",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "dismiss-stub"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"dismiss\",\n  \"suggested_type\": \"task\",\n  \"suggested_title\": \"test123\",\n  \"suggested_summary\": \"This is a test note with no substantive content.\",\n  \"suggested_tags\": [],\n  \"target_area\": null,\n  \"target_anchor\": \"_Mind.md\",\n  \"confidence\": 0.95,\n  \"reasoning\": \"The title 'test123' and content 'asdf test note ignore' clearly indicate this is a test entry or clutter that should be dismissed rather than stored as knowledge.\"\n}",
+          "metadata": {
+            "tok_per_sec": "30.8"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.8,
+          "reason": "score=80.0/100 | ANCHOR_HALL | failed=[R4]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 1,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.8,
+        "latencyMs": 11439
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: 2026-05-24\nContent preview:\nhttps://example.com/some-article-2024",
+          "label": "triage"
+        },
+        "vars": {
+          "item_id": "ambiguous-url"
+        },
+        "response": {
+          "output": "{\n  \"proposed_action\": \"dismiss\",\n  \"suggested_type\": \"resource\",\n  \"suggested_title\": \"Example Article Placeholder\",\n  \"suggested_summary\": \"A placeholder URL with no discernible content or context for classification.\",\n  \"suggested_tags\": [],\n  \"target_area\": null,\n  \"target_anchor\": \"\",\n  \"confidence\": 0.50\n  ,\n  \"reasoning\": \"The item is a bare URL to 'example.com' which is a standard placeholder domain. It contains no actual content, title, or context to determine its area or value. It is classified as clutter/placeholder.\"\n}",
+          "metadata": {
+            "tok_per_sec": "30.5"
+          }
+        },
+        "gradingResult": {
+          "pass": false,
+          "score": 0.65,
+          "reason": "score=65.0/100 | ANCHOR_HALL | failed=[R4,C1]",
+          "namedScores": {
+            "rule_R1": 1,
+            "rule_R2": 1,
+            "rule_R3": 1,
+            "rule_R4": 0,
+            "rule_R5": 1,
+            "rule_R6": 1,
+            "rule_R7": 1,
+            "rule_C1": 0,
+            "rule_C2": 1
+          }
+        },
+        "success": false,
+        "score": 0.65,
+        "latencyMs": 7447
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How many cents does the ball cost?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "bat-and-ball",
+          "question": "A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How many cents does the ball cost?"
+        },
+        "response": {
+          "output": "{\"answer\": \"5\"}",
+          "metadata": {
+            "tok_per_sec": "37.6"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"5\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "If 5 machines take 5 minutes to make 5 widgets, how many minutes do 100 machines take to make 100 widgets?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "widgets",
+          "question": "If 5 machines take 5 minutes to make 5 widgets, how many minutes do 100 machines take to make 100 widgets?"
+        },
+        "response": {
+          "output": "{\n\"answer\": \"5\"\n}",
+          "metadata": {
+            "tok_per_sec": "35.7"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"5\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "A patch of lily pads doubles in size every day. It takes 48 days to cover the whole lake. On what day number was the lake half covered?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "lily-pad",
+          "question": "A patch of lily pads doubles in size every day. It takes 48 days to cover the whole lake. On what day number was the lake half covered?"
+        },
+        "response": {
+          "output": "{\"answer\": \"47\"}",
+          "metadata": {
+            "tok_per_sec": "37.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"47\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "A farmer has 17 sheep. All but 9 die. How many sheep are left alive?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "all-but-9",
+          "question": "A farmer has 17 sheep. All but 9 die. How many sheep are left alive?"
+        },
+        "response": {
+          "output": "{\"answer\": \"9\"}",
+          "metadata": {
+            "tok_per_sec": "37.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"9\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "A store starts with 120 apples. It sells one third of them in the morning, then one quarter of the REMAINING apples in the afternoon. How many apples are left at the end of the day?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "apples-fractions",
+          "question": "A store starts with 120 apples. It sells one third of them in the morning, then one quarter of the REMAINING apples in the afternoon. How many apples are left at the end of the day?"
+        },
+        "response": {
+          "output": "{\"answer\": \"60\"}",
+          "metadata": {
+            "tok_per_sec": "37.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"60\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Alice is older than Bob. Carol is younger than Bob. Dave is older than Alice. Among Alice, Bob, Carol, and Dave, who is the oldest? Give the single name.",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "age-order",
+          "question": "Alice is older than Bob. Carol is younger than Bob. Dave is older than Alice. Among Alice, Bob, Carol, and Dave, who is the oldest? Give the single name."
+        },
+        "response": {
+          "output": "{\"answer\": \"Dave\"}",
+          "metadata": {
+            "tok_per_sec": "37.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"Dave\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Today is Wednesday. What day of the week will it be exactly 100 days from now? Give the weekday name.",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "days-100",
+          "question": "Today is Wednesday. What day of the week will it be exactly 100 days from now? Give the weekday name."
+        },
+        "response": {
+          "output": "{\"answer\": \"Friday\"}",
+          "metadata": {
+            "tok_per_sec": "37.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"Friday\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Counting through the whole numbers from 1 to 100 inclusive, how many times does the digit 7 appear in total (e.g. 77 contains the digit 7 twice)?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "count-sevens",
+          "question": "Counting through the whole numbers from 1 to 100 inclusive, how many times does the digit 7 appear in total (e.g. 77 contains the digit 7 twice)?"
+        },
+        "response": {
+          "output": "{\"answer\": \"20\"}",
+          "metadata": {
+            "tok_per_sec": "37.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"20\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "What is the next number in this sequence: 2, 6, 12, 20, 30, ? Give just the number.",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "next-in-sequence",
+          "question": "What is the next number in this sequence: 2, 6, 12, 20, 30, ? Give just the number."
+        },
+        "response": {
+          "output": "{\"answer\": \"42\"}",
+          "metadata": {
+            "tok_per_sec": "37.1"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"42\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Rule: If it is raining, then the ground is wet. Observation: the ground is NOT wet. Based only on this, is it raining? Answer yes or no.",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "modus-tollens",
+          "question": "Rule: If it is raining, then the ground is wet. Observation: the ground is NOT wet. Based only on this, is it raining? Answer yes or no."
+        },
+        "response": {
+          "output": "{\"answer\": \"no\"}",
+          "metadata": {
+            "tok_per_sec": "37.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"no\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "A drawer has 10 red socks and 10 blue socks mixed together in the dark. How many socks must you pull out, at minimum, to be GUARANTEED a matching pair?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "socks",
+          "question": "A drawer has 10 red socks and 10 blue socks mixed together in the dark. How many socks must you pull out, at minimum, to be GUARANTEED a matching pair?"
+        },
+        "response": {
+          "output": "{\n\"answer\": \"3\"\n}",
+          "metadata": {
+            "tok_per_sec": "35.7"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"3\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "In a race, you overtake the runner in second place. What position are you in now? Give the ordinal (e.g. first, second).",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "overtaking",
+          "question": "In a race, you overtake the runner in second place. What position are you in now? Give the ordinal (e.g. first, second)."
+        },
+        "response": {
+          "output": "{\"answer\": \"second\"}",
+          "metadata": {
+            "tok_per_sec": "37.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"second\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "What is the weather in Tokyo right now?",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "weather-basic"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"get_weather\",\"arguments\":\"{\\\"city\\\":\\\"Tokyo\\\"}\"},\"id\":\"ToxbAM75AYNfOxJ93fc7fYE67agsw2XF\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: get_weather({\"city\":\"Tokyo\"})"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 8250
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "What is the temperature in Berlin in Fahrenheit?",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "weather-unit"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"get_weather\",\"arguments\":\"{\\\"city\\\":\\\"Berlin\\\",\\\"unit\\\":\\\"fahrenheit\\\"}\"},\"id\":\"pdvZik9pQq7Fxj061zwhhDASAGeXbqI1\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: get_weather({\"city\":\"Berlin\",\"unit\":\"fahrenheit\"})"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 6013
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Add up these numbers for me: 12, 30, and 8.",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "add-list"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"add_numbers\",\"arguments\":\"{\\\"numbers\\\":[12, 30, 8]}\"},\"id\":\"Mcjnupt2cSfPqSolTLrb1ESe2wlGd8Fn\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: add_numbers({\"numbers\":[12,30,8]})"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 7154
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Convert 250 US dollars to euros.",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "currency"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"convert_currency\",\"arguments\":\"{\\\"amount\\\":250,\\\"from\\\":\\\"USD\\\",\\\"to\\\":\\\"EUR\\\"}\"},\"id\":\"WJcvpHCCQKsO71YWsQj6l8j2CVrSnp41\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: convert_currency({\"amount\":250,\"from\":\"USD\",\"to\":\"EUR\"})"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 9088
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Email alice@example.com with the subject \"Lunch\" and tell her I will be 10 minutes late.",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "email-fields"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"send_email\",\"arguments\":\"{\\\"to\\\":\\\"alice@example.com\\\",\\\"subject\\\":\\\"Lunch\\\",\\\"body\\\":\\\"Hi Alice, I will be 10 minutes late for lunch. See you soon!\\\"}\"},\"id\":\"lUMXjZy9YVGlnevW2wTaziaMI6KUXsMn\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: send_email({\"to\":\"alice@example.com\",\"subject\":\"Lunch\",\"body\":\"Hi Alice)"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 8346
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Find wireless headphones in the catalog, show me 5.",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "pick-right-tool"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"search_db\",\"arguments\":\"{\\\"query\\\":\\\"wireless headphones\\\",\\\"limit\\\":5}\"},\"id\":\"X7ZLZvPJd7HlJpA3LrEEtMHyLdGJbxRe\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: search_db({\"query\":\"wireless headphones\",\"limit\":5})"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 8504
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "How much is 1000 Japanese yen in British pounds?",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "distractor-tools"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"convert_currency\",\"arguments\":\"{\\\"amount\\\":1000,\\\"from\\\":\\\"JPY\\\",\\\"to\\\":\\\"GBP\\\"}\"},\"id\":\"DoIJGZn6e6DesjC9AO9JkrLs8BWdLLNc\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: convert_currency({\"amount\":1000,\"from\":\"JPY\",\"to\":\"GBP\"})"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 5195
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Thanks, that is all I needed. Have a good day!",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "no-tool-needed"
+        },
+        "response": {
+          "output": "[]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correctly no tool called"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 6171
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Please book me a flight from London to New York tomorrow.",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "missing-tool"
+        },
+        "response": {
+          "output": "[]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correctly no tool called"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 8303
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "I bought three items costing seven dollars, fifteen dollars, and twenty-two dollars. What is the total?",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "numbers-from-prose"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"add_numbers\",\"arguments\":\"{\\\"numbers\\\":[7, 15, 22]}\"},\"id\":\"S9oOeMhBnlGdKiyrQNPz4hk0PIscVa0M\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: add_numbers({\"numbers\":[7,15,22]})"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 11932
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Check if in given array of numbers, are any two numbers closer to each other than\ngiven threshold.\n>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\nfalse\n>>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\ntrue",
+          "label": "coding_multipl"
+        },
+        "vars": {
+          "case_id": "HumanEval_0_has_close_elements",
+          "category": "multipl",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction has_close_elements(numbers, threshold) {\n    for (let i = 0; i < numbers.length; i++) {\n        for (let j = i + 1; j < numbers.length; j++) {\n            if (Math.abs(numbers[i] - numbers[j]) < threshold) {\n                return true;\n            }\n        }\n    }\n    return false;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "32.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 7,
+          "total": 7,
+          "reason": "pass: 7/7"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\nseparate those group into separate strings and return the array of those.\nSeparate groups are balanced (each open brace is properly closed) and not nested within each other\nIgnore any spaces in the input string.\n>>> separate_paren_groups(\"( ) (( )) (( )( ))\")\n[\"()\", \"(())\", \"(()())\"]",
+          "label": "coding_multipl"
+        },
+        "vars": {
+          "case_id": "HumanEval_1_separate_paren_groups",
+          "category": "multipl",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction separate_paren_groups(paren_string) {\n    const result = [];\n    let currentGroup = '';\n    let depth = 0;\n\n    for (const char of paren_string) {\n        if (char === ' ') {\n            continue;\n        }\n        if (char === '(') {\n            depth++;\n            currentGroup += char;\n        } else if (char === ')') {\n            depth--;\n            currentGroup += char;\n            if (depth === 0) {\n                result.push(currentGroup);\n                currentGroup = '';\n            }\n        }\n    }\n\n    return result;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "32.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 4,
+          "total": 4,
+          "reason": "pass: 4/4"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Agentic RAG whitepaper\n\nCovers multi-step reasoning with retrieval, tool use, and LLM orchestration. Describes how agents decompose queries into sub-tasks, retrieve relevant context at each step, and synthesize answers using chained tool calls.",
+          "label": "summarization"
+        },
+        "vars": {
+          "case_id": "rag-paper"
+        },
+        "response": {
+          "output": "{\n  \"summary\": \"The whitepaper details Agentic RAG, a framework where LLM-driven agents decompose queries into sub-tasks to perform multi-step reasoning with retrieval and tool use.\",\n  \"area\": \"craft\",\n  \"tags\": [\n    \"craft/AI\",\n    \"craft/software\"\n  ]\n}",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100/100 | kw=3/3 | area=craft | tags=ok | words=23",
+          "rawScores": {
+            "kw": 1,
+            "area": 1,
+            "tags": 1,
+            "length": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Sidechain compression for trance pumping\n\nClassic trance pumping effect: sidechain a compressor on bass and pads keyed to the kick drum. Attack 0.1ms, release 80-150ms for the pump feel. Ghost kick sidechain keeps it in time without audible kick bleed.",
+          "label": "summarization"
+        },
+        "vars": {
+          "case_id": "trance-compression"
+        },
+        "response": {
+          "output": "{\n\"summary\": \"The content outlines technical settings for achieving a classic trance pumping effect using sidechain compression on bass and pads keyed to the kick drum.\",\n\"area\": \"music\",\n\"tags\": [\n\"music/production\",\n\"music/trance\",\n\"music/mixing\"\n]\n}",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 0.9166666666666666,
+          "reason": "score=92/100 | kw=2/3(missing:compressor) | area=music | tags=ok | words=24",
+          "rawScores": {
+            "kw": 0.6666666666666666,
+            "area": 1,
+            "tags": 1,
+            "length": 1
+          }
+        },
+        "success": true,
+        "score": 0.9166666666666666,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: 0DTE options theta decay\n\nZero-days-to-expiry SPX options accelerate theta decay after 2pm. Selling premium after 2pm captures the steepest part of the intraday theta curve but gamma risk is highest in the last 30 minutes.",
+          "label": "summarization"
+        },
+        "vars": {
+          "case_id": "trading-0dte"
+        },
+        "response": {
+          "output": "{\n\"summary\": \"Selling 0DTE SPX options after 2pm leverages accelerated theta decay, though this strategy carries peak gamma risk during the final 30 minutes of trading.\",\n\"area\": \"finance\",\n\"tags\": [\n\"finance/trading\",\n\"finance/options\",\n\"finance/theta_decay\"\n]\n}",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100/100 | kw=3/3 | area=finance | tags=ok | words=24",
+          "rawScores": {
+            "kw": 1,
+            "area": 1,
+            "tags": 1,
+            "length": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_1",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_1 [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Keyboard debouncing in QMK firmware\n\nQMK supports eager, defer-until-idle, and sym_eager_pk debounce algorithms. Eager fires immediately on press and delays release; sym_eager_pk is best for per-key debounce on split keyboards with noisy switches.",
+          "label": "summarization"
+        },
+        "vars": {
+          "case_id": "qmk-debounce"
+        },
+        "response": {
+          "output": "{\n  \"summary\": \"QMK firmware offers various keyboard debouncing algorithms, with sym_eager_pk recommended for handling noisy switches on split keyboards.\",\n  \"area\": \"craft\",\n  \"tags\": [\n    \"craft/hardware\",\n    \"craft/firmware\"\n  ]\n}",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 0.9166666666666666,
+          "reason": "score=92/100 | kw=2/3(missing:debounce) | area=craft | tags=ok | words=17",
+          "rawScores": {
+            "kw": 0.6666666666666666,
+            "area": 1,
+            "tags": 1,
+            "length": 1
+          }
+        },
+        "success": true,
+        "score": 0.9166666666666666,
+        "latencyMs": 0
+      }
+    ],
+    "stats": {
+      "successes": 34,
+      "failures": 2,
+      "errors": 0
+    }
+  },
+  "config": {
+    "description": "llm-bench target=rose backend=vulkan"
+  }
+}

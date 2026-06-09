@@ -72,6 +72,22 @@ function describeSource(run) {
 
 const { models, ranking, fleet, fleetRanking } = aggregateModels(rows);
 
+// Patch display labels: scoring.mjs derives labels from the hf_file-based internal ID
+// (e.g. "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]"). Replace with the
+// human-readable label from models-config when available (loaded below as `caps`).
+// This is done after aggregateModels so scoring is unaffected; only the display name changes.
+// caps is keyed by base_model (no think suffix), value carries label from models.yaml.
+// Note: caps is populated after this block — forward reference is fine since we mutate
+// in-place before the report object is built below.
+function patchLabels(modelsList, capMap) {
+   for (const m of modelsList) {
+      const cap = capMap.get(m.base_model);
+      if (cap?.label) {
+         m.label = m.think !== 'n/a' ? `${cap.label} [${m.think}]` : cap.label;
+      }
+   }
+}
+
 // host/gpu/backend live on the run object; row fields (target/backend) override when present.
 const sample = rows[0] ?? {};
 const first = runs[0] ?? {};
@@ -104,6 +120,7 @@ if (!provenance.consistent) {
 }
 
 const caps = loadCapabilities(join(ROOT, 'config/models.yaml'));
+patchLabels(models, caps);
 
 const report = {
    generated: new Date().toISOString(),

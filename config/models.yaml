@@ -174,8 +174,6 @@ models:
      tools: true
      native_max_ctx: 262144
      kv_bytes_per_token: 16384   # estimated — same arch as Qwen3.5-27B; kv-probe will calibrate
-     extra_flags:
-        parallel: 1   # GatedDeltaNet recurrent state corrupts with n_parallel>1; same fix as MTP
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
      kv_variants: [q4_0, q5_0, q5_1, q8_0]
 

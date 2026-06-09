@@ -1,0 +1,1192 @@
+{
+  "results": {
+    "version": 3,
+    "timestamp": "2026-06-09T07:19:15.727Z",
+    "results": [
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How many cents does the ball cost?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "bat-and-ball",
+          "question": "A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How many cents does the ball cost?"
+        },
+        "response": {
+          "output": "{\"answer\": \"5\"}",
+          "metadata": {
+            "tok_per_sec": "37.5"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"5\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "If 5 machines take 5 minutes to make 5 widgets, how many minutes do 100 machines take to make 100 widgets?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "widgets",
+          "question": "If 5 machines take 5 minutes to make 5 widgets, how many minutes do 100 machines take to make 100 widgets?"
+        },
+        "response": {
+          "output": "{\"answer\": \"5\"}",
+          "metadata": {
+            "tok_per_sec": "37.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"5\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "A patch of lily pads doubles in size every day. It takes 48 days to cover the whole lake. On what day number was the lake half covered?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "lily-pad",
+          "question": "A patch of lily pads doubles in size every day. It takes 48 days to cover the whole lake. On what day number was the lake half covered?"
+        },
+        "response": {
+          "output": "{\n\"answer\": \"47\"\n}",
+          "metadata": {
+            "tok_per_sec": "35.4"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"47\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "A farmer has 17 sheep. All but 9 die. How many sheep are left alive?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "all-but-9",
+          "question": "A farmer has 17 sheep. All but 9 die. How many sheep are left alive?"
+        },
+        "response": {
+          "output": "{\"answer\": \"9\"}",
+          "metadata": {
+            "tok_per_sec": "37.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"9\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "A store starts with 120 apples. It sells one third of them in the morning, then one quarter of the REMAINING apples in the afternoon. How many apples are left at the end of the day?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "apples-fractions",
+          "question": "A store starts with 120 apples. It sells one third of them in the morning, then one quarter of the REMAINING apples in the afternoon. How many apples are left at the end of the day?"
+        },
+        "response": {
+          "output": "{\"answer\": \"60\"}",
+          "metadata": {
+            "tok_per_sec": "37.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"60\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Alice is older than Bob. Carol is younger than Bob. Dave is older than Alice. Among Alice, Bob, Carol, and Dave, who is the oldest? Give the single name.",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "age-order",
+          "question": "Alice is older than Bob. Carol is younger than Bob. Dave is older than Alice. Among Alice, Bob, Carol, and Dave, who is the oldest? Give the single name."
+        },
+        "response": {
+          "output": "{\"answer\": \"Dave\"}",
+          "metadata": {
+            "tok_per_sec": "37.7"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"Dave\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Today is Wednesday. What day of the week will it be exactly 100 days from now? Give the weekday name.",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "days-100",
+          "question": "Today is Wednesday. What day of the week will it be exactly 100 days from now? Give the weekday name."
+        },
+        "response": {
+          "output": "{\n\"answer\": \"Friday\"\n}",
+          "metadata": {
+            "tok_per_sec": "35.6"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"Friday\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Counting through the whole numbers from 1 to 100 inclusive, how many times does the digit 7 appear in total (e.g. 77 contains the digit 7 twice)?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "count-sevens",
+          "question": "Counting through the whole numbers from 1 to 100 inclusive, how many times does the digit 7 appear in total (e.g. 77 contains the digit 7 twice)?"
+        },
+        "response": {
+          "output": "{\n\"answer\": \"20\"\n}",
+          "metadata": {
+            "tok_per_sec": "35.5"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"20\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "What is the next number in this sequence: 2, 6, 12, 20, 30, ? Give just the number.",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "next-in-sequence",
+          "question": "What is the next number in this sequence: 2, 6, 12, 20, 30, ? Give just the number."
+        },
+        "response": {
+          "output": "{\"answer\": \"42\"}",
+          "metadata": {
+            "tok_per_sec": "37.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"42\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Rule: If it is raining, then the ground is wet. Observation: the ground is NOT wet. Based only on this, is it raining? Answer yes or no.",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "modus-tollens",
+          "question": "Rule: If it is raining, then the ground is wet. Observation: the ground is NOT wet. Based only on this, is it raining? Answer yes or no."
+        },
+        "response": {
+          "output": "{\"answer\": \"no\"}",
+          "metadata": {
+            "tok_per_sec": "37.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"no\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "A drawer has 10 red socks and 10 blue socks mixed together in the dark. How many socks must you pull out, at minimum, to be GUARANTEED a matching pair?",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "socks",
+          "question": "A drawer has 10 red socks and 10 blue socks mixed together in the dark. How many socks must you pull out, at minimum, to be GUARANTEED a matching pair?"
+        },
+        "response": {
+          "output": "{\"answer\": \"3\"}",
+          "metadata": {
+            "tok_per_sec": "37.7"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"3\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "In a race, you overtake the runner in second place. What position are you in now? Give the ordinal (e.g. first, second).",
+          "label": "reasoning"
+        },
+        "vars": {
+          "case_id": "overtaking",
+          "question": "In a race, you overtake the runner in second place. What position are you in now? Give the ordinal (e.g. first, second)."
+        },
+        "response": {
+          "output": "{\"answer\": \"second\"}",
+          "metadata": {
+            "tok_per_sec": "37.7"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correct: \"second\""
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "What is the weather in Tokyo right now?",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "weather-basic"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"get_weather\",\"arguments\":\"{\\\"city\\\":\\\"Tokyo\\\"}\"},\"id\":\"z4m4CoCMYtpSxOE0vrtoMOHSuqjC8hd0\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: get_weather({\"city\":\"Tokyo\"})"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 1784
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "What is the temperature in Berlin in Fahrenheit?",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "weather-unit"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"get_weather\",\"arguments\":\"{\\\"city\\\":\\\"Berlin\\\",\\\"unit\\\":\\\"fahrenheit\\\"}\"},\"id\":\"UtQUfAzPgC3MSPq7bj50sSOuCq2Mt4Rd\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: get_weather({\"city\":\"Berlin\",\"unit\":\"fahrenheit\"})"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 1871
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Add up these numbers for me: 12, 30, and 8.",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "add-list"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"add_numbers\",\"arguments\":\"{\\\"numbers\\\":[12, 30, 8]}\"},\"id\":\"rGfLMLL9mqaXQ94xnDEgpjPO4jO1h0BF\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: add_numbers({\"numbers\":[12,30,8]})"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 5872
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Convert 250 US dollars to euros.",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "currency"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"convert_currency\",\"arguments\":\"{\\\"amount\\\":250,\\\"from\\\":\\\"USD\\\",\\\"to\\\":\\\"EUR\\\"}\"},\"id\":\"YY0fJ8QBFnrQD0Mo1PUUrFWpMCY3glbd\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: convert_currency({\"amount\":250,\"from\":\"USD\",\"to\":\"EUR\"})"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 5120
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Email alice@example.com with the subject \"Lunch\" and tell her I will be 10 minutes late.",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "email-fields"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"send_email\",\"arguments\":\"{\\\"to\\\":\\\"alice@example.com\\\",\\\"subject\\\":\\\"Lunch\\\",\\\"body\\\":\\\"Hi Alice, I will be 10 minutes late for lunch. See you soon!\\\"}\"},\"id\":\"bcMULZpexnJJyYfg8uEeE0OYbRjWPu3O\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: send_email({\"to\":\"alice@example.com\",\"subject\":\"Lunch\",\"body\":\"Hi Alice)"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 8166
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Find wireless headphones in the catalog, show me 5.",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "pick-right-tool"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"search_db\",\"arguments\":\"{\\\"query\\\":\\\"wireless headphones\\\",\\\"limit\\\":5}\"},\"id\":\"UWDzYcy5lZsZZYT9gxjqaoyosbBGQmP5\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: search_db({\"query\":\"wireless headphones\",\"limit\":5})"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 6056
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "How much is 1000 Japanese yen in British pounds?",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "distractor-tools"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"convert_currency\",\"arguments\":\"{\\\"amount\\\":1000,\\\"from\\\":\\\"JPY\\\",\\\"to\\\":\\\"GBP\\\"}\"},\"id\":\"elZIAG3aK78ggCurNnpepseQK9Iivsdg\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: convert_currency({\"amount\":1000,\"from\":\"JPY\",\"to\":\"GBP\"})"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 3715
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Thanks, that is all I needed. Have a good day!",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "no-tool-needed"
+        },
+        "response": {
+          "output": "[]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correctly no tool called"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 3474
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Please book me a flight from London to New York tomorrow.",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "missing-tool"
+        },
+        "response": {
+          "output": "[]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "correctly no tool called"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 4085
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "I bought three items costing seven dollars, fifteen dollars, and twenty-two dollars. What is the total?",
+          "label": "toolcalling"
+        },
+        "vars": {
+          "case_id": "numbers-from-prose"
+        },
+        "response": {
+          "output": "[{\"type\":\"function\",\"function\":{\"name\":\"add_numbers\",\"arguments\":\"{\\\"numbers\\\":[7, 15, 22]}\"},\"id\":\"x970G6RM0NrzRkyU2OGWrNjhMXCfztbP\"}]",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "ok: add_numbers({\"numbers\":[7,15,22]})"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 5048
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Check if in given array of numbers, are any two numbers closer to each other than\ngiven threshold.\n>>> has_close_elements([1.0, 2.0, 3.0], 0.5)\nfalse\n>>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\ntrue",
+          "label": "coding_multipl"
+        },
+        "vars": {
+          "case_id": "HumanEval_0_has_close_elements",
+          "category": "multipl",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction has_close_elements(numbers, threshold) {\n    for (let i = 0; i < numbers.length; i++) {\n        for (let j = i + 1; j < numbers.length; j++) {\n            if (Math.abs(numbers[i] - numbers[j]) < threshold) {\n                return true;\n            }\n        }\n    }\n    return false;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "32.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 7,
+          "total": 7,
+          "reason": "pass: 7/7"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\nseparate those group into separate strings and return the array of those.\nSeparate groups are balanced (each open brace is properly closed) and not nested within each other\nIgnore any spaces in the input string.\n>>> separate_paren_groups(\"( ) (( )) (( )( ))\")\n[\"()\", \"(())\", \"(()())\"]",
+          "label": "coding_multipl"
+        },
+        "vars": {
+          "case_id": "HumanEval_1_separate_paren_groups",
+          "category": "multipl",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction separate_paren_groups(paren_string) {\n    const result = [];\n    let currentGroup = '';\n    let depth = 0;\n\n    for (let i = 0; i < paren_string.length; i++) {\n        const char = paren_string[i];\n        if (char === ' ') {\n            continue;\n        }\n        if (char === '(') {\n            depth++;\n            currentGroup += char;\n        } else if (char === ')') {\n            depth--;\n            currentGroup += char;\n            if (depth === 0) {\n                result.push(currentGroup);\n                currentGroup = '';\n            }\n        }\n    }\n\n    return result;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "32.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 4,
+          "total": 4,
+          "reason": "pass: 4/4"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Given a positive floating point number, it can be decomposed into\nand integer part (largest integer smaller than given number) and decimals\n(leftover part always smaller than 1).\nReturn the decimal part of the number.\n>>> truncate_number(3.5)\n0.5",
+          "label": "coding_multipl"
+        },
+        "vars": {
+          "case_id": "HumanEval_2_truncate_number",
+          "category": "multipl",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction truncate_number(number) {\n    return number - Math.floor(number);\n}\n```",
+          "metadata": {
+            "tok_per_sec": "33.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 3,
+          "total": 3,
+          "reason": "pass: 3/3"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "You're given an array of deposit and withdrawal operations on a bank account that starts with\nzero balance. Your task is to detect if at any point the balance of account fallls below zero, and\nat that point function should return true. Otherwise it should return false.\n>>> below_zero([1, 2, 3])\nfalse\n>>> below_zero([1, 2, -4, 5])\ntrue",
+          "label": "coding_multipl"
+        },
+        "vars": {
+          "case_id": "HumanEval_3_below_zero",
+          "category": "multipl",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction below_zero(operations) {\n    let balance = 0;\n    for (const op of operations) {\n        balance += op;\n        if (balance < 0) {\n            return true;\n        }\n    }\n    return false;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "33.1"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 6,
+          "total": 6,
+          "reason": "pass: 6/6"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "For a given array of input numbers, calculate Mean Absolute Deviation\naround the mean of this dataset.\nMean Absolute Deviation is the average absolute difference between each\nelement and a centerpoint (mean in this case):\nMAD = average | x - x_mean |\n>>> mean_absolute_deviation([1.0, 2.0, 3.0, 4.0])\n1.0",
+          "label": "coding_multipl"
+        },
+        "vars": {
+          "case_id": "HumanEval_4_mean_absolute_deviation",
+          "category": "multipl",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction mean_absolute_deviation(numbers) {\n    if (numbers.length === 0) {\n        return 0;\n    }\n    \n    const mean = numbers.reduce((sum, num) => sum + num, 0) / numbers.length;\n    \n    const mad = numbers.reduce((sum, num) => sum + Math.abs(num - mean), 0) / numbers.length;\n    \n    return mad;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "32.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 3,
+          "total": 3,
+          "reason": "pass: 3/3"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Insert a number 'delimeter' between every two consecutive elements of input array `numbers'\n>>> intersperse([], 4)\n[]\n>>> intersperse([1, 2, 3], 4)\n[1, 4, 2, 4, 3]",
+          "label": "coding_multipl"
+        },
+        "vars": {
+          "case_id": "HumanEval_5_intersperse",
+          "category": "multipl",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction intersperse(numbers, delimeter) {\n    if (numbers.length === 0) return [];\n    \n    const result = [];\n    for (let i = 0; i < numbers.length; i++) {\n        result.push(numbers[i]);\n        if (i < numbers.length - 1) {\n            result.push(delimeter);\n        }\n    }\n    return result;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "32.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 3,
+          "total": 3,
+          "reason": "pass: 3/3"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Input to this function is a string represented multiple groups for nested parentheses separated by spaces.\nFor each of the group, output the deepest level of nesting of parentheses.\nE.g. (()()) has maximum two levels of nesting while ((())) has three.\n>>> parse_nested_parens(\"(()()) ((())) () ((())()())\")\n[2, 3, 1, 3]",
+          "label": "coding_multipl"
+        },
+        "vars": {
+          "case_id": "HumanEval_6_parse_nested_parens",
+          "category": "multipl",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction parse_nested_parens(paren_string) {\n    const groups = paren_string.split(' ');\n    return groups.map(group => {\n        let maxDepth = 0;\n        let currentDepth = 0;\n        for (const char of group) {\n            if (char === '(') {\n                currentDepth++;\n                if (currentDepth > maxDepth) {\n                    maxDepth = currentDepth;\n                }\n            } else if (char === ')') {\n                currentDepth--;\n            }\n        }\n        return maxDepth;\n    });\n}\n```",
+          "metadata": {
+            "tok_per_sec": "32.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 3,
+          "total": 3,
+          "reason": "pass: 3/3"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Filter an input array of strings only for ones that contain given substring\n>>> filter_by_substring([], \"a\")\n[]\n>>> filter_by_substring([\"abc\", \"bacd\", \"cde\", \"array\"], \"a\")\n[\"abc\", \"bacd\", \"array\"]",
+          "label": "coding_multipl"
+        },
+        "vars": {
+          "case_id": "HumanEval_7_filter_by_substring",
+          "category": "multipl",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction filter_by_substring(strings, substring) {\n    return strings.filter(s => s.includes(substring));\n}\n```",
+          "metadata": {
+            "tok_per_sec": "33.6"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 4,
+          "total": 4,
+          "reason": "pass: 4/4"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "For a given array of integers, return an array consisting of a sum and a product of all the integers in an array.\nEmpty sum should be equal to 0 and empty product should be equal to 1.\n>>> sum_product([])\n[0, 1]\n>>> sum_product([1, 2, 3, 4])\n[10, 24]",
+          "label": "coding_multipl"
+        },
+        "vars": {
+          "case_id": "HumanEval_8_sum_product",
+          "category": "multipl",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction sum_product(numbers) {\n    let sum = 0;\n    let product = 1;\n    for (let i = 0; i < numbers.length; i++) {\n        sum += numbers[i];\n        product *= numbers[i];\n    }\n    return [sum, product];\n}\n```",
+          "metadata": {
+            "tok_per_sec": "33.0"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 5,
+          "total": 5,
+          "reason": "pass: 5/5"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "From a given array of integers, generate an array of rolling maximum element found until given moment\nin the sequence.\n>>> rolling_max([1, 2, 3, 2, 3, 4, 2])\n[1, 2, 3, 3, 3, 4, 4]",
+          "label": "coding_multipl"
+        },
+        "vars": {
+          "case_id": "HumanEval_9_rolling_max",
+          "category": "multipl",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction rolling_max(numbers) {\n    if (numbers.length === 0) return [];\n    \n    const result = [];\n    let currentMax = numbers[0];\n    \n    for (let i = 0; i < numbers.length; i++) {\n        if (numbers[i] > currentMax) {\n            currentMax = numbers[i];\n        }\n        result.push(currentMax);\n    }\n    \n    return result;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "32.9"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 4,
+          "total": 4,
+          "reason": "pass: 4/4"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Find the shortest palindrome that begins with a supplied string.\nAlgorithm idea is simple:\n- Find the longest postfix of supplied string that is a palindrome.\n- Append to the end of the string reverse of a string prefix that comes before the palindromic suffix.\n>>> make_palindrome(\"\")\n\"\"\n>>> make_palindrome(\"cat\")\n\"catac\"\n>>> make_palindrome(\"cata\")\n\"catac\"",
+          "label": "coding_multipl"
+        },
+        "vars": {
+          "case_id": "HumanEval_10_make_palindrome",
+          "category": "multipl",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction make_palindrome(string) {\n    if (string === \"\") return \"\";\n    \n    // Helper to check if a substring is a palindrome\n    function isPalindrome(str) {\n        const len = str.length;\n        for (let i = 0; i < Math.floor(len / 2); i++) {\n            if (str[i] !== str[len - 1 - i]) {\n                return false;\n            }\n        }\n        return true;\n    }\n    \n    // Find the longest postfix of string that is a palindrome\n    let start = 0;\n    while (start < string.length) {\n        const suffix = string.slice(start);\n        if (isPalindrome(suffix)) {\n            break;\n        }\n        start++;\n    }\n    \n    // The prefix before the palindromic suffix\n    const prefix = string.slice(0, start);\n    \n    // Reverse the prefix and append to the end of the original string\n    const reversedPrefix = prefix.split('').reverse().join('');\n    \n    return string + reversedPrefix;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "32.7"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 5,
+          "total": 5,
+          "reason": "pass: 5/5"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Input are two strings a and b consisting only of 1s and 0s.\nPerform binary XOR on these inputs and return result also as a string.\n>>> string_xor(\"010\", \"110\")\n\"100\"",
+          "label": "coding_multipl"
+        },
+        "vars": {
+          "case_id": "HumanEval_11_string_xor",
+          "category": "multipl",
+          "difficulty": "medium"
+        },
+        "response": {
+          "output": "```javascript\nfunction string_xor(a, b) {\n    const len = Math.max(a.length, b.length);\n    let result = '';\n    for (let i = 0; i < len; i++) {\n        const bitA = i < a.length ? parseInt(a[a.length - 1 - i], 10) : 0;\n        const bitB = i < b.length ? parseInt(b[b.length - 1 - i], 10) : 0;\n        result = (bitA ^ bitB).toString() + result;\n    }\n    return result;\n}\n```",
+          "metadata": {
+            "tok_per_sec": "32.8"
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "passed": 3,
+          "total": 3,
+          "reason": "pass: 3/3"
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Agentic RAG whitepaper\n\nCovers multi-step reasoning with retrieval, tool use, and LLM orchestration. Describes how agents decompose queries into sub-tasks, retrieve relevant context at each step, and synthesize answers using chained tool calls.",
+          "label": "summarization"
+        },
+        "vars": {
+          "case_id": "rag-paper"
+        },
+        "response": {
+          "output": "{\n  \"summary\": \"The whitepaper outlines an Agentic RAG framework that utilizes multi-step reasoning, tool use, and LLM orchestration to decompose queries into sub-tasks for enhanced answer synthesis.\",\n  \"area\": \"craft\",\n  \"tags\": [\n    \"craft/AI\",\n    \"craft/software\"\n  ]\n}",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 0.9166666666666666,
+          "reason": "score=92/100 | kw=2/3(missing:retrieval) | area=craft | tags=ok | words=25",
+          "rawScores": {
+            "kw": 0.6666666666666666,
+            "area": 1,
+            "tags": 1,
+            "length": 1
+          }
+        },
+        "success": true,
+        "score": 0.9166666666666666,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Sidechain compression for trance pumping\n\nClassic trance pumping effect: sidechain a compressor on bass and pads keyed to the kick drum. Attack 0.1ms, release 80-150ms for the pump feel. Ghost kick sidechain keeps it in time without audible kick bleed.",
+          "label": "summarization"
+        },
+        "vars": {
+          "case_id": "trance-compression"
+        },
+        "response": {
+          "output": "{\n\"summary\": \"The text describes achieving the classic trance pumping effect by sidechain compressing bass and pads to a ghost kick with specific attack and release settings.\",\n\"area\": \"music\",\n\"tags\": [\n\"music/production\",\n\"music/mixing\"\n]\n}",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 0.9166666666666666,
+          "reason": "score=92/100 | kw=2/3(missing:compressor) | area=music | tags=ok | words=25",
+          "rawScores": {
+            "kw": 0.6666666666666666,
+            "area": 1,
+            "tags": 1,
+            "length": 1
+          }
+        },
+        "success": true,
+        "score": 0.9166666666666666,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: 0DTE options theta decay\n\nZero-days-to-expiry SPX options accelerate theta decay after 2pm. Selling premium after 2pm captures the steepest part of the intraday theta curve but gamma risk is highest in the last 30 minutes.",
+          "label": "summarization"
+        },
+        "vars": {
+          "case_id": "trading-0dte"
+        },
+        "response": {
+          "output": "{\n\"summary\": \"Selling 0DTE SPX options after 2 PM allows traders to capture accelerated theta decay, though this strategy carries significant gamma risk during the final 30 minutes before expiration.\",\n\"area\": \"finance\",\n\"tags\": [\n\"finance/trading\",\n\"finance/options\"\n]\n}",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100/100 | kw=3/3 | area=finance | tags=ok | words=28",
+          "rawScores": {
+            "kw": 1,
+            "area": 1,
+            "tags": 1,
+            "length": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Keyboard debouncing in QMK firmware\n\nQMK supports eager, defer-until-idle, and sym_eager_pk debounce algorithms. Eager fires immediately on press and delays release; sym_eager_pk is best for per-key debounce on split keyboards with noisy switches.",
+          "label": "summarization"
+        },
+        "vars": {
+          "case_id": "qmk-debounce"
+        },
+        "response": {
+          "output": "{\n\"summary\": \"QMK firmware offers three keyboard debouncing algorithms: eager, defer-until-idle, and sym_eager_pk, with the latter being optimal for split keyboards using noisy switches.\",\n\"area\": \"craft\",\n\"tags\": [\n\"craft/hardware\",\n\"craft/software\"\n]\n}",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 0.9166666666666666,
+          "reason": "score=92/100 | kw=2/3(missing:debounce) | area=craft | tags=ok | words=22",
+          "rawScores": {
+            "kw": 0.6666666666666666,
+            "area": 1,
+            "tags": 1,
+            "length": 1
+          }
+        },
+        "success": true,
+        "score": 0.9166666666666666,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Zettelkasten vs folder hierarchies for PKM\n\nDense bidirectional links between atomic notes outperform deep folder hierarchies for knowledge retrieval. Each note has exactly one idea; links surface unexpected connections better than any taxonomy.",
+          "label": "summarization"
+        },
+        "vars": {
+          "case_id": "zettelkasten"
+        },
+        "response": {
+          "output": "{\n\"summary\": \"Atomic notes with dense bidirectional links are more effective for knowledge retrieval and discovering connections than deep folder hierarchies.\",\n\"area\": \"craft\",\n\"tags\": [\n\"craft/PKM\",\n\"craft/Zettelkasten\"\n]\n}",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 0.9166666666666666,
+          "reason": "score=92/100 | kw=2/3(missing:hierarchy) | area=craft | tags=ok | words=19",
+          "rawScores": {
+            "kw": 0.6666666666666666,
+            "area": 1,
+            "tags": 1,
+            "length": 1
+          }
+        },
+        "success": true,
+        "score": 0.9166666666666666,
+        "latencyMs": 0
+      },
+      {
+        "provider": {
+          "id": "llamacpp:Qwen3.6-27B-IQ4_XS--kvq5_0",
+          "label": "Qwen3.6-27B IQ4_XS · KV q5_0 [no_think]"
+        },
+        "prompt": {
+          "raw": "Title: Negotiating a senior engineer offer\n\nAnchor high on total compensation including equity refresh. Use competing offers as leverage. Recruiter call script: confirm base, then move to signing bonus and RSU refresh before benefits.",
+          "label": "summarization"
+        },
+        "vars": {
+          "case_id": "salary-negotiation"
+        },
+        "response": {
+          "output": "{\n  \"summary\": \"Strategies for negotiating a senior engineer offer include anchoring on total compensation with equity refreshes and leveraging competing offers. The approach involves a specific recruiter script that prioritizes confirming base salary, then addressing signing bonuses and RSUs before discussing benefits.\",\n  \"area\": \"work\",\n  \"tags\": [\n    \"work/career\",\n    \"work/negotiation\"\n  ]\n}",
+          "metadata": {
+            "tok_per_sec": null
+          }
+        },
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "score=100/100 | kw=3/3 | area=work | tags=ok | words=40",
+          "rawScores": {
+            "kw": 1,
+            "area": 1,
+            "tags": 1,
+            "length": 1
+          }
+        },
+        "success": true,
+        "score": 1,
+        "latencyMs": 0
+      }
+    ],
+    "stats": {
+      "successes": 40,
+      "failures": 0,
+      "errors": 0
+    }
+  },
+  "config": {
+    "description": "llm-bench target=rose backend=vulkan"
+  }
+}

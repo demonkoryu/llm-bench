@@ -1,0 +1,87 @@
+{
+  "run_id": "rose-rx7900xt-vulkan-20260609-095327-throughputttft",
+  "kind": "throughput-ttft",
+  "host": "rose",
+  "gpu": "RX 7900 XT",
+  "backend": "vulkan",
+  "environment": {
+    "runner": "llama.cpp",
+    "backend": "vulkan",
+    "gpu": "RX 7900 XT",
+    "server_flags": {
+      "flash_attn": "on",
+      "cache_type_k": null,
+      "cache_type_v": null,
+      "ngl": 99,
+      "np": 1
+    },
+    "defaults_extra_flags": {
+      "batch-size": 2048,
+      "ubatch-size": 2048
+    },
+    "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+  },
+  "started": "2026-06-09T07:53:27.600Z",
+  "finished": "2026-06-09T08:02:46.374Z",
+  "status": "complete",
+  "seed": "rose-rx7900xt-vulkan-20260609-085032",
+  "planned": [],
+  "results": [
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq5_1",
+      "think": "n/a",
+      "bench": "e2e-2k",
+      "score": "99.9",
+      "tok_s": "21.8",
+      "prefill_tps": "197.3",
+      "vram_mib": 18840,
+      "ctx_loaded": 131072,
+      "status": "ok",
+      "notes": "e2e@2048 gen256 n=2",
+      "ts": "2026-06-09T07:59:40.913Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq5_1",
+      "think": "n/a",
+      "bench": "ttft-2k",
+      "score": "9394",
+      "vram_mib": 18840,
+      "ctx_loaded": 131072,
+      "status": "ok",
+      "notes": "prompt_ms@2048 n=2",
+      "ts": "2026-06-09T07:59:40.919Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq8_0",
+      "think": "n/a",
+      "bench": "e2e-2k",
+      "score": "193.6",
+      "tok_s": "33.3",
+      "prefill_tps": "579.6",
+      "vram_mib": 19440,
+      "ctx_loaded": 102400,
+      "status": "ok",
+      "notes": "e2e@2048 gen256 n=3",
+      "ts": "2026-06-09T08:01:33.650Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq8_0",
+      "think": "n/a",
+      "bench": "ttft-2k",
+      "score": "3199",
+      "vram_mib": 19440,
+      "ctx_loaded": 102400,
+      "status": "ok",
+      "notes": "prompt_ms@2048 n=3",
+      "ts": "2026-06-09T08:01:33.656Z"
+    }
+  ]
+}

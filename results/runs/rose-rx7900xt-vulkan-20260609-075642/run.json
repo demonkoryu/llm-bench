@@ -1,0 +1,122 @@
+{
+  "run_id": "rose-rx7900xt-vulkan-20260609-075642",
+  "kind": "suite",
+  "host": "rose",
+  "gpu": "RX 7900 XT",
+  "backend": "vulkan",
+  "environment": {
+    "runner": "llama.cpp",
+    "backend": "vulkan",
+    "gpu": "RX 7900 XT",
+    "server_flags": {
+      "flash_attn": "on",
+      "cache_type_k": null,
+      "cache_type_v": null,
+      "ngl": 99,
+      "np": 1
+    },
+    "defaults_extra_flags": {
+      "batch-size": 2048,
+      "ubatch-size": 2048
+    },
+    "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+  },
+  "started": "2026-06-09T05:56:42.785Z",
+  "finished": "2026-06-09T05:59:25.978Z",
+  "status": "complete",
+  "seed": null,
+  "planned": [],
+  "results": [
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq4_0",
+      "think": "-",
+      "bench": "smoke",
+      "score": "0",
+      "halls": "-",
+      "json_fail": "-",
+      "tok_s": "-",
+      "prefill_tps": "-",
+      "vram_mib": 19629,
+      "ctx_loaded": 262144,
+      "oom_ceiling": 262144,
+      "coherence_ceiling": 262144,
+      "status": "error:smoke:health",
+      "wall_s": "-",
+      "notes": "",
+      "ts": "2026-06-09T05:58:20.720Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq5_0",
+      "think": "-",
+      "bench": "smoke",
+      "score": "0",
+      "halls": "-",
+      "json_fail": "-",
+      "tok_s": "-",
+      "prefill_tps": "-",
+      "vram_mib": 17214,
+      "ctx_loaded": 262144,
+      "oom_ceiling": 262144,
+      "coherence_ceiling": 262144,
+      "status": "error:smoke:health",
+      "wall_s": "-",
+      "notes": "",
+      "ts": "2026-06-09T05:58:41.189Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq5_1",
+      "think": "-",
+      "bench": "smoke",
+      "score": "0",
+      "halls": "-",
+      "json_fail": "-",
+      "tok_s": "-",
+      "prefill_tps": "-",
+      "vram_mib": 19388,
+      "ctx_loaded": 262144,
+      "oom_ceiling": 262144,
+      "coherence_ceiling": 262144,
+      "status": "error:smoke:health",
+      "wall_s": "-",
+      "notes": "",
+      "ts": "2026-06-09T05:59:01.856Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq8_0",
+      "think": "-",
+      "bench": "smoke",
+      "score": "0",
+      "halls": "-",
+      "json_fail": "-",
+      "tok_s": "-",
+      "prefill_tps": "-",
+      "vram_mib": 19342,
+      "ctx_loaded": 262144,
+      "oom_ceiling": 262144,
+      "coherence_ceiling": 262144,
+      "status": "error:smoke:tool-call:Connection error.",
+      "wall_s": "-",
+      "notes": "",
+      "ts": "2026-06-09T05:59:23.387Z"
+    }
+  ],
+  "filters": {
+    "models": [
+      "Qwen3.6-27B IQ4_XS"
+    ],
+    "benches": [
+      "speed"
+    ],
+    "skip_think": true,
+    "skip_maxctx": true,
+    "maxctx_recheck": false
+  }
+}

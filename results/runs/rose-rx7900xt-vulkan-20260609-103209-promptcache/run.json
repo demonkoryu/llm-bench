@@ -1,0 +1,109 @@
+{
+  "run_id": "rose-rx7900xt-vulkan-20260609-103209-promptcache",
+  "kind": "prompt-cache",
+  "host": "rose",
+  "gpu": "RX 7900 XT",
+  "backend": "vulkan",
+  "environment": {
+    "runner": "llama.cpp",
+    "backend": "vulkan",
+    "gpu": "RX 7900 XT",
+    "server_flags": {
+      "flash_attn": "on",
+      "cache_type_k": null,
+      "cache_type_v": null,
+      "ngl": 99,
+      "np": 1
+    },
+    "defaults_extra_flags": {
+      "batch-size": 2048,
+      "ubatch-size": 2048
+    },
+    "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+  },
+  "started": "2026-06-09T08:32:09.345Z",
+  "finished": null,
+  "status": "running",
+  "seed": "rose-rx7900xt-vulkan-20260609-084929",
+  "planned": [],
+  "results": [
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq5_0",
+      "think": "n/a",
+      "vram_mib": "?",
+      "ctx_loaded": 131072,
+      "status": "ok",
+      "bench": "prefix_cache_cold_ms",
+      "score": "39171",
+      "notes": "cold prompt_ms@8192 n=2",
+      "ts": "2026-06-09T08:37:40.962Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq5_0",
+      "think": "n/a",
+      "vram_mib": "?",
+      "ctx_loaded": 131072,
+      "status": "ok",
+      "bench": "prefix_cache_warm_ms",
+      "score": "86",
+      "notes": "warm prompt_ms@8192 cold 39171 speedup 456.88 n=2",
+      "ts": "2026-06-09T08:37:40.967Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq5_0",
+      "think": "n/a",
+      "vram_mib": "?",
+      "ctx_loaded": 131072,
+      "status": "ok",
+      "bench": "prefix_cache_speedup",
+      "score": "456.88",
+      "notes": "cold÷warm@8192",
+      "ts": "2026-06-09T08:37:40.970Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq5_1",
+      "think": "n/a",
+      "vram_mib": "?",
+      "ctx_loaded": 32768,
+      "status": "ok",
+      "bench": "prefix_cache_cold_ms",
+      "score": "3464",
+      "notes": "cold prompt_ms@8192 n=2",
+      "ts": "2026-06-09T08:38:50.919Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq5_1",
+      "think": "n/a",
+      "vram_mib": "?",
+      "ctx_loaded": 32768,
+      "status": "ok",
+      "bench": "prefix_cache_warm_ms",
+      "score": "53",
+      "notes": "warm prompt_ms@8192 cold 3464 speedup 65.60 n=2",
+      "ts": "2026-06-09T08:38:50.924Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq5_1",
+      "think": "n/a",
+      "vram_mib": "?",
+      "ctx_loaded": 32768,
+      "status": "ok",
+      "bench": "prefix_cache_speedup",
+      "score": "65.60",
+      "notes": "cold÷warm@8192",
+      "ts": "2026-06-09T08:38:50.928Z"
+    }
+  ]
+}
