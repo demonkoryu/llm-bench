@@ -262,7 +262,11 @@ models:
      tools: true
      native_max_ctx: 131072
      kv_bytes_per_token: 16384
-     extra_flags: { "no-mmproj": true }   # see E4B Q8 note: skip gemma4 vision projector (text-only)
+     extra_flags:
+        "no-mmproj": true   # skip gemma4 vision projector (text-only)
+        model-draft: /home/demonkoryu/models/gemma-4-26B-A4B-it-MTP-Q8_0.gguf
+        spec-type: draft-mtp
+        spec-draft-n-max: 4
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
      kv_variants: [q4_0, q5_0, q5_1, q8_0]   # full KV quant sweep
 
@@ -314,7 +318,11 @@ models:
      tools: true
      native_max_ctx: 131072
      kv_bytes_per_token: 16384
-     extra_flags: { "no-mmproj": true }   # repo ships gemma-4-26B-it-mmproj.gguf — skip it (text-only)
+     extra_flags:
+        "no-mmproj": true   # repo ships gemma-4-26B-it-mmproj.gguf — skip it (text-only)
+        model-draft: /home/demonkoryu/models/gemma-4-26B-A4B-it-MTP-Q8_0.gguf
+        spec-type: draft-mtp
+        spec-draft-n-max: 4
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
      kv_variants: [q4_0, q5_0, q5_1, q8_0]   # full KV quant sweep
 
@@ -348,7 +356,11 @@ models:
      tools: true
      native_max_ctx: 131072
      kv_bytes_per_token: 16384
-     extra_flags: { "no-mmproj": true }   # repo ships mmproj-*.gguf — skip it (text-only)
+     extra_flags:
+        "no-mmproj": true   # repo ships mmproj-*.gguf — skip it (text-only)
+        model-draft: /home/demonkoryu/models/gemma-4-26B-A4B-it-MTP-Q8_0.gguf
+        spec-type: draft-mtp
+        spec-draft-n-max: 4
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
      kv_variants: [q4_0, q5_0, q5_1, q8_0]   # full KV quant sweep
 
