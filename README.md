@@ -34,8 +34,9 @@ A **full run** chains the secondaries that feed the dashboard: `kv-probe`,
 `instruction-following`, `prompt-cache`, `agentic-loop`.
 
 > **Note:** `parallel-gen` (pargen) is **not** in the `--full` chain. It produces the
-> `speed_pargen-*` rows that the fleet score's *throughput* term uses. Run it explicitly
+> `speed_pargen-*` rows that the fleet score's _throughput_ term uses. Run it explicitly
 > when you want measured throughput in the fleet ranking:
+>
 > ```bash
 > node runners/parallel-gen.mjs --input <run-id>
 > ```
@@ -45,11 +46,12 @@ Useful `run-suite` flags: `--models <substr,…>`, `--benches <name,…>`, `--sk
 prior run), `--target <host>`, `--backend <vulkan|rocm>`, `--debug`.
 
 ### The config marker
+
 Every run records a readable **`environment`** fingerprint (GPU, backend, KV-cache quant,
 flash-attn, ngl/np, batch/ubatch defaults, and the verbatim `start-server.sh` launch line)
 — see `shared/run-fingerprint.mjs`. On start, `run-suite` compares it to the previous run
 and **warns if the server config changed** (measurements across a change aren't
-comparable). It is config-file derived, so it does *not* capture the llama.cpp build commit
+comparable). It is config-file derived, so it does _not_ capture the llama.cpp build commit
 or GPU driver — it labels runs for comparability, not bit-for-bit reproducibility.
 
 ---
@@ -155,8 +157,8 @@ cmake -S . -B build-vulkan \
 cmake --build build-vulkan -j"$(nproc)" --target llama-server llama-bench
 ```
 
-**The `glslc` version is load-bearing for whether int-dot is even *available*.**
-llama.cpp's int8 dot-product path is gated at *build time* on a CMake feature-test that
+**The `glslc` version is load-bearing for whether int-dot is even _available_.**
+llama.cpp's int8 dot-product path is gated at _build time_ on a CMake feature-test that
 tries to compile a `GL_EXT_integer_dot_product` shader. The **stock Ubuntu 24.04 `glslc`
 (shaderc 2023.8 / glslang 14) cannot compile it**, so the macro
 `GGML_VULKAN_INTEGER_DOT_GLSLC_SUPPORT` is silently left undefined and the int8 path is
@@ -164,13 +166,14 @@ compiled out — the device reports `int dot: 0`, with **no error**. Use a `glsl
 recent **Vulkan SDK ≥ 1.3.290** (we used LunarG **1.4.350.1** → shaderc v2026.2) to get
 `int dot: 1`:
 
-> **Measured caveat — int-dot is *off* at runtime on this host.** Having `int dot: 1`
+> **Measured caveat — int-dot is _off_ at runtime on this host.** Having `int dot: 1`
 > available let us A/B it rigorously (runtime toggle `GGML_VK_DISABLE_INTEGER_DOT_PRODUCT`).
 > On this RX 7900 XT + RADV + KHR_coopmat build it is **neutral-to-negative for decode**
 > (0% … −7.4% tg; prefill unaffected) — it only swaps the decode GEMV kernel, and that
 > kernel is slower than the coopmat path for our quants. So we **disable it at runtime**.
 > Still build with the modern glslc (a different GPU/driver may flip the sign). Full data
-> + the warmup-confound that earlier faked a "+37% win": [`results/int-dot-impact.md`](results/int-dot-impact.md).
+>
+> - the warmup-confound that earlier faked a "+37% win": [`results/int-dot-impact.md`](results/int-dot-impact.md).
 
 ```bash
 VER=$(curl -s https://vulkan.lunarg.com/sdk/latest/linux.txt)        # e.g. 1.4.350.1
@@ -224,8 +227,34 @@ is fixed in code; only the **dials** (weights/exponents) are adjustable in the U
   ```
   `w_cap=2` makes capability dominate; `ctx_norm` clamps main ctx at a 100k tier;
   `slots_norm` rewards how many 1-main-+-N-worker slots fit in VRAM (from measured KV/token
-  + maxctx). `throughput^w_thru` is **off by default** (needs `parallel-gen`); raise the
-  `w_thru` dial to weight measured aggregate tok/s.
+  - maxctx). `throughput^w_thru` is **off by default** (needs `parallel-gen`); raise the
+    `w_thru` dial to weight measured aggregate tok/s.
 
 `results/report.json` and the dashboard self-describe the formula via the `SCORING` export,
 so the displayed formula can't drift from the code.
+
+---
+
+## Benchmark winner (2026-06-09)
+
+**Gemma4-26B QAT q4_0 · KV q5_0 [no_think]** — fleet-suitability rank 1.
+
+| Metric | Value |
+|--------|-------|
+| Model | `google/gemma-4-26B-A4B-it-qat-q4_0-gguf` / `gemma-4-26B_q4_0-it.gguf` |
+| KV cache | q5_0 (symmetric for FA kernel) |
+| Capability score | 80% (rank 5) |
+| Fleet suitability | 0.610 (rank 1) |
+| Main context | 102,400 tokens |
+| Worker slots | +4 × 65,536 tokens |
+| Total slots | 5 (1 main + 4 workers) |
+| Weights | 14,100 MiB |
+| Aggregate tok/s | 176.7 (measured parallel-gen) |
+
+Deployed to production at `llm.local.xor0.de/v1` — see
+[infra repo](https://git.xor0.de/demonkoryu/infra) `llm/` directory.
+
+Key deployment flags: `-ngl 99 -fa on -b 2048 -ub 2048 --cache-type-k q5_0 --cache-type-v q5_0 --ctx-size 430080 -np 5 --no-mmproj --jinja --reasoning-format auto --swa-full`.
+
+> **MTP disabled.** Gemma4 MTP with quantized KV on Vulkan gives 0% draft acceptance
+> (Hadamard-rotation bug). See `results/gemma-mtp.md`.
