@@ -176,6 +176,7 @@ models:
      extra_flags:
         spec-type: draft-mtp
         spec-draft-n-max: 3
+        parallel: 1   # MTP (embedded tensors) not supported with n_parallel > 1
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
      kv_variants: [q4_0, q5_0, q5_1, q8_0]
 
@@ -213,6 +214,7 @@ models:
      extra_flags:
         spec-type: draft-mtp
         spec-draft-n-max: 4
+        parallel: 1   # MTP (embedded tensors) not supported with n_parallel > 1
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
      kv_variants: [q4_0, q5_0, q5_1, q8_0]   # full KV quant sweep
      notes: "MTP speculative draft; smoke will catch if Vulkan build lacks support."
