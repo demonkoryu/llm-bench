@@ -163,9 +163,9 @@ models:
    # Same architecture as Qwen3.5 (model_type=qwen3_5, Qwen3_5ForConditionalGeneration,
    # GatedDeltaNet dense hybrid). Successor model — better quality, same decode
    # speed on Vulkan (~33 tok/s). IQ4_XS ≈ 15.2 GB from MTP-GGUF repo (same weights).
-   # MTP disabled: embedded draft head adds ~2 GB VRAM, caps context at 32k vs 65k+
-   # without it. Context >> spec speed on a single GPU bench. Apache 2.0.
-   - hf_repo: unsloth/Qwen3.6-27B-MTP-GGUF
+   # MTP-GGUF tried but abandoned: embedded draft tensors cause server crashes even
+   # when MTP not activated. Plain GGUF (no draft tensors) is stable. Apache 2.0.
+   - hf_repo: unsloth/Qwen3.6-27B-GGUF
      hf_file: Qwen3.6-27B-IQ4_XS.gguf
      label: "Qwen3.6-27B IQ4_XS"
      family: qwen3.6
