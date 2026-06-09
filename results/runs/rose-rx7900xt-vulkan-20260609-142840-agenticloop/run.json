@@ -1,0 +1,295 @@
+{
+  "run_id": "rose-rx7900xt-vulkan-20260609-142840-agenticloop",
+  "kind": "agentic-loop",
+  "host": "rose",
+  "gpu": "RX 7900 XT",
+  "backend": "vulkan",
+  "environment": {
+    "runner": "llama.cpp",
+    "backend": "vulkan",
+    "gpu": "RX 7900 XT",
+    "server_flags": {
+      "flash_attn": "on",
+      "cache_type_k": null,
+      "cache_type_v": null,
+      "ngl": 99,
+      "np": 1
+    },
+    "defaults_extra_flags": {
+      "batch-size": 2048,
+      "ubatch-size": 2048
+    },
+    "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+  },
+  "started": "2026-06-09T12:28:40.957Z",
+  "finished": "2026-06-09T12:36:51.506Z",
+  "status": "complete",
+  "seed": "rose-rx7900xt-vulkan-20260609-110836",
+  "planned": [],
+  "results": [
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.5-27B-IQ4_XS--kvq4_0",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "5/5 tasks · steps 3.6 recovery 1/1",
+      "ts": "2026-06-09T12:29:22.984Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.5-27B-IQ4_XS--kvq5_0",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "5/5 tasks · steps 3.6 recovery 1/1",
+      "ts": "2026-06-09T12:29:50.598Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.5-27B-IQ4_XS--kvq5_1",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "5/5 tasks · steps 3.6 recovery 1/1",
+      "ts": "2026-06-09T12:30:17.946Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.5-27B-IQ4_XS--kvq8_0",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "5/5 tasks · steps 3.6 recovery 1/1",
+      "ts": "2026-06-09T12:30:45.244Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq4_0",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "5/5 tasks · steps 3.6 recovery 1/1",
+      "ts": "2026-06-09T12:31:15.301Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq5_0",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "5/5 tasks · steps 3.6 recovery 1/1",
+      "ts": "2026-06-09T12:31:45.008Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq5_1",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "5/5 tasks · steps 3.6 recovery 1/1",
+      "ts": "2026-06-09T12:32:12.850Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq8_0",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "5/5 tasks · steps 3.6 recovery 1/1",
+      "ts": "2026-06-09T12:32:40.434Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "80.0",
+      "status": "ok",
+      "notes": "4/5 tasks · steps 3.4 recovery 1/1",
+      "ts": "2026-06-09T12:33:04.884Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "80.0",
+      "status": "ok",
+      "notes": "4/5 tasks · steps 3.4 recovery 1/1",
+      "ts": "2026-06-09T12:33:20.318Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_1",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "80.0",
+      "status": "ok",
+      "notes": "4/5 tasks · steps 3.4 recovery 1/1",
+      "ts": "2026-06-09T12:33:35.593Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq8_0",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "80.0",
+      "status": "ok",
+      "notes": "4/5 tasks · steps 3.4 recovery 1/1",
+      "ts": "2026-06-09T12:33:50.424Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "5/5 tasks · steps 3.6 recovery 1/1",
+      "ts": "2026-06-09T12:34:13.197Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_0",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "5/5 tasks · steps 3.6 recovery 1/1",
+      "ts": "2026-06-09T12:34:27.188Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq5_1",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "5/5 tasks · steps 3.6 recovery 1/1",
+      "ts": "2026-06-09T12:34:40.868Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq8_0",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "5/5 tasks · steps 3.6 recovery 1/1",
+      "ts": "2026-06-09T12:34:54.455Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-26B_q4_0-it--kvq4_0",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "5/5 tasks · steps 3.6 recovery 1/1",
+      "ts": "2026-06-09T12:35:15.596Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-26B_q4_0-it--kvq5_0",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "5/5 tasks · steps 3.6 recovery 1/1",
+      "ts": "2026-06-09T12:35:27.706Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-26B_q4_0-it--kvq5_1",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "5/5 tasks · steps 3.6 recovery 1/1",
+      "ts": "2026-06-09T12:35:39.492Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-26B_q4_0-it--kvq8_0",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "5/5 tasks · steps 3.6 recovery 1/1",
+      "ts": "2026-06-09T12:35:51.163Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "5/5 tasks · steps 3.6 recovery 1/1",
+      "ts": "2026-06-09T12:36:12.378Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_0",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "5/5 tasks · steps 3.6 recovery 1/1",
+      "ts": "2026-06-09T12:36:24.229Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq5_1",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "5/5 tasks · steps 3.6 recovery 1/1",
+      "ts": "2026-06-09T12:36:36.317Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq8_0",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "100.0",
+      "status": "ok",
+      "notes": "5/5 tasks · steps 3.6 recovery 1/1",
+      "ts": "2026-06-09T12:36:47.969Z"
+    }
+  ]
+}
