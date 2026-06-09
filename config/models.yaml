@@ -159,6 +159,26 @@ models:
      kv_variants: [q4_0, q5_0, q5_1, q8_0]   # full KV quant sweep
      notes: "kv_bytes_per_token is estimated — kv-probe will calibrate."
 
+   # ── Qwen3.6-27B IQ4_XS ───────────────────────────────────────────────────────
+   # Same architecture as Qwen3.5 (model_type=qwen3_5, Qwen3_5ForConditionalGeneration,
+   # GatedDeltaNet dense hybrid). Successor model — better quality, same decode
+   # speed on Vulkan (~33 tok/s). IQ4_XS ≈ 15.2 GB. MTP-GGUF has the draft head
+   # baked in (no extra VRAM). Apache 2.0.
+   - hf_repo: unsloth/Qwen3.6-27B-MTP-GGUF
+     hf_file: Qwen3.6-27B-IQ4_XS.gguf
+     label: "Qwen3.6-27B IQ4_XS"
+     family: qwen3.6
+     type: moe   # GatedDeltaNet dense hybrid — dense but slow on Vulkan like Qwen3.5-27B
+     think: optional
+     tools: true
+     native_max_ctx: 262144
+     kv_bytes_per_token: 16384   # estimated — same arch as Qwen3.5-27B; kv-probe will calibrate
+     extra_flags:
+        spec-type: draft-mtp
+        spec-draft-n-max: 3
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     kv_variants: [q4_0, q5_0, q5_1, q8_0]
+
    # ── Qwen3.6-27B UD-Q4_K_XL ───────────────────────────────────────────────────
    # Hybrid MoE, same qwen3.6 family/sampling as the 35B-A3B.
    # UD-Q4_K_XL ≈ 15.5 GB → fits comfortably. Native 262k ctx.
