@@ -6,3 +6,6 @@ nohup.log
 
 # local run logs
 logs/
+
+# bench concurrency lock — written by run-suite.mjs, cleared on exit
+.bench.lock

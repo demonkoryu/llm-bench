@@ -31,7 +31,7 @@
  */
 
 import { execFile } from 'node:child_process';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs, promisify } from 'node:util';
@@ -78,6 +78,74 @@ const DEBUG = flags.debug || !!process.env.BENCH_DEBUG;
 
 if (DEBUG) {
    process.env.BENCH_DEBUG = '1';
+}
+
+// ── Concurrency lock ────────────────────────────────────────────────────────────
+// Prevents multiple run-suite instances from running simultaneously — concurrent
+// llama-server usage on the same GPU causes data corruption (race on port, VRAM,
+// and benchmark timing). The lockfile holds the PID of the running process so
+// stale locks (process killed mid-run) are detected and cleared automatically.
+//
+// Skipped for --dry-run: read-only, no server interaction.
+const LOCK_FILE = join(ROOT, '.bench.lock');
+
+function acquireLock() {
+   if (existsSync(LOCK_FILE)) {
+      const raw = readFileSync(LOCK_FILE, 'utf8').trim();
+      const pid = parseInt(raw, 10);
+      if (!isNaN(pid) && pid !== process.pid) {
+         let alive = false;
+         try {
+            process.kill(pid, 0); // signal 0 = existence check only
+            alive = true;
+         } catch (e) {
+            if (e.code !== 'ESRCH') {
+               alive = true; // EPERM = alive but owned by different user
+            }
+         }
+         if (alive) {
+            console.error(`[run-suite] ERROR: another bench is already running (PID ${pid}).`);
+            console.error(`[run-suite]        Refusing to start — concurrent runs corrupt GPU data.`);
+            console.error(`[run-suite]        If that process is dead, remove: ${LOCK_FILE}`);
+            process.exit(1);
+         }
+         console.warn(`[run-suite] Stale lock from dead PID ${pid} — clearing.`);
+         unlinkSync(LOCK_FILE);
+      }
+   }
+   // Atomic exclusive create (throws EEXIST if another process wins the race).
+   try {
+      const fd = openSync(LOCK_FILE, 'wx'); // O_CREAT | O_EXCL
+      closeSync(fd);
+      writeFileSync(LOCK_FILE, String(process.pid));
+   } catch (e) {
+      if (e.code === 'EEXIST') {
+         // Lost race to another process starting at the same millisecond; re-check.
+         acquireLock();
+      } else {
+         throw e;
+      }
+   }
+}
+
+function releaseLock() {
+   try {
+      const raw = readFileSync(LOCK_FILE, 'utf8').trim();
+      if (parseInt(raw, 10) === process.pid) {
+         unlinkSync(LOCK_FILE);
+      }
+   } catch {
+      // Already removed or never written — no action needed.
+   }
+}
+
+if (!DRY_RUN) {
+   acquireLock();
+   process.on('exit', releaseLock);
+   // SIGINT / SIGTERM: set a non-zero exit code so the run is marked aborted,
+   // then fall through to the 'exit' handler which calls releaseLock().
+   process.on('SIGINT', () => process.exit(130));
+   process.on('SIGTERM', () => process.exit(143));
 }
 
 // ── Config ─────────────────────────────────────────────────────────────────────
