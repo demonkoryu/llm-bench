@@ -1,0 +1,64 @@
+{
+  "run_id": "rose-rx7900xt-vulkan-20260609-103941-agenticloop",
+  "kind": "agentic-loop",
+  "host": "rose",
+  "gpu": "RX 7900 XT",
+  "backend": "vulkan",
+  "environment": {
+    "runner": "llama.cpp",
+    "backend": "vulkan",
+    "gpu": "RX 7900 XT",
+    "server_flags": {
+      "flash_attn": "on",
+      "cache_type_k": null,
+      "cache_type_v": null,
+      "ngl": 99,
+      "np": 1
+    },
+    "defaults_extra_flags": {
+      "batch-size": 2048,
+      "ubatch-size": 2048
+    },
+    "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+  },
+  "started": "2026-06-09T08:39:41.293Z",
+  "finished": null,
+  "status": "running",
+  "seed": "rose-rx7900xt-vulkan-20260609-084929",
+  "planned": [],
+  "results": [
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.5-27B-IQ4_XS--kvq4_0",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "0.0",
+      "status": "ok",
+      "notes": "0/5 tasks · steps 0.0 recovery 0/1",
+      "ts": "2026-06-09T08:40:49.173Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.5-27B-IQ4_XS--kvq5_0",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "0.0",
+      "status": "ok",
+      "notes": "0/5 tasks · steps 0.0 recovery 0/1",
+      "ts": "2026-06-09T08:41:33.482Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.5-27B-IQ4_XS--kvq5_1",
+      "think": "n/a",
+      "bench": "agentic_loop",
+      "score": "0.0",
+      "status": "ok",
+      "notes": "0/5 tasks · steps 0.0 recovery 0/1",
+      "ts": "2026-06-09T08:45:08.966Z"
+    }
+  ]
+}

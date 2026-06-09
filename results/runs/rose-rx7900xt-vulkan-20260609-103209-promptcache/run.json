@@ -22,8 +22,8 @@
     "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
   },
   "started": "2026-06-09T08:32:09.345Z",
-  "finished": null,
-  "status": "running",
+  "finished": "2026-06-09T08:39:41.192Z",
+  "status": "complete",
   "seed": "rose-rx7900xt-vulkan-20260609-084929",
   "planned": [],
   "results": [
@@ -104,6 +104,45 @@
       "score": "65.60",
       "notes": "cold÷warm@8192",
       "ts": "2026-06-09T08:38:50.928Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq8_0",
+      "think": "n/a",
+      "vram_mib": "?",
+      "ctx_loaded": 131072,
+      "status": "ok",
+      "bench": "prefix_cache_cold_ms",
+      "score": "3450",
+      "notes": "cold prompt_ms@8192 n=1",
+      "ts": "2026-06-09T08:39:37.623Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq8_0",
+      "think": "n/a",
+      "vram_mib": "?",
+      "ctx_loaded": 131072,
+      "status": "ok",
+      "bench": "prefix_cache_warm_ms",
+      "score": "44",
+      "notes": "warm prompt_ms@8192 cold 3450 speedup 79.26 n=1",
+      "ts": "2026-06-09T08:39:37.629Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq8_0",
+      "think": "n/a",
+      "vram_mib": "?",
+      "ctx_loaded": 131072,
+      "status": "ok",
+      "bench": "prefix_cache_speedup",
+      "score": "79.26",
+      "notes": "cold÷warm@8192",
+      "ts": "2026-06-09T08:39:37.633Z"
     }
   ]
 }
