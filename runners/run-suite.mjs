@@ -54,6 +54,7 @@ const { values: flags } = parseArgs({
       'skip-maxctx': { type: 'boolean', default: false },
       full: { type: 'boolean', default: false }, // after the core suite, chain ALL secondary runners (kv-probe, struct-output, throughput-ttft, speed-decay, quality-decay) and rebuild every chart. A "full run" is not full without these — the depth/perf + struct/kv benches feed the fleet chart and the e2e/ttft/retention sections.
       'skip-think': { type: 'boolean', default: false }, // drop the think=true pass (no_think only) — fast partial run; do the full think-inclusive pass separately
+      'skip-nothi': { type: 'boolean', default: false }, // drop the think=false pass (think only) — fast partial run when no_think data already exists
       depths: { type: 'string' }, // with --full: forward to the depth secondaries (speed-decay, quality-decay) to cap the sweep, e.g. --depths 16384,32768 to drop the slow 64k/96k tail
       'maxctx-recheck': { type: 'boolean', default: false }, // re-validate prior ceiling at current config (extreme-only, no full search)
       'recheck-from': { type: 'string' }, // CSV to seed prior ceilings from (default: latest results file)
@@ -73,6 +74,7 @@ const FILTER_BENCHES = flags.benches ? flags.benches.split(',').map((s) => s.tri
 const SKIP_MAXCTX = flags['skip-maxctx'];
 const FULL = flags.full;
 const SKIP_THINK = flags['skip-think'];
+const SKIP_NOTHI = flags['skip-nothi'];
 const MAXCTX_RECHECK = flags['maxctx-recheck'];
 const DEBUG = flags.debug || !!process.env.BENCH_DEBUG;
 
@@ -1072,7 +1074,8 @@ function dryRun() {
    for (const m of models) {
       const b = (m.benches ?? []).filter((x) => !FILTER_BENCHES.length || FILTER_BENCHES.includes(x));
       const thinkModes = getThinkModes(m)
-         .filter((t) => !(SKIP_THINK && t === true)) // mirror the real run loop's --skip-think filter
+         .filter((t) => !(SKIP_THINK && t === true)) // mirror the real run loop's --skip-think/--skip-nothi filters
+         .filter((t) => !(SKIP_NOTHI && t === false))
          .map((t) => (t === null ? 'n/a' : t ? 'think' : 'no_think'));
       console.log(`  ${(m.label ?? modelId(m, null)).padEnd(55)} think=[${thinkModes.join(',')}]  benches=[${b.join(',')}]`);
    }
@@ -1138,8 +1141,10 @@ console.log(`\n[run-suite] ${models.length} models  target=${TARGET}  backend=${
 // ─────────────────────────────────────────────────────────────────────────────
 for (const model of models) {
    const mid = modelId(model, null); // base ID (used for load/OOM error rows)
-   // --skip-think drops the think=true pass (keeps no_think/null) for a fast partial run.
-   const thinkModes = getThinkModes(model).filter((t) => !(SKIP_THINK && t === true));
+   // --skip-think drops the think=true pass; --skip-nothi drops the think=false pass.
+   const thinkModes = getThinkModes(model)
+      .filter((t) => !(SKIP_THINK && t === true))
+      .filter((t) => !(SKIP_NOTHI && t === false));
    const benches = (model.benches ?? []).filter((b) => !FILTER_BENCHES.length || FILTER_BENCHES.includes(b));
 
    // --resume: if every planned (model,think,bench) is already ok in the seed run, skip
