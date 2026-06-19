@@ -1770,6 +1770,12 @@ if (FULL) {
    } catch (e) {
       console.warn(`[run-suite] fleet-analysis failed: ${e.message.slice(0, 120)}`);
    }
+   try {
+      await execP('node', [join(ROOT, 'runners/build-dashboard.mjs'), ...reportInputs]);
+      console.log('[run-suite] dashboard rebuilt');
+   } catch (e) {
+      console.warn(`[run-suite] dashboard build failed: ${e.message.slice(0, 120)}`);
+   }
 }
 
 console.log(`\n[run-suite] Done (${finalStatus}). Run: ${run.dir}`);
