@@ -156,7 +156,7 @@ models:
      native_max_ctx: 262144
      kv_bytes_per_token: 16384
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
-     kv_variants: [q4_0, q5_0, q5_1, q8_0]   # full KV quant sweep
+     kv_variants: [q4_0, q5_0, q5_1, q8_0]
      notes: "kv_bytes_per_token is estimated — kv-probe will calibrate."
 
    # ── Qwen3.6-27B IQ4_XS ───────────────────────────────────────────────────────
@@ -215,6 +215,22 @@ models:
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
      kv_variants: [q4_0, q5_0, q5_1, q8_0]   # full KV quant sweep
      notes: "MTP speculative draft; smoke will catch if Vulkan build lacks support."
+
+   # ── Qwen3.6-35B-A3B APEX I-Compact ──────────────────────────────────────
+   # APEX = Adaptive Precision for EXpert Models; "I" = diverse imatrix calibration
+   # (chat, code, reasoning, etc.). ~17 GB — similar VRAM footprint to IQ4_XS.
+   # No MTP spec (different repo). Same qwen3.6 family/sampling as the IQ4_XS entry.
+   - hf_repo: mudler/Qwen3.6-35B-A3B-APEX-GGUF
+     hf_file: Qwen3.6-35B-A3B-APEX-I-Compact.gguf
+     label: "Qwen3.6-35B APEX I-Compact"
+     family: qwen3.6
+     type: moe
+     think: optional
+     tools: true
+     native_max_ctx: 262144
+     kv_bytes_per_token: 49152
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     kv_variants: [q4_0, q5_0, q5_1, q8_0]
 
    # ── Gemma4-E4B ───────────────────────────────────────────────────────────────
    # Hybrid: runs both nothi and think passes.

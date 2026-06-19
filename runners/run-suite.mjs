@@ -1727,7 +1727,8 @@ if (FULL) {
       try {
          console.log(`[run-suite] ▸ ${kind} …`);
          const extraArgs = flags.depths && DEPTH_SWEEPS.has(kind) ? ['--depths', flags.depths] : [];
-         const { stdout } = await execP('node', [join(ROOT, script), '--input', run.runId, ...extraArgs], {
+         const modelArgs = FILTER_MODELS.length ? ['--models', FILTER_MODELS.join(',')] : [];
+         const { stdout } = await execP('node', [join(ROOT, script), '--input', run.runId, ...extraArgs, ...modelArgs], {
             timeout: 6 * 60 * 60 * 1000, // depth sweeps are slow; 6h ceiling per runner
             maxBuffer: 64 * 1024 * 1024,
          });
