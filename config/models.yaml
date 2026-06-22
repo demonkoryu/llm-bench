@@ -154,9 +154,10 @@ models:
      think: optional
      tools: true
      native_max_ctx: 262144
+     ctx_cap: 102400   # measured: all KV variants cap at 102400 (131072 incoherent)
      kv_bytes_per_token: 16384
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
-     kv_variants: [q4_0, q5_0, q5_1, q8_0]
+     kv_variants: [q4_0, q5_0]
      notes: "kv_bytes_per_token is estimated — kv-probe will calibrate."
 
    # ── Qwen3.6-27B IQ4_XS ───────────────────────────────────────────────────────
@@ -173,9 +174,10 @@ models:
      think: optional
      tools: true
      native_max_ctx: 262144
+     ctx_cap: 102400   # measured: all KV variants cap at 102400 (131072 incoherent)
      kv_bytes_per_token: 16384   # estimated — same arch as Qwen3.5-27B; kv-probe will calibrate
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
-     kv_variants: [q4_0, q5_0, q5_1, q8_0]
+     kv_variants: [q4_0, q5_0]
 
    # ── Qwen3.6-27B UD-Q4_K_XL ───────────────────────────────────────────────────
    # Hybrid MoE, same qwen3.6 family/sampling as the 35B-A3B.
@@ -192,7 +194,7 @@ models:
      native_max_ctx: 262144
      kv_bytes_per_token: 49152
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
-     kv_variants: [q4_0, q5_0, q5_1, q8_0]
+     kv_variants: [q4_0, q5_0]
      notes: "kv_bytes_per_token matches 35B estimate — kv-probe will calibrate."
 
    # ── Qwen3.6-35B-A3B IQ4_XS ──────────────────────────────────────────────────
@@ -207,13 +209,14 @@ models:
      think: optional
      tools: true
      native_max_ctx: 262144
+     ctx_cap: 102400   # measured: all KV variants cap at 102400 (131072 incoherent)
      kv_bytes_per_token: 49152
      extra_flags:
         spec-type: draft-mtp
         spec-draft-n-max: 4
         parallel: 1   # MTP (embedded tensors) not supported with n_parallel > 1
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
-     kv_variants: [q4_0, q5_0, q5_1, q8_0]   # full KV quant sweep
+     kv_variants: [q4_0, q5_0]
      notes: "MTP speculative draft; smoke will catch if Vulkan build lacks support."
 
    # ── Qwen3.6-35B-A3B APEX I-Compact ──────────────────────────────────────
@@ -228,9 +231,10 @@ models:
      think: optional
      tools: true
      native_max_ctx: 262144
+     ctx_cap: 131072   # measured: fits 131072 at q4_0 and q8_0 KV
      kv_bytes_per_token: 49152
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
-     kv_variants: [q4_0, q5_0, q5_1, q8_0]
+     kv_variants: [q4_0, q5_0]
 
    # ── Gemma4-E4B ───────────────────────────────────────────────────────────────
    # Hybrid: runs both nothi and think passes.
@@ -296,6 +300,7 @@ models:
      think_control: enable_thinking
      tools: true
      native_max_ctx: 131072
+     ctx_cap: 102400   # measured: q4_0 and q5_0 KV cap at 102400
      kv_bytes_per_token: 16384
      extra_flags:
         "no-mmproj": true   # skip gemma4 vision projector (text-only)
@@ -303,7 +308,7 @@ models:
         spec-type: draft-mtp
         spec-draft-n-max: 4
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
-     kv_variants: [q4_0, q5_0, q5_1, q8_0]   # full KV quant sweep
+     kv_variants: [q4_0, q5_0]
 
    # ── Gemma4-12B (dense "unified" — encoder-free multimodal, run text-only) ──────
    # Released 2026-06-02. Dense 12B, hybrid think, native FC; ~8.4 GB at Q5_K_M.
@@ -352,6 +357,7 @@ models:
      think_control: enable_thinking
      tools: true
      native_max_ctx: 131072
+     ctx_cap: 102400   # measured: q5_0 KV caps at 102400; use conservative value for all variants
      kv_bytes_per_token: 16384
      extra_flags:
         "no-mmproj": true   # repo ships gemma-4-26B-it-mmproj.gguf — skip it (text-only)
@@ -359,7 +365,7 @@ models:
         spec-type: draft-mtp
         spec-draft-n-max: 4
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
-     kv_variants: [q4_0, q5_0, q5_1, q8_0]   # full KV quant sweep
+     kv_variants: [q4_0, q5_0]
 
    # ── Gemma4 QAT — Unsloth Dynamic UD-Q4_K_XL (QAT base, unsloth's dynamic quant) ─
    # Unsloth's quantization-aware-trained GGUFs: same QAT recipe as Google's q4_0
@@ -397,7 +403,7 @@ models:
         spec-type: draft-mtp
         spec-draft-n-max: 4
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
-     kv_variants: [q4_0, q5_0, q5_1, q8_0]   # full KV quant sweep
+     kv_variants: [q4_0, q5_0]
 
    # ── LFM2.5-8B-A1B ────────────────────────────────────────────────────────────
    # Always-reasoning: outputs to reasoning_content field, not content.

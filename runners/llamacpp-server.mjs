@@ -57,10 +57,10 @@ const DEFAULT_PORT = 8090;
 
 async function ssh(host, cmd, { timeout = 30_000 } = {}) {
    try {
-      const { stdout, stderr } = await execP('ssh', ['-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', host, cmd], { timeout });
+      const { stdout, stderr } = await execP('ssh', ['-o', 'BatchMode=yes', '-o', 'ConnectTimeout=30', host, cmd], { timeout });
       return { stdout: stdout.trim(), stderr: stderr.trim(), ok: true };
    } catch (e) {
-      return { stdout: '', stderr: e.message, ok: false, exitCode: e.code };
+      return { stdout: '', stderr: e.stderr ?? e.message, ok: false, exitCode: e.code };
    }
 }
 
@@ -168,12 +168,12 @@ export function llamacppServer({
 
    /** Aggressive kill — use on SIGINT/SIGTERM and before each probe. */
    async function killAll() {
-      await runScript('kill-all.sh', `--port ${port}`, { tolerant: true, timeout: 10_000 });
+      await runScript('kill-all.sh', `--port ${port}`, { tolerant: true, timeout: 30_000 });
    }
 
    /** VRAM used in MiB (reads rocm-smi on llm2). */
    async function snapshotVram() {
-      const out = await runScript('vram.sh', '', { tolerant: true, timeout: 10_000 });
+      const out = await runScript('vram.sh', '', { tolerant: true, timeout: 30_000 });
       const n = parseInt(out, 10);
       return Number.isNaN(n) ? null : n;
    }
