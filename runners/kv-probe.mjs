@@ -57,12 +57,21 @@ if (!seedRows.length) {
    process.exit(1);
 }
 
-// maxctx (cHigh) + base_model come from the already-probed ladder rows in the seed.
+// maxctx (cHigh) from the seed — prefer aggregated model objects (rich bench data)
+// but fall back to raw maxctx bench rows so a maxctx-only seed run also works.
 const { models: aggregated } = aggregateModels(seedRows);
 const maxctxByBase = new Map();
 for (const m of aggregated) {
    if (m.maxctx != null) {
       maxctxByBase.set(m.base_model, m.maxctx);
+   }
+}
+for (const r of seedRows) {
+   if (r.bench === 'maxctx' && !maxctxByBase.has(r.model)) {
+      const v = parseFloat(r.score);
+      if (Number.isFinite(v)) {
+         maxctxByBase.set(r.model, v);
+      }
    }
 }
 
