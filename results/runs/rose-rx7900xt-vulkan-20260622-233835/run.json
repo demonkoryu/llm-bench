@@ -1,0 +1,82 @@
+{
+  "run_id": "rose-rx7900xt-vulkan-20260622-233835",
+  "kind": "suite",
+  "host": "rose",
+  "gpu": "RX 7900 XT",
+  "backend": "vulkan",
+  "environment": {
+    "runner": "llama.cpp",
+    "backend": "vulkan",
+    "gpu": "RX 7900 XT",
+    "server_flags": {
+      "flash_attn": "on",
+      "cache_type_k": null,
+      "cache_type_v": null,
+      "ngl": 99,
+      "np": 1
+    },
+    "defaults_extra_flags": {
+      "batch-size": 2048,
+      "ubatch-size": 2048
+    },
+    "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+  },
+  "started": "2026-06-22T21:38:35.804Z",
+  "finished": "2026-06-22T21:39:06.309Z",
+  "status": "complete",
+  "seed": null,
+  "planned": [],
+  "results": [
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0",
+      "think": "-",
+      "bench": "maxctx",
+      "score": 131072,
+      "halls": "-",
+      "json_fail": "-",
+      "tok_s": "-",
+      "prefill_tps": "-",
+      "vram_mib": "?",
+      "ctx_loaded": 131072,
+      "oom_ceiling": 131072,
+      "coherence_ceiling": 131072,
+      "status": "ok",
+      "wall_s": "-",
+      "notes": "",
+      "ts": "2026-06-22T21:38:36.149Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq5_0",
+      "think": "-",
+      "bench": "maxctx",
+      "score": 131072,
+      "halls": "-",
+      "json_fail": "-",
+      "tok_s": "-",
+      "prefill_tps": "-",
+      "vram_mib": "?",
+      "ctx_loaded": 131072,
+      "oom_ceiling": 131072,
+      "coherence_ceiling": 131072,
+      "status": "ok",
+      "wall_s": "-",
+      "notes": "",
+      "ts": "2026-06-22T21:38:52.389Z"
+    }
+  ],
+  "filters": {
+    "models": [
+      "Qwen3.6-35B IQ4_XS"
+    ],
+    "benches": [
+      "maxctx"
+    ],
+    "skip_think": false,
+    "skip_maxctx": true,
+    "maxctx_recheck": false
+  }
+}

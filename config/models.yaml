@@ -209,7 +209,7 @@ models:
      think: optional
      tools: true
      native_max_ctx: 262144
-     ctx_cap: 102400   # measured: all KV variants cap at 102400 (131072 incoherent)
+     ctx_cap: 131072   # fits at 131k with q4_0/q5_0 KV (19.1–19.3 GiB); q8_0 OOMs there
      kv_bytes_per_token: 49152
      extra_flags:
         spec-type: draft-mtp
