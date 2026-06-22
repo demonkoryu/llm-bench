@@ -101,6 +101,20 @@ while [ $SECONDS -lt $deadline ]; do
    sleep 2
 done
 
+# Ensure headless (no compositor eating RAM/VRAM) and THP=always for large-page allocs
+active_target=$(systemctl get-default 2>/dev/null || true)
+current_target=$(systemctl list-units --type=target --state=active 2>/dev/null | grep -oP 'graphical\.target' || true)
+if [ -n "$current_target" ]; then
+   echo "  [start-server] switching to multi-user.target (headless)..." >&2
+   sudo systemctl isolate multi-user.target 2>/dev/null || true
+   sleep 1
+fi
+thp=$(cat /sys/kernel/mm/transparent_hugepage/enabled 2>/dev/null || true)
+if [[ "$thp" != *"[always]"* ]]; then
+   echo "  [start-server] enabling transparent huge pages..." >&2
+   echo always | sudo tee /sys/kernel/mm/transparent_hugepage/enabled >/dev/null 2>&1 || true
+fi
+
 # Build model source args
 if [ -n "$model_path" ]; then
    model_args="--model $model_path"
@@ -140,6 +154,8 @@ cmd="nohup ${vk_env}$BIN $model_args \
    $ctk_flag \
    -fa on \
    -np 1 \
+   --no-mmap --mlock \
+   --prio 2 \
    --jinja \
    $rf_flag \
    --host 0.0.0.0 --port $port \

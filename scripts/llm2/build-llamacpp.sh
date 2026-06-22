@@ -73,7 +73,7 @@ echo "Using glslc: $GLSLC ($("$GLSLC" --version 2>&1 | head -1))"
 echo "=== Vulkan configure @ $(date +%H:%M:%S) ==="
 rm -rf build-vulkan
 cmake -S . -B build-vulkan \
-   -DGGML_VULKAN=ON -DGGML_NATIVE=ON -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=ON \
+   -DGGML_VULKAN=ON -DGGML_NATIVE=ON -DGGML_LTO=ON -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=ON \
    -DVulkan_GLSLC_EXECUTABLE="$GLSLC" 2>&1 | grep -iE "integer_dot|coopmat|glslc support" || true
 echo "=== Vulkan build @ $(date +%H:%M:%S) ==="
 cmake --build build-vulkan -j"$JOBS" \
