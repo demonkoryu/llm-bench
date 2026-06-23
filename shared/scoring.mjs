@@ -568,6 +568,49 @@ export function computeMetrics(rows) {
       }
    }
 
+   // ── Synthesize a per-task "best-of" variant ────────────────────────────────────
+   // For each base with BOTH a no_think and a think entry, route per capability metric:
+   // copy the higher-norm side's raw + norm. Base-shared fields (speed, maxctx, gates,
+   // grade, quality_decay) are identical across variants, so cloning no_think carries
+   // them verbatim. Appended AFTER the denom + quality-decay passes so (a) the clone
+   // inherits norm.quality_decay and (b) the synthetic value — a max of two existing
+   // population values — cannot shift any fleet min/max. It's an oracle upper bound:
+   // capability(best-of) >= max(capability(no_think), capability(think)).
+   const ROUTED_METRICS = [
+      ['triage', 'triage'],
+      ['reasoning', 'reasoning'],
+      ['docqa', 'docqa'],
+      ['summ', 'summarization'],
+      ['toolcall', 'toolcalling'],
+   ];
+   const routed = [];
+   for (const variants of byBase.values()) {
+      const nt = variants.find((v) => v.think === 'no_think');
+      const th = variants.find((v) => v.think === 'think');
+      if (!nt || !th) {
+         continue; // only hybrids that ran both modes
+      }
+      const r = { ...nt, norm: { ...nt.norm } };
+      r.think = 'best-of';
+      r.model = `${nt.base_model}--bestof`;
+      r.base_model = nt.base_model;
+      r.label = `${nt.model} [best-of]`;
+      r.maxctxSharedFrom = 'no_think';
+      r.routedFrom = { grade: 'no_think' }; // grade is no_think-only by design
+      for (const [rawField, normKey] of ROUTED_METRICS) {
+         const a = nt.norm[normKey];
+         const b = th.norm[normKey];
+         // Higher norm = higher raw (norm is monotonic per metric). Tie or both-null
+         // prefer no_think (cheaper — no reasoning tokens).
+         const winner = a == null ? (b == null ? nt : th) : b == null ? nt : b > a ? th : nt;
+         r.norm[normKey] = winner.norm[normKey];
+         r[rawField] = winner[rawField];
+         r.routedFrom[normKey] = winner.think;
+      }
+      routed.push(r);
+   }
+   models.push(...routed);
+
    return { models, denom };
 }
 

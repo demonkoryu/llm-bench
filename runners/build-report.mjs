@@ -152,6 +152,9 @@ const report = {
          docqa: m.docqa,
          summarization: m.summ,
       },
+      // For the synthesized [best-of] variant: which think mode each routed metric was
+      // taken from (per-metric oracle routing). null for the pure no_think/think rows.
+      routed_from: m.routedFrom ?? null,
       // capabilities: distinguishes "unsupported" from "not measured" downstream.
       // caps are keyed by the underlying GGUF, so strip any `--kv<quant>` variant tag —
       // both KV variants of a model inherit the same declared capabilities.

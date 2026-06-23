@@ -73,7 +73,7 @@ for (const r of rows) {
 // mode-independent (same GGUF + KV cache; maxctx is probed once per base), so think
 // vs no-think differ ONLY in quality — but they are kept as separate rows so the
 // mode-specific quality and overall rank stay visible.
-const thinkTag = (t) => (t === 'think' ? ' ·think' : t === 'no_think' ? ' ·no-think' : '');
+const thinkTag = (t) => (t === 'think' ? ' ·think' : t === 'no_think' ? ' ·no-think' : t === 'best-of' ? ' ·best-of' : '');
 
 // Top-5 overall finishers (variant-level, same as the main chart) get the star badge.
 ranking.slice(0, 5).forEach((m, i) => {

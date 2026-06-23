@@ -115,6 +115,7 @@ th{color:var(--dim);font-weight:600;font-size:10px;text-transform:uppercase}
 th[title],dt[title],.raw-title[title]{cursor:help;text-decoration:underline dotted var(--dim)}
 code{color:#9fe7d6;font-size:11px}
 .dim{color:var(--dim)} .warn-t{color:var(--warn)} .ok-t{color:var(--good)}
+.rf{font-size:9px;color:var(--dim);margin-left:1px;cursor:help} .rf-t{color:var(--accent)}
 .stars{color:#ffd54a;letter-spacing:1px;white-space:nowrap}
 tr.top5 td{background:rgba(255,213,74,0.06)}
 tr.model-row{cursor:pointer}
@@ -374,15 +375,27 @@ const BKEY_TIPS={
   warm_ttft:'Warm TTFT: time-to-first-token with prefix already cached. Measures prefix-cache effectiveness. Normalised: higher = faster.',
 };
 
+// Per-metric routing badge for [best-of] rows: ᵀ = think won this task, ᴺ = no-think won.
+// Only the per-variant capability metrics are routed (grade is no_think-only, not a choice).
+const ROUTED_BKEYS=new Set(['triage','summarization','docqa','reasoning','toolcalling']);
+function rfBadge(m,k){
+  const src=m.routedFrom&&ROUTED_BKEYS.has(k)?m.routedFrom[k]:null;
+  if(!src) return '';
+  const t=src==='think';
+  return '<sup class="rf'+(t?' rf-t':'')+'" title="routed from '+(t?'think':'no-think')+'">'+(t?'ᵀ':'ᴺ')+'</sup>';
+}
 function renderBreakdown(){
   const list=DATA.models.slice().sort((a,b)=>(b.capability==null?-1:b.capability)-(a.capability==null?-1:a.capability));
   const rows=list.map(m=>[
     html.raw(stars(CAPRANK[mkey(m)])),
     m.label,
-    ...BKEYS.map(k=>m.norm[k]==null?html\`<span class="dim">–</span>\`:html.raw(pct(m.norm[k]))),
+    ...BKEYS.map(k=>m.norm[k]==null?html\`<span class="dim">–</span>\`:html.raw(pct(m.norm[k])+rfBadge(m,k))),
   ]);
   const headers=[['★','Top-5 capability badge'],['model','Model name and variant'],...BKEYS.map(k=>[k,BKEY_TIPS[k]||k])];
-  $('breakdown').innerHTML=tbl(headers, rows, list.map(topClass));
+  const legend=list.some(m=>m.routedFrom)
+    ? '<p class="note"><b>[best-of]</b> rows route each task to its better mode: <sup class="rf rf-t">ᵀ</sup> think won, <sup class="rf">ᴺ</sup> no-think won. Oracle upper bound — assumes perfect per-task selection, not a single achievable config.</p>'
+    : '';
+  $('breakdown').innerHTML=tbl(headers, rows, list.map(topClass))+legend;
 }
 
 function renderRequired(dials){
