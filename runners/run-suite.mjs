@@ -598,7 +598,8 @@ async function runReasoning(client, model, thinkState) {
             ...sampling,
          });
          completion = res.completion;
-      } catch {
+      } catch (e) {
+         console.warn(`    [reasoning] case ${caseId}: chat() threw — ${e?.message ?? e}`);
          errors++;
          continue;
       }
@@ -668,7 +669,8 @@ async function runToolcalling(client, model, thinkState) {
             ...sampling,
          });
          completion = res.completion;
-      } catch {
+      } catch (e) {
+         console.warn(`    [toolcalling] case ${caseId}: chat() threw — ${e?.message ?? e}`);
          continue;
       }
       totalMs += Date.now() - t0;
@@ -722,7 +724,8 @@ async function runSummarization(client, model, thinkState) {
             ...sampling,
          });
          completion = res.completion;
-      } catch {
+      } catch (e) {
+         console.warn(`    [summarization] case ${caseId}: chat() threw — ${e?.message ?? e}`);
          continue;
       }
       totalMs += Date.now() - t0;
@@ -789,7 +792,8 @@ async function runDocqa(client, model, thinkState) {
             ...sampling,
          });
          completion = res.completion;
-      } catch {
+      } catch (e) {
+         console.warn(`    [docqa] question ${q.id}: chat() threw — ${e?.message ?? e}`);
          answers[q.id] = '';
          continue;
       }
@@ -865,7 +869,8 @@ async function runCoding(
             ...sampling,
          });
          completion = res.completion;
-      } catch {
+      } catch (e) {
+         console.warn(`    [${benchName}] case ${caseId}: chat() threw — ${e?.message ?? e}`);
          noCode++;
          continue;
       }
@@ -1610,7 +1615,8 @@ for (const model of models) {
          const bugfixSystem = (c) =>
             `You are an expert programmer. The user will show you a JavaScript function with a bug. Fix it.\n` +
             `Respond with ONLY one JavaScript code block defining the corrected \`${c.entry}\` — no prose, no tests, ` +
-            `no example calls, no console.log. The function must \`return\` its result.`;
+            `no example calls, no console.log. The function must \`return\` its result. ` +
+            `Do not repeat the original buggy code.`;
          const res = await skipOrRun('coding_bugfix', () =>
             runCoding(
                client,

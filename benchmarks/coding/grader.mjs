@@ -51,7 +51,7 @@ function runHarness(payload, timeoutMs) {
  */
 export async function gradeCase(caseObj, output, { timeoutMs = 5000 } = {}) {
    const total = caseObj.tests.length;
-   const { code, fenced } = extractCode(output, { lang: 'js' });
+   const { code, fenced } = extractCode(output, { lang: 'js', preferLast: true });
 
    if (!code || !/[a-z]/i.test(code)) {
       return { pass: false, score: 0, passed: 0, total, reason: 'no-code: empty extraction' };

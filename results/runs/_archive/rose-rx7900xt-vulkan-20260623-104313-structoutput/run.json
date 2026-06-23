@@ -1,0 +1,151 @@
+{
+  "run_id": "rose-rx7900xt-vulkan-20260623-104313-structoutput",
+  "kind": "struct-output",
+  "host": "rose",
+  "gpu": "RX 7900 XT",
+  "backend": "vulkan",
+  "environment": {
+    "runner": "llama.cpp",
+    "backend": "vulkan",
+    "gpu": "RX 7900 XT",
+    "server_flags": {
+      "flash_attn": "on",
+      "cache_type_k": null,
+      "cache_type_v": null,
+      "ngl": 99,
+      "np": 1
+    },
+    "defaults_extra_flags": {
+      "batch-size": 2048,
+      "ubatch-size": 2048
+    },
+    "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+  },
+  "started": "2026-06-23T08:43:13.666Z",
+  "finished": "2026-06-23T08:47:50.868Z",
+  "status": "complete",
+  "seed": "rose-rx7900xt-vulkan-20260623-090542",
+  "planned": [],
+  "results": [
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0",
+      "think": "n/a",
+      "bench": "power_eff",
+      "score": "0.460",
+      "tok_s": "127.3",
+      "status": "ok",
+      "notes": "W=277 tps=127.3 n=26",
+      "ts": "2026-06-23T08:45:41.831Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0",
+      "think": "n/a",
+      "bench": "struct_output",
+      "score": "100.0",
+      "json_fail": 0,
+      "status": "ok",
+      "notes": "parse=100% schema=100%",
+      "ts": "2026-06-23T08:45:46.408Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0",
+      "think": "n/a",
+      "bench": "power_eff",
+      "score": "0.371",
+      "tok_s": "76.4",
+      "status": "ok",
+      "notes": "W=206 tps=76.4 n=44",
+      "ts": "2026-06-23T08:46:14.509Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0",
+      "think": "n/a",
+      "bench": "struct_output",
+      "score": "100.0",
+      "json_fail": 0,
+      "status": "ok",
+      "notes": "parse=100% schema=100%",
+      "ts": "2026-06-23T08:46:22.589Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0",
+      "think": "n/a",
+      "bench": "power_eff",
+      "score": "0.386",
+      "tok_s": "108.4",
+      "status": "ok",
+      "notes": "W=281 tps=108.4 n=30",
+      "ts": "2026-06-23T08:46:47.708Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0",
+      "think": "n/a",
+      "bench": "struct_output",
+      "score": "100.0",
+      "json_fail": 0,
+      "status": "ok",
+      "notes": "parse=100% schema=100%",
+      "ts": "2026-06-23T08:46:51.897Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-26B_q4_0-it--kvq4_0",
+      "think": "n/a",
+      "bench": "power_eff",
+      "score": "0.377",
+      "tok_s": "102.8",
+      "status": "ok",
+      "notes": "W=272 tps=102.8 n=33",
+      "ts": "2026-06-23T08:47:15.382Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-26B_q4_0-it--kvq4_0",
+      "think": "n/a",
+      "bench": "struct_output",
+      "score": "100.0",
+      "json_fail": 0,
+      "status": "ok",
+      "notes": "parse=100% schema=100%",
+      "ts": "2026-06-23T08:47:19.466Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0",
+      "think": "n/a",
+      "bench": "power_eff",
+      "score": "0.384",
+      "tok_s": "103.5",
+      "status": "ok",
+      "notes": "W=270 tps=103.5 n=32",
+      "ts": "2026-06-23T08:47:42.982Z"
+    },
+    {
+      "target": "rose",
+      "backend": "vulkan",
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0",
+      "think": "n/a",
+      "bench": "struct_output",
+      "score": "100.0",
+      "json_fail": 0,
+      "status": "ok",
+      "notes": "parse=100% schema=100%",
+      "ts": "2026-06-23T08:47:47.064Z"
+    }
+  ]
+}

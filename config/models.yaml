@@ -150,6 +150,7 @@ models:
    - hf_repo: unsloth/Qwen3.5-27B-GGUF
      hf_file: Qwen3.5-27B-IQ4_XS.gguf
      label: "Qwen3.5-27B IQ4_XS"
+     disabled: true   # parked 2026-06-23 (~33 tok/s on Vulkan — 5× slower than rest of fleet)
      family: qwen3.5
      type: moe
      think: optional
@@ -170,6 +171,7 @@ models:
    - hf_repo: unsloth/Qwen3.6-27B-GGUF
      hf_file: Qwen3.6-27B-IQ4_XS.gguf
      label: "Qwen3.6-27B IQ4_XS"
+     disabled: true   # parked 2026-06-23 (~33 tok/s on Vulkan — 5× slower than rest of fleet)
      family: qwen3.6
      type: moe   # GatedDeltaNet dense hybrid — dense but slow on Vulkan like Qwen3.5-27B
      think: optional
@@ -210,7 +212,7 @@ models:
      think: optional
      tools: true
      native_max_ctx: 262144
-     ctx_cap: 131072   # fits at 131k with q4_0/q5_0 KV (19.1–19.3 GiB); q8_0 OOMs there
+     ctx_cap: 102400   # measured: 131072 incoherent on Vulkan (maxctx probe 2026-06-23); safe cap = 102400
      kv_bytes_per_token: 49152
      extra_flags:
         spec-type: draft-mtp
@@ -232,7 +234,7 @@ models:
      think: optional
      tools: true
      native_max_ctx: 262144
-     ctx_cap: 131072   # measured: fits 131072 at q4_0 and q8_0 KV
+     ctx_cap: 102400   # conservative: same arch as IQ4_XS; 131072 incoherent there (2026-06-23)
      kv_bytes_per_token: 49152
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
      kv_variants: [q4_0]

@@ -146,7 +146,7 @@ export function extractJson(s) {
  * @param {string} [opts.lang]  language hint matched against the fence tag (e.g. 'js')
  * @returns {{code: string, fenced: boolean}}  fenced=false ⇒ recovered heuristically
  */
-export function extractCode(s, { lang } = {}) {
+export function extractCode(s, { lang, preferLast = false } = {}) {
    const cleaned = stripThink(s ?? '');
    if (!cleaned) {
       return { code: '', fenced: false };
@@ -159,11 +159,30 @@ export function extractCode(s, { lang } = {}) {
    if (fences.length) {
       const preferred = lang ? fences.filter((b) => b.tag.includes(lang)) : [];
       const pool = preferred.length ? preferred : fences;
+      // preferLast: take the final block — models write original-then-fixed or
+      // naive-then-optimal, so the last block is always the intended answer.
+      // Default: longest block (works best for single-block responses).
+      if (preferLast) {
+         return { code: pool[pool.length - 1].body, fenced: true };
+      }
       pool.sort((a, b) => b.body.length - a.body.length);
       return { code: pool[0].body, fenced: true };
    }
 
-   // 2. Opened-but-unclosed fence (truncated generation): take from after it.
+   // 2. Fallback: if stripping think/channel blocks removed all fenced code (e.g. Gemma4
+   //    puts code inside <|channel>thought…<channel|>), retry on the raw unstripped string.
+   //    Always pick the last block here — it's either inside-think (the reasoning answer)
+   //    or after think (the actual response), and last = intended answer in both layouts.
+   const rawFences = [...(s ?? '').matchAll(/```([a-zA-Z0-9_+-]+)?[ \t]*\r?\n([\s\S]*?)```/g)]
+      .map((m) => ({ tag: (m[1] ?? '').toLowerCase(), body: m[2].trim() }))
+      .filter((b) => b.body);
+   if (rawFences.length) {
+      const rawPreferred = lang ? rawFences.filter((b) => b.tag.includes(lang)) : [];
+      const rawPool = rawPreferred.length ? rawPreferred : rawFences;
+      return { code: rawPool[rawPool.length - 1].body, fenced: true };
+   }
+
+   // 3. Opened-but-unclosed fence (truncated generation): take from after it.
    const open = cleaned.match(/```([a-zA-Z0-9_+-]+)?[ \t]*\r?\n([\s\S]*)$/);
    if (open?.[2]?.trim()) {
       return { code: open[2].trim(), fenced: true };
