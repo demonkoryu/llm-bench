@@ -1,0 +1,3243 @@
+{
+  "generated": "2026-06-23T09:56:20.403Z",
+  "sources": [
+    "rose-rx7900xt-vulkan-20260623-090542 (suite/complete)",
+    "rose-rx7900xt-vulkan-20260623-104021-kvprobe (kvprobe/complete)",
+    "rose-rx7900xt-vulkan-20260623-104313-structoutput (struct-output/complete)",
+    "rose-rx7900xt-vulkan-20260623-104750-throughputttft (throughput-ttft/complete)",
+    "rose-rx7900xt-vulkan-20260623-110741-qualitydecay (quality-decay/complete)",
+    "rose-rx7900xt-vulkan-20260623-113954-instructionfollowing (instruction-following/complete)",
+    "rose-rx7900xt-vulkan-20260623-114323-promptcache (prompt-cache/complete)",
+    "rose-rx7900xt-vulkan-20260623-114736-agenticloop (agentic-loop/complete)",
+    "rose-rx7900xt-vulkan-20260623-115056-parallelgen (parallel-gen/complete)",
+    "rose-rx7900xt-vulkan-20260623-085714 (suite/running)",
+    "rose-rx7900xt-vulkan-20260623-104021-kvprobe (kvprobe/complete)",
+    "rose-rx7900xt-vulkan-20260623-104313-structoutput (struct-output/complete)",
+    "rose-rx7900xt-vulkan-20260623-104750-throughputttft (throughput-ttft/complete)",
+    "rose-rx7900xt-vulkan-20260623-110741-qualitydecay (quality-decay/complete)",
+    "rose-rx7900xt-vulkan-20260623-113954-instructionfollowing (instruction-following/complete)",
+    "rose-rx7900xt-vulkan-20260623-114323-promptcache (prompt-cache/complete)",
+    "rose-rx7900xt-vulkan-20260623-114736-agenticloop (agentic-loop/complete)",
+    "rose-rx7900xt-vulkan-20260623-115056-parallelgen (parallel-gen/complete)"
+  ],
+  "environment": {
+    "host": "rose",
+    "gpu": "RX 7900 XT",
+    "backend": "vulkan",
+    "server": {
+      "runner": "llama.cpp",
+      "backend": "vulkan",
+      "gpu": "RX 7900 XT",
+      "server_flags": {
+        "flash_attn": "on",
+        "cache_type_k": null,
+        "cache_type_v": null,
+        "ngl": 99,
+        "np": 1
+      },
+      "defaults_extra_flags": {
+        "batch-size": 2048,
+        "ubatch-size": 2048
+      },
+      "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+    }
+  },
+  "provenance": {
+    "consistent": true,
+    "environments": [
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      }
+    ],
+    "warnings": []
+  },
+  "scoring": {
+    "formula": "capability = 0.8×(coding×comprehension) + 0.2×qd_norm   (fleet: see scoring.fleet)",
+    "groups": {
+      "comprehension": "additive: triage, summarization, docqa, reasoning",
+      "coding": "multiplicative: gate(toolcalling) × gate(struct_output) × gate(instruction_following) × gate(agentic_loop) × grade",
+      "speed": "additive (display): e2e_throughput, cold_ttft, warm_ttft, decode_retention",
+      "quality_decay": "additive blend: (1−w)×capability_raw + w×qd_norm; qd_norm=fleet min-max of mean accuracy@depth; missing=fleet mean (neutral)"
+    },
+    "fleet": "fleet_suitability = capability^w_cap × ctx_norm^w_ctx × slots_norm^w_slots × throughput^w_thru (geometric blend; capability dominates, context/slots modulate; ctx clamped at ctx_tier)",
+    "default_dials": {
+      "comprehension": {
+        "strength": 1,
+        "weights": {
+          "triage": 0.27,
+          "summarization": 0.22,
+          "docqa": 0.2,
+          "reasoning": 0.31
+        }
+      },
+      "coding": {
+        "strength": 1,
+        "weights": {
+          "grade": 1
+        }
+      },
+      "speed": {
+        "weights": {
+          "e2e_throughput": 0.4,
+          "cold_ttft": 0.45,
+          "warm_ttft": 0.15,
+          "decode_retention": 0
+        }
+      },
+      "fleet": {
+        "worker_ctx": 65536,
+        "parallel_overhead": 512,
+        "reserve": 512,
+        "ctx_tier": 100000,
+        "w_cap": 2,
+        "w_ctx": 1,
+        "w_slots": 1,
+        "w_thru": 0.5
+      },
+      "quality_decay": {
+        "weight": 0.2
+      }
+    }
+  },
+  "models": [
+    {
+      "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+      "base_model": "Qwen3.5-27B-IQ4_XS--kvq4_0",
+      "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+      "think": "no_think",
+      "capability": {
+        "score": 0.7585978657421426,
+        "comprehension": 0.9432333333333334,
+        "coding": 0.9524657903606337,
+        "coding_competence": 0.9880350522413213,
+        "speed_group": 0.24670739217616683
+      },
+      "maxctx": 102400,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 86.44444444444444,
+        "reasoning": 100,
+        "toolcalling": 100,
+        "docqa": 10,
+        "summarization": 90.83333333333333
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 33.7,
+      "prefill_tok_s": {
+        "4k": 589.4,
+        "12k": 577.1
+      },
+      "total_tok_s": {
+        "4k": 208.10828870779977,
+        "12k": 350.82383288837576
+      },
+      "e2e_throughput_tok_s": {
+        "mean": 338.6666666666667,
+        "ref": 443.3,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 192.8
+          },
+          {
+            "depth": 8192,
+            "tok_s": 379.9
+          },
+          {
+            "depth": 32768,
+            "tok_s": 443.3
+          }
+        ]
+      },
+      "performance": {
+        "speed_group": 0.24670739217616683,
+        "throughput_norm": 0.24953335298162885,
+        "latency_norm": 0.23552213349872084,
+        "warm_latency_norm": 0.2727272727272727,
+        "ttft_8k_ms": 12899,
+        "warm_ttft_ms": 66
+      },
+      "vram_at_maxctx_mib": {
+        "used": 17394,
+        "free": 3070
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": 107.4,
+        "max_slots": 8,
+        "speedup": 3.35,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 32.1
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 54.8
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 80.8
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 107.4
+          }
+        ]
+      },
+      "quality_decay": {
+        "base_acc": 66.7,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 66.7
+          },
+          {
+            "depth": 16384,
+            "acc": 66.7
+          },
+          {
+            "depth": 32768,
+            "acc": 83.3
+          },
+          {
+            "depth": 65536,
+            "acc": 66.7
+          },
+          {
+            "depth": 98304,
+            "acc": 83.3
+          }
+        ]
+      },
+      "ttft_ms": {
+        "ref": 55207,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 2235
+          },
+          {
+            "depth": 2048,
+            "ms": 3128
+          },
+          {
+            "depth": 8192,
+            "ms": 12899
+          },
+          {
+            "depth": 16384,
+            "ms": 25056
+          },
+          {
+            "depth": 32768,
+            "ms": 55207
+          },
+          {
+            "depth": 65536,
+            "ms": 132925
+          },
+          {
+            "depth": 98304,
+            "ms": 233076
+          }
+        ]
+      },
+      "struct_output_pct": 100,
+      "instruction_following_pct": 96.4,
+      "agentic_loop": {
+        "completion_pct": 100,
+        "mean_steps": 3.6
+      },
+      "prefix_cache": {
+        "cold_ms": 12898,
+        "warm_ms": 66,
+        "speedup": 196.52
+      },
+      "coding_grade": 94.56451612903226,
+      "coding_mult": {
+        "mult": 0.9524657903606337,
+        "grade_norm": 0.9880350522413213,
+        "agentic_pct": 100,
+        "instruction_following_pct": 96.4
+      },
+      "power_eff_tok_s_per_w": 0.093,
+      "weighted_score": 75.9
+    },
+    {
+      "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+      "base_model": "Qwen3.6-27B-IQ4_XS--kvq4_0",
+      "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+      "think": "no_think",
+      "capability": {
+        "score": 0.6595671620398459,
+        "comprehension": 0.9355833333333334,
+        "coding": 0.8812244972475003,
+        "coding_competence": 0.9485731940231434,
+        "speed_group": 0.24603646586334946
+      },
+      "maxctx": 102400,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 83.61111111111111,
+        "reasoning": 100,
+        "toolcalling": 100,
+        "docqa": 10,
+        "summarization": 90.83333333333333
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 33.4,
+      "prefill_tok_s": {
+        "4k": 589.1,
+        "12k": 576.7
+      },
+      "total_tok_s": {
+        "4k": 206.80072404531123,
+        "12k": 349.37568018573603
+      },
+      "e2e_throughput_tok_s": {
+        "mean": 338.26666666666665,
+        "ref": 442.7,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 192.6
+          },
+          {
+            "depth": 8192,
+            "tok_s": 379.5
+          },
+          {
+            "depth": 32768,
+            "tok_s": 442.7
+          }
+        ]
+      },
+      "performance": {
+        "speed_group": 0.24603646586334946,
+        "throughput_norm": 0.24923862854897336,
+        "latency_norm": 0.23565001551349674,
+        "warm_latency_norm": 0.26865671641791045,
+        "ttft_8k_ms": 12892,
+        "warm_ttft_ms": 67
+      },
+      "vram_at_maxctx_mib": {
+        "used": 17836,
+        "free": 2628
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": 103.1,
+        "max_slots": 8,
+        "speedup": 3.22,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 32
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 54.3
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 79.3
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 103.1
+          }
+        ]
+      },
+      "quality_decay": {
+        "base_acc": 66.7,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 66.7
+          },
+          {
+            "depth": 16384,
+            "acc": 66.7
+          },
+          {
+            "depth": 32768,
+            "acc": 66.7
+          },
+          {
+            "depth": 65536,
+            "acc": 66.7
+          },
+          {
+            "depth": 98304,
+            "acc": 66.7
+          }
+        ]
+      },
+      "ttft_ms": {
+        "ref": 55202,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 2242
+          },
+          {
+            "depth": 2048,
+            "ms": 3122
+          },
+          {
+            "depth": 8192,
+            "ms": 12892
+          },
+          {
+            "depth": 16384,
+            "ms": 25030
+          },
+          {
+            "depth": 32768,
+            "ms": 55202
+          },
+          {
+            "depth": 65536,
+            "ms": 132978
+          },
+          {
+            "depth": 98304,
+            "ms": 233118
+          }
+        ]
+      },
+      "struct_output_pct": 100,
+      "instruction_following_pct": 92.9,
+      "agentic_loop": {
+        "completion_pct": 100,
+        "mean_steps": 3.6
+      },
+      "prefix_cache": {
+        "cold_ms": 12861,
+        "warm_ms": 67,
+        "speedup": 193
+      },
+      "coding_grade": 90.78763440860214,
+      "coding_mult": {
+        "mult": 0.8812244972475003,
+        "grade_norm": 0.9485731940231434,
+        "agentic_pct": 100,
+        "instruction_following_pct": 92.9
+      },
+      "power_eff_tok_s_per_w": 0.09,
+      "weighted_score": 66
+    },
+    {
+      "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+      "base_model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0",
+      "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+      "think": "no_think",
+      "capability": {
+        "score": 0.526927208628244,
+        "comprehension": 0.86375,
+        "coding": 0.7625574654533199,
+        "coding_competence": 0.988793394000674,
+        "speed_group": 0.7965746051946428
+      },
+      "maxctx": 102400,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 86.94444444444444,
+        "reasoning": 91.66666666666666,
+        "toolcalling": 100,
+        "docqa": 10,
+        "summarization": 65.83333333333333
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 182.9,
+      "prefill_tok_s": {
+        "4k": 2175.3,
+        "12k": 1856.1
+      },
+      "total_tok_s": {
+        "4k": 984.1311886766525,
+        "12k": 1358.8576540659974
+      },
+      "e2e_throughput_tok_s": {
+        "mean": 1174.0666666666668,
+        "ref": 979.6,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 1001.7
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1540.9
+          },
+          {
+            "depth": 32768,
+            "tok_s": 979.6
+          }
+        ]
+      },
+      "performance": {
+        "speed_group": 0.7965746051946428,
+        "throughput_norm": 0.8650653305825721,
+        "latency_norm": 0.8512188288035865,
+        "warm_latency_norm": 0.45,
+        "ttft_8k_ms": 3569,
+        "warm_ttft_ms": 40
+      },
+      "vram_at_maxctx_mib": {
+        "used": 19863,
+        "free": 601
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": 152.5,
+        "max_slots": 8,
+        "speedup": 1.01,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 150.9
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 146.7
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 149.2
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 152.5
+          }
+        ]
+      },
+      "quality_decay": {
+        "base_acc": 66.7,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 66.7
+          },
+          {
+            "depth": 16384,
+            "acc": 66.7
+          },
+          {
+            "depth": 32768,
+            "acc": 66.7
+          },
+          {
+            "depth": 65536,
+            "acc": 66.7
+          },
+          {
+            "depth": 98304,
+            "acc": 66.7
+          }
+        ]
+      },
+      "ttft_ms": {
+        "ref": 25173,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 657
+          },
+          {
+            "depth": 2048,
+            "ms": 738
+          },
+          {
+            "depth": 8192,
+            "ms": 3569
+          },
+          {
+            "depth": 16384,
+            "ms": 8257
+          },
+          {
+            "depth": 32768,
+            "ms": 25173
+          },
+          {
+            "depth": 65536,
+            "ms": 88952
+          },
+          {
+            "depth": 98304,
+            "ms": 192021
+          }
+        ]
+      },
+      "struct_output_pct": 100,
+      "instruction_following_pct": 96.4,
+      "agentic_loop": {
+        "completion_pct": 80,
+        "mean_steps": 3.4
+      },
+      "prefix_cache": {
+        "cold_ms": 3559,
+        "warm_ms": 40,
+        "speedup": 89.86
+      },
+      "coding_grade": 94.63709677419354,
+      "coding_mult": {
+        "mult": 0.7625574654533199,
+        "grade_norm": 0.988793394000674,
+        "agentic_pct": 80,
+        "instruction_following_pct": 96.4
+      },
+      "power_eff_tok_s_per_w": 0.46,
+      "weighted_score": 52.7
+    },
+    {
+      "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+      "base_model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0",
+      "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+      "think": "no_think",
+      "capability": {
+        "score": 0.6067102224010786,
+        "comprehension": 0.8838777777777778,
+        "coding": 0.8580233569261883,
+        "coding_competence": 0.9889619143916415,
+        "speed_group": 0.9250564888495921
+      },
+      "maxctx": 131072,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 87.44444444444444,
+        "reasoning": 100,
+        "toolcalling": 90,
+        "docqa": 9.25,
+        "summarization": 69.44444444444444
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 118.9,
+      "prefill_tok_s": {
+        "4k": 2410.9,
+        "12k": 2374.7
+      },
+      "total_tok_s": {
+        "4k": 767.3490050861069,
+        "12k": 1350.112990838322
+      },
+      "e2e_throughput_tok_s": {
+        "mean": 1295.9666666666665,
+        "ref": 1667.7,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 725.3
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1494.9
+          },
+          {
+            "depth": 32768,
+            "tok_s": 1667.7
+          }
+        ]
+      },
+      "performance": {
+        "speed_group": 0.9250564888495921,
+        "throughput_norm": 0.9548826014343254,
+        "latency_norm": 1,
+        "warm_latency_norm": 0.6206896551724138,
+        "ttft_8k_ms": 3038,
+        "warm_ttft_ms": 29
+      },
+      "vram_at_maxctx_mib": {
+        "used": 18678,
+        "free": 1786
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": 310.2,
+        "max_slots": 8,
+        "speedup": 2.84,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 109.1
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 170
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 250.2
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 310.2
+          }
+        ]
+      },
+      "quality_decay": {
+        "base_acc": 66.7,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 66.7
+          },
+          {
+            "depth": 16384,
+            "acc": 66.7
+          },
+          {
+            "depth": 32768,
+            "acc": 66.7
+          },
+          {
+            "depth": 65536,
+            "acc": 66.7
+          },
+          {
+            "depth": 98304,
+            "acc": 66.7
+          }
+        ]
+      },
+      "ttft_ms": {
+        "ref": 14419,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 603
+          },
+          {
+            "depth": 2048,
+            "ms": 703
+          },
+          {
+            "depth": 8192,
+            "ms": 3038
+          },
+          {
+            "depth": 16384,
+            "ms": 6072
+          },
+          {
+            "depth": 32768,
+            "ms": 14419
+          },
+          {
+            "depth": 65536,
+            "ms": 38345
+          },
+          {
+            "depth": 98304,
+            "ms": 71672
+          }
+        ]
+      },
+      "struct_output_pct": 100,
+      "instruction_following_pct": 96.4,
+      "agentic_loop": {
+        "completion_pct": 100,
+        "mean_steps": 3.8
+      },
+      "prefix_cache": {
+        "cold_ms": 3016,
+        "warm_ms": 29,
+        "speedup": 104.99
+      },
+      "coding_grade": 94.65322580645162,
+      "coding_mult": {
+        "mult": 0.8580233569261883,
+        "grade_norm": 0.9889619143916415,
+        "agentic_pct": 100,
+        "instruction_following_pct": 96.4
+      },
+      "power_eff_tok_s_per_w": 0.371,
+      "weighted_score": 60.7
+    },
+    {
+      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+      "base_model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0",
+      "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+      "think": "no_think",
+      "capability": {
+        "score": 0.8723407288888889,
+        "comprehension": 0.8718111111111111,
+        "coding": 0.9640000000000001,
+        "coding_competence": 1,
+        "speed_group": 0.9566403538817333
+      },
+      "maxctx": 102400,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 86.55555555555556,
+        "reasoning": 100,
+        "toolcalling": 100,
+        "docqa": 7.666666666666666,
+        "summarization": 79.44444444444444
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 138.6,
+      "prefill_tok_s": {
+        "4k": 2410.3,
+        "12k": 2219.2
+      },
+      "total_tok_s": {
+        "4k": 854.3685089937768,
+        "12k": 1386.5998268897865
+      },
+      "e2e_throughput_tok_s": {
+        "mean": 1343.9666666666667,
+        "ref": 1573.6,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 881.2
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1577.1
+          },
+          {
+            "depth": 32768,
+            "tok_s": 1573.6
+          }
+        ]
+      },
+      "performance": {
+        "speed_group": 0.9566403538817333,
+        "throughput_norm": 0.9902495333529816,
+        "latency_norm": 0.9123123123123124,
+        "warm_latency_norm": 1,
+        "ttft_8k_ms": 3330,
+        "warm_ttft_ms": 18
+      },
+      "vram_at_maxctx_mib": {
+        "used": 18779,
+        "free": 1685
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": 201.5,
+        "max_slots": 8,
+        "speedup": 1.7,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 118.3
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 135.7
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 203.2
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 201.5
+          }
+        ]
+      },
+      "quality_decay": {
+        "base_acc": 100,
+        "retention_pct": 100,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 100
+          },
+          {
+            "depth": 16384,
+            "acc": 100
+          },
+          {
+            "depth": 32768,
+            "acc": 100
+          },
+          {
+            "depth": 65536,
+            "acc": 100
+          },
+          {
+            "depth": 98304,
+            "acc": 100
+          }
+        ]
+      },
+      "ttft_ms": {
+        "ref": 15964,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 575
+          },
+          {
+            "depth": 2048,
+            "ms": 783
+          },
+          {
+            "depth": 8192,
+            "ms": 3330
+          },
+          {
+            "depth": 16384,
+            "ms": 6736
+          },
+          {
+            "depth": 32768,
+            "ms": 15964
+          },
+          {
+            "depth": 65536,
+            "ms": 42533
+          },
+          {
+            "depth": 98304,
+            "ms": 79840
+          }
+        ]
+      },
+      "struct_output_pct": 100,
+      "instruction_following_pct": 96.4,
+      "agentic_loop": {
+        "completion_pct": 100,
+        "mean_steps": 3.6
+      },
+      "prefix_cache": {
+        "cold_ms": 3322,
+        "warm_ms": 18,
+        "speedup": 180.75
+      },
+      "coding_grade": 95.70967741935483,
+      "coding_mult": {
+        "mult": 0.9640000000000001,
+        "grade_norm": 1,
+        "agentic_pct": 100,
+        "instruction_following_pct": 96.4
+      },
+      "power_eff_tok_s_per_w": 0.386,
+      "weighted_score": 87.2
+    },
+    {
+      "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+      "base_model": "gemma-4-26B_q4_0-it--kvq4_0",
+      "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+      "think": "no_think",
+      "capability": {
+        "score": 0.7531459079166799,
+        "comprehension": 0.8434777777777778,
+        "coding": 0.9977530614537694,
+        "coding_competence": 0.9977530614537694,
+        "speed_group": 0.95550109019146
+      },
+      "maxctx": 102400,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 85.44444444444444,
+        "reasoning": 100,
+        "toolcalling": 100,
+        "docqa": 7.5,
+        "summarization": 69.44444444444444
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 170,
+      "prefill_tok_s": {
+        "4k": 2391.8,
+        "12k": 2252.6
+      },
+      "total_tok_s": {
+        "4k": 975.3862146169838,
+        "12k": 1511.7882070555538
+      },
+      "e2e_throughput_tok_s": {
+        "mean": 1357.2,
+        "ref": 1568.3,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 916.3
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1587
+          },
+          {
+            "depth": 32768,
+            "tok_s": 1568.3
+          }
+        ]
+      },
+      "performance": {
+        "speed_group": 0.95550109019146,
+        "throughput_norm": 1,
+        "latency_norm": 0.9186573934079226,
+        "warm_latency_norm": 0.9473684210526315,
+        "ttft_8k_ms": 3307,
+        "warm_ttft_ms": 19
+      },
+      "vram_at_maxctx_mib": {
+        "used": 16387,
+        "free": 4077
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": 186.5,
+        "max_slots": 8,
+        "speedup": 1.55,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 120.1
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 125.4
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 171.4
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 186.5
+          }
+        ]
+      },
+      "quality_decay": {
+        "base_acc": 100,
+        "retention_pct": 67,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 100
+          },
+          {
+            "depth": 16384,
+            "acc": 83.3
+          },
+          {
+            "depth": 32768,
+            "acc": 66.7
+          },
+          {
+            "depth": 65536,
+            "acc": 83.3
+          },
+          {
+            "depth": 98304,
+            "acc": 66.7
+          }
+        ]
+      },
+      "ttft_ms": {
+        "ref": 15882,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 590
+          },
+          {
+            "depth": 2048,
+            "ms": 780
+          },
+          {
+            "depth": 8192,
+            "ms": 3307
+          },
+          {
+            "depth": 16384,
+            "ms": 6695
+          },
+          {
+            "depth": 32768,
+            "ms": 15882
+          },
+          {
+            "depth": 65536,
+            "ms": 42377
+          },
+          {
+            "depth": 98304,
+            "ms": 79577
+          }
+        ]
+      },
+      "struct_output_pct": 100,
+      "instruction_following_pct": 100,
+      "agentic_loop": {
+        "completion_pct": 100,
+        "mean_steps": 3.6
+      },
+      "prefix_cache": {
+        "cold_ms": 3305,
+        "warm_ms": 19,
+        "speedup": 177.79
+      },
+      "coding_grade": 95.49462365591398,
+      "coding_mult": {
+        "mult": 0.9977530614537694,
+        "grade_norm": 0.9977530614537694,
+        "agentic_pct": 100,
+        "instruction_following_pct": 100
+      },
+      "power_eff_tok_s_per_w": 0.377,
+      "weighted_score": 75.3
+    },
+    {
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+      "base_model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0",
+      "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+      "think": "no_think",
+      "capability": {
+        "score": 0.7802531218039747,
+        "comprehension": 0.875788888888889,
+        "coding": 0.9998033928772049,
+        "coding_competence": 0.9998033928772049,
+        "speed_group": 0.9606709016878137
+      },
+      "maxctx": 131072,
+      "maxctx_shared_from": null,
+      "benches": {
+        "triage": 88.66666666666666,
+        "reasoning": 100,
+        "toolcalling": 100,
+        "docqa": 8.833333333333332,
+        "summarization": 68.05555555555556
+      },
+      "capabilities": {
+        "tools": true
+      },
+      "capability_note": null,
+      "speed_tok_s": 148.6,
+      "prefill_tok_s": {
+        "4k": 2414.8,
+        "12k": 2255.9
+      },
+      "total_tok_s": {
+        "4k": 896.2019980019982,
+        "12k": 1439.4085670611269
+      },
+      "e2e_throughput_tok_s": {
+        "mean": 1343.7,
+        "ref": 1573.3,
+        "curve": [
+          {
+            "depth": 2048,
+            "tok_s": 901.4
+          },
+          {
+            "depth": 8192,
+            "tok_s": 1556.4
+          },
+          {
+            "depth": 32768,
+            "tok_s": 1573.3
+          }
+        ]
+      },
+      "performance": {
+        "speed_group": 0.9606709016878137,
+        "throughput_norm": 0.9900530503978779,
+        "latency_norm": 0.921443736730361,
+        "warm_latency_norm": 1,
+        "ttft_8k_ms": 3297,
+        "warm_ttft_ms": 18
+      },
+      "vram_at_maxctx_mib": {
+        "used": 16587,
+        "free": 3877
+      },
+      "decode_decay": {
+        "base_tok_s": null,
+        "retention_pct": null,
+        "ref_depth": null,
+        "curve": []
+      },
+      "parallel_gen": {
+        "agg_tok_s_max": 188.3,
+        "max_slots": 8,
+        "speedup": 1.67,
+        "curve": [
+          {
+            "slots": 1,
+            "agg_tok_s": 112.8
+          },
+          {
+            "slots": 2,
+            "agg_tok_s": 119.8
+          },
+          {
+            "slots": 4,
+            "agg_tok_s": 168.2
+          },
+          {
+            "slots": 8,
+            "agg_tok_s": 188.3
+          }
+        ]
+      },
+      "quality_decay": {
+        "base_acc": 100,
+        "retention_pct": 83,
+        "curve": [
+          {
+            "depth": 0,
+            "acc": 100
+          },
+          {
+            "depth": 16384,
+            "acc": 83.3
+          },
+          {
+            "depth": 32768,
+            "acc": 83.3
+          },
+          {
+            "depth": 65536,
+            "acc": 83.3
+          },
+          {
+            "depth": 98304,
+            "acc": 50
+          }
+        ]
+      },
+      "ttft_ms": {
+        "ref": 15860,
+        "curve": [
+          {
+            "depth": 0,
+            "ms": 597
+          },
+          {
+            "depth": 2048,
+            "ms": 771
+          },
+          {
+            "depth": 8192,
+            "ms": 3297
+          },
+          {
+            "depth": 16384,
+            "ms": 6674
+          },
+          {
+            "depth": 32768,
+            "ms": 15860
+          },
+          {
+            "depth": 65536,
+            "ms": 42348
+          },
+          {
+            "depth": 98304,
+            "ms": 79524
+          }
+        ]
+      },
+      "struct_output_pct": 100,
+      "instruction_following_pct": 100,
+      "agentic_loop": {
+        "completion_pct": 100,
+        "mean_steps": 3.6
+      },
+      "prefix_cache": {
+        "cold_ms": 3296,
+        "warm_ms": 18,
+        "speedup": 187.42
+      },
+      "coding_grade": 95.69086021505376,
+      "coding_mult": {
+        "mult": 0.9998033928772049,
+        "grade_norm": 0.9998033928772049,
+        "agentic_pct": 100,
+        "instruction_following_pct": 100
+      },
+      "power_eff_tok_s_per_w": 0.384,
+      "weighted_score": 78
+    }
+  ],
+  "ranking": [
+    {
+      "rank": 1,
+      "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+      "think": "no_think",
+      "weighted_score": 87.2
+    },
+    {
+      "rank": 2,
+      "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+      "think": "no_think",
+      "weighted_score": 78
+    },
+    {
+      "rank": 3,
+      "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+      "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+      "think": "no_think",
+      "weighted_score": 75.9
+    },
+    {
+      "rank": 4,
+      "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+      "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+      "think": "no_think",
+      "weighted_score": 75.3
+    },
+    {
+      "rank": 5,
+      "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+      "think": "no_think",
+      "weighted_score": 66
+    },
+    {
+      "rank": 6,
+      "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+      "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+      "think": "no_think",
+      "weighted_score": 60.7
+    },
+    {
+      "rank": 7,
+      "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+      "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+      "think": "no_think",
+      "weighted_score": 52.7
+    }
+  ],
+  "fleet": [
+    {
+      "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+      "think": "no_think",
+      "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+      "capability": 0.7585978657421426,
+      "main_ctx": 102400,
+      "weights_mib": 15032,
+      "worker_ctx": 65536,
+      "n_workers": 1,
+      "slots": 2,
+      "agg_tok_s": 54.8,
+      "ctx_norm": 1,
+      "slots_norm": 0.8,
+      "capacity_norm": 0.31971995332555425,
+      "latency_norm": 0.23552213349872084,
+      "fleet_suitability": 0.2603143385692248,
+      "needs_pargen": false,
+      "reason": null
+    },
+    {
+      "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+      "think": "no_think",
+      "label": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+      "capability": 0.6595671620398459,
+      "main_ctx": 102400,
+      "weights_mib": 15473,
+      "worker_ctx": 65536,
+      "n_workers": 1,
+      "slots": 2,
+      "agg_tok_s": 54.3,
+      "ctx_norm": 1,
+      "slots_norm": 0.8,
+      "capacity_norm": 0.3168028004667444,
+      "latency_norm": 0.23565001551349674,
+      "fleet_suitability": 0.1958856145565314,
+      "needs_pargen": false,
+      "reason": null
+    },
+    {
+      "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+      "think": "no_think",
+      "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
+      "capability": 0.526927208628244,
+      "main_ctx": 102400,
+      "weights_mib": 18610.8,
+      "worker_ctx": 65536,
+      "n_workers": 0,
+      "slots": 1,
+      "agg_tok_s": 150.9,
+      "ctx_norm": 1,
+      "slots_norm": 0.5,
+      "capacity_norm": 0.8803967327887982,
+      "latency_norm": 0.8512188288035865,
+      "fleet_suitability": 0.13025981725281008,
+      "needs_pargen": false,
+      "reason": null
+    },
+    {
+      "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+      "think": "no_think",
+      "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
+      "capability": 0.6067102224010786,
+      "main_ctx": 131072,
+      "weights_mib": 17378.8,
+      "worker_ctx": 65536,
+      "n_workers": 1,
+      "slots": 2,
+      "agg_tok_s": 170,
+      "ctx_norm": 1,
+      "slots_norm": 0.8,
+      "capacity_norm": 0.9918319719953326,
+      "latency_norm": 1,
+      "fleet_suitability": 0.2932727176664474,
+      "needs_pargen": false,
+      "reason": null
+    },
+    {
+      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+      "think": "no_think",
+      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
+      "capability": 0.8723407288888889,
+      "main_ctx": 102400,
+      "weights_mib": 17417,
+      "worker_ctx": 65536,
+      "n_workers": 0,
+      "slots": 1,
+      "agg_tok_s": 118.3,
+      "ctx_norm": 1,
+      "slots_norm": 0.5,
+      "capacity_norm": 0.690198366394399,
+      "latency_norm": 0.9123123123123124,
+      "fleet_suitability": 0.3161034730416052,
+      "needs_pargen": false,
+      "reason": null
+    },
+    {
+      "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+      "think": "no_think",
+      "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
+      "capability": 0.7531459079166799,
+      "main_ctx": 102400,
+      "weights_mib": 15024,
+      "worker_ctx": 65536,
+      "n_workers": 3,
+      "slots": 4,
+      "agg_tok_s": 171.4,
+      "ctx_norm": 1,
+      "slots_norm": 0.95,
+      "capacity_norm": 1,
+      "latency_norm": 0.9186573934079226,
+      "fleet_suitability": 0.5388673206810581,
+      "needs_pargen": false,
+      "reason": null
+    },
+    {
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+      "think": "no_think",
+      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+      "capability": 0.7802531218039747,
+      "main_ctx": 131072,
+      "weights_mib": 14843,
+      "worker_ctx": 65536,
+      "n_workers": 3,
+      "slots": 4,
+      "agg_tok_s": 168.2,
+      "ctx_norm": 1,
+      "slots_norm": 0.95,
+      "capacity_norm": 0.9813302217036172,
+      "latency_norm": 0.921443736730361,
+      "fleet_suitability": 0.572930868826797,
+      "needs_pargen": false,
+      "reason": null
+    }
+  ],
+  "fleet_ranking": [
+    {
+      "rank": 1,
+      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+      "think": "no_think",
+      "fleet_suitability": 0.572930868826797,
+      "slots": 4
+    },
+    {
+      "rank": 2,
+      "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
+      "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+      "think": "no_think",
+      "fleet_suitability": 0.5388673206810581,
+      "slots": 4
+    },
+    {
+      "rank": 3,
+      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
+      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+      "think": "no_think",
+      "fleet_suitability": 0.3161034730416052,
+      "slots": 1
+    },
+    {
+      "rank": 4,
+      "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
+      "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+      "think": "no_think",
+      "fleet_suitability": 0.2932727176664474,
+      "slots": 2
+    },
+    {
+      "rank": 5,
+      "label": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+      "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+      "think": "no_think",
+      "fleet_suitability": 0.2603143385692248,
+      "slots": 2
+    },
+    {
+      "rank": 6,
+      "label": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi [no_think]",
+      "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+      "think": "no_think",
+      "fleet_suitability": 0.1958856145565314,
+      "slots": 2
+    },
+    {
+      "rank": 7,
+      "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
+      "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+      "think": "no_think",
+      "fleet_suitability": 0.13025981725281008,
+      "slots": 1
+    }
+  ],
+  "category_rankings": {
+    "reasoning": [
+      {
+        "rank": 1,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 4,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 5,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 6,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 91.66666666666666
+      }
+    ],
+    "triage": [
+      {
+        "rank": 1,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 88.66666666666666
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 87.44444444444444
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 86.94444444444444
+      },
+      {
+        "rank": 4,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 86.55555555555556
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 86.44444444444444
+      },
+      {
+        "rank": 6,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 85.44444444444444
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 83.61111111111111
+      }
+    ],
+    "coding_grade": [
+      {
+        "rank": 1,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 95.70967741935483
+      },
+      {
+        "rank": 2,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 95.69086021505376
+      },
+      {
+        "rank": 3,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 95.49462365591398
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 94.65322580645162
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 94.63709677419354
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 94.56451612903226
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 90.78763440860214
+      }
+    ],
+    "toolcalling": [
+      {
+        "rank": 1,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 4,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 5,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 6,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 90
+      }
+    ],
+    "docqa": [
+      {
+        "rank": 1,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 10
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 10
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 10
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 9.25
+      },
+      {
+        "rank": 5,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 8.833333333333332
+      },
+      {
+        "rank": 6,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 7.666666666666666
+      },
+      {
+        "rank": 7,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 7.5
+      }
+    ],
+    "summarization": [
+      {
+        "rank": 1,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 90.83333333333333
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 90.83333333333333
+      },
+      {
+        "rank": 3,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 79.44444444444444
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 69.44444444444444
+      },
+      {
+        "rank": 5,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 69.44444444444444
+      },
+      {
+        "rank": 6,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 68.05555555555556
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 65.83333333333333
+      }
+    ],
+    "maxctx": [
+      {
+        "rank": 1,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 131072
+      },
+      {
+        "rank": 2,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 131072
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 102400
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 102400
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 102400
+      },
+      {
+        "rank": 6,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 102400
+      },
+      {
+        "rank": 7,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 102400
+      }
+    ],
+    "generation_tok_s": [
+      {
+        "rank": 1,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 182.9
+      },
+      {
+        "rank": 2,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 170
+      },
+      {
+        "rank": 3,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 148.6
+      },
+      {
+        "rank": 4,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 138.6
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 118.9
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 33.7
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 33.4
+      }
+    ],
+    "prefill_tok_s_4k": [
+      {
+        "rank": 1,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 2414.8
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 2410.9
+      },
+      {
+        "rank": 3,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 2410.3
+      },
+      {
+        "rank": 4,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 2391.8
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 2175.3
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 589.4
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 589.1
+      }
+    ],
+    "prefill_tok_s_12k": [
+      {
+        "rank": 1,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 2374.7
+      },
+      {
+        "rank": 2,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 2255.9
+      },
+      {
+        "rank": 3,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 2252.6
+      },
+      {
+        "rank": 4,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 2219.2
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 1856.1
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 577.1
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 576.7
+      }
+    ],
+    "total_tok_s_4k": [
+      {
+        "rank": 1,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 984.1311886766525
+      },
+      {
+        "rank": 2,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 975.3862146169838
+      },
+      {
+        "rank": 3,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 896.2019980019982
+      },
+      {
+        "rank": 4,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 854.3685089937768
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 767.3490050861069
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 208.10828870779977
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 206.80072404531123
+      }
+    ],
+    "total_tok_s_12k": [
+      {
+        "rank": 1,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 1511.7882070555538
+      },
+      {
+        "rank": 2,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 1439.4085670611269
+      },
+      {
+        "rank": 3,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 1386.5998268897865
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 1358.8576540659974
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 1350.112990838322
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 350.82383288837576
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 349.37568018573603
+      }
+    ],
+    "e2e_throughput_tok_s": [
+      {
+        "rank": 1,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 1357.2
+      },
+      {
+        "rank": 2,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 1343.9666666666667
+      },
+      {
+        "rank": 3,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 1343.7
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 1295.9666666666665
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 1174.0666666666668
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 338.6666666666667
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 338.26666666666665
+      }
+    ],
+    "speed_group": [
+      {
+        "rank": 1,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.9606709016878137
+      },
+      {
+        "rank": 2,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.9566403538817333
+      },
+      {
+        "rank": 3,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.95550109019146
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.9250564888495921
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.7965746051946428
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.24670739217616683
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.24603646586334946
+      }
+    ],
+    "capability": [
+      {
+        "rank": 1,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.8723407288888889
+      },
+      {
+        "rank": 2,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.7802531218039747
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.7585978657421426
+      },
+      {
+        "rank": 4,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.7531459079166799
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.6595671620398459
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.6067102224010786
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.526927208628244
+      }
+    ],
+    "comprehension": [
+      {
+        "rank": 1,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.9432333333333334
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.9355833333333334
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.8838777777777778
+      },
+      {
+        "rank": 4,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.875788888888889
+      },
+      {
+        "rank": 5,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.8718111111111111
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.86375
+      },
+      {
+        "rank": 7,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.8434777777777778
+      }
+    ],
+    "coding": [
+      {
+        "rank": 1,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.9998033928772049
+      },
+      {
+        "rank": 2,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.9977530614537694
+      },
+      {
+        "rank": 3,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.9640000000000001
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.9524657903606337
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.8812244972475003
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.8580233569261883
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.7625574654533199
+      }
+    ],
+    "latency_rel_8k": [
+      {
+        "rank": 1,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 1
+      },
+      {
+        "rank": 2,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.921443736730361
+      },
+      {
+        "rank": 3,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.9186573934079226
+      },
+      {
+        "rank": 4,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.9123123123123124
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.8512188288035865
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.23565001551349674
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.23552213349872084
+      }
+    ],
+    "vram_free_at_maxctx_mib": [
+      {
+        "rank": 1,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 4077
+      },
+      {
+        "rank": 2,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 3877
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 3070
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 2628
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 1786
+      },
+      {
+        "rank": 6,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 1685
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 601
+      }
+    ],
+    "decode_retention_pct": [],
+    "decode_tok_s_at_ref": [],
+    "parallel_agg_tok_s_8slots": [
+      {
+        "rank": 1,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 310.2
+      },
+      {
+        "rank": 2,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 201.5
+      },
+      {
+        "rank": 3,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 188.3
+      },
+      {
+        "rank": 4,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 186.5
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 152.5
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 107.4
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 103.1
+      }
+    ],
+    "parallel_speedup": [
+      {
+        "rank": 1,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 3.35
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 3.22
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 2.84
+      },
+      {
+        "rank": 4,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 1.7
+      },
+      {
+        "rank": 5,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 1.67
+      },
+      {
+        "rank": 6,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 1.55
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 1.01
+      }
+    ],
+    "quality_retention_pct": [
+      {
+        "rank": 1,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 5,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 6,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 83
+      },
+      {
+        "rank": 7,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 67
+      }
+    ],
+    "struct_output_pct": [
+      {
+        "rank": 1,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 5,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 6,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 7,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      }
+    ],
+    "instruction_following_pct": [
+      {
+        "rank": 1,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 2,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 96.4
+      },
+      {
+        "rank": 4,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 96.4
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 96.4
+      },
+      {
+        "rank": 6,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 96.4
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 92.9
+      }
+    ],
+    "agentic_loop_pct": [
+      {
+        "rank": 1,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 3,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 4,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 5,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 6,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 100
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 80
+      }
+    ],
+    "prefix_cache_speedup": [
+      {
+        "rank": 1,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 196.52
+      },
+      {
+        "rank": 2,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 193
+      },
+      {
+        "rank": 3,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 187.42
+      },
+      {
+        "rank": 4,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 180.75
+      },
+      {
+        "rank": 5,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 177.79
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 104.99
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 89.86
+      }
+    ],
+    "power_eff_tok_s_per_w": [
+      {
+        "rank": 1,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.46
+      },
+      {
+        "rank": 2,
+        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.386
+      },
+      {
+        "rank": 3,
+        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.384
+      },
+      {
+        "rank": 4,
+        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.377
+      },
+      {
+        "rank": 5,
+        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.371
+      },
+      {
+        "rank": 6,
+        "label": "Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.5-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.093
+      },
+      {
+        "rank": 7,
+        "label": "Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-27B-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.09
+      }
+    ]
+  }
+}

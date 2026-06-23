@@ -1,0 +1,1242 @@
+<!doctype html><html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>llm-bench dashboard</title>
+<style>
+:root{--bg:#0f0f13;--panel:#18181f;--text:#e0e0e0;--dim:#888;--accent:#c8b6ff;--good:#82dc82;--warn:#ffc850}
+*{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden}
+body{margin:0;background:var(--bg);color:var(--text);font:13px/1.4 'Segoe UI',Arial,sans-serif}
+header{padding:12px 18px;border-bottom:1px solid #26262f}
+h1{font-size:18px;margin:0 0 4px;color:var(--accent)}
+#env{color:var(--dim);font-size:11px}
+.warn{margin-top:6px;color:#1a1a1a;background:var(--warn);padding:4px 8px;border-radius:4px;display:inline-block}
+/* Single column: no sidebar. Controls live above the section they drive. */
+main{width:80%;margin:0 auto;display:flex;flex-direction:column;gap:16px;padding:16px}
+@media(max-width:900px){main{width:100%}}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+button{background:#26262f;color:var(--text);border:1px solid #3a3a47;border-radius:4px;padding:4px 12px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+.note{color:var(--dim);font-size:11px;margin:0;flex-basis:100%}
+.panel{background:var(--panel);border:1px solid #26262f;border-radius:8px;padding:10px 14px;min-width:0}
+h2{font-size:14px;margin:0 0 8px;color:#a0a0c0}
+/* Collapsible per-section controls (replaces the sidebar). */
+details.controls{margin:0 0 10px;border:1px solid #2a2a35;border-radius:6px;background:#14141a;padding:2px 10px}
+details.controls>summary{cursor:pointer;color:var(--accent);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:5px 0;list-style:none}
+details.controls>summary::-webkit-details-marker{display:none}
+details.controls>summary::before{content:'▸ ';color:var(--dim)}
+details.controls[open]>summary::before{content:'▾ '}
+.dials{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:0 18px;padding-bottom:4px}
+fieldset{border:1px solid #2a2a35;border-radius:6px;margin:6px 0;padding:6px 10px;min-width:0}
+legend{color:var(--accent);font-size:11px;text-transform:capitalize}
+.dial-row{display:grid;grid-template-columns:1fr 84px 38px;gap:6px;align-items:center;margin:3px 0;font-size:11px}
+.dial-name{color:var(--dim);text-transform:capitalize}
+input[type=range]{width:100%;min-width:0}
+input[type=number]{width:84px;min-width:0;background:#0f0f13;color:var(--text);border:1px solid #3a3a47;border-radius:3px}
+output{color:var(--accent);text-align:right;font-variant-numeric:tabular-nums}
+/* Wide tables scroll WITHIN their panel so the page itself never scrolls sideways. */
+.tbl{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{text-align:left;padding:3px 8px;border-bottom:1px solid #23232c;font-variant-numeric:tabular-nums;white-space:nowrap}
+th{color:var(--dim);font-weight:600;font-size:10px;text-transform:uppercase}
+th[title],dt[title],.raw-title[title]{cursor:help;text-decoration:underline dotted var(--dim)}
+code{color:#9fe7d6;font-size:11px}
+.dim{color:var(--dim)} .warn-t{color:var(--warn)} .ok-t{color:var(--good)}
+.stars{color:#ffd54a;letter-spacing:1px;white-space:nowrap}
+tr.top5 td{background:rgba(255,213,74,0.06)}
+tr.model-row{cursor:pointer}
+tr.model-row:hover td{background:rgba(200,182,255,0.04)}
+tr.raw-row{display:none}
+tr.raw-row.open{display:table-row}
+tr.raw-row>td{padding:8px 14px 12px;border-top:none;background:#111118}
+.raw-grid{display:flex;flex-wrap:wrap;gap:10px 20px}
+.raw-section{min-width:150px}
+.raw-title{color:var(--accent);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin:0 0 4px}
+.raw-dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:1px 8px;font-size:11px}
+.raw-dl dt{color:var(--dim);white-space:nowrap}
+.raw-dl dd{margin:0;font-variant-numeric:tabular-nums}
+.depth-pills{display:flex;flex-wrap:wrap;gap:3px}
+.depth-pill{display:flex;flex-direction:column;align-items:center;background:#1a1a22;border:1px solid #2a2a38;border-radius:4px;padding:2px 6px;min-width:34px}
+.depth-pill .dk{font-size:9px;color:var(--dim)}
+.depth-pill .dv{font-size:11px;font-variant-numeric:tabular-nums}
+@media(max-width:640px){
+  header{padding:10px 12px}
+  h1{font-size:16px}
+  main{padding:10px;gap:12px}
+  .panel{padding:8px 10px}
+  .dials{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<header><h1>llm-bench dashboard</h1><div id="env"></div><div id="banner"></div></header>
+<main>
+<div class="toolbar">
+   <button id="reset">reset dials</button><button id="csv">CSV</button>
+   <p class="note">Structure: <code>score = 0.8×(coding×comprehension) + 0.2×quality_decay_norm</code>; fleet = score × speed_term. Dials only re-rank — nothing is written back. Click any row to expand raw metrics.</p>
+</div>
+<section class="panel"><h2>Capability ranking</h2>
+   <details class="controls" open><summary>Adjust capability weights</summary><div class="dials"><fieldset>
+      <legend>comprehension · contribution</legend>
+      <label class="dial-row">
+      <span class="dial-name">comprehension strength</span>
+      <input class="dial" type="range" id="d_comprehension_strength" min="0" max="2" step="0.05" value="1">
+      <output id="d_comprehension_strength_out">1</output>
+   </label>
+      <label class="dial-row">
+      <span class="dial-name">comprehension triage</span>
+      <input class="dial" type="range" id="d_w_comprehension_triage" min="0" max="1" step="0.01" value="0.27">
+      <output id="d_w_comprehension_triage_out">0.27</output>
+   </label><label class="dial-row">
+      <span class="dial-name">comprehension summarization</span>
+      <input class="dial" type="range" id="d_w_comprehension_summarization" min="0" max="1" step="0.01" value="0.22">
+      <output id="d_w_comprehension_summarization_out">0.22</output>
+   </label><label class="dial-row">
+      <span class="dial-name">comprehension docqa</span>
+      <input class="dial" type="range" id="d_w_comprehension_docqa" min="0" max="1" step="0.01" value="0.2">
+      <output id="d_w_comprehension_docqa_out">0.2</output>
+   </label><label class="dial-row">
+      <span class="dial-name">comprehension reasoning</span>
+      <input class="dial" type="range" id="d_w_comprehension_reasoning" min="0" max="1" step="0.01" value="0.31">
+      <output id="d_w_comprehension_reasoning_out">0.31</output>
+   </label>
+   </fieldset><fieldset>
+      <legend>coding · contribution</legend>
+      <label class="dial-row">
+      <span class="dial-name">coding strength</span>
+      <input class="dial" type="range" id="d_coding_strength" min="0" max="2" step="0.05" value="1">
+      <output id="d_coding_strength_out">1</output>
+   </label>
+      <label class="dial-row">
+      <span class="dial-name">coding grade</span>
+      <input class="dial" type="range" id="d_w_coding_grade" min="0" max="1" step="0.01" value="1">
+      <output id="d_w_coding_grade_out">1</output>
+   </label>
+   </fieldset><fieldset><legend>quality decay blend</legend><label class="dial-row">
+      <span class="dial-name">quality decay weight</span>
+      <input class="dial" type="range" id="d_quality_decay_weight" min="0" max="1" step="0.01" value="0.2">
+      <output id="d_quality_decay_weight_out">0.2</output>
+   </label></fieldset></div></details>
+   <div id="cap" class="tbl"></div>
+</section>
+<section class="panel"><h2>Fleet suitability</h2>
+   <details class="controls" open><summary>Adjust fleet &amp; speed weights</summary><div class="dials"><fieldset>
+      <legend>speed</legend>
+      
+      <label class="dial-row">
+      <span class="dial-name">speed e2e throughput</span>
+      <input class="dial" type="range" id="d_w_speed_e2e_throughput" min="0" max="1" step="0.01" value="0.4">
+      <output id="d_w_speed_e2e_throughput_out">0.4</output>
+   </label><label class="dial-row">
+      <span class="dial-name">speed cold ttft</span>
+      <input class="dial" type="range" id="d_w_speed_cold_ttft" min="0" max="1" step="0.01" value="0.45">
+      <output id="d_w_speed_cold_ttft_out">0.45</output>
+   </label><label class="dial-row">
+      <span class="dial-name">speed warm ttft</span>
+      <input class="dial" type="range" id="d_w_speed_warm_ttft" min="0" max="1" step="0.01" value="0.15">
+      <output id="d_w_speed_warm_ttft_out">0.15</output>
+   </label><label class="dial-row">
+      <span class="dial-name">speed decode retention</span>
+      <input class="dial" type="range" id="d_w_speed_decode_retention" min="0" max="1" step="0.01" value="0">
+      <output id="d_w_speed_decode_retention_out">0</output>
+   </label>
+   </fieldset><fieldset>
+      <legend>fleet</legend>
+      <label class="dial-row">
+      <span class="dial-name">worker ctx</span>
+      <input class="dial" type="number" id="d_fleet_worker_ctx" value="65536" step="1024">
+   </label>
+      <label class="dial-row">
+      <span class="dial-name">parallel overhead</span>
+      <input class="dial" type="number" id="d_fleet_parallel_overhead" value="512" step="64">
+   </label>
+      <label class="dial-row">
+      <span class="dial-name">reserve</span>
+      <input class="dial" type="number" id="d_fleet_reserve" value="512" step="64">
+   </label>
+      <label class="dial-row">
+      <span class="dial-name">fleet w thru</span>
+      <input class="dial" type="range" id="d_fleet_w_thru" min="0" max="1" step="0.01" value="0.5">
+      <output id="d_fleet_w_thru_out">0.5</output>
+   </label>
+   </fieldset></div></details>
+   <div id="fleet" class="tbl"></div>
+</section>
+<section class="panel"><h2>Context size</h2><div id="ctx" class="tbl"></div></section>
+<section class="panel"><h2>Per-model breakdown</h2><div id="breakdown" class="tbl"></div></section>
+<section class="panel"><h2>Data sources / required runs</h2><div id="required" class="tbl"></div></section>
+</main>
+<script type="module">
+/**
+ * Pure scoring + grouping + fleet model for llm-bench.
+ *
+ * This module has NO node imports so it can run unchanged in the browser (the
+ * dashboard inlines its source) AND in Node (build-report, render-chart, …). That
+ * shared-code guarantee is what keeps the dashboard's live re-ranking from drifting
+ * from the canonical report numbers.
+ *
+ * Three pure stages:
+ *   computeMetrics(rows)        → canonical normalized table (raw + norm per metric)
+ *   scoreGroups(models, dials)  → comprehension / coding / capability per model
+ *   computeFleet(models, dials) → VRAM-packed fleet suitability per model
+ *
+ * Scoring STRUCTURE is fixed here (GROUPS); the dashboard only turns weight DIALS.
+ *
+ * Capability (the headline subranking) = coding × comprehension.
+ *   • comprehension (additive) — document-comprehension axes: triage/categorization,
+ *     summarization, docqa, reasoning.
+ *   • coding (multiplicative composite) — the two hard gates toolcalling × struct_output
+ *     × a renormalized competence bundle (coding grade, agentic loop, instruction
+ *     following). A missing gate or missing coding grade zeroes coding (and thus the
+ *     model), exactly as the old gate behavior — relocated into the coding group.
+ *   • gate + amplifier are merged: both are just 0..1 multiplicative terms.
+ * Speed is NOT part of capability — it feeds the fleet score (see computeFleet).
+ * Context size (maxctx) is a standalone view, no longer a score amplifier.
+ */
+
+// RX 7900 XT usable VRAM (MiB). Mirrors config/hosts.yaml.
+const CARD_TOTAL_MIB = 20464;
+
+// ── Fixed group structure (membership + kind). Iterate on this in code, never the UI.
+const GROUPS = {
+   comprehension: {
+      kind: 'additive',
+      members: ['triage', 'summarization', 'docqa', 'reasoning'],
+   },
+   coding: {
+      kind: 'multiplier-composite',
+      gates: ['toolcalling', 'struct_output', 'instruction_following', 'agentic_loop'],
+      members: ['grade'],
+   },
+   speed: {
+      // Displayed/dialable speed score (additive). Capability ignores it; the fleet
+      // score uses its own pargen-capacity + ttft-latency term (see computeFleet).
+      kind: 'additive',
+      members: ['e2e_throughput', 'cold_ttft', 'warm_ttft', 'decode_retention'],
+   },
+};
+
+// Default dial values — reproduce a clean, documented baseline.
+const DEFAULT_DIALS = {
+   comprehension: {
+      strength: 1, // exponent into capability (0 = neutralized, 1 = full)
+      weights: { triage: 0.27, summarization: 0.22, docqa: 0.2, reasoning: 0.31 },
+   },
+   coding: {
+      strength: 1,
+      weights: { grade: 1.0 },
+   },
+   speed: {
+      weights: { e2e_throughput: 0.4, cold_ttft: 0.45, warm_ttft: 0.15, decode_retention: 0 },
+   },
+   fleet: {
+      worker_ctx: 65536, // each worker slot's context window (sizes the slot packing)
+      parallel_overhead: 512, // MiB extra for --parallel + unified KV
+      reserve: 512, // MiB held back from the card
+      ctx_tier: 100000, // main ctx is clamped to this tier (100k+ counts the same)
+      w_cap: 2, // capability exponent — >1 makes high-capability dominate the ranking
+      w_ctx: 1, // context-reach exponent (uses the clamped ctx_tier)
+      w_slots: 1, // slot-count exponent — "several of them" parallel capacity
+      w_thru: 0.5, // measured-throughput exponent (pargen aggregate); modulates without overtaking capability (w_cap=2)
+   },
+   quality_decay: {
+      // Additive blend into capability: final = (1−w)×capability_raw + w×qd_norm.
+      // qd_norm is fleet min-max of mean accuracy across all tested depths; missing = fleet mean (neutral).
+      // w=0.2 → worst-to-best spread of 20 percentage points in the final score.
+      weight: 0.2,
+   },
+};
+
+// Self-describing scoring shape for report.json + the chart subtitle.
+const SCORING = {
+   formula: 'capability = 0.8×(coding×comprehension) + 0.2×qd_norm   (fleet: see scoring.fleet)',
+   groups: {
+      comprehension: 'additive: triage, summarization, docqa, reasoning',
+      coding: 'multiplicative: gate(toolcalling) × gate(struct_output) × gate(instruction_following) × gate(agentic_loop) × grade',
+      speed: 'additive (display): e2e_throughput, cold_ttft, warm_ttft, decode_retention',
+      quality_decay:
+         'additive blend: (1−w)×capability_raw + w×qd_norm; qd_norm=fleet min-max of mean accuracy@depth; missing=fleet mean (neutral)',
+   },
+   fleet: 'fleet_suitability = capability^w_cap × ctx_norm^w_ctx × slots_norm^w_slots × throughput^w_thru (geometric blend; capability dominates, context/slots modulate; ctx clamped at ctx_tier)',
+   default_dials: DEFAULT_DIALS,
+};
+
+// ── Identity ─────────────────────────────────────────────────────────────────
+
+/** Lowercase, strip everything but [a-z0-9] so the slug can't introduce extra '-'. */
+function slugify(s) {
+   return String(s ?? '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '');
+}
+
+/** Strip the hybrid think suffix to the canonical model id.
+ *  The KV-quant variant tag (`--kv<quant>`) lives INSIDE the base id (before the think
+ *  suffix), so it survives this strip on purpose — q8 and q4 stay distinct rows that
+ *  each join to their own secondary metrics. Order is always base[--kv<quant>][--think]. */
+function baseModel(m) {
+   return String(m).replace(/--(?:nothi|think)$/, '');
+}
+
+/** Drop the `--kv<quant>` variant tag from a base id, recovering the underlying GGUF id.
+ *  Used only for capability lookup (caps are keyed by the real model, not its KV variant);
+ *  everywhere else the variant tag is kept so the quants rank as separate configs. */
+function stripVariant(baseId) {
+   return String(baseId).replace(/--kv[a-z0-9_]+$/i, '');
+}
+
+// ── Shared (base-model-keyed) benches ────────────────────────────────────────────
+const SHARED_BENCH_EXACT = new Set([
+   'maxctx',
+   'struct_output',
+   'power_eff',
+   'kv_per_tok',
+   'judge',
+   'instruction_following',
+   'agentic_loop',
+   'prefix_cache_cold_ms',
+   'prefix_cache_warm_ms',
+   'prefix_cache_speedup',
+]);
+const SHARED_BENCH_PREFIXES = ['speed_decay-', 'speed_pargen-', 'quality_decay-', 'ttft-', 'e2e-'];
+
+/** True for a base-model-keyed bench (recorded once per base model). */
+function isSharedBench(bench) {
+   const b = String(bench);
+   return SHARED_BENCH_EXACT.has(b) || SHARED_BENCH_PREFIXES.some((p) => b.startsWith(p));
+}
+
+// ── Deterministic merge across runs ──────────────────────────────────────────────
+function statusRank(s) {
+   return s === 'ok' ? 2 : s ? 1 : 0;
+}
+
+function supersedes(a, b) {
+   const ra = statusRank(a.status);
+   const rb = statusRank(b.status);
+   if (ra !== rb) {
+      return ra > rb;
+   }
+   const ta = a.ts ?? '';
+   const tb = b.ts ?? '';
+   if (ta !== tb) {
+      return ta > tb;
+   }
+   return true;
+}
+
+/**
+ * Dedup rows across runs by identity (model|think|bench): ok beats error, newest ts
+ * wins. ORDER-INDEPENDENT. Returns a fresh array in first-seen key order.
+ */
+function mergeResultRows(rows) {
+   const best = new Map();
+   const order = [];
+   for (const r of rows) {
+      const key = `${r.model}|${r.think}|${r.bench}`;
+      const prev = best.get(key);
+      if (!prev) {
+         best.set(key, r);
+         order.push(key);
+      } else if (supersedes(r, prev)) {
+         best.set(key, r);
+      }
+   }
+   return order.map((k) => best.get(k));
+}
+
+// ── Stage 1: computeMetrics — raw extraction + fleet-relative normalization ────────
+
+/**
+ * Turn raw per-bench rows into per-(model × think) summaries carrying every measured
+ * field (raw) plus a fleet-normalized `norm` map (0..1) for each scorable metric.
+ * Behavior of the extraction matches the historical aggregateModels; the `norm` map
+ * and fleet memory inputs (kvPerTokMiB) are the additions that drive scoring/fleet.
+ *
+ * @returns {{ models, denom }} denom = { maxCtx, maxE2E, minTtft8k, minWarm, maxCoding }
+ */
+function computeMetrics(rows) {
+   const data = mergeResultRows(rows).filter((r) => r.status === 'ok' && r.bench !== 'load' && r.bench !== 'smoke');
+
+   const maxctxByModel = new Map();
+   const maxctxVramByModel = new Map();
+   const kvPerTokByModel = new Map(); // base model → KV MiB/token (kv_per_tok score is KiB/token)
+   const decayByModel = new Map();
+   const pargenByModel = new Map();
+   const qualityByModel = new Map();
+   const ttftByModel = new Map();
+   const e2eByModel = new Map();
+   const structByModel = new Map();
+   const ifByModel = new Map();
+   const agenticByModel = new Map();
+   const agenticStepsByModel = new Map();
+   const prefixCacheByModel = new Map();
+   const powerEffByModel = new Map();
+   const codingByMT = new Map();
+   const setDepth = (map, base, key, val) => {
+      if (!map.has(base)) {
+         map.set(base, new Map());
+      }
+      map.get(base).set(key, val);
+   };
+   const depthOf = (bench, prefix) => Number(bench.replace(prefix, '').replace('k', '')) * 1024;
+   for (const r of data) {
+      const bench = String(r.bench);
+      const v = parseFloat(r.score);
+      if (bench.startsWith('speed_pargen-')) {
+         if (Number.isFinite(v)) {
+            setDepth(pargenByModel, baseModel(r.model), Number(bench.replace('speed_pargen-', '')), v);
+         }
+      } else if (bench.startsWith('quality_decay-')) {
+         if (Number.isFinite(v)) {
+            setDepth(qualityByModel, baseModel(r.model), depthOf(bench, 'quality_decay-'), v);
+         }
+      } else if (bench.startsWith('ttft-')) {
+         if (Number.isFinite(v)) {
+            setDepth(ttftByModel, baseModel(r.model), depthOf(bench, 'ttft-'), v);
+         }
+      } else if (bench.startsWith('e2e-')) {
+         if (Number.isFinite(v)) {
+            setDepth(e2eByModel, baseModel(r.model), depthOf(bench, 'e2e-'), v);
+         }
+      } else if (bench === 'struct_output') {
+         if (Number.isFinite(v)) {
+            structByModel.set(baseModel(r.model), v);
+         }
+      } else if (bench === 'instruction_following') {
+         if (Number.isFinite(v)) {
+            ifByModel.set(baseModel(r.model), v);
+         }
+      } else if (bench === 'agentic_loop') {
+         if (Number.isFinite(v)) {
+            agenticByModel.set(baseModel(r.model), v);
+            const sm = /steps\s+([\d.]+)/.exec(r.notes ?? '');
+            if (sm) {
+               agenticStepsByModel.set(baseModel(r.model), Number(sm[1]));
+            }
+         }
+      } else if (bench === 'prefix_cache_warm_ms') {
+         if (Number.isFinite(v)) {
+            const cm = /cold\s+([\d.]+)/.exec(r.notes ?? '');
+            const sm = /speedup\s+([\d.]+)/.exec(r.notes ?? '');
+            prefixCacheByModel.set(baseModel(r.model), {
+               warm: v,
+               cold: cm ? Number(cm[1]) : null,
+               speedup: sm ? Number(sm[1]) : null,
+            });
+         }
+      } else if (bench === 'power_eff') {
+         if (Number.isFinite(v)) {
+            powerEffByModel.set(baseModel(r.model), v);
+         }
+      } else if (bench === 'kv_per_tok') {
+         // kv-probe stores KiB/token in `score`; fleet wants MiB/token.
+         if (Number.isFinite(v) && v > 0) {
+            kvPerTokByModel.set(baseModel(r.model), v / 1024);
+         }
+      } else if (bench === 'coding_multipl') {
+         const p1raw = parseFloat(r.coding_pass_at_1);
+         const totRaw = parseFloat(r.coding_total);
+         const tpRaw = parseFloat(r.coding_tests_passed);
+         const ttRaw = parseFloat(r.coding_tests_total);
+         const pass1 = Number.isFinite(p1raw) && Number.isFinite(totRaw) && totRaw > 0 ? (p1raw / totRaw) * 100 : null;
+         const testRate = Number.isFinite(tpRaw) && Number.isFinite(ttRaw) && ttRaw > 0 ? (tpRaw / ttRaw) * 100 : null;
+         if (pass1 != null || testRate != null) {
+            codingByMT.set(`${baseModel(r.model)}|${r.think}`, { pass1, testRate });
+         }
+      }
+      if (r.bench === 'maxctx') {
+         if (Number.isFinite(v)) {
+            maxctxByModel.set(baseModel(r.model), v);
+         }
+         const vram = parseFloat(r.vram_mib);
+         if (Number.isFinite(vram)) {
+            maxctxVramByModel.set(baseModel(r.model), vram);
+         }
+      } else if (bench.startsWith('speed_decay-')) {
+         const depth = Number(bench.replace('speed_decay-', '').replace('k', '')) * 1024;
+         if (Number.isFinite(v)) {
+            setDepth(decayByModel, baseModel(r.model), depth, v);
+         }
+      }
+   }
+
+   const modelMap = new Map();
+   for (const r of data) {
+      if (isSharedBench(r.bench)) {
+         continue;
+      }
+      const key = `${r.model}|${r.think}`;
+      if (!modelMap.has(key)) {
+         modelMap.set(key, { model: r.model, think: r.think, rows: [] });
+      }
+      modelMap.get(key).rows.push(r);
+   }
+
+   const latestScore = (rs, bench) => {
+      const m = rs
+         .filter((r) => r.bench === bench)
+         .map((r) => parseFloat(r.score))
+         .filter(Number.isFinite);
+      return m.length ? m[m.length - 1] : null;
+   };
+
+   // ── Per-bench score functions — single source of truth for weights. ────────────
+   // Each reads raw sub-scores stored by the bench runners. No legacy fallbacks —
+   // runs pre-dating the sub-score refactor are excluded from analysis.
+
+   // Triage: 9 rules weighted per triage-rubric.mjs WEIGHTS (sum=100).
+   const TRIAGE_W = { R1: 10, R2: 8, R3: 8, R4: 20, R5: 16, R6: 8, R7: 5, C1: 15, C2: 10 };
+   const triageScore = (rs) => {
+      const r = rs.filter((row) => row.bench === 'triage').at(-1);
+      if (!r || r.triage_R1 == null) {
+         return null;
+      }
+      return Object.entries(TRIAGE_W).reduce((s, [k, w]) => s + (parseFloat(r[`triage_${k}`]) ?? 0) * w, 0);
+   };
+
+   // Reasoning: correct / total × 100.
+   const reasoningScore = (rs) => {
+      const r = rs.filter((row) => row.bench === 'reasoning').at(-1);
+      if (!r || !(r.reasoning_total > 0)) {
+         return null;
+      }
+      return (r.reasoning_correct / r.reasoning_total) * 100;
+   };
+
+   // Tool calling: pass / total × 100.
+   const toolcallScore = (rs) => {
+      const r = rs.filter((row) => row.bench === 'toolcalling').at(-1);
+      if (!r || !(r.toolcall_total > 0)) {
+         return null;
+      }
+      return (r.toolcall_pass / r.toolcall_total) * 100;
+   };
+
+   // Docqa: correctness (0–5) + coverage (0–3) + faithfulness (0–2) = 0–10 per question.
+   const docqaScore = (rs) => {
+      const r = rs.filter((row) => row.bench === 'docqa').at(-1);
+      if (!r || r.docqa_correctness == null) {
+         return null;
+      }
+      return parseFloat(r.docqa_correctness) + parseFloat(r.docqa_coverage) + parseFloat(r.docqa_faithfulness);
+   };
+
+   // Summarization sub-score weights — single source of truth.
+   const SUMM_W = { kw: 0.25, area: 0.3, tags: 0.3, length: 0.15 };
+   const summScore = (rs) => {
+      const r = rs.filter((row) => row.bench === 'summarization').at(-1);
+      if (!r || r.summ_kw == null) {
+         return null;
+      }
+      return (r.summ_kw * SUMM_W.kw + r.summ_area * SUMM_W.area + r.summ_tags * SUMM_W.tags + r.summ_length * SUMM_W.length) * 100;
+   };
+
+   const W_CODE_PASS1 = 0.4;
+   const W_CODE_TESTRATE = 0.6;
+   const codingGradeOf = (base) => {
+      for (const st of ['no_think', 'n/a']) {
+         const c = codingByMT.get(`${base}|${st}`);
+         if (c && (c.pass1 != null || c.testRate != null)) {
+            return W_CODE_PASS1 * (c.pass1 ?? 0) + W_CODE_TESTRATE * (c.testRate ?? 0);
+         }
+      }
+      return null;
+   };
+
+   const models = [...modelMap.values()]
+      .map(({ model, think, rows: rs }) => {
+         const base = baseModel(model);
+         const maxctx = maxctxByModel.get(base) ?? null;
+         const maxctxVram = maxctxVramByModel.get(base) ?? null;
+         const triage = triageScore(rs);
+         const reasoning = reasoningScore(rs);
+         const toolcall = toolcallScore(rs);
+         const summ = summScore(rs);
+         const docqa = docqaScore(rs);
+         const speedTg =
+            Math.max(latestScore(rs, 'speed_short') ?? 0, latestScore(rs, 'speed_long-32k') ?? 0, latestScore(rs, 'speed') ?? 0) || null;
+         const latestField = (bench, field) => {
+            const m = rs
+               .filter((r) => r.bench === bench)
+               .map((r) => parseFloat(r[field]))
+               .filter(Number.isFinite);
+            return m.length ? m[m.length - 1] : null;
+         };
+         const prefill4k = latestField('speed_prefill-4k', 'prefill_tps');
+         const prefill12k = latestField('speed_prefill-12k', 'prefill_tps');
+         const endToEnd = (P, pf) => (pf && speedTg ? (P + 512) / (P / pf + 512 / speedTg) : null);
+         const total4k = endToEnd(4096, prefill4k);
+         const total12k = endToEnd(12288, prefill12k);
+         const e2e = [total4k, total12k].filter(Number.isFinite);
+         const totalE2E = e2e.length ? e2e.reduce((a, b) => a + b, 0) / e2e.length : speedTg;
+         const decayMap = decayByModel.get(base);
+         const decayCurve = decayMap
+            ? [...decayMap.entries()].map(([depth, dec]) => ({ depth, decode: dec })).sort((a, b) => a.depth - b.depth)
+            : [];
+         const decodeBase = decayMap?.get(0) ?? null;
+         const refPt = [...decayCurve].filter((x) => x.depth > 0 && x.depth <= 32768).pop() ?? null;
+         const decodeRef = refPt?.decode ?? null;
+         const decodeRefDepth = refPt?.depth ?? null;
+         const decodeRetentionPct = decodeBase && decodeRef ? Math.min(100, Math.round((decodeRef / decodeBase) * 100)) : null;
+         const pgMap = pargenByModel.get(base);
+         const pargenCurve = pgMap ? [...pgMap.entries()].map(([conc, tps]) => ({ conc, tps })).sort((a, b) => a.conc - b.conc) : [];
+         const pargen1 = pgMap?.get(1) ?? null;
+         const pargenMaxK = pargenCurve.length ? pargenCurve[pargenCurve.length - 1].conc : null;
+         const pargenAggMax = pargenCurve.length ? pargenCurve[pargenCurve.length - 1].tps : null;
+         const pargenSpeedup = pargen1 && pargenAggMax ? Math.round((pargenAggMax / pargen1) * 100) / 100 : null;
+         const qMap = qualityByModel.get(base);
+         const qualityCurve = qMap ? [...qMap.entries()].map(([depth, acc]) => ({ depth, acc })).sort((a, b) => a.depth - b.depth) : [];
+         const qualityBase = qMap?.get(0) ?? null;
+         const qRef = [...qualityCurve].filter((x) => x.depth > 0 && x.depth <= 32768).pop() ?? null;
+         const qualityRetentionPct = qualityBase && qRef?.acc != null ? Math.min(100, Math.round((qRef.acc / qualityBase) * 100)) : null;
+         const qualityMean = qualityCurve.length ? qualityCurve.reduce((sum, pt) => sum + pt.acc, 0) / qualityCurve.length : null;
+         const tMap = ttftByModel.get(base);
+         const ttftCurve = tMap ? [...tMap.entries()].map(([depth, ms]) => ({ depth, ms })).sort((a, b) => a.depth - b.depth) : [];
+         const ttftRefPt = [...ttftCurve].filter((x) => x.depth > 0 && x.depth <= 32768).pop() ?? null;
+         const ttftRefMs = ttftRefPt?.ms ?? null;
+         const ttft8kMs = tMap?.get(8192) ?? null;
+         const e2eMap = e2eByModel.get(base);
+         const e2eCurve = e2eMap ? [...e2eMap.entries()].map(([depth, tps]) => ({ depth, tps })).sort((a, b) => a.depth - b.depth) : [];
+         const e2eThroughput = e2eCurve.length ? e2eCurve.reduce((a, b) => a + b.tps, 0) / e2eCurve.length : null;
+         const e2eRefPt = [...e2eCurve].filter((x) => x.depth > 0 && x.depth <= 32768).pop() ?? null;
+         const e2eRef = e2eRefPt?.tps ?? null;
+         const structScore = structByModel.get(base) ?? null;
+         const codingGrade = codingGradeOf(base);
+         const powerEff = powerEffByModel.get(base) ?? null;
+         const ifScore = ifByModel.get(base) ?? null;
+         const agenticScore = agenticByModel.get(base) ?? null;
+         const agenticSteps = agenticStepsByModel.get(base) ?? null;
+         const prefixCache = prefixCacheByModel.get(base) ?? null;
+         const kvPerTokMiB = kvPerTokByModel.get(base) ?? null;
+         return {
+            label: `${model}${think !== 'n/a' ? ` [${think}]` : ''}`,
+            model,
+            base_model: base,
+            think,
+            maxctx,
+            maxctxVram,
+            kvPerTokMiB,
+            triage,
+            reasoning,
+            toolcall,
+            summ,
+            docqa,
+            speedTg,
+            totalE2E,
+            prefill4k,
+            prefill12k,
+            total4k,
+            total12k,
+            decayCurve,
+            decodeBase,
+            decodeRef,
+            decodeRefDepth,
+            decodeRetentionPct,
+            pargenCurve,
+            pargen1,
+            pargenAggMax,
+            pargenMaxK,
+            pargenSpeedup,
+            qualityCurve,
+            qualityBase,
+            qualityMean,
+            qualityRetentionPct,
+            ttftCurve,
+            ttftRefMs,
+            ttft8kMs,
+            e2eCurve,
+            e2eThroughput,
+            e2eRef,
+            structScore,
+            ifScore,
+            agenticScore,
+            agenticSteps,
+            prefixCache,
+            powerEff,
+            codingGrade,
+            // Filled in after the fleet-relative denominators are known (loops below):
+            // declared here so the inferred shape carries them (no TS2568 suggestions).
+            norm: /** @type {Record<string, number | null>} */ ({}),
+            throughputNorm: /** @type {number | null} */ (null),
+            latencyNorm: /** @type {number | null} */ (null),
+            warmLatencyNorm: /** @type {number | null} */ (null),
+            codingGradeNorm: /** @type {number | null} */ (null),
+            maxctxSharedFrom: /** @type {string | null} */ (null),
+         };
+      })
+      .filter((m) => m.maxctx || m.triage || m.speedTg);
+
+   // Tag maxctx reuse across think variants of the same base model.
+   const THINK_ORDER = { 'n/a': 0, no_think: 1, think: 2 };
+   const byBase = new Map();
+   for (const m of models) {
+      if (!byBase.has(m.base_model)) {
+         byBase.set(m.base_model, []);
+      }
+      byBase.get(m.base_model).push(m);
+   }
+   for (const variants of byBase.values()) {
+      variants.sort((a, b) => (THINK_ORDER[a.think] ?? 9) - (THINK_ORDER[b.think] ?? 9));
+      for (const v of variants) {
+         v.maxctxSharedFrom = v === variants[0] ? null : variants[0].think;
+      }
+   }
+
+   const maxCtx = Math.max(...models.map((m) => m.maxctx ?? 0)) || 1;
+   const maxE2E = Math.max(...models.map((m) => m.e2eThroughput ?? 0)) || 1;
+   const minTtft8k = Math.min(...models.map((m) => m.ttft8kMs ?? Infinity));
+   const minWarm = Math.min(...models.map((m) => m.prefixCache?.warm ?? Infinity));
+   const maxCoding = Math.max(...models.map((m) => m.codingGrade ?? 0)) || 1;
+   const denom = { maxCtx, maxE2E, minTtft8k, minWarm, maxCoding };
+
+   // Fleet-relative normalization (0..1, null when unmeasured). Each metric maps to a
+   // group member name used by scoreGroups/the dashboard dials.
+   for (const m of models) {
+      const cold = m.ttft8kMs != null && Number.isFinite(minTtft8k) ? minTtft8k / m.ttft8kMs : null;
+      const warm = m.prefixCache?.warm != null && Number.isFinite(minWarm) ? minWarm / m.prefixCache.warm : null;
+      m.norm = {
+         // comprehension
+         triage: m.triage != null ? m.triage / 100 : null,
+         summarization: m.summ != null ? m.summ / 100 : null,
+         docqa: m.docqa != null ? m.docqa / 10 : null,
+         reasoning: m.reasoning != null ? m.reasoning / 100 : null,
+         // coding
+         grade: m.codingGrade != null ? m.codingGrade / maxCoding : null,
+         agentic_loop: m.agenticScore != null ? m.agenticScore / 100 : null,
+         instruction_following: m.ifScore != null ? m.ifScore / 100 : null,
+         toolcalling: m.toolcall != null ? m.toolcall / 100 : null,
+         struct_output: m.structScore != null ? m.structScore / 100 : null,
+         // speed
+         e2e_throughput: m.e2eThroughput != null ? m.e2eThroughput / maxE2E : null,
+         cold_ttft: cold,
+         warm_ttft: warm,
+         decode_retention: m.decodeRetentionPct != null ? m.decodeRetentionPct / 100 : null,
+         // context
+         maxctx: m.maxctx != null ? m.maxctx / maxCtx : null,
+      };
+      // Backward-compatible exposures used by render-chart / build-report.
+      m.throughputNorm = m.norm.e2e_throughput;
+      m.latencyNorm = m.norm.cold_ttft;
+      m.warmLatencyNorm = m.norm.warm_ttft;
+      m.codingGradeNorm = m.norm.grade;
+   }
+
+   // Quality-decay fleet normalization (second pass — needs all qualityMean values first).
+   // qd_norm = (qualityMean − fleet_min) / (fleet_max − fleet_min); missing models get
+   // fleet mean (neutral: neither penalised nor boosted relative to the measured fleet).
+   const qdMeans = models.map((m) => m.qualityMean).filter((v) => v != null && Number.isFinite(v));
+   if (qdMeans.length) {
+      const qdMin = Math.min(...qdMeans);
+      const qdMax = Math.max(...qdMeans);
+      const qdMeanVal = qdMeans.reduce((a, b) => a + b, 0) / qdMeans.length;
+      const qdRange = qdMax - qdMin || 1; // guard: all models identical → everyone gets 0 spread
+      const neutralNorm = (qdMeanVal - qdMin) / qdRange;
+      for (const m of models) {
+         m.norm.quality_decay = m.qualityMean != null ? (m.qualityMean - qdMin) / qdRange : neutralNorm;
+      }
+   }
+
+   return { models, denom };
+}
+
+// ── Stage 2: scoreGroups — apply the fixed structure with dial values ──────────────
+
+function additive(norm, weights) {
+   let s = 0;
+   for (const [k, w] of Object.entries(weights ?? {})) {
+      const v = norm[k];
+      if (v != null && Number.isFinite(v)) {
+         s += w * v;
+      }
+   }
+   return s;
+}
+
+/** Renormalized weighted mean over present members; `required` member missing → null. */
+function codingCompetence(norm, weights) {
+   if (norm.grade == null) {
+      return null; // grade is the anchor — no coding data ⇒ unusable coder
+   }
+   let num = 0;
+   let den = 0;
+   for (const k of ['grade']) {
+      const w = weights?.[k] ?? 0;
+      if (norm[k] != null && Number.isFinite(norm[k]) && w > 0) {
+         num += w * norm[k];
+         den += w;
+      }
+   }
+   return den ? num / den : 0;
+}
+
+const dialsOrDefault = (dials) => ({
+   comprehension: { ...DEFAULT_DIALS.comprehension, ...(dials?.comprehension ?? {}) },
+   coding: { ...DEFAULT_DIALS.coding, ...(dials?.coding ?? {}) },
+   speed: { ...DEFAULT_DIALS.speed, ...(dials?.speed ?? {}) },
+   fleet: { ...DEFAULT_DIALS.fleet, ...(dials?.fleet ?? {}) },
+   quality_decay: { ...DEFAULT_DIALS.quality_decay, ...(dials?.quality_decay ?? {}) },
+});
+
+/**
+ * Score each model's groups + capability in place and return a descending ranking.
+ * capability = comprehension^s_comp × coding^s_cod (gate+amplifier merged: a 0 in
+ * coding's gates zeroes coding and thus capability).
+ */
+function scoreGroups(models, dials = DEFAULT_DIALS) {
+   const d = dialsOrDefault(dials);
+   for (const m of models) {
+      const comp = additive(m.norm, d.comprehension.weights);
+      const competence = codingCompetence(m.norm, d.coding.weights);
+      const gate =
+         (m.norm.toolcalling ?? 0) * (m.norm.struct_output ?? 0) * (m.norm.instruction_following ?? 0) * (m.norm.agentic_loop ?? 0);
+      const coding = competence == null ? 0 : gate * competence;
+      const speed = additive(m.norm, d.speed.weights);
+      const capabilityRaw = comp ** (d.comprehension.strength ?? 1) * coding ** (d.coding.strength ?? 1);
+      // Quality-decay additive blend: final = (1−w)×raw + w×qd_norm.
+      // qd_norm is null only when the entire fleet has no quality-decay data; fall back to raw.
+      const wQd = d.quality_decay?.weight ?? 0.2;
+      const qdNorm = m.norm.quality_decay;
+      const capability = qdNorm != null ? (1 - wQd) * capabilityRaw + wQd * qdNorm : capabilityRaw;
+      m.comprehension = comp;
+      m.coding = coding;
+      m.codingCompetence = competence;
+      m.speed = speed;
+      m.capability = capability;
+      m.score = Math.round(capability * 1000) / 10;
+      // Back-compat alias for consumers that read m.codingMult.
+      m.codingMult = coding;
+   }
+   return [...models].sort((a, b) => b.score - a.score);
+}
+
+// ── Stage 3: computeFleet — VRAM-packed slots × measured throughput × capability ──
+
+/**
+ * Per-model fleet suitability — a geometric blend that ranks capable all-rounders to
+ * the top while context reach and slot count strongly modulate:
+ *   fleet = capability^w_cap × ctx_norm^w_ctx × slots_norm^w_slots × throughput^w_thru
+ * ctx_norm clamps main ctx at ctx_tier (100k+ counts the same); slots_norm uses a
+ * staggered scale (0→0, 1→0.5, 2→0.8, 3→0.9, 4→0.95, 5→0.975, 6+→1.0). The
+ * throughput term is OFF by default (w_thru=0) so
+ * the board is fully populated without pargen; when w_thru>0, a model lacking a pargen
+ * run is flagged needs_pargen and left unscored. Memory (weights/slots) is from the
+ * coherence-verified VRAM point and the measured KV slope.
+ */
+function computeFleet(models, dials = DEFAULT_DIALS) {
+   const f = dialsOrDefault(dials).fleet;
+   const budget = CARD_TOTAL_MIB - (f.reserve ?? 0);
+
+   const per = models.map((m) => {
+      const out = {
+         model: m.model,
+         base_model: m.base_model,
+         think: m.think,
+         label: m.label,
+         capability: m.capability ?? null,
+         needs_pargen: false,
+         main_ctx: m.maxctx ?? null,
+         weights_mib: null,
+         n_workers: null,
+         slots: null,
+         agg_tps: null,
+         worker_ctx: null,
+         ctx_norm: null,
+         slots_norm: null,
+         capacity_norm: null,
+         latency_norm: null,
+         fleet_suitability: null,
+      };
+      if (m.maxctx == null || m.maxctxVram == null || m.kvPerTokMiB == null) {
+         out.reason = 'needs kv-probe + maxctx';
+         return out;
+      }
+      const kv = m.kvPerTokMiB;
+      const weights = Math.max(0, m.maxctxVram - kv * m.maxctx);
+      const workerCtx = Math.min(f.worker_ctx, m.maxctx);
+      const free = budget - (f.parallel_overhead ?? 0) - weights - kv * m.maxctx;
+      const nWorkers = Math.max(0, Math.floor(free / (kv * workerCtx)));
+      const slots = 1 + nWorkers;
+      out.weights_mib = weights;
+      out.worker_ctx = workerCtx;
+      out.n_workers = nWorkers;
+      out.slots = slots;
+      // Optional measured-throughput capacity — pick the aggregate at the largest
+      // measured concurrency ≤ the slots we can actually host (else the highest point).
+      if (m.pargenCurve?.length) {
+         const cap = Math.min(slots, m.pargenCurve[m.pargenCurve.length - 1].conc);
+         const pick = [...m.pargenCurve].filter((p) => p.conc <= cap).pop() ?? m.pargenCurve[m.pargenCurve.length - 1];
+         out.agg_tps = pick.tps;
+      }
+      return out;
+   });
+
+   const bestAgg = Math.max(...per.map((p) => p.agg_tps ?? 0)) || 1;
+   const bestSlots = Math.max(...per.map((p) => p.slots ?? 0)) || 1;
+   const minTtft = Math.min(...models.map((m) => m.ttft8kMs ?? Infinity));
+   const ttftByKey = new Map(models.map((m) => [`${m.model}|${m.think}`, m.ttft8kMs ?? null]));
+   const tier = f.ctx_tier ?? 100000;
+   const wThru = f.w_thru ?? 0;
+
+   for (const p of per) {
+      const ttft = ttftByKey.get(`${p.model}|${p.think}`);
+      p.latency_norm = ttft != null && Number.isFinite(minTtft) ? minTtft / ttft : null;
+      p.capacity_norm = p.agg_tps != null ? p.agg_tps / bestAgg : null;
+      if (p.capability == null || p.slots == null || p.main_ctx == null) {
+         if (!p.reason) {
+            p.reason = 'needs kv-probe + maxctx';
+         }
+         continue;
+      }
+      p.ctx_norm = Math.min(p.main_ctx, tier) / tier;
+      // Staggered slots score: 0→0, 1→0.5, 2→0.8, 3→0.9, 4→0.95, 5→0.975, 6+→1.0
+      p.slots_norm =
+         p.slots >= 6
+            ? 1.0
+            : p.slots === 5
+              ? 0.975
+              : p.slots === 4
+                ? 0.95
+                : p.slots === 3
+                  ? 0.9
+                  : p.slots === 2
+                    ? 0.8
+                    : p.slots === 1
+                      ? 0.5
+                      : 0;
+      // Throughput term: honored only when weighted (w_thru>0) AND measured. When
+      // weighted but missing, the model can't satisfy the requested formula → flag it.
+      const thruTerm = wThru > 0 ? (p.capacity_norm != null ? p.capacity_norm ** wThru : null) : 1;
+      if (thruTerm == null) {
+         p.needs_pargen = true;
+         p.reason = 'needs pargen run';
+         continue;
+      }
+      p.fleet_suitability = p.capability ** (f.w_cap ?? 2) * p.ctx_norm ** (f.w_ctx ?? 1) * p.slots_norm ** (f.w_slots ?? 1) * thruTerm;
+   }
+
+   const ranking = [...per].filter((p) => p.fleet_suitability != null).sort((a, b) => b.fleet_suitability - a.fleet_suitability);
+   return { fleet: per, fleetRanking: ranking, bestAgg, bestSlots, minTtft };
+}
+
+// ── Compat wrapper — preserves the historical aggregateModels return shape ─────────
+
+/**
+ * computeMetrics → scoreGroups → computeFleet. Returns the historical shape
+ * ({ models, ranking, maxCtx, maxE2E, minTtft8k, weights }) plus the new
+ * capability/fleet data, so existing consumers keep working while the headline
+ * `m.score` is now capability (coding × comprehension).
+ */
+function aggregateModels(rows, dials = DEFAULT_DIALS) {
+   const { models, denom } = computeMetrics(rows);
+   const ranking = scoreGroups(models, dials);
+   const { fleet, fleetRanking } = computeFleet(models, dials);
+   return {
+      models,
+      ranking,
+      fleet,
+      fleetRanking,
+      maxCtx: denom.maxCtx,
+      maxE2E: denom.maxE2E,
+      minTtft8k: denom.minTtft8k,
+      weights: dials,
+   };
+}
+
+const DATA = {"generated":"2026-06-23T09:56:22.893Z","sources":["rose-rx7900xt-vulkan-20260623-090542 (suite/complete)","rose-rx7900xt-vulkan-20260623-104021-kvprobe (kvprobe/complete)","rose-rx7900xt-vulkan-20260623-104313-structoutput (struct-output/complete)","rose-rx7900xt-vulkan-20260623-104750-throughputttft (throughput-ttft/complete)","rose-rx7900xt-vulkan-20260623-110741-qualitydecay (quality-decay/complete)","rose-rx7900xt-vulkan-20260623-113954-instructionfollowing (instruction-following/complete)","rose-rx7900xt-vulkan-20260623-114323-promptcache (prompt-cache/complete)","rose-rx7900xt-vulkan-20260623-114736-agenticloop (agentic-loop/complete)","rose-rx7900xt-vulkan-20260623-115056-parallelgen (parallel-gen/complete)","rose-rx7900xt-vulkan-20260623-085714 (suite/running)","rose-rx7900xt-vulkan-20260623-104021-kvprobe (kvprobe/complete)","rose-rx7900xt-vulkan-20260623-104313-structoutput (struct-output/complete)","rose-rx7900xt-vulkan-20260623-104750-throughputttft (throughput-ttft/complete)","rose-rx7900xt-vulkan-20260623-110741-qualitydecay (quality-decay/complete)","rose-rx7900xt-vulkan-20260623-113954-instructionfollowing (instruction-following/complete)","rose-rx7900xt-vulkan-20260623-114323-promptcache (prompt-cache/complete)","rose-rx7900xt-vulkan-20260623-114736-agenticloop (agentic-loop/complete)","rose-rx7900xt-vulkan-20260623-115056-parallelgen (parallel-gen/complete)"],"environment":{"runner":"llama.cpp","backend":"vulkan","gpu":"RX 7900 XT","server_flags":{"flash_attn":"on","cache_type_k":null,"cache_type_v":null,"ngl":99,"np":1},"defaults_extra_flags":{"batch-size":2048,"ubatch-size":2048},"start_server_excerpt":"nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"},"environments":[{"runner":"llama.cpp","backend":"vulkan","gpu":"RX 7900 XT","server_flags":{"flash_attn":"on","cache_type_k":null,"cache_type_v":null,"ngl":99,"np":1},"defaults_extra_flags":{"batch-size":2048,"ubatch-size":2048},"start_server_excerpt":"nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"},{"runner":"llama.cpp","backend":"vulkan","gpu":"RX 7900 XT","server_flags":{"flash_attn":"on","cache_type_k":null,"cache_type_v":null,"ngl":99,"np":1},"defaults_extra_flags":{"batch-size":2048,"ubatch-size":2048},"start_server_excerpt":"nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"},{"runner":"llama.cpp","backend":"vulkan","gpu":"RX 7900 XT","server_flags":{"flash_attn":"on","cache_type_k":null,"cache_type_v":null,"ngl":99,"np":1},"defaults_extra_flags":{"batch-size":2048,"ubatch-size":2048},"start_server_excerpt":"nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"},{"runner":"llama.cpp","backend":"vulkan","gpu":"RX 7900 XT","server_flags":{"flash_attn":"on","cache_type_k":null,"cache_type_v":null,"ngl":99,"np":1},"defaults_extra_flags":{"batch-size":2048,"ubatch-size":2048},"start_server_excerpt":"nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"},{"runner":"llama.cpp","backend":"vulkan","gpu":"RX 7900 XT","server_flags":{"flash_attn":"on","cache_type_k":null,"cache_type_v":null,"ngl":99,"np":1},"defaults_extra_flags":{"batch-size":2048,"ubatch-size":2048},"start_server_excerpt":"nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"},{"runner":"llama.cpp","backend":"vulkan","gpu":"RX 7900 XT","server_flags":{"flash_attn":"on","cache_type_k":null,"cache_type_v":null,"ngl":99,"np":1},"defaults_extra_flags":{"batch-size":2048,"ubatch-size":2048},"start_server_excerpt":"nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"},{"runner":"llama.cpp","backend":"vulkan","gpu":"RX 7900 XT","server_flags":{"flash_attn":"on","cache_type_k":null,"cache_type_v":null,"ngl":99,"np":1},"defaults_extra_flags":{"batch-size":2048,"ubatch-size":2048},"start_server_excerpt":"nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"},{"runner":"llama.cpp","backend":"vulkan","gpu":"RX 7900 XT","server_flags":{"flash_attn":"on","cache_type_k":null,"cache_type_v":null,"ngl":99,"np":1},"defaults_extra_flags":{"batch-size":2048,"ubatch-size":2048},"start_server_excerpt":"nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"},{"runner":"llama.cpp","backend":"vulkan","gpu":"RX 7900 XT","server_flags":{"flash_attn":"on","cache_type_k":null,"cache_type_v":null,"ngl":99,"np":1},"defaults_extra_flags":{"batch-size":2048,"ubatch-size":2048},"start_server_excerpt":"nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"},{"runner":"llama.cpp","backend":"vulkan","gpu":"RX 7900 XT","server_flags":{"flash_attn":"on","cache_type_k":null,"cache_type_v":null,"ngl":99,"np":1},"defaults_extra_flags":{"batch-size":2048,"ubatch-size":2048},"start_server_excerpt":"nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"},{"runner":"llama.cpp","backend":"vulkan","gpu":"RX 7900 XT","server_flags":{"flash_attn":"on","cache_type_k":null,"cache_type_v":null,"ngl":99,"np":1},"defaults_extra_flags":{"batch-size":2048,"ubatch-size":2048},"start_server_excerpt":"nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"},{"runner":"llama.cpp","backend":"vulkan","gpu":"RX 7900 XT","server_flags":{"flash_attn":"on","cache_type_k":null,"cache_type_v":null,"ngl":99,"np":1},"defaults_extra_flags":{"batch-size":2048,"ubatch-size":2048},"start_server_excerpt":"nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"},{"runner":"llama.cpp","backend":"vulkan","gpu":"RX 7900 XT","server_flags":{"flash_attn":"on","cache_type_k":null,"cache_type_v":null,"ngl":99,"np":1},"defaults_extra_flags":{"batch-size":2048,"ubatch-size":2048},"start_server_excerpt":"nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"},{"runner":"llama.cpp","backend":"vulkan","gpu":"RX 7900 XT","server_flags":{"flash_attn":"on","cache_type_k":null,"cache_type_v":null,"ngl":99,"np":1},"defaults_extra_flags":{"batch-size":2048,"ubatch-size":2048},"start_server_excerpt":"nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"},{"runner":"llama.cpp","backend":"vulkan","gpu":"RX 7900 XT","server_flags":{"flash_attn":"on","cache_type_k":null,"cache_type_v":null,"ngl":99,"np":1},"defaults_extra_flags":{"batch-size":2048,"ubatch-size":2048},"start_server_excerpt":"nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"},{"runner":"llama.cpp","backend":"vulkan","gpu":"RX 7900 XT","server_flags":{"flash_attn":"on","cache_type_k":null,"cache_type_v":null,"ngl":99,"np":1},"defaults_extra_flags":{"batch-size":2048,"ubatch-size":2048},"start_server_excerpt":"nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"},{"runner":"llama.cpp","backend":"vulkan","gpu":"RX 7900 XT","server_flags":{"flash_attn":"on","cache_type_k":null,"cache_type_v":null,"ngl":99,"np":1},"defaults_extra_flags":{"batch-size":2048,"ubatch-size":2048},"start_server_excerpt":"nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"},{"runner":"llama.cpp","backend":"vulkan","gpu":"RX 7900 XT","server_flags":{"flash_attn":"on","cache_type_k":null,"cache_type_v":null,"ngl":99,"np":1},"defaults_extra_flags":{"batch-size":2048,"ubatch-size":2048},"start_server_excerpt":"nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"}],"models":[{"label":"Qwen3.5-27B IQ4_XS · KV q4_0 [no_think]","model":"Qwen3.5-27B-IQ4_XS--kvq4_0--nothi","base_model":"Qwen3.5-27B-IQ4_XS--kvq4_0","think":"no_think","maxctx":102400,"maxctxVram":17394,"kvPerTokMiB":0.02306640625,"triage":86.44444444444444,"reasoning":100,"toolcall":100,"summ":90.83333333333333,"docqa":10,"speedTg":33.7,"totalE2E":279.46606079808777,"prefill4k":589.4,"prefill12k":577.1,"total4k":208.10828870779977,"total12k":350.82383288837576,"decayCurve":[],"decodeBase":null,"decodeRef":null,"decodeRefDepth":null,"decodeRetentionPct":null,"pargenCurve":[{"conc":1,"tps":32.1},{"conc":2,"tps":54.8},{"conc":4,"tps":80.8},{"conc":8,"tps":107.4}],"pargen1":32.1,"pargenAggMax":107.4,"pargenMaxK":8,"pargenSpeedup":3.35,"qualityCurve":[{"depth":0,"acc":66.7},{"depth":16384,"acc":66.7},{"depth":32768,"acc":83.3},{"depth":65536,"acc":66.7},{"depth":98304,"acc":83.3}],"qualityBase":66.7,"qualityMean":73.34,"qualityRetentionPct":100,"ttftCurve":[{"depth":0,"ms":2235},{"depth":2048,"ms":3128},{"depth":8192,"ms":12899},{"depth":16384,"ms":25056},{"depth":32768,"ms":55207},{"depth":65536,"ms":132925},{"depth":98304,"ms":233076}],"ttftRefMs":55207,"ttft8kMs":12899,"e2eCurve":[{"depth":2048,"tps":192.8},{"depth":8192,"tps":379.9},{"depth":32768,"tps":443.3}],"e2eThroughput":338.6666666666667,"e2eRef":443.3,"structScore":100,"ifScore":96.4,"agenticScore":100,"agenticSteps":3.6,"prefixCache":{"warm":66,"cold":12898,"speedup":196.52},"powerEff":0.093,"codingGrade":94.56451612903226,"norm":{"triage":0.8644444444444445,"summarization":0.9083333333333333,"docqa":1,"reasoning":1,"grade":0.9880350522413213,"agentic_loop":1,"instruction_following":0.9640000000000001,"toolcalling":1,"struct_output":1,"e2e_throughput":0.24953335298162885,"cold_ttft":0.23552213349872084,"warm_ttft":0.2727272727272727,"decode_retention":null,"maxctx":0.78125,"quality_decay":0.19939939939939944},"throughputNorm":0.24953335298162885,"latencyNorm":0.23552213349872084,"warmLatencyNorm":0.2727272727272727,"codingGradeNorm":0.9880350522413213,"maxctxSharedFrom":null,"tools":true,"capability_note":null,"disabled":false},{"label":"Qwen3.6-27B IQ4_XS · KV q4_0 [no_think]","model":"Qwen3.6-27B-IQ4_XS--kvq4_0--nothi","base_model":"Qwen3.6-27B-IQ4_XS--kvq4_0","think":"no_think","maxctx":102400,"maxctxVram":17836,"kvPerTokMiB":0.023076171875,"triage":83.61111111111111,"reasoning":100,"toolcall":100,"summ":90.83333333333333,"docqa":10,"speedTg":33.4,"totalE2E":278.08820211552364,"prefill4k":589.1,"prefill12k":576.7,"total4k":206.80072404531123,"total12k":349.37568018573603,"decayCurve":[],"decodeBase":null,"decodeRef":null,"decodeRefDepth":null,"decodeRetentionPct":null,"pargenCurve":[{"conc":1,"tps":32},{"conc":2,"tps":54.3},{"conc":4,"tps":79.3},{"conc":8,"tps":103.1}],"pargen1":32,"pargenAggMax":103.1,"pargenMaxK":8,"pargenSpeedup":3.22,"qualityCurve":[{"depth":0,"acc":66.7},{"depth":16384,"acc":66.7},{"depth":32768,"acc":66.7},{"depth":65536,"acc":66.7},{"depth":98304,"acc":66.7}],"qualityBase":66.7,"qualityMean":66.7,"qualityRetentionPct":100,"ttftCurve":[{"depth":0,"ms":2242},{"depth":2048,"ms":3122},{"depth":8192,"ms":12892},{"depth":16384,"ms":25030},{"depth":32768,"ms":55202},{"depth":65536,"ms":132978},{"depth":98304,"ms":233118}],"ttftRefMs":55202,"ttft8kMs":12892,"e2eCurve":[{"depth":2048,"tps":192.6},{"depth":8192,"tps":379.5},{"depth":32768,"tps":442.7}],"e2eThroughput":338.26666666666665,"e2eRef":442.7,"structScore":100,"ifScore":92.9,"agenticScore":100,"agenticSteps":3.6,"prefixCache":{"warm":67,"cold":12861,"speedup":193},"powerEff":0.09,"codingGrade":90.78763440860214,"norm":{"triage":0.8361111111111111,"summarization":0.9083333333333333,"docqa":1,"reasoning":1,"grade":0.9485731940231434,"agentic_loop":1,"instruction_following":0.929,"toolcalling":1,"struct_output":1,"e2e_throughput":0.24923862854897336,"cold_ttft":0.23565001551349674,"warm_ttft":0.26865671641791045,"decode_retention":null,"maxctx":0.78125,"quality_decay":0},"throughputNorm":0.24923862854897336,"latencyNorm":0.23565001551349674,"warmLatencyNorm":0.26865671641791045,"codingGradeNorm":0.9485731940231434,"maxctxSharedFrom":null,"tools":true,"capability_note":null,"disabled":false},{"label":"Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]","model":"Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi","base_model":"Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0","think":"no_think","maxctx":102400,"maxctxVram":19863,"kvPerTokMiB":0.012228515625,"triage":86.94444444444444,"reasoning":91.66666666666666,"toolcall":100,"summ":65.83333333333333,"docqa":10,"speedTg":182.9,"totalE2E":1171.494421371325,"prefill4k":2175.3,"prefill12k":1856.1,"total4k":984.1311886766525,"total12k":1358.8576540659974,"decayCurve":[],"decodeBase":null,"decodeRef":null,"decodeRefDepth":null,"decodeRetentionPct":null,"pargenCurve":[{"conc":1,"tps":150.9},{"conc":2,"tps":146.7},{"conc":4,"tps":149.2},{"conc":8,"tps":152.5}],"pargen1":150.9,"pargenAggMax":152.5,"pargenMaxK":8,"pargenSpeedup":1.01,"qualityCurve":[{"depth":0,"acc":66.7},{"depth":16384,"acc":66.7},{"depth":32768,"acc":66.7},{"depth":65536,"acc":66.7},{"depth":98304,"acc":66.7}],"qualityBase":66.7,"qualityMean":66.7,"qualityRetentionPct":100,"ttftCurve":[{"depth":0,"ms":657},{"depth":2048,"ms":738},{"depth":8192,"ms":3569},{"depth":16384,"ms":8257},{"depth":32768,"ms":25173},{"depth":65536,"ms":88952},{"depth":98304,"ms":192021}],"ttftRefMs":25173,"ttft8kMs":3569,"e2eCurve":[{"depth":2048,"tps":1001.7},{"depth":8192,"tps":1540.9},{"depth":32768,"tps":979.6}],"e2eThroughput":1174.0666666666668,"e2eRef":979.6,"structScore":100,"ifScore":96.4,"agenticScore":80,"agenticSteps":3.4,"prefixCache":{"warm":40,"cold":3559,"speedup":89.86},"powerEff":0.46,"codingGrade":94.63709677419354,"norm":{"triage":0.8694444444444445,"summarization":0.6583333333333333,"docqa":1,"reasoning":0.9166666666666665,"grade":0.988793394000674,"agentic_loop":0.8,"instruction_following":0.9640000000000001,"toolcalling":1,"struct_output":1,"e2e_throughput":0.8650653305825721,"cold_ttft":0.8512188288035865,"warm_ttft":0.45,"decode_retention":null,"maxctx":0.78125,"quality_decay":0},"throughputNorm":0.8650653305825721,"latencyNorm":0.8512188288035865,"warmLatencyNorm":0.45,"codingGradeNorm":0.988793394000674,"maxctxSharedFrom":null,"tools":true,"capability_note":null,"disabled":false},{"label":"Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]","model":"Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi","base_model":"Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0","think":"no_think","maxctx":131072,"maxctxVram":18678,"kvPerTokMiB":0.009912109375,"triage":87.44444444444444,"reasoning":100,"toolcall":90,"summ":69.44444444444444,"docqa":9.25,"speedTg":118.9,"totalE2E":1058.7309979622146,"prefill4k":2410.9,"prefill12k":2374.7,"total4k":767.3490050861069,"total12k":1350.112990838322,"decayCurve":[],"decodeBase":null,"decodeRef":null,"decodeRefDepth":null,"decodeRetentionPct":null,"pargenCurve":[{"conc":1,"tps":109.1},{"conc":2,"tps":170},{"conc":4,"tps":250.2},{"conc":8,"tps":310.2}],"pargen1":109.1,"pargenAggMax":310.2,"pargenMaxK":8,"pargenSpeedup":2.84,"qualityCurve":[{"depth":0,"acc":66.7},{"depth":16384,"acc":66.7},{"depth":32768,"acc":66.7},{"depth":65536,"acc":66.7},{"depth":98304,"acc":66.7}],"qualityBase":66.7,"qualityMean":66.7,"qualityRetentionPct":100,"ttftCurve":[{"depth":0,"ms":603},{"depth":2048,"ms":703},{"depth":8192,"ms":3038},{"depth":16384,"ms":6072},{"depth":32768,"ms":14419},{"depth":65536,"ms":38345},{"depth":98304,"ms":71672}],"ttftRefMs":14419,"ttft8kMs":3038,"e2eCurve":[{"depth":2048,"tps":725.3},{"depth":8192,"tps":1494.9},{"depth":32768,"tps":1667.7}],"e2eThroughput":1295.9666666666665,"e2eRef":1667.7,"structScore":100,"ifScore":96.4,"agenticScore":100,"agenticSteps":3.8,"prefixCache":{"warm":29,"cold":3016,"speedup":104.99},"powerEff":0.371,"codingGrade":94.65322580645162,"norm":{"triage":0.8744444444444445,"summarization":0.6944444444444444,"docqa":0.925,"reasoning":1,"grade":0.9889619143916415,"agentic_loop":1,"instruction_following":0.9640000000000001,"toolcalling":0.9,"struct_output":1,"e2e_throughput":0.9548826014343254,"cold_ttft":1,"warm_ttft":0.6206896551724138,"decode_retention":null,"maxctx":1,"quality_decay":0},"throughputNorm":0.9548826014343254,"latencyNorm":1,"warmLatencyNorm":0.6206896551724138,"codingGradeNorm":0.9889619143916415,"maxctxSharedFrom":null,"tools":true,"capability_note":null,"disabled":false},{"label":"Gemma4-26B Q4_K_M · KV q4_0 [no_think]","model":"gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi","base_model":"gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0","think":"no_think","maxctx":102400,"maxctxVram":18779,"kvPerTokMiB":0.01330078125,"triage":86.55555555555556,"reasoning":100,"toolcall":100,"summ":79.44444444444444,"docqa":7.666666666666666,"speedTg":138.6,"totalE2E":1120.4841679417816,"prefill4k":2410.3,"prefill12k":2219.2,"total4k":854.3685089937768,"total12k":1386.5998268897865,"decayCurve":[],"decodeBase":null,"decodeRef":null,"decodeRefDepth":null,"decodeRetentionPct":null,"pargenCurve":[{"conc":1,"tps":118.3},{"conc":2,"tps":135.7},{"conc":4,"tps":203.2},{"conc":8,"tps":201.5}],"pargen1":118.3,"pargenAggMax":201.5,"pargenMaxK":8,"pargenSpeedup":1.7,"qualityCurve":[{"depth":0,"acc":100},{"depth":16384,"acc":100},{"depth":32768,"acc":100},{"depth":65536,"acc":100},{"depth":98304,"acc":100}],"qualityBase":100,"qualityMean":100,"qualityRetentionPct":100,"ttftCurve":[{"depth":0,"ms":575},{"depth":2048,"ms":783},{"depth":8192,"ms":3330},{"depth":16384,"ms":6736},{"depth":32768,"ms":15964},{"depth":65536,"ms":42533},{"depth":98304,"ms":79840}],"ttftRefMs":15964,"ttft8kMs":3330,"e2eCurve":[{"depth":2048,"tps":881.2},{"depth":8192,"tps":1577.1},{"depth":32768,"tps":1573.6}],"e2eThroughput":1343.9666666666667,"e2eRef":1573.6,"structScore":100,"ifScore":96.4,"agenticScore":100,"agenticSteps":3.6,"prefixCache":{"warm":18,"cold":3322,"speedup":180.75},"powerEff":0.386,"codingGrade":95.70967741935483,"norm":{"triage":0.8655555555555555,"summarization":0.7944444444444444,"docqa":0.7666666666666666,"reasoning":1,"grade":1,"agentic_loop":1,"instruction_following":0.9640000000000001,"toolcalling":1,"struct_output":1,"e2e_throughput":0.9902495333529816,"cold_ttft":0.9123123123123124,"warm_ttft":1,"decode_retention":null,"maxctx":0.78125,"quality_decay":1},"throughputNorm":0.9902495333529816,"latencyNorm":0.9123123123123124,"warmLatencyNorm":1,"codingGradeNorm":1,"maxctxSharedFrom":null,"tools":true,"capability_note":null,"disabled":false},{"label":"Gemma4-26B QAT q4_0 · KV q4_0 [no_think]","model":"gemma-4-26B_q4_0-it--kvq4_0--nothi","base_model":"gemma-4-26B_q4_0-it--kvq4_0","think":"no_think","maxctx":102400,"maxctxVram":16387,"kvPerTokMiB":0.013310546875,"triage":85.44444444444444,"reasoning":100,"toolcall":100,"summ":69.44444444444444,"docqa":7.5,"speedTg":170,"totalE2E":1243.5872108362687,"prefill4k":2391.8,"prefill12k":2252.6,"total4k":975.3862146169838,"total12k":1511.7882070555538,"decayCurve":[],"decodeBase":null,"decodeRef":null,"decodeRefDepth":null,"decodeRetentionPct":null,"pargenCurve":[{"conc":1,"tps":120.1},{"conc":2,"tps":125.4},{"conc":4,"tps":171.4},{"conc":8,"tps":186.5}],"pargen1":120.1,"pargenAggMax":186.5,"pargenMaxK":8,"pargenSpeedup":1.55,"qualityCurve":[{"depth":0,"acc":100},{"depth":16384,"acc":83.3},{"depth":32768,"acc":66.7},{"depth":65536,"acc":83.3},{"depth":98304,"acc":66.7}],"qualityBase":100,"qualityMean":80,"qualityRetentionPct":67,"ttftCurve":[{"depth":0,"ms":590},{"depth":2048,"ms":780},{"depth":8192,"ms":3307},{"depth":16384,"ms":6695},{"depth":32768,"ms":15882},{"depth":65536,"ms":42377},{"depth":98304,"ms":79577}],"ttftRefMs":15882,"ttft8kMs":3307,"e2eCurve":[{"depth":2048,"tps":916.3},{"depth":8192,"tps":1587},{"depth":32768,"tps":1568.3}],"e2eThroughput":1357.2,"e2eRef":1568.3,"structScore":100,"ifScore":100,"agenticScore":100,"agenticSteps":3.6,"prefixCache":{"warm":19,"cold":3305,"speedup":177.79},"powerEff":0.377,"codingGrade":95.49462365591398,"norm":{"triage":0.8544444444444445,"summarization":0.6944444444444444,"docqa":0.75,"reasoning":1,"grade":0.9977530614537694,"agentic_loop":1,"instruction_following":1,"toolcalling":1,"struct_output":1,"e2e_throughput":1,"cold_ttft":0.9186573934079226,"warm_ttft":0.9473684210526315,"decode_retention":null,"maxctx":0.78125,"quality_decay":0.39939939939939934},"throughputNorm":1,"latencyNorm":0.9186573934079226,"warmLatencyNorm":0.9473684210526315,"codingGradeNorm":0.9977530614537694,"maxctxSharedFrom":null,"tools":true,"capability_note":null,"disabled":false},{"label":"Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]","model":"gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi","base_model":"gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0","think":"no_think","maxctx":131072,"maxctxVram":16587,"kvPerTokMiB":0.0133056640625,"triage":88.66666666666666,"reasoning":100,"toolcall":100,"summ":68.05555555555556,"docqa":8.833333333333332,"speedTg":148.6,"totalE2E":1167.8052825315626,"prefill4k":2414.8,"prefill12k":2255.9,"total4k":896.2019980019982,"total12k":1439.4085670611269,"decayCurve":[],"decodeBase":null,"decodeRef":null,"decodeRefDepth":null,"decodeRetentionPct":null,"pargenCurve":[{"conc":1,"tps":112.8},{"conc":2,"tps":119.8},{"conc":4,"tps":168.2},{"conc":8,"tps":188.3}],"pargen1":112.8,"pargenAggMax":188.3,"pargenMaxK":8,"pargenSpeedup":1.67,"qualityCurve":[{"depth":0,"acc":100},{"depth":16384,"acc":83.3},{"depth":32768,"acc":83.3},{"depth":65536,"acc":83.3},{"depth":98304,"acc":50}],"qualityBase":100,"qualityMean":79.98,"qualityRetentionPct":83,"ttftCurve":[{"depth":0,"ms":597},{"depth":2048,"ms":771},{"depth":8192,"ms":3297},{"depth":16384,"ms":6674},{"depth":32768,"ms":15860},{"depth":65536,"ms":42348},{"depth":98304,"ms":79524}],"ttftRefMs":15860,"ttft8kMs":3297,"e2eCurve":[{"depth":2048,"tps":901.4},{"depth":8192,"tps":1556.4},{"depth":32768,"tps":1573.3}],"e2eThroughput":1343.7,"e2eRef":1573.3,"structScore":100,"ifScore":100,"agenticScore":100,"agenticSteps":3.6,"prefixCache":{"warm":18,"cold":3296,"speedup":187.42},"powerEff":0.384,"codingGrade":95.69086021505376,"norm":{"triage":0.8866666666666666,"summarization":0.6805555555555556,"docqa":0.8833333333333332,"reasoning":1,"grade":0.9998033928772049,"agentic_loop":1,"instruction_following":1,"toolcalling":1,"struct_output":1,"e2e_throughput":0.9900530503978779,"cold_ttft":0.921443736730361,"warm_ttft":1,"decode_retention":null,"maxctx":1,"quality_decay":0.39879879879879887},"throughputNorm":0.9900530503978779,"latencyNorm":0.921443736730361,"warmLatencyNorm":1,"codingGradeNorm":0.9998033928772049,"maxctxSharedFrom":null,"tools":true,"capability_note":null,"disabled":false}],"registry":{"triage":{"label":"Triage / categorization","role":"comprehension","runner":"run-suite","command":"npm run bench","kind":"suite","benches":["triage"]},"summarization":{"label":"Summarization","role":"comprehension","runner":"run-suite","command":"npm run bench","kind":"suite","benches":["summarization"]},"docqa":{"label":"Document QA","role":"comprehension","runner":"run-suite","command":"npm run bench","kind":"suite","benches":["docqa"]},"reasoning":{"label":"Reasoning","role":"comprehension","runner":"run-suite","command":"npm run bench","kind":"suite","benches":["reasoning"]},"grade":{"label":"Coding grade (MultiPL-E)","role":"coding","runner":"run-suite","command":"npm run bench","kind":"suite","benches":["coding_multipl"]},"agentic_loop":{"label":"Agentic tool loop","role":"coding","runner":"agentic-loop","command":"node runners/agentic-loop.mjs","kind":"agentic-loop","benches":["agentic_loop"]},"instruction_following":{"label":"Instruction following","role":"coding","runner":"instruction-following","command":"node runners/instruction-following.mjs","kind":"instruction-following","benches":["instruction_following"]},"toolcalling":{"label":"Tool-calling (gate)","role":"coding-gate","runner":"run-suite","command":"npm run bench","kind":"suite","benches":["toolcalling"]},"struct_output":{"label":"Structured output (gate)","role":"coding-gate","runner":"struct-output","command":"node runners/struct-output.mjs","kind":"struct-output","benches":["struct_output"]},"e2e_throughput":{"label":"E2E throughput","role":"speed","runner":"throughput-ttft","command":"node runners/throughput-ttft.mjs","kind":"throughput-ttft","benches":["e2e-*"]},"cold_ttft":{"label":"Cold TTFT","role":"speed","runner":"throughput-ttft","command":"node runners/throughput-ttft.mjs","kind":"throughput-ttft","benches":["ttft-*"]},"warm_ttft":{"label":"Warm TTFT (prefix cache)","role":"speed","runner":"prompt-cache","command":"node runners/prompt-cache.mjs","kind":"prompt-cache","benches":["prefix_cache_warm_ms"]},"decode_retention":{"label":"Decode retention @depth","role":"speed","runner":"speed-decay","command":"node runners/speed-decay.mjs","kind":"speed-decay","benches":["speed_decay-*"]},"maxctx":{"label":"Max usable context","role":"context","runner":"run-suite","command":"npm run bench","kind":"suite","benches":["maxctx"]},"kv_per_tok":{"label":"KV bytes / token","role":"fleet-memory","runner":"kv-probe","command":"node runners/kv-probe.mjs","kind":"kvprobe","benches":["kv_per_tok"]},"speed_pargen":{"label":"Parallel-gen aggregate tok/s","role":"fleet-capacity","runner":"parallel-gen","command":"node runners/parallel-gen.mjs","kind":"parallel-gen","benches":["speed_pargen-*"]}},"groups":{"comprehension":{"kind":"additive","members":["triage","summarization","docqa","reasoning"]},"coding":{"kind":"multiplier-composite","gates":["toolcalling","struct_output","instruction_following","agentic_loop"],"members":["grade"]},"speed":{"kind":"additive","members":["e2e_throughput","cold_ttft","warm_ttft","decode_retention"]}},"defaultDials":{"comprehension":{"strength":1,"weights":{"triage":0.27,"summarization":0.22,"docqa":0.2,"reasoning":0.31}},"coding":{"strength":1,"weights":{"grade":1}},"speed":{"weights":{"e2e_throughput":0.4,"cold_ttft":0.45,"warm_ttft":0.15,"decode_retention":0}},"fleet":{"worker_ctx":65536,"parallel_overhead":512,"reserve":512,"ctx_tier":100000,"w_cap":2,"w_ctx":1,"w_slots":1,"w_thru":0.5},"quality_decay":{"weight":0.2}},"fleetRequired":["maxctx","kv_per_tok","speed_pargen"],"coverage":{"Qwen3.5-27B-IQ4_XS--kvq4_0":{"present":["agentic_loop","coding_multipl","docqa","e2e-2k","e2e-32k","e2e-8k","instruction_following","kv_per_tok","maxctx","power_eff","prefix_cache_cold_ms","prefix_cache_speedup","prefix_cache_warm_ms","quality_decay-0k","quality_decay-16k","quality_decay-32k","quality_decay-64k","quality_decay-96k","reasoning","speed_long-32k","speed_pargen-1","speed_pargen-2","speed_pargen-4","speed_pargen-8","speed_prefill-12k","speed_prefill-4k","speed_short","struct_output","summarization","toolcalling","triage","ttft-0k","ttft-16k","ttft-2k","ttft-32k","ttft-64k","ttft-8k","ttft-96k"],"missing":["decode_retention"]},"Qwen3.6-27B-IQ4_XS--kvq4_0":{"present":["agentic_loop","coding_multipl","docqa","e2e-2k","e2e-32k","e2e-8k","instruction_following","kv_per_tok","maxctx","power_eff","prefix_cache_cold_ms","prefix_cache_speedup","prefix_cache_warm_ms","quality_decay-0k","quality_decay-16k","quality_decay-32k","quality_decay-64k","quality_decay-96k","reasoning","speed_long-32k","speed_pargen-1","speed_pargen-2","speed_pargen-4","speed_pargen-8","speed_prefill-12k","speed_prefill-4k","speed_short","struct_output","summarization","toolcalling","triage","ttft-0k","ttft-16k","ttft-2k","ttft-32k","ttft-64k","ttft-8k","ttft-96k"],"missing":["decode_retention"]},"Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0":{"present":["agentic_loop","coding_multipl","docqa","e2e-2k","e2e-32k","e2e-8k","instruction_following","kv_per_tok","maxctx","power_eff","prefix_cache_cold_ms","prefix_cache_speedup","prefix_cache_warm_ms","quality_decay-0k","quality_decay-16k","quality_decay-32k","quality_decay-64k","quality_decay-96k","reasoning","speed_long-32k","speed_pargen-1","speed_pargen-2","speed_pargen-4","speed_pargen-8","speed_prefill-12k","speed_prefill-4k","speed_short","struct_output","summarization","toolcalling","triage","ttft-0k","ttft-16k","ttft-2k","ttft-32k","ttft-64k","ttft-8k","ttft-96k"],"missing":["decode_retention"]},"Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0":{"present":["agentic_loop","coding_multipl","docqa","e2e-2k","e2e-32k","e2e-8k","instruction_following","kv_per_tok","maxctx","power_eff","prefix_cache_cold_ms","prefix_cache_speedup","prefix_cache_warm_ms","quality_decay-0k","quality_decay-16k","quality_decay-32k","quality_decay-64k","quality_decay-96k","reasoning","speed_long-32k","speed_pargen-1","speed_pargen-2","speed_pargen-4","speed_pargen-8","speed_prefill-12k","speed_prefill-4k","speed_short","struct_output","summarization","toolcalling","triage","ttft-0k","ttft-16k","ttft-2k","ttft-32k","ttft-64k","ttft-8k","ttft-96k"],"missing":["decode_retention"]},"gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0":{"present":["agentic_loop","coding_multipl","docqa","e2e-2k","e2e-32k","e2e-8k","instruction_following","kv_per_tok","maxctx","power_eff","prefix_cache_cold_ms","prefix_cache_speedup","prefix_cache_warm_ms","quality_decay-0k","quality_decay-16k","quality_decay-32k","quality_decay-64k","quality_decay-96k","reasoning","speed_long-32k","speed_pargen-1","speed_pargen-2","speed_pargen-4","speed_pargen-8","speed_prefill-12k","speed_prefill-4k","speed_short","struct_output","summarization","toolcalling","triage","ttft-0k","ttft-16k","ttft-2k","ttft-32k","ttft-64k","ttft-8k","ttft-96k"],"missing":["decode_retention"]},"gemma-4-26B_q4_0-it--kvq4_0":{"present":["agentic_loop","coding_multipl","docqa","e2e-2k","e2e-32k","e2e-8k","instruction_following","kv_per_tok","maxctx","power_eff","prefix_cache_cold_ms","prefix_cache_speedup","prefix_cache_warm_ms","quality_decay-0k","quality_decay-16k","quality_decay-32k","quality_decay-64k","quality_decay-96k","reasoning","speed_long-32k","speed_pargen-1","speed_pargen-2","speed_pargen-4","speed_pargen-8","speed_prefill-12k","speed_prefill-4k","speed_short","struct_output","summarization","toolcalling","triage","ttft-0k","ttft-16k","ttft-2k","ttft-32k","ttft-64k","ttft-8k","ttft-96k"],"missing":["decode_retention"]},"gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0":{"present":["agentic_loop","coding_multipl","docqa","e2e-2k","e2e-32k","e2e-8k","instruction_following","kv_per_tok","maxctx","power_eff","prefix_cache_cold_ms","prefix_cache_speedup","prefix_cache_warm_ms","quality_decay-0k","quality_decay-16k","quality_decay-32k","quality_decay-64k","quality_decay-96k","reasoning","speed_long-32k","speed_pargen-1","speed_pargen-2","speed_pargen-4","speed_pargen-8","speed_prefill-12k","speed_prefill-4k","speed_short","struct_output","summarization","toolcalling","triage","ttft-0k","ttft-16k","ttft-2k","ttft-32k","ttft-64k","ttft-8k","ttft-96k"],"missing":["decode_retention"]}}};
+
+const $ = (id) => document.getElementById(id);
+const fmt = (n,d=1) => (n==null||!isFinite(n))?'–':Number(n).toFixed(d);
+const pct = (n) => (n==null||!isFinite(n))?'–':(n*100).toFixed(1)+'%';
+const esc = (s) => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+// html tagged template — auto-escapes strings, passes HRaw instances through verbatim.
+// Use html.raw(s) to mark already-safe HTML. Nested html`…` calls are HRaw and compose correctly.
+class HRaw { constructor(s){this.s=s} toString(){return this.s} valueOf(){return this.s} }
+function html(strings,...vals){
+  let out=strings[0];
+  for(let i=0;i<vals.length;i++){
+    const v=vals[i];
+    out += v instanceof HRaw ? v.s
+         : Array.isArray(v) ? v.map(x=>x instanceof HRaw?x.s:esc(String(x??''))).join('')
+         : esc(String(v??''));
+    out += strings[i+1];
+  }
+  return new HRaw(out);
+}
+html.raw = (s) => new HRaw(String(s??''));
+
+// Capability-rank star badges (top 5): rank 1 → ★★★★★ … rank 5 → ★☆☆☆☆.
+let CAPRANK={};
+const mkey=(m)=>m.model+'|'+m.think;
+function stars(rank){ if(!rank||rank>5) return ''; let s=''; for(let i=0;i<5;i++) s+=(i<(6-rank)?'★':'☆'); return '<span class="stars" title="capability rank #'+rank+'">'+s+'</span>'; }
+const topClass=(m)=>CAPRANK[mkey(m)]?'top5':'';
+function num(id,def){ const e=$(id); if(!e) return def; const v=parseFloat(e.value); return isFinite(v)?v:def; }
+
+function getDials(){
+  const d = JSON.parse(JSON.stringify(DATA.defaultDials));
+  for (const g of ['comprehension','coding']){
+    if (d[g].strength!==undefined) d[g].strength = num('d_'+g+'_strength', d[g].strength);
+    for (const k in d[g].weights) d[g].weights[k] = num('d_w_'+g+'_'+k, d[g].weights[k]);
+  }
+  for (const k in d.speed.weights) d.speed.weights[k] = num('d_w_speed_'+k, d.speed.weights[k]);
+  for (const k in d.fleet) d.fleet[k] = num('d_fleet_'+k, d.fleet[k]);
+  if (d.quality_decay) d.quality_decay.weight = num('d_quality_decay_weight', d.quality_decay.weight);
+  return d;
+}
+
+function toggleRaw(el){
+  const id=el.dataset.rawid; const r=document.getElementById(id); if(r) r.classList.toggle('open');
+}
+
+// ── HTML helpers ──────────────────────────────────────────────────────────────
+
+function pill(label, val){
+  return html`<span class="depth-pill"><span class="dk">${label}</span><span class="dv">${val}</span></span>`;
+}
+
+// headers: array of strings or [label, tooltip] pairs.
+function th(x){
+  return Array.isArray(x)
+    ? html`<th title="${x[1]}">${x[0]}</th>`
+    : html`<th>${x}</th>`;
+}
+
+// Cells may be strings (will be escaped), HRaw instances (inserted verbatim), or
+// html`…` results. Callers are responsible for wrapping trusted HTML in html.raw().
+function tbl(headers, rows, rowClasses){
+  return html`<table>
+    <thead><tr>${headers.map(th)}</tr></thead>
+    <tbody>${rows.map((r,i)=>html`<tr${rowClasses?.[i]?html` class="${rowClasses[i]}"`:html.raw('')}>
+      ${r.map(c=>html`<td>${c instanceof HRaw?c:html.raw(String(c??''))}</td>`)}
+    </tr>`)}</tbody>
+  </table>`;
+}
+
+function renderRawMetrics(m){
+  return html`<div class="raw-grid">
+    <div class="raw-section">
+      <p class="raw-title" title="Token generation and prompt-processing speeds measured at various context depths">Speed</p>
+      <dl class="raw-dl">
+        ${m.speedTg!=null?html`<dt title="Token generation speed at zero KV-cache depth (empty context)">Decode</dt><dd>${fmt(m.speedTg)} tok/s</dd>`:''}
+        ${m.prefill4k!=null?html`<dt title="Prompt processing speed with a 4 k-token context (prefill phase)">Prefill @4k</dt><dd>${fmt(m.prefill4k,0)} tok/s</dd>`:''}
+        ${m.prefill12k!=null?html`<dt title="Prompt processing speed with a 12 k-token context — longer prompts benefit most from high prefill speed">Prefill @12k</dt><dd>${fmt(m.prefill12k,0)} tok/s</dd>`:''}
+        ${m.decodeRetentionPct!=null?html`<dt title="Decode speed retained at this KV-cache depth vs baseline (100% = no slowdown as context fills)">Decay@${m.decodeRefDepth!=null?Math.round(m.decodeRefDepth/1024)+'k':'?'}</dt><dd>${m.decodeRetentionPct}% · ${m.decodeRef!=null?fmt(m.decodeRef):'–'} tok/s</dd>`:''}
+      </dl>
+    </div>
+    <div class="raw-section">
+      <p class="raw-title" title="Context window size, latency and caching characteristics">Context</p>
+      <dl class="raw-dl">
+        ${m.maxctx?html`<dt title="Maximum tokens that fit coherently in VRAM, confirmed by a coherence probe">Max ctx</dt><dd>${m.maxctx.toLocaleString()} tok</dd>`:''}
+        ${m.ttft8kMs!=null?html`<dt title="Time-to-first-token with an 8 k prompt, cold KV cache (no prefix cached)">TTFT @8k</dt><dd>${(m.ttft8kMs/1000).toFixed(1)} s</dd>`:''}
+        ${m.prefixCache?.speedup!=null?html`<dt title="Cold vs warm TTFT ratio — how much faster repeated prompts are once the prefix is cached">Cache speedup</dt><dd>${fmt(m.prefixCache.speedup,0)}×</dd>`:''}
+        ${m.pargenCurve?.length?html`<dt title="Aggregate tokens/second at K simultaneous requests (K=1 is single-stream decode speed)">Parallel gen</dt><dd>${html.raw(m.pargenCurve.map(p=>fmt(p.tps,0)+'@K'+p.conc).join(' · '))} tok/s</dd>`:''}
+      </dl>
+    </div>
+    <div class="raw-section">
+      <p class="raw-title" title="VRAM usage and power draw during inference">Memory</p>
+      <dl class="raw-dl">
+        ${m.kvPerTokMiB!=null?html`<dt title="KV-cache memory per token (KiB). Lower = more context fits in the same VRAM.">KV/tok</dt><dd>${(m.kvPerTokMiB*1024).toFixed(1)} KiB</dd>`:''}
+        ${m.maxctxVram!=null?html`<dt title="GPU memory used when running at the maximum supported context">VRAM @max ctx</dt><dd>${Math.round(m.maxctxVram)} MiB</dd>`:''}
+        ${m.powerEff!=null?html`<dt title="GPU power draw during inference (watts). Measured via struct-output bench.">Power</dt><dd>${fmt(m.powerEff,0)} W</dd>`:''}
+      </dl>
+    </div>
+    ${m.qualityCurve?.length?html`<div class="raw-section">
+      <p class="raw-title" title="Recall accuracy at each tested context depth. Values drop as the target information is buried deeper in the context.">Quality at depth</p>
+      <div class="depth-pills">${m.qualityCurve.map(({depth,acc})=>pill(Math.round(depth/1024)+'k',Math.round(acc)+'%'))}</div>
+    </div>`:''}
+    ${m.ttftCurve?.length>1?html`<div class="raw-section">
+      <p class="raw-title" title="Time-to-first-token (seconds) at each tested prompt depth. Grows with prompt length because prefill is O(n).">TTFT</p>
+      <div class="depth-pills">${m.ttftCurve.map(({depth,ms})=>pill(Math.round(depth/1024)+'k',(ms/1000).toFixed(1)+'s'))}</div>
+    </div>`:''}
+  </div>`;
+}
+
+function renderEnv(){
+  const e=DATA.environment;
+  const s = e ? ('runner '+esc(e.runner)+' · '+esc(e.gpu)+' · '+esc(e.backend)+' · fa='+esc(e.server_flags&&e.server_flags.flash_attn)+' · kv='+esc(e.server_flags&&e.server_flags.cache_type_k)) : 'no server fingerprint (pre-fingerprint data)';
+  $('env').innerHTML = s+' · sources: '+DATA.sources.map(esc).join(', ');
+  const envs=DATA.environments.filter(Boolean); let consistent=true;
+  // KV cache type (cache_type_k/v) is an INTENDED per-configuration axis now — q8 and q4
+  // rank as separate rows — so ignore it when judging whether merged runs are comparable.
+  const envKey=(e)=>{ const c=JSON.parse(JSON.stringify(e)); if(c&&c.server_flags){ delete c.server_flags.cache_type_k; delete c.server_flags.cache_type_v; } return JSON.stringify(c); };
+  for (let i=1;i<envs.length;i++){ if (envKey(envs[i])!==envKey(envs[0])) consistent=false; }
+  $('banner').innerHTML = consistent ? '' : '<div class="warn">⚠ merged runs have different server configs — numbers may not be comparable.</div>';
+}
+
+function recompute(){
+  const dials=getDials();
+  const ranking=scoreGroups(DATA.models, dials);
+  CAPRANK={}; ranking.forEach((m,i)=>{ if(i<5) CAPRANK[mkey(m)]=i+1; });
+  const fleetRes=computeFleet(DATA.models, dials);
+  renderCap(ranking); renderFleet(fleetRes); renderCtx(); renderBreakdown(); renderRequired(dials);
+}
+
+const CAP_HEADERS=[
+  ['#','Overall capability rank (1 = best)'],
+  ['★','Top-5 capability badge — ★★★★★ = rank 1'],
+  ['model','Model name and think-mode variant'],
+  ['score','Overall capability score: 80% × √(comprehension × coding) + 20% × quality-decay retention'],
+  ['compr.','Comprehension: weighted blend of triage, summarization, docqa and reasoning'],
+  ['coding','Coding pass rate: fraction of coding problems with all tests passing'],
+  ['competence','Coding competence: pass rate × solution quality grade (penalises low-quality solutions that happen to pass)'],
+  ['quality↓','Quality at depth: mean recall accuracy across all tested context lengths (0 k–96 k). Higher = retains quality deeper into long contexts. Click row to see per-depth breakdown.'],
+];
+
+function renderCap(ranking){
+  const openIds=new Set([...document.querySelectorAll('.raw-row.open')].map(r=>r.id));
+  $('cap').innerHTML=html`<table>
+    <thead><tr>${CAP_HEADERS.map(th)}</tr></thead>
+    <tbody>${ranking.map((m,i)=>{
+      const rid='raw_'+slugify(m.model+'_'+m.think);
+      const cls=[topClass(m),'model-row'].filter(Boolean).join(' ');
+      return html`
+        <tr class="${cls}" data-rawid="${rid}" onclick="toggleRaw(this)">
+          <td>${i+1}</td>
+          <td>${html.raw(stars(i+1))}</td>
+          <td>${m.label}</td>
+          <td>${fmt(m.score)}</td>
+          <td>${pct(m.comprehension)}</td>
+          <td>${pct(m.coding)}</td>
+          <td>${pct(m.codingCompetence)}</td>
+          <td>${m.qualityMean!=null?html`${fmt(m.qualityMean,1)}%`:html`<span class="dim">–</span>`}</td>
+        </tr>
+        <tr class="raw-row${openIds.has(rid)?' open':''}" id="${rid}">
+          <td colspan="8">${renderRawMetrics(m)}</td>
+        </tr>`;
+    })}</tbody>
+  </table>`;
+}
+
+function renderFleet(res){
+  const fv=(p)=>p.fleet_suitability==null?-Infinity:p.fleet_suitability;
+  const sorted=res.fleet.slice().sort((a,b)=>fv(b)-fv(a));
+  const mainCtx=(p)=>p.main_ctx==null?'–':p.main_ctx.toLocaleString();
+  const workers=(p)=>p.n_workers==null?'–':'+'+p.n_workers+'×'+Math.round((p.worker_ctx||0)/1024)+'k';
+  const rows=sorted.map((p,i)=>[
+    String(i+1),
+    html.raw(stars(CAPRANK[mkey(p)])),
+    p.label,
+    pct(p.capability),
+    p.fleet_suitability==null
+      ? html`<span class="dim">${p.reason||'–'}</span>`
+      : html.raw(fmt(p.fleet_suitability,3)),
+    mainCtx(p),
+    workers(p),
+    p.agg_tps==null?'–':fmt(p.agg_tps,0),
+    pct(p.capacity_norm),
+    pct(p.latency_norm),
+  ]);
+  $('fleet').innerHTML=tbl([
+    ['#','Fleet-suitability rank'],
+    ['★','Top-5 capability badge'],
+    ['model','Model name and variant'],
+    ['cap','Capability score from the main ranking'],
+    ['fleet','Fleet suitability score: capability × context reach × throughput × concurrency. Tune the dials above.'],
+    ['main ctx','Tokens allocated to the primary inference slot'],
+    ['+workers','Additional parallel slots: count × context each (e.g. +4×32k = 4 extra 32k slots)'],
+    ['agg tok/s','Aggregate tokens per second at K=8 concurrent requests (from parallel-gen bench)'],
+    ['capacity','Normalised capacity: total concurrent context fit vs fleet baseline'],
+    ['latency','Normalised latency: decode speed + TTFT at depth (higher = faster responses)'],
+  ], rows, sorted.map(topClass));
+}
+
+function renderCtx(){
+  const list=DATA.models.slice().filter(m=>m.maxctx).sort((a,b)=>(b.maxctx||0)-(a.maxctx||0));
+  const rows=list.map(m=>[
+    html.raw(stars(CAPRANK[mkey(m)])),
+    m.label,
+    m.maxctx.toLocaleString(),
+    m.maxctxVram==null?'–':Math.round(m.maxctxVram)+'M',
+    m.kvPerTokMiB==null?'–':(m.kvPerTokMiB*1024).toFixed(1),
+  ]);
+  $('ctx').innerHTML=tbl([
+    ['★','Top-5 capability badge'],
+    ['model','Model name and variant'],
+    ['max ctx','Maximum tokens that fit coherently in VRAM, verified by coherence probe (OOM or incoherent outputs cut it lower)'],
+    ['vram@max','VRAM used when running at max context (MiB)'],
+    ['KV KiB/tok','KV-cache memory per token (KiB). Lower = more context fits in the same VRAM.'],
+  ], rows, list.map(topClass));
+}
+
+const BKEYS=['triage','summarization','docqa','reasoning','grade','agentic_loop','instruction_following','toolcalling','struct_output','e2e_throughput','cold_ttft','warm_ttft'];
+const BKEY_TIPS={
+  triage:'Triage: structured JSON extraction + hallucination detection across varied prompts. Scores penalise missing fields and hallucinated content.',
+  summarization:'Summarization: deterministic rubric — keyword coverage (25%), area classification (30%), tag format (30%), length check (15%). Score is fleet-normalised.',
+  docqa:'Document Q&A: accuracy on long-document questions including recall at or near the maximum context limit.',
+  reasoning:'Reasoning: accuracy on logic, math and multi-step deduction problems.',
+  grade:'Coding grade: average quality score (0–10) for solutions that pass all tests — separates elegant from barely-passing code.',
+  agentic_loop:'Agentic loop: success rate on multi-step tool-call chains, including tasks that require error recovery.',
+  instruction_following:'Instruction following: fraction of explicit formatting/content constraints obeyed (e.g. word limits, forbidden phrases, output structure).',
+  toolcalling:'Tool calling: schema conformance on function-call outputs (argument names, types, required fields).',
+  struct_output:'Structured output: valid + schema-conformant JSON rate under unconstrained sampling (no grammar forcing).',
+  e2e_throughput:'End-to-end throughput at 8 k prefill: tokens/s including TTFT. High prefill speed boosts this; low TTFT matters most for short responses.',
+  cold_ttft:'Cold TTFT: time-to-first-token at 8 k depth with empty KV cache. Normalised: higher = faster.',
+  warm_ttft:'Warm TTFT: time-to-first-token with prefix already cached. Measures prefix-cache effectiveness. Normalised: higher = faster.',
+};
+
+function renderBreakdown(){
+  const list=DATA.models.slice().sort((a,b)=>(b.capability==null?-1:b.capability)-(a.capability==null?-1:a.capability));
+  const rows=list.map(m=>[
+    html.raw(stars(CAPRANK[mkey(m)])),
+    m.label,
+    ...BKEYS.map(k=>m.norm[k]==null?html`<span class="dim">–</span>`:html.raw(pct(m.norm[k]))),
+  ]);
+  const headers=[['★','Top-5 capability badge'],['model','Model name and variant'],...BKEYS.map(k=>[k,BKEY_TIPS[k]||k])];
+  $('breakdown').innerHTML=tbl(headers, rows, list.map(topClass));
+}
+
+function renderRequired(dials){
+  const used=new Set();
+  for (const g of ['comprehension','coding','speed']) for (const k in (dials[g].weights||{})) if (dials[g].weights[k]>0) used.add(k);
+  ['toolcalling','struct_output'].forEach(k=>used.add(k));
+  DATA.fleetRequired.forEach(k=>used.add(k));
+  const byRunner={};
+  for (const k of used){ const e=DATA.registry[k]; if(!e) continue; byRunner[e.runner]=byRunner[e.runner]||{command:e.command,metrics:new Set(),missing:new Set()}; byRunner[e.runner].metrics.add(k); }
+  for (const base in DATA.coverage){ for (const k of DATA.coverage[base].missing){ if(used.has(k)){ const e=DATA.registry[k]; if(e&&byRunner[e.runner]) byRunner[e.runner].missing.add(base); } } }
+  $('required').innerHTML=html`<table>
+    <thead><tr><th>runner</th><th>command</th><th>feeds</th><th>missing for</th></tr></thead>
+    <tbody>${Object.entries(byRunner).map(([r,o])=>{
+      const miss=[...o.missing];
+      return html`<tr>
+        <td>${r}</td>
+        <td><code>${o.command}</code></td>
+        <td>${html.raw([...o.metrics].join(', '))}</td>
+        <td>${miss.length
+          ?html`<span class="warn-t">${miss.length}: ${html.raw(miss.map(esc).join(', '))}</span>`
+          :html`<span class="ok-t">complete</span>`}
+        </td>
+      </tr>`;
+    })}</tbody>
+  </table>`;
+}
+
+const RAWOF={triage:'triage',summarization:'summ',docqa:'docqa',reasoning:'reasoning',grade:'codingGrade',agentic_loop:'agenticScore',instruction_following:'ifScore',toolcalling:'toolcall',struct_output:'structScore',e2e_throughput:'e2eThroughput',cold_ttft:'ttft8kMs',decode_retention:'decodeRetentionPct',maxctx:'maxctx'};
+function exportCSV(){
+  const keys=BKEYS.concat(['decode_retention','maxctx']);
+  const lines=['model,think,metric,raw,norm'];
+  for (const m of DATA.models){ for (const k of keys){ const norm=m.norm[k]; let raw=RAWOF[k]?m[RAWOF[k]]:(k==='warm_ttft'?(m.prefixCache&&m.prefixCache.warm):null); lines.push([JSON.stringify(m.model),JSON.stringify(m.think),k,(raw==null?'':raw),(norm==null?'':norm)].join(',')); } }
+  const blob=new Blob([lines.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='dashboard-data.csv'; a.click();
+}
+
+function resetDials(){
+  const d=DATA.defaultDials;
+  const set=(id,v)=>{ const e=$(id); if(e){ e.value=v; const o=$(id+'_out'); if(o)o.textContent=v; } };
+  for (const g of ['comprehension','coding']){ if(d[g].strength!==undefined) set('d_'+g+'_strength', d[g].strength); for(const k in d[g].weights) set('d_w_'+g+'_'+k, d[g].weights[k]); }
+  for (const k in d.speed.weights) set('d_w_speed_'+k, d.speed.weights[k]);
+  for (const k in d.fleet) set('d_fleet_'+k, d.fleet[k]);
+  if(d.quality_decay) set('d_quality_decay_weight', d.quality_decay.weight);
+}
+
+function wire(){
+  document.querySelectorAll('.dial').forEach(inp=>{ inp.addEventListener('input', ()=>{ const o=$(inp.id+'_out'); if(o)o.textContent=inp.value; recompute(); }); });
+  $('reset').addEventListener('click', ()=>{ resetDials(); recompute(); });
+  $('csv').addEventListener('click', exportCSV);
+}
+renderEnv(); wire(); recompute();
+
+</script>
+</body>
+</html>
