@@ -265,7 +265,7 @@ export function computeMetrics(rows) {
          if (Number.isFinite(v) && v > 0) {
             kvPerTokByModel.set(baseModel(r.model), v / 1024);
          }
-      } else if (bench === 'coding_multipl') {
+      } else if (bench === 'coding_multipl' || bench === 'coding_hard' || bench === 'coding_practical' || bench === 'coding_bugfix') {
          const p1raw = parseFloat(r.coding_pass_at_1);
          const totRaw = parseFloat(r.coding_total);
          const tpRaw = parseFloat(r.coding_tests_passed);
@@ -273,7 +273,11 @@ export function computeMetrics(rows) {
          const pass1 = Number.isFinite(p1raw) && Number.isFinite(totRaw) && totRaw > 0 ? (p1raw / totRaw) * 100 : null;
          const testRate = Number.isFinite(tpRaw) && Number.isFinite(ttRaw) && ttRaw > 0 ? (tpRaw / ttRaw) * 100 : null;
          if (pass1 != null || testRate != null) {
-            codingByMT.set(`${baseModel(r.model)}|${r.think}`, { pass1, testRate });
+            const mtKey = `${baseModel(r.model)}|${r.think}`;
+            if (!codingByMT.has(mtKey)) {
+               codingByMT.set(mtKey, new Map());
+            }
+            codingByMT.get(mtKey).set(bench, { pass1, testRate });
          }
       }
       if (r.bench === 'maxctx') {
@@ -365,11 +369,30 @@ export function computeMetrics(rows) {
 
    const W_CODE_PASS1 = 0.4;
    const W_CODE_TESTRATE = 0.6;
+   const CODING_BENCH_WEIGHTS = {
+      coding_multipl: 0.2,
+      coding_hard: 0.35,
+      coding_practical: 0.25,
+      coding_bugfix: 0.2,
+   };
    const codingGradeOf = (base) => {
       for (const st of ['no_think', 'n/a']) {
-         const c = codingByMT.get(`${base}|${st}`);
-         if (c && (c.pass1 != null || c.testRate != null)) {
-            return W_CODE_PASS1 * (c.pass1 ?? 0) + W_CODE_TESTRATE * (c.testRate ?? 0);
+         const benchMap = codingByMT.get(`${base}|${st}`);
+         if (!benchMap || benchMap.size === 0) {
+            continue;
+         }
+         let weightSum = 0;
+         let gradeSum = 0;
+         for (const [bench, w] of Object.entries(CODING_BENCH_WEIGHTS)) {
+            const c = benchMap.get(bench);
+            if (c && (c.pass1 != null || c.testRate != null)) {
+               const g = W_CODE_PASS1 * (c.pass1 ?? 0) + W_CODE_TESTRATE * (c.testRate ?? 0);
+               gradeSum += w * g;
+               weightSum += w;
+            }
+         }
+         if (weightSum > 0) {
+            return gradeSum / weightSum;
          }
       }
       return null;

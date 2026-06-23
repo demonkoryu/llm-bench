@@ -97,6 +97,10 @@ const sandbox = {
    isFinite,
    parseInt,
    parseFloat,
+   encodeURIComponent,
+   decodeURIComponent,
+   encodeURI,
+   decodeURI,
    Infinity,
    NaN,
    undefined,
@@ -134,9 +138,11 @@ for (let i = 0; i < tests.length; i++) {
    try {
       let got;
       if (t.call) {
-         // Stateful test: evaluate the driver expression in the model's context.
-         // The expression constructs/drives `entry` and returns observable state.
-         got = runInContext(`;(${t.call});`, context, { timeout: 2000 });
+         // Each call test runs in a fresh context with the model code re-loaded.
+         // This prevents `const`/`let` declarations from one test leaking into the
+         // next and causing "Identifier already declared" errors.
+         const callCtx = createContext({ ...sandbox });
+         got = runInContext(`${code}\n;${t.call}`, callCtx, { timeout: 5000 });
       } else {
          // Deep-clone args so a mutating solution can't poison later tests.
          const args = JSON.parse(JSON.stringify(t.args ?? []));

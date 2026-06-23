@@ -171,6 +171,9 @@ const summGrader = (await import('../benchmarks/summarization/grader.mjs')).defa
 const { SUMM_ITEMS } = await import('../benchmarks/summarization/summcases.mjs');
 const { gradeAll: docqaGradeAll } = await import('../benchmarks/docqa/grader.mjs');
 const { CASES: CODING_MULTIPL_CASES } = await import('../benchmarks/coding/cases-multipl.mjs');
+const { CASES: CODING_HARD_CASES } = await import('../benchmarks/coding/cases-hard.mjs');
+const { CASES: CODING_PRACTICAL_CASES } = await import('../benchmarks/coding/cases-practical.mjs');
+const { CASES: CODING_BUGFIX_CASES } = await import('../benchmarks/coding/cases-bugfix.mjs');
 const { gradeCase: codingGradeCase } = await import('../benchmarks/coding/grader.mjs');
 const { makeFillPrompt } = await import('../shared/codebase.mjs');
 const docqaCases = JSON.parse(readFileSync(join(ROOT, 'benchmarks/docqa/cases.json'), 'utf8'));
@@ -230,9 +233,15 @@ const MAX_TOKENS = {
    tool: 512, // single tool call response
    instruct: 1024, // non-thinking instruct models
    docqa: 1280, // multi-hop doc-QA with citations
-   coding_multipl: 16384, // imported MultiPL-E (HumanEval-JS) function tasks — the sole coding source.
+   coding_multipl: 16384, // imported MultiPL-E (HumanEval-JS) function tasks.
    //                       Function-level, so most finish well under it; the ceiling only guards verbose models.
    coding_multipl_think: 20480, // capped think budget for the think pass: verbose reasoners
+   coding_hard: 32768, // hand-authored hard algorithmic problems (DP, graph, stack).
+   coding_hard_think: 40960,
+   coding_practical: 16384, // hand-authored real-world patterns (parsing, data transforms, classes).
+   coding_practical_think: 20480,
+   coding_bugfix: 8192, // bug-fixing: shorter — model just patches an existing function.
+   coding_bugfix_think: 16384,
    //                            (e.g. Gemma4-26B) can spend >12k tokens thinking; at 12288 they truncated
    //                            mid-thought → empty code → false 0%. 20480 fits reasoning + code and
    //                            still completes under the 600s timeout (~394s at the slowest ~52 tok/s).
@@ -398,7 +407,17 @@ function plannedResumeKeys(model) {
       const tl = thinkState === null ? 'n/a' : thinkState ? 'think' : 'no_think';
       const passId = modelId(model, thinkState);
       // Benches gated only by the model's benches list — run in every think pass.
-      for (const b of ['triage', 'reasoning', 'docqa', 'coding_multipl', 'summarization', 'speed']) {
+      for (const b of [
+         'triage',
+         'reasoning',
+         'docqa',
+         'coding_multipl',
+         'coding_hard',
+         'coding_practical',
+         'coding_bugfix',
+         'summarization',
+         'speed',
+      ]) {
          if (allow(b)) {
             keys.add(tsvKey(passId, tl, b));
          }
@@ -803,6 +822,7 @@ async function runCoding(
    maxTok = MAX_TOKENS.coding_multipl,
    benchName = 'coding_multipl',
    thinkTok = MAX_TOKENS.think,
+   { buildSystem } = {},
 ) {
    const sampling = sampleOpts(model, thinkState, 'coding');
    const thinkControl = model.think_control ?? 'enable_thinking';
@@ -826,10 +846,11 @@ async function runCoding(
    let caseIdx = 0;
 
    for (const [caseId, c] of Object.entries(cases)) {
-      const SYSTEM =
-         `You are an expert programmer. Implement the requested function in JavaScript.\n` +
-         `Respond with ONLY one JavaScript code block defining \`${c.entry}\` — no prose, no tests, ` +
-         `no example calls, no console.log. The function must \`return\` its result.`;
+      const SYSTEM = buildSystem
+         ? buildSystem(c)
+         : `You are an expert programmer. Implement the requested function in JavaScript.\n` +
+           `Respond with ONLY one JavaScript code block defining \`${c.entry}\` — no prose, no tests, ` +
+           `no example calls, no console.log. The function must \`return\` its result.`;
       const messages = [
          { role: 'system', content: SYSTEM },
          { role: 'user', content: `${c.prompt}\n\nSignature: ${c.signature}` },
@@ -1513,6 +1534,105 @@ for (const model of models) {
                model: passId,
                think: tl,
                bench: 'coding_multipl',
+               prefill_tps: '-',
+               vram_mib: vramMib ?? '?',
+               ctx_loaded: ctxLoaded ?? '?',
+               oom_ceiling: oomCeiling ?? '?',
+               coherence_ceiling: coherenceCeiling ?? '?',
+               status: 'ok',
+               ...res.r,
+            });
+         }
+      }
+
+      // coding_hard — hand-authored hard algorithmic problems; runs in both passes.
+      {
+         const res = await skipOrRun('coding_hard', () =>
+            runCoding(client, model, thinkState, CODING_HARD_CASES, MAX_TOKENS.coding_hard, 'coding_hard', MAX_TOKENS.coding_hard_think),
+         );
+         if (res) {
+            const p1pct = res.r.coding_total > 0 ? ((res.r.coding_pass_at_1 / res.r.coding_total) * 100).toFixed(1) : '?';
+            const testsPct = res.r.coding_tests_total > 0 ? ((res.r.coding_tests_passed / res.r.coding_tests_total) * 100).toFixed(1) : '?';
+            console.log(`pass@1=${p1pct}%  tests=${testsPct}%  noCode=${res.r.coding_no_code}  tok/s=${res.r.tok_s}`);
+            appendTsv({
+               target: TARGET,
+               backend: BACKEND,
+               model: passId,
+               think: tl,
+               bench: 'coding_hard',
+               prefill_tps: '-',
+               vram_mib: vramMib ?? '?',
+               ctx_loaded: ctxLoaded ?? '?',
+               oom_ceiling: oomCeiling ?? '?',
+               coherence_ceiling: coherenceCeiling ?? '?',
+               status: 'ok',
+               ...res.r,
+            });
+         }
+      }
+
+      // coding_practical — hand-authored real-world patterns; runs in both passes.
+      {
+         const res = await skipOrRun('coding_practical', () =>
+            runCoding(
+               client,
+               model,
+               thinkState,
+               CODING_PRACTICAL_CASES,
+               MAX_TOKENS.coding_practical,
+               'coding_practical',
+               MAX_TOKENS.coding_practical_think,
+            ),
+         );
+         if (res) {
+            const p1pct = res.r.coding_total > 0 ? ((res.r.coding_pass_at_1 / res.r.coding_total) * 100).toFixed(1) : '?';
+            const testsPct = res.r.coding_tests_total > 0 ? ((res.r.coding_tests_passed / res.r.coding_tests_total) * 100).toFixed(1) : '?';
+            console.log(`pass@1=${p1pct}%  tests=${testsPct}%  noCode=${res.r.coding_no_code}  tok/s=${res.r.tok_s}`);
+            appendTsv({
+               target: TARGET,
+               backend: BACKEND,
+               model: passId,
+               think: tl,
+               bench: 'coding_practical',
+               prefill_tps: '-',
+               vram_mib: vramMib ?? '?',
+               ctx_loaded: ctxLoaded ?? '?',
+               oom_ceiling: oomCeiling ?? '?',
+               coherence_ceiling: coherenceCeiling ?? '?',
+               status: 'ok',
+               ...res.r,
+            });
+         }
+      }
+
+      // coding_bugfix — bug-fixing tasks; custom system prompt shows buggy code.
+      {
+         const bugfixSystem = (c) =>
+            `You are an expert programmer. The user will show you a JavaScript function with a bug. Fix it.\n` +
+            `Respond with ONLY one JavaScript code block defining the corrected \`${c.entry}\` — no prose, no tests, ` +
+            `no example calls, no console.log. The function must \`return\` its result.`;
+         const res = await skipOrRun('coding_bugfix', () =>
+            runCoding(
+               client,
+               model,
+               thinkState,
+               CODING_BUGFIX_CASES,
+               MAX_TOKENS.coding_bugfix,
+               'coding_bugfix',
+               MAX_TOKENS.coding_bugfix_think,
+               { buildSystem: bugfixSystem },
+            ),
+         );
+         if (res) {
+            const p1pct = res.r.coding_total > 0 ? ((res.r.coding_pass_at_1 / res.r.coding_total) * 100).toFixed(1) : '?';
+            const testsPct = res.r.coding_tests_total > 0 ? ((res.r.coding_tests_passed / res.r.coding_tests_total) * 100).toFixed(1) : '?';
+            console.log(`pass@1=${p1pct}%  tests=${testsPct}%  noCode=${res.r.coding_no_code}  tok/s=${res.r.tok_s}`);
+            appendTsv({
+               target: TARGET,
+               backend: BACKEND,
+               model: passId,
+               think: tl,
+               bench: 'coding_bugfix',
                prefill_tps: '-',
                vram_mib: vramMib ?? '?',
                ctx_loaded: ctxLoaded ?? '?',

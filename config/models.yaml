@@ -33,6 +33,7 @@
 #   benches          Applicable benchmark suites:
 #                      triage | reasoning | toolcalling | toolcalling_decay | longctx
 #                      summarization | speed | maxctx | docqa
+#                      coding_multipl | coding_hard | coding_practical | coding_bugfix
 #   disabled         true → parked: stays in this file but filtered out by
 #                      shared/models-config.mjs loadModelsConfig() (runners never see
 #                      it). Omit (or false) = active. Reversible: delete the line.
@@ -76,7 +77,7 @@ models:
      tools: true
      native_max_ctx: 262144
      kv_bytes_per_token: 49152
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
      notes: "No think mode. repeat_penalty in sampling_matrix. If ub2048 OOMs at max ctx, set ubatch-size: 1024."
 
    # ── Qwen3-30B-A3B-Instruct-2507 ──────────────────────────────────────────────
@@ -92,7 +93,7 @@ models:
      tools: true
      native_max_ctx: 262144
      kv_bytes_per_token: 49152
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
      notes: "If ub2048 OOMs at max ctx, set ubatch-size: 1024."
 
    - hf_repo: unsloth/Qwen3-30B-A3B-Instruct-2507-GGUF
@@ -106,7 +107,7 @@ models:
      native_max_ctx: 262144
      ctx_cap: 81920
      kv_bytes_per_token: 49152
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
 
    # ── Qwen3-14B Q5_K_M ────────────────────────────────────────────────────────
    # Hybrid: runs both nothi and think passes.
@@ -122,7 +123,7 @@ models:
      native_max_ctx: 32768
      ctx_cap: 40960
      kv_bytes_per_token: 24576
-     benches: [triage, reasoning, toolcalling, toolcalling_decay, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, toolcalling_decay, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
 
    # ── Qwen3.5-9B (hybrid GatedDeltaNet + sparse MoE) ───────────────────────────
    # Hybrid: runs both nothi and think passes. ~6.6 GB at Q5_K_M → big KV headroom.
@@ -139,7 +140,7 @@ models:
      tools: true
      native_max_ctx: 262144
      kv_bytes_per_token: 8192
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
      notes: "Hybrid GatedDeltaNet+MoE; linear-attn layers → small KV. Unsloth Q5_K_M."
 
    # ── Qwen3.5-27B IQ4_XS ───────────────────────────────────────────────────────
@@ -156,7 +157,7 @@ models:
      native_max_ctx: 262144
      ctx_cap: 102400   # measured: all KV variants cap at 102400 (131072 incoherent)
      kv_bytes_per_token: 16384
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
      kv_variants: [q4_0]
      notes: "kv_bytes_per_token is estimated — kv-probe will calibrate."
 
@@ -176,7 +177,7 @@ models:
      native_max_ctx: 262144
      ctx_cap: 102400   # measured: all KV variants cap at 102400 (131072 incoherent)
      kv_bytes_per_token: 16384   # estimated — same arch as Qwen3.5-27B; kv-probe will calibrate
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
      kv_variants: [q4_0]
 
    # ── Qwen3.6-27B UD-Q4_K_XL ───────────────────────────────────────────────────
@@ -193,7 +194,7 @@ models:
      tools: true
      native_max_ctx: 262144
      kv_bytes_per_token: 49152
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
      kv_variants: [q4_0]
      notes: "kv_bytes_per_token matches 35B estimate — kv-probe will calibrate."
 
@@ -215,7 +216,7 @@ models:
         spec-type: draft-mtp
         spec-draft-n-max: 4
         parallel: 1   # MTP (embedded tensors) not supported with n_parallel > 1
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
      kv_variants: [q4_0]
      notes: "MTP speculative draft; smoke will catch if Vulkan build lacks support."
 
@@ -233,7 +234,7 @@ models:
      native_max_ctx: 262144
      ctx_cap: 131072   # measured: fits 131072 at q4_0 and q8_0 KV
      kv_bytes_per_token: 49152
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
      kv_variants: [q4_0]
 
    # ── Gemma4-E4B ───────────────────────────────────────────────────────────────
@@ -254,7 +255,7 @@ models:
      # b9496 auto-loads a vision projector for gemma4 → clip.cpp "Unknown projector
      # type" abort on load. We benchmark text-only, so disable it.
      extra_flags: { "no-mmproj": true }
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
 
    - hf_repo: unsloth/gemma-4-E4B-it-GGUF
      hf_file: gemma-4-E4B-it-Q5_K_M.gguf
@@ -268,7 +269,7 @@ models:
      native_max_ctx: 131072
      kv_bytes_per_token: 16384
      extra_flags: { "no-mmproj": true }   # see Q8 note: skip gemma4 vision projector (text-only)
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
 
    # ── Gemma4-31B IQ4_XS ────────────────────────────────────────────────────────
    # Dense 31B, hybrid think, native FC. IQ4_XS ≈ 16.5 GB → fits 20.5 GB card.
@@ -286,7 +287,7 @@ models:
      native_max_ctx: 131072
      kv_bytes_per_token: 16384
      extra_flags: { "no-mmproj": true }
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
 
    # ── Gemma4-26B-A4B ───────────────────────────────────────────────────────────
    # Hybrid: runs both nothi and think passes. ~16.9 GB weights.
@@ -307,7 +308,7 @@ models:
         model-draft: /home/demonkoryu/models/gemma-4-26B-A4B-it-MTP-Q8_0.gguf
         spec-type: draft-mtp
         spec-draft-n-max: 4
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
      kv_variants: [q4_0]
 
    # ── Gemma4-12B (dense "unified" — encoder-free multimodal, run text-only) ──────
@@ -328,7 +329,7 @@ models:
      native_max_ctx: 131072
      kv_bytes_per_token: 16384
      extra_flags: { "no-mmproj": true }   # see E4B Q8 note: skip gemma4 vision projector (text-only)
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
 
    # ── Gemma4 QAT q4_0 (Google official quantization-aware-trained GGUFs) ─────────
    # Added on request. Hybrids (think: optional) but run no-think-only via --skip-think,
@@ -346,7 +347,7 @@ models:
      native_max_ctx: 131072   # same 128k window as the unsloth 12B GGUF
      kv_bytes_per_token: 16384
      extra_flags: { "no-mmproj": true }   # skip gemma4 vision projector (text-only)
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
 
    - hf_repo: google/gemma-4-26B-A4B-it-qat-q4_0-gguf
      hf_file: gemma-4-26B_q4_0-it.gguf
@@ -364,7 +365,7 @@ models:
         model-draft: /home/demonkoryu/models/gemma-4-26B-A4B-it-MTP-Q8_0.gguf
         spec-type: draft-mtp
         spec-draft-n-max: 4
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
      kv_variants: [q4_0]
 
    # ── Gemma4 QAT — Unsloth Dynamic UD-Q4_K_XL (QAT base, unsloth's dynamic quant) ─
@@ -385,7 +386,7 @@ models:
      native_max_ctx: 131072   # same 128k window as the other 12B GGUFs
      kv_bytes_per_token: 16384
      extra_flags: { "no-mmproj": true }   # skip gemma4 vision projector (text-only)
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
 
    - hf_repo: unsloth/gemma-4-26B-A4B-it-qat-GGUF
      hf_file: gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf
@@ -402,7 +403,7 @@ models:
         model-draft: /home/demonkoryu/models/gemma-4-26B-A4B-it-MTP-Q8_0.gguf
         spec-type: draft-mtp
         spec-draft-n-max: 4
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
      kv_variants: [q4_0]
 
    # ── LFM2.5-8B-A1B ────────────────────────────────────────────────────────────
@@ -422,7 +423,7 @@ models:
      # NO triage: always-reasoning model spends the smoke triage-JSON probe's token
      # budget on reasoning_content before emitting proposed_action → smoke FAILs
      # (triage-json:no-action) → ALL benches skip. Capability limit, like Nemotron+tools.
-     benches: [reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
      capability_note: "triage excluded: always-reasoning output can't emit triage-JSON action within the smoke probe budget"
      notes: "reasoning_content merged by llm client. repeat_penalty in sampling_matrix."
 
@@ -438,7 +439,7 @@ models:
      tools: true
      native_max_ctx: 131072
      kv_bytes_per_token: 8192
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
 
    # ── Nemotron-3-Nano-4B (mamba-hybrid) ─────────────────────────────────────────
    # Small v3 Nemotron; Q8_0 ≈4.3GB → big KV headroom for long context. Same bug
@@ -457,7 +458,7 @@ models:
      no_schema: true
      native_max_ctx: 131072
      kv_bytes_per_token: 16384
-     benches: [triage, reasoning, summarization, docqa, coding_multipl, speed, maxctx]
+     benches: [triage, reasoning, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
 
 
 # ── Sampling matrix ───────────────────────────────────────────────────────────────
