@@ -480,8 +480,9 @@ for (const m of models) {
    }
 }
 
-// Drop disabled models and think=true variants (thinking is off fleet-wide via --skip-think).
-const visibleModels = models.filter((m) => !m.disabled && m.think !== 'think');
+// Drop disabled models. Think variants are kept — each (model, think) pair ranks as its
+// own row, matching report.json (the prior --skip-think-era filter hid the think pass).
+const visibleModels = models.filter((m) => !m.disabled);
 models.length = 0;
 models.push(...visibleModels);
 
