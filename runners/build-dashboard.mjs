@@ -310,7 +310,7 @@ function renderCap(ranking){
 
 function renderFleet(res){
   const fv=(p)=>p.fleet_suitability==null?-Infinity:p.fleet_suitability;
-  const sorted=res.fleet.slice().sort((a,b)=>fv(b)-fv(a));
+  const sorted=res.fleet.filter(p=>p.n_workers==null||p.n_workers>0).sort((a,b)=>fv(b)-fv(a));
   const mainCtx=(p)=>p.main_ctx==null?'–':p.main_ctx.toLocaleString();
   const workers=(p)=>p.n_workers==null?'–':'+'+p.n_workers+'×'+Math.round((p.worker_ctx||0)/1024)+'k';
   const rows=sorted.map((p,i)=>[
