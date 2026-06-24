@@ -126,15 +126,20 @@ async function bench(ggufPath, state) {
    const out = {};
    for (const r of rows) {
       const d = r.n_depth ?? 0;
-      if (r.n_gen === 0 && r.n_prompt > 0) out[`pp${r.n_prompt}@d${d}`] = { avg: r.avg_ts, sd: r.stddev_ts };
-      else if (r.n_prompt === 0 && r.n_gen > 0) out[`tg${r.n_gen}@d${d}`] = { avg: r.avg_ts, sd: r.stddev_ts };
+      if (r.n_gen === 0 && r.n_prompt > 0) {
+         out[`pp${r.n_prompt}@d${d}`] = { avg: r.avg_ts, sd: r.stddev_ts };
+      } else if (r.n_prompt === 0 && r.n_gen > 0) {
+         out[`tg${r.n_gen}@d${d}`] = { avg: r.avg_ts, sd: r.stddev_ts };
+      }
    }
    return out;
 }
 
 /** signed % change of `a` vs baseline `b` */
 function pct(a, b) {
-   if (!a || !b) return 'n/a';
+   if (!a || !b) {
+      return 'n/a';
+   }
    const d = ((a - b) / b) * 100;
    return `${d >= 0 ? '+' : ''}${d.toFixed(1)}%`;
 }

@@ -95,7 +95,7 @@ function acquireLock() {
    if (existsSync(LOCK_FILE)) {
       const raw = readFileSync(LOCK_FILE, 'utf8').trim();
       const pid = parseInt(raw, 10);
-      if (!isNaN(pid) && pid !== process.pid) {
+      if (!Number.isNaN(pid) && pid !== process.pid) {
          let alive = false;
          try {
             process.kill(pid, 0); // signal 0 = existence check only

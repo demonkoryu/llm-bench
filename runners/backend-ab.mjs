@@ -128,8 +128,11 @@ async function bench(bin, ggufPath, env = '', batch = BATCH, ubatch = UBATCH) {
    const rows = JSON.parse(stdout);
    const out = {};
    for (const r of rows) {
-      if (r.n_gen === 0 && r.n_prompt > 0) out[`pp${r.n_prompt}`] = { avg: r.avg_ts, sd: r.stddev_ts };
-      else if (r.n_prompt === 0 && r.n_gen > 0) out[`tg${r.n_gen}`] = { avg: r.avg_ts, sd: r.stddev_ts };
+      if (r.n_gen === 0 && r.n_prompt > 0) {
+         out[`pp${r.n_prompt}`] = { avg: r.avg_ts, sd: r.stddev_ts };
+      } else if (r.n_prompt === 0 && r.n_gen > 0) {
+         out[`tg${r.n_gen}`] = { avg: r.avg_ts, sd: r.stddev_ts };
+      }
    }
    return out;
 }
@@ -149,8 +152,11 @@ async function main() {
    // Verify both backend binaries exist; drop any that don't.
    const live = [];
    for (const b of BACKENDS) {
-      if (await remoteFileExists(b.bin)) live.push(b);
-      else console.error(`! skipping backend '${b.name}' — binary not found: ${b.bin}`);
+      if (await remoteFileExists(b.bin)) {
+         live.push(b);
+      } else {
+         console.error(`! skipping backend '${b.name}' — binary not found: ${b.bin}`);
+      }
    }
    if (live.length < 2) {
       console.error('Need both backend binaries present for an A/B. Aborting.');
@@ -208,8 +214,11 @@ async function main() {
       const tgKey = `tg${TG}`;
       const v = entry.byBackend.vulkan?.[tgKey]?.avg;
       const r = entry.byBackend.rocm?.[tgKey]?.avg;
-      if (v && r) console.log(`tg ${tgKey}: vulkan ${v.toFixed(0)} vs rocm ${r.toFixed(0)} (${pct(r, v)})`);
-      else console.log('done');
+      if (v && r) {
+         console.log(`tg ${tgKey}: vulkan ${v.toFixed(0)} vs rocm ${r.toFixed(0)} (${pct(r, v)})`);
+      } else {
+         console.log('done');
+      }
    }
 
    writeFileSync(OUT, JSON.stringify(report, null, 2));
@@ -222,7 +231,9 @@ async function main() {
 
 /** signed % change of `a` relative to baseline `b` (e.g. rocm vs vulkan) */
 function pct(a, b) {
-   if (!a || !b) return 'n/a';
+   if (!a || !b) {
+      return 'n/a';
+   }
    const d = ((a - b) / b) * 100;
    return `${d >= 0 ? '+' : ''}${d.toFixed(1)}%`;
 }

@@ -31,7 +31,7 @@ export const CARD_TOTAL_MIB = 20464;
 // ── Fixed group structure (membership + kind). Iterate on this in code, never the UI.
 export const GROUPS = {
    comprehension: {
-      kind: 'additive',
+      kind: 'geometric',
       members: ['triage', 'summarization', 'docqa', 'reasoning'],
    },
    coding: {
@@ -71,22 +71,22 @@ export const DEFAULT_DIALS = {
       w_thru: 0.5, // measured-throughput exponent (pargen aggregate); modulates without overtaking capability (w_cap=2)
    },
    quality_decay: {
-      // Additive blend into capability: final = (1−w)×capability_raw + w×qd_norm.
-      // qd_norm is fleet min-max of mean accuracy across all tested depths; missing = fleet mean (neutral).
-      // w=0.2 → worst-to-best spread of 20 percentage points in the final score.
+      // Multiplicative penalty: capability × ((1−w) + w×retention_norm).
+      // retention = mean(acc@depth / acc@0k) for depth>0; retention_norm = fleet min-max.
+      // missing = fleet mean retention (neutral). w=0.2 → worst model takes 80% of raw capability.
       weight: 0.2,
    },
 };
 
 // Self-describing scoring shape for report.json + the chart subtitle.
 export const SCORING = {
-   formula: 'capability = 0.8×(coding×comprehension) + 0.2×qd_norm   (fleet: see scoring.fleet)',
+   formula: 'capability = (comp_geom × coding) × ((1−w) + w×retention_norm)   (fleet: see scoring.fleet)',
    groups: {
-      comprehension: 'additive: triage, summarization, docqa, reasoning',
+      comprehension: 'geometric mean: triage^0.27 × summ^0.22 × docqa^0.20 × reasoning^0.31 (renorm over present members)',
       coding: 'multiplicative: gate(toolcalling) × gate(struct_output) × gate(instruction_following) × gate(agentic_loop) × grade',
       speed: 'additive (display): e2e_throughput, cold_ttft, warm_ttft, decode_retention',
       quality_decay:
-         'additive blend: (1−w)×capability_raw + w×qd_norm; qd_norm=fleet min-max of mean accuracy@depth; missing=fleet mean (neutral)',
+         'multiplicative penalty: capability × ((1−w) + w×retention_norm); retention=mean(acc@depth/acc@0k) for depth>0; retention_norm=fleet min-max; missing=fleet mean (neutral)',
    },
    fleet: 'fleet_suitability = capability^w_cap × ctx_norm^w_ctx × slots_norm^w_slots × throughput^w_thru (geometric blend; capability dominates, context/slots modulate; ctx clamped at ctx_tier)',
    default_dials: DEFAULT_DIALS,
@@ -445,6 +445,11 @@ export function computeMetrics(rows) {
          const qRef = [...qualityCurve].filter((x) => x.depth > 0 && x.depth <= 32768).pop() ?? null;
          const qualityRetentionPct = qualityBase && qRef?.acc != null ? Math.min(100, Math.round((qRef.acc / qualityBase) * 100)) : null;
          const qualityMean = qualityCurve.length ? qualityCurve.reduce((sum, pt) => sum + pt.acc, 0) / qualityCurve.length : null;
+         const depthPoints = qualityCurve.filter((x) => x.depth > 0);
+         const qualityRetention =
+            qualityBase && qualityBase > 0 && depthPoints.length
+               ? depthPoints.reduce((sum, pt) => sum + pt.acc / qualityBase, 0) / depthPoints.length
+               : null;
          const tMap = ttftByModel.get(base);
          const ttftCurve = tMap ? [...tMap.entries()].map(([depth, ms]) => ({ depth, ms })).sort((a, b) => a.depth - b.depth) : [];
          const ttftRefPt = [...ttftCurve].filter((x) => x.depth > 0 && x.depth <= 32768).pop() ?? null;
@@ -495,6 +500,7 @@ export function computeMetrics(rows) {
             qualityCurve,
             qualityBase,
             qualityMean,
+            qualityRetention,
             qualityRetentionPct,
             ttftCurve,
             ttftRefMs,
@@ -576,18 +582,19 @@ export function computeMetrics(rows) {
       m.codingGradeNorm = m.norm.grade;
    }
 
-   // Quality-decay fleet normalization (second pass — needs all qualityMean values first).
-   // qd_norm = (qualityMean − fleet_min) / (fleet_max − fleet_min); missing models get
+   // Quality-decay fleet normalization (second pass — needs all qualityRetention values first).
+   // retention_norm = (retention − fleet_min) / (fleet_max − fleet_min); missing models get
    // fleet mean (neutral: neither penalised nor boosted relative to the measured fleet).
-   const qdMeans = models.map((m) => m.qualityMean).filter((v) => v != null && Number.isFinite(v));
-   if (qdMeans.length) {
-      const qdMin = Math.min(...qdMeans);
-      const qdMax = Math.max(...qdMeans);
-      const qdMeanVal = qdMeans.reduce((a, b) => a + b, 0) / qdMeans.length;
+   // Uses retention ratio (mean acc@depth/acc@0k for depth>0) to isolate degradation from baseline.
+   const qdRetentions = models.map((m) => m.qualityRetention).filter((v) => v != null && Number.isFinite(v));
+   if (qdRetentions.length) {
+      const qdMin = Math.min(...qdRetentions);
+      const qdMax = Math.max(...qdRetentions);
+      const qdMeanVal = qdRetentions.reduce((a, b) => a + b, 0) / qdRetentions.length;
       const qdRange = qdMax - qdMin || 1; // guard: all models identical → everyone gets 0 spread
       const neutralNorm = (qdMeanVal - qdMin) / qdRange;
       for (const m of models) {
-         m.norm.quality_decay = m.qualityMean != null ? (m.qualityMean - qdMin) / qdRange : neutralNorm;
+         m.norm.quality_decay = m.qualityRetention != null ? (m.qualityRetention - qdMin) / qdRange : neutralNorm;
       }
    }
 
@@ -650,6 +657,21 @@ function additive(norm, weights) {
    return s;
 }
 
+/** Weighted geometric mean over present members, renormalizing weights for absent ones.
+ *  A score of 0 on any present member yields 0 (log-floor at 1e-9 to avoid -Infinity). */
+function geometricMean(norm, weights) {
+   let logSum = 0;
+   let weightSum = 0;
+   for (const [k, w] of Object.entries(weights ?? {})) {
+      const v = norm[k];
+      if (v != null && Number.isFinite(v) && w > 0) {
+         logSum += w * Math.log(Math.max(v, 1e-9));
+         weightSum += w;
+      }
+   }
+   return weightSum ? Math.exp(logSum / weightSum) : 0;
+}
+
 /** Renormalized weighted mean over present members; `required` member missing → null. */
 function codingCompetence(norm, weights) {
    if (norm.grade == null) {
@@ -683,18 +705,19 @@ const dialsOrDefault = (dials) => ({
 export function scoreGroups(models, dials = DEFAULT_DIALS) {
    const d = dialsOrDefault(dials);
    for (const m of models) {
-      const comp = additive(m.norm, d.comprehension.weights);
+      const comp = geometricMean(m.norm, d.comprehension.weights);
       const competence = codingCompetence(m.norm, d.coding.weights);
       const gate =
          (m.norm.toolcalling ?? 0) * (m.norm.struct_output ?? 0) * (m.norm.instruction_following ?? 0) * (m.norm.agentic_loop ?? 0);
       const coding = competence == null ? 0 : gate * competence;
       const speed = additive(m.norm, d.speed.weights);
       const capabilityRaw = comp ** (d.comprehension.strength ?? 1) * coding ** (d.coding.strength ?? 1);
-      // Quality-decay additive blend: final = (1−w)×raw + w×qd_norm.
-      // qd_norm is null only when the entire fleet has no quality-decay data; fall back to raw.
+      // Quality-decay multiplicative penalty: capability × ((1−w) + w×retention_norm).
+      // retention_norm=1 → no penalty; retention_norm=0 → (1−w) multiplier on capability.
+      // null retention_norm = no quality-decay data; fall back to raw (no penalty applied).
       const wQd = d.quality_decay?.weight ?? 0.2;
-      const qdNorm = m.norm.quality_decay;
-      const capability = qdNorm != null ? (1 - wQd) * capabilityRaw + wQd * qdNorm : capabilityRaw;
+      const retNorm = m.norm.quality_decay;
+      const capability = retNorm != null ? capabilityRaw * (1 - wQd + wQd * retNorm) : capabilityRaw;
       m.comprehension = comp;
       m.coding = coding;
       m.codingCompetence = competence;

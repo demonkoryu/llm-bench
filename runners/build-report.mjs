@@ -217,6 +217,7 @@ const report = {
       quality_decay: {
          base_acc: m.qualityBase,
          retention_pct: m.qualityRetentionPct,
+         mean_retention: m.qualityRetention != null ? Math.round(m.qualityRetention * 1000) / 10 : null,
          curve: m.qualityCurve.map((p) => ({ depth: p.depth, acc: p.acc })),
       },
       ttft_ms: { ref: m.ttftRefMs, curve: m.ttftCurve.map((p) => ({ depth: p.depth, ms: p.ms })) },

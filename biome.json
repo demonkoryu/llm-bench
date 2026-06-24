@@ -24,6 +24,16 @@
          "style": { "useBlockStatements": "warn" }
       }
    },
+   "overrides": [
+      {
+         "includes": ["benchmarks/coding/cases-practical.mjs"],
+         "linter": {
+            "rules": {
+               "suspicious": { "noTemplateCurlyInString": "off" }
+            }
+         }
+      }
+   ],
    "javascript": {
       "formatter": {
          "jsxQuoteStyle": "double",

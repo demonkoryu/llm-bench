@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-24T04:42:14.197Z",
+  "generated": "2026-06-24T07:33:43.554Z",
   "sources": [
     "rose-rx7900xt-vulkan-20260623-143954 (suite/complete)",
     "rose-rx7900xt-vulkan-20260623-215944 (suite/complete)",
@@ -85,12 +85,12 @@
     "warnings": []
   },
   "scoring": {
-    "formula": "capability = 0.8×(coding×comprehension) + 0.2×qd_norm   (fleet: see scoring.fleet)",
+    "formula": "capability = (comp_geom × coding) × ((1−w) + w×retention_norm)   (fleet: see scoring.fleet)",
     "groups": {
-      "comprehension": "additive: triage, summarization, docqa, reasoning",
+      "comprehension": "geometric mean: triage^0.27 × summ^0.22 × docqa^0.20 × reasoning^0.31 (renorm over present members)",
       "coding": "multiplicative: gate(toolcalling) × gate(struct_output) × gate(instruction_following) × gate(agentic_loop) × grade",
       "speed": "additive (display): e2e_throughput, cold_ttft, warm_ttft, decode_retention",
-      "quality_decay": "additive blend: (1−w)×capability_raw + w×qd_norm; qd_norm=fleet min-max of mean accuracy@depth; missing=fleet mean (neutral)"
+      "quality_decay": "multiplicative penalty: capability × ((1−w) + w×retention_norm); retention=mean(acc@depth/acc@0k) for depth>0; retention_norm=fleet min-max; missing=fleet mean (neutral)"
     },
     "fleet": "fleet_suitability = capability^w_cap × ctx_norm^w_ctx × slots_norm^w_slots × throughput^w_thru (geometric blend; capability dominates, context/slots modulate; ctx clamped at ctx_tier)",
     "default_dials": {
@@ -136,11 +136,11 @@
     {
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
       "base_model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0",
-      "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+      "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
       "think": "no_think",
       "capability": {
-        "score": 0.546459724660963,
-        "comprehension": 0.86375,
+        "score": 0.5476901860496907,
+        "comprehension": 0.8549464789005864,
         "coding": 0.7619678505369364,
         "coding_competence": 0.9880288518373136,
         "speed_group": 0.7965746051946428
@@ -230,6 +230,7 @@
       "quality_decay": {
         "base_acc": 83.3,
         "retention_pct": 80,
+        "mean_retention": 80.1,
         "curve": [
           {
             "depth": 0,
@@ -305,16 +306,16 @@
         "instruction_following_pct": 96.4
       },
       "power_eff_tok_s_per_w": 0.46,
-      "weighted_score": 54.6
+      "weighted_score": 54.8
     },
     {
       "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
       "base_model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0",
-      "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+      "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
       "think": "no_think",
       "capability": {
-        "score": 0.5946254404273826,
-        "comprehension": 0.8838777777777778,
+        "score": 0.7369153151532548,
+        "comprehension": 0.8763070355011,
         "coding": 0.8409327841717753,
         "coding_competence": 0.9692632367125118,
         "speed_group": 0.9250564888495921
@@ -404,6 +405,7 @@
       "quality_decay": {
         "base_acc": 66.7,
         "retention_pct": 100,
+        "mean_retention": 100,
         "curve": [
           {
             "depth": 0,
@@ -479,16 +481,16 @@
         "instruction_following_pct": 96.4
       },
       "power_eff_tok_s_per_w": 0.371,
-      "weighted_score": 59.5
+      "weighted_score": 73.7
     },
     {
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
       "base_model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0",
-      "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
       "think": "no_think",
       "capability": {
-        "score": 0.8723407288888889,
-        "comprehension": 0.8718111111111111,
+        "score": 0.8357607343688976,
+        "comprehension": 0.8669717161503087,
         "coding": 0.9640000000000001,
         "coding_competence": 1,
         "speed_group": 0.9566403538817333
@@ -578,6 +580,7 @@
       "quality_decay": {
         "base_acc": 100,
         "retention_pct": 100,
+        "mean_retention": 100,
         "curve": [
           {
             "depth": 0,
@@ -653,16 +656,16 @@
         "instruction_following_pct": 96.4
       },
       "power_eff_tok_s_per_w": 0.386,
-      "weighted_score": 87.2
+      "weighted_score": 83.6
     },
     {
       "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
       "base_model": "gemma-4-26B_q4_0-it--kvq4_0",
-      "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+      "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
       "think": "no_think",
       "capability": {
-        "score": 0.7543630729674282,
-        "comprehension": 0.8434777777777778,
+        "score": 0.6679332715145092,
+        "comprehension": 0.8350781849778405,
         "coding": 0.9995568508997034,
         "coding_competence": 0.9995568508997034,
         "speed_group": 0.95550109019146
@@ -752,6 +755,7 @@
       "quality_decay": {
         "base_acc": 100,
         "retention_pct": 67,
+        "mean_retention": 75,
         "curve": [
           {
             "depth": 0,
@@ -827,16 +831,16 @@
         "instruction_following_pct": 100
       },
       "power_eff_tok_s_per_w": 0.377,
-      "weighted_score": 75.4
+      "weighted_score": 66.8
     },
     {
       "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
       "base_model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0",
-      "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
       "think": "no_think",
       "capability": {
-        "score": 0.7652296489067226,
-        "comprehension": 0.875788888888889,
+        "score": 0.679108500293469,
+        "comprehension": 0.8676612763358056,
         "coding": 0.9783606212688662,
         "coding_competence": 0.9783606212688662,
         "speed_group": 0.9606709016878137
@@ -926,6 +930,7 @@
       "quality_decay": {
         "base_acc": 100,
         "retention_pct": 83,
+        "mean_retention": 75,
         "curve": [
           {
             "depth": 0,
@@ -1001,16 +1006,16 @@
         "instruction_following_pct": 100
       },
       "power_eff_tok_s_per_w": 0.384,
-      "weighted_score": 76.5
+      "weighted_score": 67.9
     },
     {
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
       "base_model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0",
-      "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+      "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
       "think": "think",
       "capability": {
-        "score": 0.569603228174605,
-        "comprehension": 0.9017166666666667,
+        "score": 0.5746927038036104,
+        "comprehension": 0.897097512574704,
         "coding": 0.7619678505369364,
         "coding_competence": 0.9880288518373136,
         "speed_group": 0.7965746051946428
@@ -1100,6 +1105,7 @@
       "quality_decay": {
         "base_acc": 83.3,
         "retention_pct": 80,
+        "mean_retention": 80.1,
         "curve": [
           {
             "depth": 0,
@@ -1175,16 +1181,16 @@
         "instruction_following_pct": 96.4
       },
       "power_eff_tok_s_per_w": 0.46,
-      "weighted_score": 57
+      "weighted_score": 57.5
     },
     {
       "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
       "base_model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0",
-      "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
+      "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
       "think": "think",
       "capability": {
-        "score": 0.667742158177287,
-        "comprehension": 0.8933055555555556,
+        "score": 0.8294430759669827,
+        "comprehension": 0.8877032533646577,
         "coding": 0.9343697601908615,
         "coding_competence": 0.9692632367125118,
         "speed_group": 0.9250564888495921
@@ -1274,6 +1280,7 @@
       "quality_decay": {
         "base_acc": 66.7,
         "retention_pct": 100,
+        "mean_retention": 100,
         "curve": [
           {
             "depth": 0,
@@ -1349,16 +1356,16 @@
         "instruction_following_pct": 96.4
       },
       "power_eff_tok_s_per_w": 0.371,
-      "weighted_score": 66.8
+      "weighted_score": 82.9
     },
     {
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
       "base_model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0",
-      "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
       "think": "think",
       "capability": {
-        "score": 0.9029916444444446,
-        "comprehension": 0.9115555555555557,
+        "score": 0.8751947901850953,
+        "comprehension": 0.907878413055078,
         "coding": 0.9640000000000001,
         "coding_competence": 1,
         "speed_group": 0.9566403538817333
@@ -1448,6 +1455,7 @@
       "quality_decay": {
         "base_acc": 100,
         "retention_pct": 100,
+        "mean_retention": 100,
         "curve": [
           {
             "depth": 0,
@@ -1523,16 +1531,16 @@
         "instruction_following_pct": 96.4
       },
       "power_eff_tok_s_per_w": 0.386,
-      "weighted_score": 90.3
+      "weighted_score": 87.5
     },
     {
       "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
       "base_model": "gemma-4-26B_q4_0-it--kvq4_0",
-      "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
+      "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
       "think": "think",
       "capability": {
-        "score": 0.7873173517228682,
-        "comprehension": 0.8846888888888889,
+        "score": 0.7032289644693929,
+        "comprehension": 0.8792063403899326,
         "coding": 0.9995568508997034,
         "coding_competence": 0.9995568508997034,
         "speed_group": 0.95550109019146
@@ -1622,6 +1630,7 @@
       "quality_decay": {
         "base_acc": 100,
         "retention_pct": 67,
+        "mean_retention": 75,
         "curve": [
           {
             "depth": 0,
@@ -1697,16 +1706,16 @@
         "instruction_following_pct": 100
       },
       "power_eff_tok_s_per_w": 0.377,
-      "weighted_score": 78.7
+      "weighted_score": 70.3
     },
     {
       "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
       "base_model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0",
-      "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
+      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
       "think": "think",
       "capability": {
-        "score": 0.7733522161979681,
-        "comprehension": 0.8861666666666668,
+        "score": 0.6856018079052258,
+        "comprehension": 0.8759574345603356,
         "coding": 0.9783606212688662,
         "coding_competence": 0.9783606212688662,
         "speed_group": 0.9606709016878137
@@ -1796,6 +1805,7 @@
       "quality_decay": {
         "base_acc": 100,
         "retention_pct": 83,
+        "mean_retention": 75,
         "curve": [
           {
             "depth": 0,
@@ -1871,16 +1881,16 @@
         "instruction_following_pct": 100
       },
       "power_eff_tok_s_per_w": 0.384,
-      "weighted_score": 77.3
+      "weighted_score": 68.6
     },
     {
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
       "base_model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0",
-      "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+      "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
       "think": "best-of",
       "capability": {
-        "score": 0.5767149281129497,
-        "comprehension": 0.9133833333333334,
+        "score": 0.5816426493417652,
+        "comprehension": 0.9079464041885064,
         "coding": 0.7619678505369364,
         "coding_competence": 0.9880288518373136,
         "speed_group": 0.7965746051946428
@@ -1977,6 +1987,7 @@
       "quality_decay": {
         "base_acc": 83.3,
         "retention_pct": 80,
+        "mean_retention": 80.1,
         "curve": [
           {
             "depth": 0,
@@ -2052,16 +2063,16 @@
         "instruction_following_pct": 96.4
       },
       "power_eff_tok_s_per_w": 0.46,
-      "weighted_score": 57.7
+      "weighted_score": 58.2
     },
     {
       "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
       "base_model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0",
-      "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+      "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
       "think": "best-of",
       "capability": {
-        "score": 0.6689879845242083,
-        "comprehension": 0.8949722222222223,
+        "score": 0.8309457000890113,
+        "comprehension": 0.8893114219784638,
         "coding": 0.9343697601908615,
         "coding_competence": 0.9692632367125118,
         "speed_group": 0.9250564888495921
@@ -2158,6 +2169,7 @@
       "quality_decay": {
         "base_acc": 66.7,
         "retention_pct": 100,
+        "mean_retention": 100,
         "curve": [
           {
             "depth": 0,
@@ -2233,16 +2245,16 @@
         "instruction_following_pct": 96.4
       },
       "power_eff_tok_s_per_w": 0.371,
-      "weighted_score": 66.9
+      "weighted_score": 83.1
     },
     {
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
       "base_model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0",
-      "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
       "think": "best-of",
       "capability": {
-        "score": 0.905348088888889,
-        "comprehension": 0.914611111111111,
+        "score": 0.878597292617343,
+        "comprehension": 0.9114079798935093,
         "coding": 0.9640000000000001,
         "coding_competence": 1,
         "speed_group": 0.9566403538817333
@@ -2339,6 +2351,7 @@
       "quality_decay": {
         "base_acc": 100,
         "retention_pct": 100,
+        "mean_retention": 100,
         "curve": [
           {
             "depth": 0,
@@ -2414,16 +2427,16 @@
         "instruction_following_pct": 96.4
       },
       "power_eff_tok_s_per_w": 0.386,
-      "weighted_score": 90.5
+      "weighted_score": 87.9
     },
     {
       "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
       "base_model": "gemma-4-26B_q4_0-it--kvq4_0",
-      "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+      "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
       "think": "best-of",
       "capability": {
-        "score": 0.7873173517228682,
-        "comprehension": 0.8846888888888889,
+        "score": 0.7032289644693929,
+        "comprehension": 0.8792063403899326,
         "coding": 0.9995568508997034,
         "coding_competence": 0.9995568508997034,
         "speed_group": 0.95550109019146
@@ -2520,6 +2533,7 @@
       "quality_decay": {
         "base_acc": 100,
         "retention_pct": 67,
+        "mean_retention": 75,
         "curve": [
           {
             "depth": 0,
@@ -2595,16 +2609,16 @@
         "instruction_following_pct": 100
       },
       "power_eff_tok_s_per_w": 0.377,
-      "weighted_score": 78.7
+      "weighted_score": 70.3
     },
     {
       "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
       "base_model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0",
-      "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
       "think": "best-of",
       "capability": {
-        "score": 0.7771786932944865,
-        "comprehension": 0.8910555555555557,
+        "score": 0.6906274826715245,
+        "comprehension": 0.8823784753517423,
         "coding": 0.9783606212688662,
         "coding_competence": 0.9783606212688662,
         "speed_group": 0.9606709016878137
@@ -2701,6 +2715,7 @@
       "quality_decay": {
         "base_acc": 100,
         "retention_pct": 83,
+        "mean_retention": 75,
         "curve": [
           {
             "depth": 0,
@@ -2776,114 +2791,114 @@
         "instruction_following_pct": 100
       },
       "power_eff_tok_s_per_w": 0.384,
-      "weighted_score": 77.7
+      "weighted_score": 69.1
     }
   ],
   "ranking": [
     {
       "rank": 1,
-      "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
       "think": "best-of",
-      "weighted_score": 90.5
+      "weighted_score": 87.9
     },
     {
       "rank": 2,
-      "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
       "think": "think",
-      "weighted_score": 90.3
+      "weighted_score": 87.5
     },
     {
       "rank": 3,
-      "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
       "think": "no_think",
-      "weighted_score": 87.2
+      "weighted_score": 83.6
     },
     {
       "rank": 4,
-      "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
-      "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
-      "think": "think",
-      "weighted_score": 78.7
+      "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
+      "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
+      "think": "best-of",
+      "weighted_score": 83.1
     },
     {
       "rank": 5,
-      "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
-      "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
-      "think": "best-of",
-      "weighted_score": 78.7
+      "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
+      "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
+      "think": "think",
+      "weighted_score": 82.9
     },
     {
       "rank": 6,
-      "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
-      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
-      "think": "best-of",
-      "weighted_score": 77.7
+      "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
+      "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+      "think": "no_think",
+      "weighted_score": 73.7
     },
     {
       "rank": 7,
-      "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
-      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
+      "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
+      "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
       "think": "think",
-      "weighted_score": 77.3
+      "weighted_score": 70.3
     },
     {
       "rank": 8,
-      "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
-      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
-      "think": "no_think",
-      "weighted_score": 76.5
+      "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
+      "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
+      "think": "best-of",
+      "weighted_score": 70.3
     },
     {
       "rank": 9,
-      "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
-      "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
-      "think": "no_think",
-      "weighted_score": 75.4
+      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
+      "think": "best-of",
+      "weighted_score": 69.1
     },
     {
       "rank": 10,
-      "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
-      "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
-      "think": "best-of",
-      "weighted_score": 66.9
+      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
+      "think": "think",
+      "weighted_score": 68.6
     },
     {
       "rank": 11,
-      "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
-      "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
-      "think": "think",
-      "weighted_score": 66.8
+      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+      "think": "no_think",
+      "weighted_score": 67.9
     },
     {
       "rank": 12,
-      "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
-      "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+      "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
+      "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
       "think": "no_think",
-      "weighted_score": 59.5
+      "weighted_score": 66.8
     },
     {
       "rank": 13,
-      "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+      "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
       "think": "best-of",
-      "weighted_score": 57.7
+      "weighted_score": 58.2
     },
     {
       "rank": 14,
-      "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+      "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
       "think": "think",
-      "weighted_score": 57
+      "weighted_score": 57.5
     },
     {
       "rank": 15,
-      "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+      "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
       "think": "no_think",
-      "weighted_score": 54.6
+      "weighted_score": 54.8
     }
   ],
   "fleet": [
@@ -2891,7 +2906,7 @@
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
       "think": "no_think",
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
-      "capability": 0.546459724660963,
+      "capability": 0.5476901860496907,
       "main_ctx": 102400,
       "weights_mib": 18610.8,
       "worker_ctx": 65536,
@@ -2902,7 +2917,7 @@
       "slots_norm": 0.5,
       "capacity_norm": 0.8803967327887982,
       "latency_norm": 0.8512188288035865,
-      "fleet_suitability": 0.14009593477493246,
+      "fleet_suitability": 0.14072755210134236,
       "needs_pargen": false,
       "reason": null
     },
@@ -2910,7 +2925,7 @@
       "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
       "think": "no_think",
       "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
-      "capability": 0.5946254404273826,
+      "capability": 0.7369153151532548,
       "main_ctx": 131072,
       "weights_mib": 17378.8,
       "worker_ctx": 65536,
@@ -2921,7 +2936,7 @@
       "slots_norm": 0.8,
       "capacity_norm": 0.9918319719953326,
       "latency_norm": 1,
-      "fleet_suitability": 0.2817059442512524,
+      "fleet_suitability": 0.4326574674493867,
       "needs_pargen": false,
       "reason": null
     },
@@ -2929,7 +2944,7 @@
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
       "think": "no_think",
       "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
-      "capability": 0.8723407288888889,
+      "capability": 0.8357607343688976,
       "main_ctx": 102400,
       "weights_mib": 17417,
       "worker_ctx": 65536,
@@ -2940,7 +2955,7 @@
       "slots_norm": 0.5,
       "capacity_norm": 0.690198366394399,
       "latency_norm": 0.9123123123123124,
-      "fleet_suitability": 0.3161034730416052,
+      "fleet_suitability": 0.29014887731237693,
       "needs_pargen": false,
       "reason": null
     },
@@ -2948,7 +2963,7 @@
       "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
       "think": "no_think",
       "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
-      "capability": 0.7543630729674282,
+      "capability": 0.6679332715145092,
       "main_ctx": 102400,
       "weights_mib": 15024,
       "worker_ctx": 65536,
@@ -2959,7 +2974,7 @@
       "slots_norm": 0.95,
       "capacity_norm": 1,
       "latency_norm": 0.9186573934079226,
-      "fleet_suitability": 0.5406104635640183,
+      "fleet_suitability": 0.42382811243627133,
       "needs_pargen": false,
       "reason": null
     },
@@ -2967,7 +2982,7 @@
       "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
       "think": "no_think",
       "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
-      "capability": 0.7652296489067226,
+      "capability": 0.679108500293469,
       "main_ctx": 131072,
       "weights_mib": 14843,
       "worker_ctx": 65536,
@@ -2978,7 +2993,7 @@
       "slots_norm": 0.95,
       "capacity_norm": 0.9813302217036172,
       "latency_norm": 0.921443736730361,
-      "fleet_suitability": 0.5510801515439319,
+      "fleet_suitability": 0.43401978273361863,
       "needs_pargen": false,
       "reason": null
     },
@@ -2986,7 +3001,7 @@
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
       "think": "think",
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
-      "capability": 0.569603228174605,
+      "capability": 0.5746927038036104,
       "main_ctx": 102400,
       "weights_mib": 18610.8,
       "worker_ctx": 65536,
@@ -2997,7 +3012,7 @@
       "slots_norm": 0.5,
       "capacity_norm": 0.8803967327887982,
       "latency_norm": 0.8512188288035865,
-      "fleet_suitability": 0.1522138249358208,
+      "fleet_suitability": 0.1549460760297828,
       "needs_pargen": false,
       "reason": null
     },
@@ -3005,7 +3020,7 @@
       "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
       "think": "think",
       "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
-      "capability": 0.667742158177287,
+      "capability": 0.8294430759669827,
       "main_ctx": 131072,
       "weights_mib": 17378.8,
       "worker_ctx": 65536,
@@ -3016,7 +3031,7 @@
       "slots_norm": 0.8,
       "capacity_norm": 0.9918319719953326,
       "latency_norm": 1,
-      "fleet_suitability": 0.3552439020833076,
+      "fleet_suitability": 0.5481282819341349,
       "needs_pargen": false,
       "reason": null
     },
@@ -3024,7 +3039,7 @@
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
       "think": "think",
       "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
-      "capability": 0.9029916444444446,
+      "capability": 0.8751947901850953,
       "main_ctx": 102400,
       "weights_mib": 17417,
       "worker_ctx": 65536,
@@ -3035,7 +3050,7 @@
       "slots_norm": 0.5,
       "capacity_norm": 0.690198366394399,
       "latency_norm": 0.9123123123123124,
-      "fleet_suitability": 0.3387072020507838,
+      "fleet_suitability": 0.31817526563265325,
       "needs_pargen": false,
       "reason": null
     },
@@ -3043,7 +3058,7 @@
       "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
       "think": "think",
       "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
-      "capability": 0.7873173517228682,
+      "capability": 0.7032289644693929,
       "main_ctx": 102400,
       "weights_mib": 15024,
       "worker_ctx": 65536,
@@ -3054,7 +3069,7 @@
       "slots_norm": 0.95,
       "capacity_norm": 1,
       "latency_norm": 0.9186573934079226,
-      "fleet_suitability": 0.588875181707715,
+      "fleet_suitability": 0.46980442764525987,
       "needs_pargen": false,
       "reason": null
     },
@@ -3062,7 +3077,7 @@
       "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
       "think": "think",
       "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
-      "capability": 0.7733522161979681,
+      "capability": 0.6856018079052258,
       "main_ctx": 131072,
       "weights_mib": 14843,
       "worker_ctx": 65536,
@@ -3073,7 +3088,7 @@
       "slots_norm": 0.95,
       "capacity_norm": 0.9813302217036172,
       "latency_norm": 0.921443736730361,
-      "fleet_suitability": 0.5628411750878138,
+      "fleet_suitability": 0.44235923719809134,
       "needs_pargen": false,
       "reason": null
     },
@@ -3081,7 +3096,7 @@
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
       "think": "best-of",
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
-      "capability": 0.5767149281129497,
+      "capability": 0.5816426493417652,
       "main_ctx": 102400,
       "weights_mib": 18610.8,
       "worker_ctx": 65536,
@@ -3092,7 +3107,7 @@
       "slots_norm": 0.5,
       "capacity_norm": 0.8803967327887982,
       "latency_norm": 0.8512188288035865,
-      "fleet_suitability": 0.1560384407011353,
+      "fleet_suitability": 0.15871636311547246,
       "needs_pargen": false,
       "reason": null
     },
@@ -3100,7 +3115,7 @@
       "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
       "think": "best-of",
       "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
-      "capability": 0.6689879845242083,
+      "capability": 0.8309457000890113,
       "main_ctx": 131072,
       "weights_mib": 17378.8,
       "worker_ctx": 65536,
@@ -3111,7 +3126,7 @@
       "slots_norm": 0.8,
       "capacity_norm": 0.9918319719953326,
       "latency_norm": 1,
-      "fleet_suitability": 0.3565707168348543,
+      "fleet_suitability": 0.5501160659052129,
       "needs_pargen": false,
       "reason": null
     },
@@ -3119,7 +3134,7 @@
       "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
       "think": "best-of",
       "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
-      "capability": 0.905348088888889,
+      "capability": 0.878597292617343,
       "main_ctx": 102400,
       "weights_mib": 17417,
       "worker_ctx": 65536,
@@ -3130,7 +3145,7 @@
       "slots_norm": 0.5,
       "capacity_norm": 0.690198366394399,
       "latency_norm": 0.9123123123123124,
-      "fleet_suitability": 0.34047728736124255,
+      "fleet_suitability": 0.32065402014255867,
       "needs_pargen": false,
       "reason": null
     },
@@ -3138,7 +3153,7 @@
       "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
       "think": "best-of",
       "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
-      "capability": 0.7873173517228682,
+      "capability": 0.7032289644693929,
       "main_ctx": 102400,
       "weights_mib": 15024,
       "worker_ctx": 65536,
@@ -3149,7 +3164,7 @@
       "slots_norm": 0.95,
       "capacity_norm": 1,
       "latency_norm": 0.9186573934079226,
-      "fleet_suitability": 0.588875181707715,
+      "fleet_suitability": 0.46980442764525987,
       "needs_pargen": false,
       "reason": null
     },
@@ -3157,7 +3172,7 @@
       "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
       "think": "best-of",
       "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
-      "capability": 0.7771786932944865,
+      "capability": 0.6906274826715245,
       "main_ctx": 131072,
       "weights_mib": 14843,
       "worker_ctx": 65536,
@@ -3168,7 +3183,7 @@
       "slots_norm": 0.95,
       "capacity_norm": 0.9813302217036172,
       "latency_norm": 0.921443736730361,
-      "fleet_suitability": 0.568424729318894,
+      "fleet_suitability": 0.4488682686347689,
       "needs_pargen": false,
       "reason": null
     }
@@ -3176,106 +3191,106 @@
   "fleet_ranking": [
     {
       "rank": 1,
-      "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
-      "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
-      "think": "think",
-      "fleet_suitability": 0.588875181707715,
-      "slots": 4
+      "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
+      "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
+      "think": "best-of",
+      "fleet_suitability": 0.5501160659052129,
+      "slots": 2
     },
     {
       "rank": 2,
-      "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
-      "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
-      "think": "best-of",
-      "fleet_suitability": 0.588875181707715,
-      "slots": 4
+      "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
+      "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
+      "think": "think",
+      "fleet_suitability": 0.5481282819341349,
+      "slots": 2
     },
     {
       "rank": 3,
-      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
-      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
-      "think": "best-of",
-      "fleet_suitability": 0.568424729318894,
+      "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
+      "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
+      "think": "think",
+      "fleet_suitability": 0.46980442764525987,
       "slots": 4
     },
     {
       "rank": 4,
-      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
-      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
-      "think": "think",
-      "fleet_suitability": 0.5628411750878138,
+      "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
+      "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
+      "think": "best-of",
+      "fleet_suitability": 0.46980442764525987,
       "slots": 4
     },
     {
       "rank": 5,
-      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
-      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
-      "think": "no_think",
-      "fleet_suitability": 0.5510801515439319,
+      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
+      "think": "best-of",
+      "fleet_suitability": 0.4488682686347689,
       "slots": 4
     },
     {
       "rank": 6,
-      "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
-      "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
-      "think": "no_think",
-      "fleet_suitability": 0.5406104635640183,
+      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
+      "think": "think",
+      "fleet_suitability": 0.44235923719809134,
       "slots": 4
     },
     {
       "rank": 7,
-      "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
-      "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
-      "think": "best-of",
-      "fleet_suitability": 0.3565707168348543,
-      "slots": 2
+      "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+      "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+      "think": "no_think",
+      "fleet_suitability": 0.43401978273361863,
+      "slots": 4
     },
     {
       "rank": 8,
-      "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
-      "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
-      "think": "think",
-      "fleet_suitability": 0.3552439020833076,
+      "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
+      "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+      "think": "no_think",
+      "fleet_suitability": 0.4326574674493867,
       "slots": 2
     },
     {
       "rank": 9,
-      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
-      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
-      "think": "best-of",
-      "fleet_suitability": 0.34047728736124255,
-      "slots": 1
+      "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
+      "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
+      "think": "no_think",
+      "fleet_suitability": 0.42382811243627133,
+      "slots": 4
     },
     {
       "rank": 10,
-      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
-      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
-      "think": "think",
-      "fleet_suitability": 0.3387072020507838,
+      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
+      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
+      "think": "best-of",
+      "fleet_suitability": 0.32065402014255867,
       "slots": 1
     },
     {
       "rank": 11,
-      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
-      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
-      "think": "no_think",
-      "fleet_suitability": 0.3161034730416052,
+      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
+      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
+      "think": "think",
+      "fleet_suitability": 0.31817526563265325,
       "slots": 1
     },
     {
       "rank": 12,
-      "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
-      "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
+      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
       "think": "no_think",
-      "fleet_suitability": 0.2817059442512524,
-      "slots": 2
+      "fleet_suitability": 0.29014887731237693,
+      "slots": 1
     },
     {
       "rank": 13,
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
       "think": "best-of",
-      "fleet_suitability": 0.1560384407011353,
+      "fleet_suitability": 0.15871636311547246,
       "slots": 1
     },
     {
@@ -3283,7 +3298,7 @@
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
       "think": "think",
-      "fleet_suitability": 0.1522138249358208,
+      "fleet_suitability": 0.1549460760297828,
       "slots": 1
     },
     {
@@ -3291,7 +3306,7 @@
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
       "think": "no_think",
-      "fleet_suitability": 0.14009593477493246,
+      "fleet_suitability": 0.14072755210134236,
       "slots": 1
     }
   ],
@@ -3299,105 +3314,105 @@
     "reasoning": [
       {
         "rank": 1,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
         "rank": 2,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
         "rank": 3,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
         "rank": 5,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 6,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 7,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 8,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 9,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 10,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
         "rank": 11,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
         "rank": 12,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
         "rank": 13,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
         "rank": 14,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
         "rank": 15,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 91.66666666666666
@@ -3406,105 +3421,105 @@
     "triage": [
       {
         "rank": 1,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
         "think": "think",
         "score": 90
       },
       {
         "rank": 2,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 90
       },
       {
         "rank": 3,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
         "score": 89.44444444444444
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 89.44444444444444
       },
       {
         "rank": 5,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 88.66666666666666
       },
       {
         "rank": 6,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
         "think": "think",
         "score": 88.61111111111111
       },
       {
         "rank": 7,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 88.61111111111111
       },
       {
         "rank": 8,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
         "think": "think",
         "score": 87.8888888888889
       },
       {
         "rank": 9,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 87.8888888888889
       },
       {
         "rank": 10,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
         "score": 87.61111111111111
       },
       {
         "rank": 11,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 87.61111111111111
       },
       {
         "rank": 12,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 87.44444444444444
       },
       {
         "rank": 13,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 86.94444444444444
       },
       {
         "rank": 14,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 86.55555555555556
       },
       {
         "rank": 15,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 85.44444444444444
@@ -3513,105 +3528,105 @@
     "coding_grade": [
       {
         "rank": 1,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 97.05706873685074
       },
       {
         "rank": 2,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
         "score": 97.05706873685074
       },
       {
         "rank": 3,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 97.05706873685074
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 97.01405798416258
       },
       {
         "rank": 5,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
         "think": "think",
         "score": 97.01405798416258
       },
       {
         "rank": 6,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 97.01405798416258
       },
       {
         "rank": 7,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 95.89518418676586
       },
       {
         "rank": 8,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
         "score": 95.89518418676586
       },
       {
         "rank": 9,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 95.89518418676586
       },
       {
         "rank": 10,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 94.95681406792035
       },
       {
         "rank": 11,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
         "think": "think",
         "score": 94.95681406792035
       },
       {
         "rank": 12,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 94.95681406792035
       },
       {
         "rank": 13,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 94.07384858970869
       },
       {
         "rank": 14,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
         "think": "think",
         "score": 94.07384858970869
       },
       {
         "rank": 15,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 94.07384858970869
@@ -3620,105 +3635,105 @@
     "toolcalling": [
       {
         "rank": 1,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
         "rank": 2,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
         "rank": 3,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
         "rank": 5,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 6,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 7,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 8,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 9,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 10,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
         "rank": 11,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
         "rank": 12,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
         "rank": 13,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
         "rank": 14,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
         "rank": 15,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 90
@@ -3727,105 +3742,105 @@
     "docqa": [
       {
         "rank": 1,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 10
       },
       {
         "rank": 2,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 10
       },
       {
         "rank": 3,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
         "score": 9.416666666666668
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
         "score": 9.416666666666668
       },
       {
         "rank": 5,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
         "think": "think",
         "score": 9.416666666666668
       },
       {
         "rank": 6,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 9.416666666666668
       },
       {
         "rank": 7,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 9.416666666666668
       },
       {
         "rank": 8,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 9.25
       },
       {
         "rank": 9,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 9.25
       },
       {
         "rank": 10,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
         "think": "think",
         "score": 9.166666666666668
       },
       {
         "rank": 11,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 8.833333333333332
       },
       {
         "rank": 12,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
         "think": "think",
         "score": 8.833333333333332
       },
       {
         "rank": 13,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 8.833333333333332
       },
       {
         "rank": 14,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 7.666666666666666
       },
       {
         "rank": 15,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 7.5
@@ -3834,105 +3849,105 @@
     "summarization": [
       {
         "rank": 1,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 79.44444444444444
       },
       {
         "rank": 2,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 79.44444444444444
       },
       {
         "rank": 3,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
         "score": 78.05555555555556
       },
       {
         "rank": 4,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
         "score": 75.83333333333333
       },
       {
         "rank": 5,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 75.83333333333333
       },
       {
         "rank": 6,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
         "think": "think",
         "score": 73.05555555555556
       },
       {
         "rank": 7,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
         "think": "think",
         "score": 73.05555555555556
       },
       {
         "rank": 8,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 73.05555555555556
       },
       {
         "rank": 9,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 73.05555555555556
       },
       {
         "rank": 10,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 69.44444444444444
       },
       {
         "rank": 11,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 69.44444444444444
       },
       {
         "rank": 12,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 68.05555555555556
       },
       {
         "rank": 13,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 68.05555555555556
       },
       {
         "rank": 14,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 65.83333333333333
       },
       {
         "rank": 15,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
         "think": "think",
         "score": 65.83333333333333
@@ -3941,105 +3956,105 @@
     "maxctx": [
       {
         "rank": 1,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 131072
       },
       {
         "rank": 2,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 131072
       },
       {
         "rank": 3,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
         "think": "think",
         "score": 131072
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
         "think": "think",
         "score": 131072
       },
       {
         "rank": 5,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 131072
       },
       {
         "rank": 6,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 131072
       },
       {
         "rank": 7,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 102400
       },
       {
         "rank": 8,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 102400
       },
       {
         "rank": 9,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 102400
       },
       {
         "rank": 10,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
         "score": 102400
       },
       {
         "rank": 11,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
         "score": 102400
       },
       {
         "rank": 12,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
         "think": "think",
         "score": 102400
       },
       {
         "rank": 13,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 102400
       },
       {
         "rank": 14,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 102400
       },
       {
         "rank": 15,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 102400
@@ -4048,70 +4063,70 @@
     "generation_tok_s": [
       {
         "rank": 1,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 182.9
       },
       {
         "rank": 2,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 182.9
       },
       {
         "rank": 3,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 170
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 170
       },
       {
         "rank": 5,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 148.6
       },
       {
         "rank": 6,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 148.6
       },
       {
         "rank": 7,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 138.6
       },
       {
         "rank": 8,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 138.6
       },
       {
         "rank": 9,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 118.9
       },
       {
         "rank": 10,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 118.9
@@ -4120,70 +4135,70 @@
     "prefill_tok_s_4k": [
       {
         "rank": 1,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 2414.8
       },
       {
         "rank": 2,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 2414.8
       },
       {
         "rank": 3,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 2410.9
       },
       {
         "rank": 4,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 2410.9
       },
       {
         "rank": 5,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 2410.3
       },
       {
         "rank": 6,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 2410.3
       },
       {
         "rank": 7,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 2391.8
       },
       {
         "rank": 8,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 2391.8
       },
       {
         "rank": 9,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 2175.3
       },
       {
         "rank": 10,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 2175.3
@@ -4192,70 +4207,70 @@
     "prefill_tok_s_12k": [
       {
         "rank": 1,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 2374.7
       },
       {
         "rank": 2,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 2374.7
       },
       {
         "rank": 3,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 2255.9
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 2255.9
       },
       {
         "rank": 5,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 2252.6
       },
       {
         "rank": 6,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 2252.6
       },
       {
         "rank": 7,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 2219.2
       },
       {
         "rank": 8,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 2219.2
       },
       {
         "rank": 9,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 1856.1
       },
       {
         "rank": 10,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 1856.1
@@ -4264,70 +4279,70 @@
     "total_tok_s_4k": [
       {
         "rank": 1,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 984.1311886766525
       },
       {
         "rank": 2,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 984.1311886766525
       },
       {
         "rank": 3,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 975.3862146169838
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 975.3862146169838
       },
       {
         "rank": 5,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 896.2019980019982
       },
       {
         "rank": 6,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 896.2019980019982
       },
       {
         "rank": 7,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 854.3685089937768
       },
       {
         "rank": 8,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 854.3685089937768
       },
       {
         "rank": 9,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 767.3490050861069
       },
       {
         "rank": 10,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 767.3490050861069
@@ -4336,70 +4351,70 @@
     "total_tok_s_12k": [
       {
         "rank": 1,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 1511.7882070555538
       },
       {
         "rank": 2,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 1511.7882070555538
       },
       {
         "rank": 3,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 1439.4085670611269
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 1439.4085670611269
       },
       {
         "rank": 5,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 1386.5998268897865
       },
       {
         "rank": 6,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 1386.5998268897865
       },
       {
         "rank": 7,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 1358.8576540659974
       },
       {
         "rank": 8,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 1358.8576540659974
       },
       {
         "rank": 9,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 1350.112990838322
       },
       {
         "rank": 10,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 1350.112990838322
@@ -4408,105 +4423,105 @@
     "e2e_throughput_tok_s": [
       {
         "rank": 1,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 1357.2
       },
       {
         "rank": 2,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
         "think": "think",
         "score": 1357.2
       },
       {
         "rank": 3,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 1357.2
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 1343.9666666666667
       },
       {
         "rank": 5,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
         "score": 1343.9666666666667
       },
       {
         "rank": 6,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 1343.9666666666667
       },
       {
         "rank": 7,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 1343.7
       },
       {
         "rank": 8,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
         "think": "think",
         "score": 1343.7
       },
       {
         "rank": 9,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 1343.7
       },
       {
         "rank": 10,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 1295.9666666666665
       },
       {
         "rank": 11,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
         "think": "think",
         "score": 1295.9666666666665
       },
       {
         "rank": 12,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 1295.9666666666665
       },
       {
         "rank": 13,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 1174.0666666666668
       },
       {
         "rank": 14,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
         "score": 1174.0666666666668
       },
       {
         "rank": 15,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 1174.0666666666668
@@ -4515,105 +4530,105 @@
     "speed_group": [
       {
         "rank": 1,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.9606709016878137
       },
       {
         "rank": 2,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
         "think": "think",
         "score": 0.9606709016878137
       },
       {
         "rank": 3,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 0.9606709016878137
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.9566403538817333
       },
       {
         "rank": 5,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
         "score": 0.9566403538817333
       },
       {
         "rank": 6,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 0.9566403538817333
       },
       {
         "rank": 7,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.95550109019146
       },
       {
         "rank": 8,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
         "think": "think",
         "score": 0.95550109019146
       },
       {
         "rank": 9,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 0.95550109019146
       },
       {
         "rank": 10,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.9250564888495921
       },
       {
         "rank": 11,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
         "think": "think",
         "score": 0.9250564888495921
       },
       {
         "rank": 12,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 0.9250564888495921
       },
       {
         "rank": 13,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.7965746051946428
       },
       {
         "rank": 14,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
         "score": 0.7965746051946428
       },
       {
         "rank": 15,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 0.7965746051946428
@@ -4622,319 +4637,319 @@
     "capability": [
       {
         "rank": 1,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
-        "score": 0.905348088888889
+        "score": 0.878597292617343
       },
       {
         "rank": 2,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
-        "score": 0.9029916444444446
+        "score": 0.8751947901850953
       },
       {
         "rank": 3,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
-        "score": 0.8723407288888889
+        "score": 0.8357607343688976
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
-        "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
-        "think": "think",
-        "score": 0.7873173517228682
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
+        "think": "best-of",
+        "score": 0.8309457000890113
       },
       {
         "rank": 5,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
-        "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
-        "think": "best-of",
-        "score": 0.7873173517228682
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
+        "think": "think",
+        "score": 0.8294430759669827
       },
       {
         "rank": 6,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
-        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
-        "think": "best-of",
-        "score": 0.7771786932944865
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.7369153151532548
       },
       {
         "rank": 7,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
-        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
         "think": "think",
-        "score": 0.7733522161979681
+        "score": 0.7032289644693929
       },
       {
         "rank": 8,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
-        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
-        "think": "no_think",
-        "score": 0.7652296489067226
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
+        "think": "best-of",
+        "score": 0.7032289644693929
       },
       {
         "rank": 9,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
-        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
-        "think": "no_think",
-        "score": 0.7543630729674282
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
+        "think": "best-of",
+        "score": 0.6906274826715245
       },
       {
         "rank": 10,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
-        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
-        "think": "best-of",
-        "score": 0.6689879845242083
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
+        "think": "think",
+        "score": 0.6856018079052258
       },
       {
         "rank": 11,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
-        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
-        "think": "think",
-        "score": 0.667742158177287
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.679108500293469
       },
       {
         "rank": 12,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
-        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
-        "score": 0.5946254404273826
+        "score": 0.6679332715145092
       },
       {
         "rank": 13,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
-        "score": 0.5767149281129497
+        "score": 0.5816426493417652
       },
       {
         "rank": 14,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
-        "score": 0.569603228174605
+        "score": 0.5746927038036104
       },
       {
         "rank": 15,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
-        "score": 0.546459724660963
+        "score": 0.5476901860496907
       }
     ],
     "comprehension": [
       {
         "rank": 1,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
-        "score": 0.914611111111111
+        "score": 0.9114079798935093
       },
       {
         "rank": 2,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
-        "score": 0.9133833333333334
+        "score": 0.9079464041885064
       },
       {
         "rank": 3,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
-        "score": 0.9115555555555557
+        "score": 0.907878413055078
       },
       {
         "rank": 4,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
-        "score": 0.9017166666666667
+        "score": 0.897097512574704
       },
       {
         "rank": 5,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
-        "score": 0.8949722222222223
+        "score": 0.8893114219784638
       },
       {
         "rank": 6,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
         "think": "think",
-        "score": 0.8933055555555556
+        "score": 0.8877032533646577
       },
       {
         "rank": 7,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
-        "score": 0.8910555555555557
+        "score": 0.8823784753517423
       },
       {
         "rank": 8,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
-        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
         "think": "think",
-        "score": 0.8861666666666668
+        "score": 0.8792063403899326
       },
       {
         "rank": 9,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
-        "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
-        "think": "think",
-        "score": 0.8846888888888889
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
+        "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
+        "think": "best-of",
+        "score": 0.8792063403899326
       },
       {
         "rank": 10,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
-        "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
-        "think": "best-of",
-        "score": 0.8846888888888889
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
+        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 0.8763070355011
       },
       {
         "rank": 11,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
-        "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
-        "think": "no_think",
-        "score": 0.8838777777777778
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
+        "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
+        "think": "think",
+        "score": 0.8759574345603356
       },
       {
         "rank": 12,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
-        "score": 0.875788888888889
+        "score": 0.8676612763358056
       },
       {
         "rank": 13,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
-        "score": 0.8718111111111111
+        "score": 0.8669717161503087
       },
       {
         "rank": 14,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
-        "score": 0.86375
+        "score": 0.8549464789005864
       },
       {
         "rank": 15,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
-        "score": 0.8434777777777778
+        "score": 0.8350781849778405
       }
     ],
     "coding": [
       {
         "rank": 1,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.9995568508997034
       },
       {
         "rank": 2,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
         "think": "think",
         "score": 0.9995568508997034
       },
       {
         "rank": 3,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 0.9995568508997034
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.9783606212688662
       },
       {
         "rank": 5,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
         "think": "think",
         "score": 0.9783606212688662
       },
       {
         "rank": 6,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 0.9783606212688662
       },
       {
         "rank": 7,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.9640000000000001
       },
       {
         "rank": 8,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
         "score": 0.9640000000000001
       },
       {
         "rank": 9,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 0.9640000000000001
       },
       {
         "rank": 10,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
         "think": "think",
         "score": 0.9343697601908615
       },
       {
         "rank": 11,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 0.9343697601908615
       },
       {
         "rank": 12,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.8409327841717753
       },
       {
         "rank": 13,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.7619678505369364
       },
       {
         "rank": 14,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
         "score": 0.7619678505369364
       },
       {
         "rank": 15,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 0.7619678505369364
@@ -4943,105 +4958,105 @@
     "latency_rel_8k": [
       {
         "rank": 1,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 1
       },
       {
         "rank": 2,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
         "think": "think",
         "score": 1
       },
       {
         "rank": 3,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 1
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.921443736730361
       },
       {
         "rank": 5,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
         "think": "think",
         "score": 0.921443736730361
       },
       {
         "rank": 6,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 0.921443736730361
       },
       {
         "rank": 7,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.9186573934079226
       },
       {
         "rank": 8,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
         "think": "think",
         "score": 0.9186573934079226
       },
       {
         "rank": 9,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 0.9186573934079226
       },
       {
         "rank": 10,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.9123123123123124
       },
       {
         "rank": 11,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
         "score": 0.9123123123123124
       },
       {
         "rank": 12,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 0.9123123123123124
       },
       {
         "rank": 13,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.8512188288035865
       },
       {
         "rank": 14,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
         "score": 0.8512188288035865
       },
       {
         "rank": 15,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 0.8512188288035865
@@ -5050,105 +5065,105 @@
     "vram_free_at_maxctx_mib": [
       {
         "rank": 1,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 4077
       },
       {
         "rank": 2,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
         "think": "think",
         "score": 4077
       },
       {
         "rank": 3,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 4077
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 3877
       },
       {
         "rank": 5,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
         "think": "think",
         "score": 3877
       },
       {
         "rank": 6,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 3877
       },
       {
         "rank": 7,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 1786
       },
       {
         "rank": 8,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
         "think": "think",
         "score": 1786
       },
       {
         "rank": 9,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 1786
       },
       {
         "rank": 10,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 1685
       },
       {
         "rank": 11,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
         "score": 1685
       },
       {
         "rank": 12,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 1685
       },
       {
         "rank": 13,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 601
       },
       {
         "rank": 14,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
         "score": 601
       },
       {
         "rank": 15,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 601
@@ -5159,105 +5174,105 @@
     "parallel_agg_tok_s_8slots": [
       {
         "rank": 1,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 310.2
       },
       {
         "rank": 2,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
         "think": "think",
         "score": 310.2
       },
       {
         "rank": 3,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 310.2
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 201.5
       },
       {
         "rank": 5,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
         "score": 201.5
       },
       {
         "rank": 6,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 201.5
       },
       {
         "rank": 7,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 188.3
       },
       {
         "rank": 8,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
         "think": "think",
         "score": 188.3
       },
       {
         "rank": 9,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 188.3
       },
       {
         "rank": 10,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 186.5
       },
       {
         "rank": 11,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
         "think": "think",
         "score": 186.5
       },
       {
         "rank": 12,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 186.5
       },
       {
         "rank": 13,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 152.5
       },
       {
         "rank": 14,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
         "score": 152.5
       },
       {
         "rank": 15,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 152.5
@@ -5266,105 +5281,105 @@
     "parallel_speedup": [
       {
         "rank": 1,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 2.84
       },
       {
         "rank": 2,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
         "think": "think",
         "score": 2.84
       },
       {
         "rank": 3,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 2.84
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 1.7
       },
       {
         "rank": 5,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
         "score": 1.7
       },
       {
         "rank": 6,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 1.7
       },
       {
         "rank": 7,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 1.67
       },
       {
         "rank": 8,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
         "think": "think",
         "score": 1.67
       },
       {
         "rank": 9,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 1.67
       },
       {
         "rank": 10,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 1.55
       },
       {
         "rank": 11,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
         "think": "think",
         "score": 1.55
       },
       {
         "rank": 12,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 1.55
       },
       {
         "rank": 13,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 1.01
       },
       {
         "rank": 14,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
         "score": 1.01
       },
       {
         "rank": 15,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 1.01
@@ -5373,105 +5388,105 @@
     "quality_retention_pct": [
       {
         "rank": 1,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
         "rank": 2,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
         "rank": 3,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 5,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
         "rank": 6,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
         "rank": 7,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 83
       },
       {
         "rank": 8,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
         "think": "think",
         "score": 83
       },
       {
         "rank": 9,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 83
       },
       {
         "rank": 10,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 80
       },
       {
         "rank": 11,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
         "score": 80
       },
       {
         "rank": 12,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 80
       },
       {
         "rank": 13,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 67
       },
       {
         "rank": 14,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
         "think": "think",
         "score": 67
       },
       {
         "rank": 15,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 67
@@ -5480,105 +5495,105 @@
     "struct_output_pct": [
       {
         "rank": 1,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
         "rank": 2,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
         "rank": 3,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
         "rank": 5,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
         "rank": 6,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 7,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 8,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 9,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 10,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 11,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
         "rank": 12,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
         "rank": 13,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
         "rank": 14,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
         "rank": 15,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
@@ -5587,105 +5602,105 @@
     "instruction_following_pct": [
       {
         "rank": 1,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
         "rank": 2,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
         "rank": 3,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 5,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
         "rank": 6,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
         "rank": 7,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 96.4
       },
       {
         "rank": 8,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 96.4
       },
       {
         "rank": 9,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 96.4
       },
       {
         "rank": 10,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
         "score": 96.4
       },
       {
         "rank": 11,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
         "think": "think",
         "score": 96.4
       },
       {
         "rank": 12,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
         "score": 96.4
       },
       {
         "rank": 13,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 96.4
       },
       {
         "rank": 14,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 96.4
       },
       {
         "rank": 15,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 96.4
@@ -5694,105 +5709,105 @@
     "agentic_loop_pct": [
       {
         "rank": 1,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
         "rank": 2,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
         "rank": 3,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
         "rank": 5,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 6,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 7,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 8,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
         "rank": 9,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
         "rank": 10,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
         "rank": 11,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
         "rank": 12,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
         "rank": 13,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 80
       },
       {
         "rank": 14,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
         "score": 80
       },
       {
         "rank": 15,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 80
@@ -5801,105 +5816,105 @@
     "prefix_cache_speedup": [
       {
         "rank": 1,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 187.42
       },
       {
         "rank": 2,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
         "think": "think",
         "score": 187.42
       },
       {
         "rank": 3,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 187.42
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 180.75
       },
       {
         "rank": 5,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
         "score": 180.75
       },
       {
         "rank": 6,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 180.75
       },
       {
         "rank": 7,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 177.79
       },
       {
         "rank": 8,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
         "think": "think",
         "score": 177.79
       },
       {
         "rank": 9,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 177.79
       },
       {
         "rank": 10,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 104.99
       },
       {
         "rank": 11,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
         "think": "think",
         "score": 104.99
       },
       {
         "rank": 12,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 104.99
       },
       {
         "rank": 13,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 89.86
       },
       {
         "rank": 14,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
         "score": 89.86
       },
       {
         "rank": 15,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 89.86
@@ -5908,105 +5923,105 @@
     "power_eff_tok_s_per_w": [
       {
         "rank": 1,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.46
       },
       {
         "rank": 2,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
         "score": 0.46
       },
       {
         "rank": 3,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
         "score": 0.46
       },
       {
         "rank": 4,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.386
       },
       {
         "rank": 5,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
         "score": 0.386
       },
       {
         "rank": 6,
-        "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 0.386
       },
       {
         "rank": 7,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.384
       },
       {
         "rank": 8,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think [think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
         "think": "think",
         "score": 0.384
       },
       {
         "rank": 9,
-        "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
+        "label": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 0.384
       },
       {
         "rank": 10,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [no_think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [no_think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.377
       },
       {
         "rank": 11,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [think]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--think [think]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--think",
         "think": "think",
         "score": 0.377
       },
       {
         "rank": 12,
-        "label": "Gemma4-26B QAT q4_0 · KV q4_0 [best-of]",
+        "label": "gemma-4-26B_q4_0-it--kvq4_0--nothi [best-of]",
         "model": "gemma-4-26B_q4_0-it--kvq4_0--bestof",
         "think": "best-of",
         "score": 0.377
       },
       {
         "rank": 13,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 0.371
       },
       {
         "rank": 14,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think [think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
         "think": "think",
         "score": 0.371
       },
       {
         "rank": 15,
-        "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
+        "label": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 0.371
