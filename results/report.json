@@ -1,8 +1,9 @@
 {
-  "generated": "2026-06-23T21:10:18.334Z",
+  "generated": "2026-06-24T04:42:14.197Z",
   "sources": [
     "rose-rx7900xt-vulkan-20260623-143954 (suite/complete)",
-    "rose-rx7900xt-vulkan-20260623-215944 (suite/complete)"
+    "rose-rx7900xt-vulkan-20260623-215944 (suite/complete)",
+    "rose-rx7900xt-vulkan-20260624-062516-qualitydecay (quality-decay/complete)"
   ],
   "environment": {
     "host": "rose",
@@ -29,6 +30,23 @@
   "provenance": {
     "consistent": true,
     "environments": [
+      {
+        "runner": "llama.cpp",
+        "backend": "vulkan",
+        "gpu": "RX 7900 XT",
+        "server_flags": {
+          "flash_attn": "on",
+          "cache_type_k": null,
+          "cache_type_v": null,
+          "ngl": 99,
+          "np": 1
+        },
+        "defaults_extra_flags": {
+          "batch-size": 2048,
+          "ubatch-size": 2048
+        },
+        "start_server_excerpt": "nohup ${vk_env}$BIN $model_args -c $ctx -ngl $ngl $ctk_flag -fa on -np 1 --no-mmap --mlock --prio 2 --jinja $rf_flag --host 0.0.0.0 --port $port $extra_flags > $LOG 2>&1 & echo \\$!"
+      },
       {
         "runner": "llama.cpp",
         "backend": "vulkan",
@@ -121,7 +139,7 @@
       "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
       "think": "no_think",
       "capability": {
-        "score": 0.5265197847210231,
+        "score": 0.546459724660963,
         "comprehension": 0.86375,
         "coding": 0.7619678505369364,
         "coding_competence": 0.9880288518373136,
@@ -210,12 +228,12 @@
         ]
       },
       "quality_decay": {
-        "base_acc": 66.7,
-        "retention_pct": 100,
+        "base_acc": 83.3,
+        "retention_pct": 80,
         "curve": [
           {
             "depth": 0,
-            "acc": 66.7
+            "acc": 83.3
           },
           {
             "depth": 16384,
@@ -236,11 +254,11 @@
         ]
       },
       "ttft_ms": {
-        "ref": 25173,
+        "ref": 25287,
         "curve": [
           {
             "depth": 0,
-            "ms": 657
+            "ms": 687
           },
           {
             "depth": 2048,
@@ -252,19 +270,19 @@
           },
           {
             "depth": 16384,
-            "ms": 8257
+            "ms": 8335
           },
           {
             "depth": 32768,
-            "ms": 25173
+            "ms": 25287
           },
           {
             "depth": 65536,
-            "ms": 88952
+            "ms": 89470
           },
           {
             "depth": 98304,
-            "ms": 192021
+            "ms": 192413
           }
         ]
       },
@@ -287,7 +305,7 @@
         "instruction_following_pct": 96.4
       },
       "power_eff_tok_s_per_w": 0.46,
-      "weighted_score": 52.7
+      "weighted_score": 54.6
     },
     {
       "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
@@ -410,11 +428,11 @@
         ]
       },
       "ttft_ms": {
-        "ref": 14419,
+        "ref": 14372,
         "curve": [
           {
             "depth": 0,
-            "ms": 603
+            "ms": 600
           },
           {
             "depth": 2048,
@@ -426,19 +444,19 @@
           },
           {
             "depth": 16384,
-            "ms": 6072
+            "ms": 6057
           },
           {
             "depth": 32768,
-            "ms": 14419
+            "ms": 14372
           },
           {
             "depth": 65536,
-            "ms": 38345
+            "ms": 38256
           },
           {
             "depth": 98304,
-            "ms": 71672
+            "ms": 71579
           }
         ]
       },
@@ -584,11 +602,11 @@
         ]
       },
       "ttft_ms": {
-        "ref": 15964,
+        "ref": 15966,
         "curve": [
           {
             "depth": 0,
-            "ms": 575
+            "ms": 576
           },
           {
             "depth": 2048,
@@ -600,19 +618,19 @@
           },
           {
             "depth": 16384,
-            "ms": 6736
+            "ms": 6751
           },
           {
             "depth": 32768,
-            "ms": 15964
+            "ms": 15966
           },
           {
             "depth": 65536,
-            "ms": 42533
+            "ms": 42547
           },
           {
             "depth": 98304,
-            "ms": 79840
+            "ms": 79768
           }
         ]
       },
@@ -758,11 +776,11 @@
         ]
       },
       "ttft_ms": {
-        "ref": 15882,
+        "ref": 15886,
         "curve": [
           {
             "depth": 0,
-            "ms": 590
+            "ms": 569
           },
           {
             "depth": 2048,
@@ -774,19 +792,19 @@
           },
           {
             "depth": 16384,
-            "ms": 6695
+            "ms": 6691
           },
           {
             "depth": 32768,
-            "ms": 15882
+            "ms": 15886
           },
           {
             "depth": 65536,
-            "ms": 42377
+            "ms": 42399
           },
           {
             "depth": 98304,
-            "ms": 79577
+            "ms": 79549
           }
         ]
       },
@@ -932,11 +950,11 @@
         ]
       },
       "ttft_ms": {
-        "ref": 15860,
+        "ref": 15886,
         "curve": [
           {
             "depth": 0,
-            "ms": 597
+            "ms": 591
           },
           {
             "depth": 2048,
@@ -948,19 +966,19 @@
           },
           {
             "depth": 16384,
-            "ms": 6674
+            "ms": 6687
           },
           {
             "depth": 32768,
-            "ms": 15860
+            "ms": 15886
           },
           {
             "depth": 65536,
-            "ms": 42348
+            "ms": 42366
           },
           {
             "depth": 98304,
-            "ms": 79524
+            "ms": 79565
           }
         ]
       },
@@ -991,7 +1009,7 @@
       "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
       "think": "think",
       "capability": {
-        "score": 0.549663288234665,
+        "score": 0.569603228174605,
         "comprehension": 0.9017166666666667,
         "coding": 0.7619678505369364,
         "coding_competence": 0.9880288518373136,
@@ -1080,12 +1098,12 @@
         ]
       },
       "quality_decay": {
-        "base_acc": 66.7,
-        "retention_pct": 100,
+        "base_acc": 83.3,
+        "retention_pct": 80,
         "curve": [
           {
             "depth": 0,
-            "acc": 66.7
+            "acc": 83.3
           },
           {
             "depth": 16384,
@@ -1106,11 +1124,11 @@
         ]
       },
       "ttft_ms": {
-        "ref": 25173,
+        "ref": 25287,
         "curve": [
           {
             "depth": 0,
-            "ms": 657
+            "ms": 687
           },
           {
             "depth": 2048,
@@ -1122,19 +1140,19 @@
           },
           {
             "depth": 16384,
-            "ms": 8257
+            "ms": 8335
           },
           {
             "depth": 32768,
-            "ms": 25173
+            "ms": 25287
           },
           {
             "depth": 65536,
-            "ms": 88952
+            "ms": 89470
           },
           {
             "depth": 98304,
-            "ms": 192021
+            "ms": 192413
           }
         ]
       },
@@ -1157,7 +1175,7 @@
         "instruction_following_pct": 96.4
       },
       "power_eff_tok_s_per_w": 0.46,
-      "weighted_score": 55
+      "weighted_score": 57
     },
     {
       "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
@@ -1280,11 +1298,11 @@
         ]
       },
       "ttft_ms": {
-        "ref": 14419,
+        "ref": 14372,
         "curve": [
           {
             "depth": 0,
-            "ms": 603
+            "ms": 600
           },
           {
             "depth": 2048,
@@ -1296,19 +1314,19 @@
           },
           {
             "depth": 16384,
-            "ms": 6072
+            "ms": 6057
           },
           {
             "depth": 32768,
-            "ms": 14419
+            "ms": 14372
           },
           {
             "depth": 65536,
-            "ms": 38345
+            "ms": 38256
           },
           {
             "depth": 98304,
-            "ms": 71672
+            "ms": 71579
           }
         ]
       },
@@ -1454,11 +1472,11 @@
         ]
       },
       "ttft_ms": {
-        "ref": 15964,
+        "ref": 15966,
         "curve": [
           {
             "depth": 0,
-            "ms": 575
+            "ms": 576
           },
           {
             "depth": 2048,
@@ -1470,19 +1488,19 @@
           },
           {
             "depth": 16384,
-            "ms": 6736
+            "ms": 6751
           },
           {
             "depth": 32768,
-            "ms": 15964
+            "ms": 15966
           },
           {
             "depth": 65536,
-            "ms": 42533
+            "ms": 42547
           },
           {
             "depth": 98304,
-            "ms": 79840
+            "ms": 79768
           }
         ]
       },
@@ -1628,11 +1646,11 @@
         ]
       },
       "ttft_ms": {
-        "ref": 15882,
+        "ref": 15886,
         "curve": [
           {
             "depth": 0,
-            "ms": 590
+            "ms": 569
           },
           {
             "depth": 2048,
@@ -1644,19 +1662,19 @@
           },
           {
             "depth": 16384,
-            "ms": 6695
+            "ms": 6691
           },
           {
             "depth": 32768,
-            "ms": 15882
+            "ms": 15886
           },
           {
             "depth": 65536,
-            "ms": 42377
+            "ms": 42399
           },
           {
             "depth": 98304,
-            "ms": 79577
+            "ms": 79549
           }
         ]
       },
@@ -1802,11 +1820,11 @@
         ]
       },
       "ttft_ms": {
-        "ref": 15860,
+        "ref": 15886,
         "curve": [
           {
             "depth": 0,
-            "ms": 597
+            "ms": 591
           },
           {
             "depth": 2048,
@@ -1818,19 +1836,19 @@
           },
           {
             "depth": 16384,
-            "ms": 6674
+            "ms": 6687
           },
           {
             "depth": 32768,
-            "ms": 15860
+            "ms": 15886
           },
           {
             "depth": 65536,
-            "ms": 42348
+            "ms": 42366
           },
           {
             "depth": 98304,
-            "ms": 79524
+            "ms": 79565
           }
         ]
       },
@@ -1861,7 +1879,7 @@
       "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
       "think": "best-of",
       "capability": {
-        "score": 0.5567749881730097,
+        "score": 0.5767149281129497,
         "comprehension": 0.9133833333333334,
         "coding": 0.7619678505369364,
         "coding_competence": 0.9880288518373136,
@@ -1957,12 +1975,12 @@
         ]
       },
       "quality_decay": {
-        "base_acc": 66.7,
-        "retention_pct": 100,
+        "base_acc": 83.3,
+        "retention_pct": 80,
         "curve": [
           {
             "depth": 0,
-            "acc": 66.7
+            "acc": 83.3
           },
           {
             "depth": 16384,
@@ -1983,11 +2001,11 @@
         ]
       },
       "ttft_ms": {
-        "ref": 25173,
+        "ref": 25287,
         "curve": [
           {
             "depth": 0,
-            "ms": 657
+            "ms": 687
           },
           {
             "depth": 2048,
@@ -1999,19 +2017,19 @@
           },
           {
             "depth": 16384,
-            "ms": 8257
+            "ms": 8335
           },
           {
             "depth": 32768,
-            "ms": 25173
+            "ms": 25287
           },
           {
             "depth": 65536,
-            "ms": 88952
+            "ms": 89470
           },
           {
             "depth": 98304,
-            "ms": 192021
+            "ms": 192413
           }
         ]
       },
@@ -2034,7 +2052,7 @@
         "instruction_following_pct": 96.4
       },
       "power_eff_tok_s_per_w": 0.46,
-      "weighted_score": 55.7
+      "weighted_score": 57.7
     },
     {
       "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
@@ -2164,11 +2182,11 @@
         ]
       },
       "ttft_ms": {
-        "ref": 14419,
+        "ref": 14372,
         "curve": [
           {
             "depth": 0,
-            "ms": 603
+            "ms": 600
           },
           {
             "depth": 2048,
@@ -2180,19 +2198,19 @@
           },
           {
             "depth": 16384,
-            "ms": 6072
+            "ms": 6057
           },
           {
             "depth": 32768,
-            "ms": 14419
+            "ms": 14372
           },
           {
             "depth": 65536,
-            "ms": 38345
+            "ms": 38256
           },
           {
             "depth": 98304,
-            "ms": 71672
+            "ms": 71579
           }
         ]
       },
@@ -2345,11 +2363,11 @@
         ]
       },
       "ttft_ms": {
-        "ref": 15964,
+        "ref": 15966,
         "curve": [
           {
             "depth": 0,
-            "ms": 575
+            "ms": 576
           },
           {
             "depth": 2048,
@@ -2361,19 +2379,19 @@
           },
           {
             "depth": 16384,
-            "ms": 6736
+            "ms": 6751
           },
           {
             "depth": 32768,
-            "ms": 15964
+            "ms": 15966
           },
           {
             "depth": 65536,
-            "ms": 42533
+            "ms": 42547
           },
           {
             "depth": 98304,
-            "ms": 79840
+            "ms": 79768
           }
         ]
       },
@@ -2526,11 +2544,11 @@
         ]
       },
       "ttft_ms": {
-        "ref": 15882,
+        "ref": 15886,
         "curve": [
           {
             "depth": 0,
-            "ms": 590
+            "ms": 569
           },
           {
             "depth": 2048,
@@ -2542,19 +2560,19 @@
           },
           {
             "depth": 16384,
-            "ms": 6695
+            "ms": 6691
           },
           {
             "depth": 32768,
-            "ms": 15882
+            "ms": 15886
           },
           {
             "depth": 65536,
-            "ms": 42377
+            "ms": 42399
           },
           {
             "depth": 98304,
-            "ms": 79577
+            "ms": 79549
           }
         ]
       },
@@ -2707,11 +2725,11 @@
         ]
       },
       "ttft_ms": {
-        "ref": 15860,
+        "ref": 15886,
         "curve": [
           {
             "depth": 0,
-            "ms": 597
+            "ms": 591
           },
           {
             "depth": 2048,
@@ -2723,19 +2741,19 @@
           },
           {
             "depth": 16384,
-            "ms": 6674
+            "ms": 6687
           },
           {
             "depth": 32768,
-            "ms": 15860
+            "ms": 15886
           },
           {
             "depth": 65536,
-            "ms": 42348
+            "ms": 42366
           },
           {
             "depth": 98304,
-            "ms": 79524
+            "ms": 79565
           }
         ]
       },
@@ -2851,21 +2869,21 @@
       "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
       "think": "best-of",
-      "weighted_score": 55.7
+      "weighted_score": 57.7
     },
     {
       "rank": 14,
       "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
       "think": "think",
-      "weighted_score": 55
+      "weighted_score": 57
     },
     {
       "rank": 15,
       "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
       "think": "no_think",
-      "weighted_score": 52.7
+      "weighted_score": 54.6
     }
   ],
   "fleet": [
@@ -2873,7 +2891,7 @@
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
       "think": "no_think",
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
-      "capability": 0.5265197847210231,
+      "capability": 0.546459724660963,
       "main_ctx": 102400,
       "weights_mib": 18610.8,
       "worker_ctx": 65536,
@@ -2884,7 +2902,7 @@
       "slots_norm": 0.5,
       "capacity_norm": 0.8803967327887982,
       "latency_norm": 0.8512188288035865,
-      "fleet_suitability": 0.13005845947357628,
+      "fleet_suitability": 0.14009593477493246,
       "needs_pargen": false,
       "reason": null
     },
@@ -2968,7 +2986,7 @@
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
       "think": "think",
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
-      "capability": 0.549663288234665,
+      "capability": 0.569603228174605,
       "main_ctx": 102400,
       "weights_mib": 18610.8,
       "worker_ctx": 65536,
@@ -2979,7 +2997,7 @@
       "slots_norm": 0.5,
       "capacity_norm": 0.8803967327887982,
       "latency_norm": 0.8512188288035865,
-      "fleet_suitability": 0.1417433453825217,
+      "fleet_suitability": 0.1522138249358208,
       "needs_pargen": false,
       "reason": null
     },
@@ -3063,7 +3081,7 @@
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
       "think": "best-of",
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
-      "capability": 0.5567749881730097,
+      "capability": 0.5767149281129497,
       "main_ctx": 102400,
       "weights_mib": 18610.8,
       "worker_ctx": 65536,
@@ -3074,7 +3092,7 @@
       "slots_norm": 0.5,
       "capacity_norm": 0.8803967327887982,
       "latency_norm": 0.8512188288035865,
-      "fleet_suitability": 0.14543490452959207,
+      "fleet_suitability": 0.1560384407011353,
       "needs_pargen": false,
       "reason": null
     },
@@ -3257,7 +3275,7 @@
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
       "think": "best-of",
-      "fleet_suitability": 0.14543490452959207,
+      "fleet_suitability": 0.1560384407011353,
       "slots": 1
     },
     {
@@ -3265,7 +3283,7 @@
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
       "think": "think",
-      "fleet_suitability": 0.1417433453825217,
+      "fleet_suitability": 0.1522138249358208,
       "slots": 1
     },
     {
@@ -3273,7 +3291,7 @@
       "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
       "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
       "think": "no_think",
-      "fleet_suitability": 0.13005845947357628,
+      "fleet_suitability": 0.14009593477493246,
       "slots": 1
     }
   ],
@@ -4691,21 +4709,21 @@
         "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
         "think": "best-of",
-        "score": 0.5567749881730097
+        "score": 0.5767149281129497
       },
       {
         "rank": 14,
         "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
         "think": "think",
-        "score": 0.549663288234665
+        "score": 0.569603228174605
       },
       {
         "rank": 15,
         "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
         "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
         "think": "no_think",
-        "score": 0.5265197847210231
+        "score": 0.546459724660963
       }
     ],
     "comprehension": [
@@ -5355,87 +5373,87 @@
     "quality_retention_pct": [
       {
         "rank": 1,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
-        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
-        "think": "no_think",
-        "score": 100
-      },
-      {
-        "rank": 2,
         "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [no_think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
-        "rank": 3,
+        "rank": 2,
         "label": "Gemma4-26B Q4_K_M · KV q4_0 [no_think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
         "think": "no_think",
         "score": 100
       },
       {
-        "rank": 4,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
-        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
-        "think": "think",
-        "score": 100
-      },
-      {
-        "rank": 5,
+        "rank": 3,
         "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [think]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
-        "rank": 6,
+        "rank": 4,
         "label": "Gemma4-26B Q4_K_M · KV q4_0 [think]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
         "think": "think",
         "score": 100
       },
       {
-        "rank": 7,
-        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
-        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
-        "think": "best-of",
-        "score": 100
-      },
-      {
-        "rank": 8,
+        "rank": 5,
         "label": "Qwen3.6-35B APEX I-Compact · KV q4_0 [best-of]",
         "model": "Qwen3.6-35B-A3B-APEX-I-Compact--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
-        "rank": 9,
+        "rank": 6,
         "label": "Gemma4-26B Q4_K_M · KV q4_0 [best-of]",
         "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
         "think": "best-of",
         "score": 100
       },
       {
-        "rank": 10,
+        "rank": 7,
         "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [no_think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--nothi",
         "think": "no_think",
         "score": 83
       },
       {
-        "rank": 11,
+        "rank": 8,
         "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [think]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--think",
         "think": "think",
         "score": 83
       },
       {
-        "rank": 12,
+        "rank": 9,
         "label": "Gemma4-26B QAT UD-Q4_K_XL · KV q4_0 [best-of]",
         "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL--kvq4_0--bestof",
         "think": "best-of",
         "score": 83
+      },
+      {
+        "rank": 10,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [no_think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
+        "think": "no_think",
+        "score": 80
+      },
+      {
+        "rank": 11,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [think]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
+        "think": "think",
+        "score": 80
+      },
+      {
+        "rank": 12,
+        "label": "Qwen3.6-35B IQ4_XS · KV q4_0 [best-of]",
+        "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
+        "think": "best-of",
+        "score": 80
       },
       {
         "rank": 13,
