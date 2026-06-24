@@ -269,7 +269,9 @@ function recompute(){
   const ranking=scoreGroups(DATA.models, dials);
   CAPRANK={}; ranking.forEach((m,i)=>{ if(i<5) CAPRANK[mkey(m)]=i+1; });
   const fleetRes=computeFleet(DATA.models, dials);
-  renderCap(ranking); renderFleet(fleetRes); renderCtx(); renderBreakdown(); renderRequired(dials);
+  const excl=new Set(fleetRes.fleet.filter(p=>p.n_workers===0).map(p=>mkey(p)));
+  const keep=(m)=>!excl.has(mkey(m));
+  renderCap(ranking.filter(keep)); renderFleet(fleetRes); renderCtx(DATA.models.filter(keep)); renderBreakdown(DATA.models.filter(keep)); renderRequired(dials);
 }
 
 const CAP_HEADERS=[
@@ -341,8 +343,8 @@ function renderFleet(res){
   ], rows, sorted.map(topClass));
 }
 
-function renderCtx(){
-  const list=DATA.models.slice().filter(m=>m.maxctx).sort((a,b)=>(b.maxctx||0)-(a.maxctx||0));
+function renderCtx(models){
+  const list=models.slice().filter(m=>m.maxctx).sort((a,b)=>(b.maxctx||0)-(a.maxctx||0));
   const rows=list.map(m=>[
     html.raw(stars(CAPRANK[mkey(m)])),
     m.label,
@@ -384,8 +386,8 @@ function rfBadge(m,k){
   const t=src==='think';
   return '<sup class="rf'+(t?' rf-t':'')+'" title="routed from '+(t?'think':'no-think')+'">'+(t?'ᵀ':'ᴺ')+'</sup>';
 }
-function renderBreakdown(){
-  const list=DATA.models.slice().sort((a,b)=>(b.capability==null?-1:b.capability)-(a.capability==null?-1:a.capability));
+function renderBreakdown(models){
+  const list=models.slice().sort((a,b)=>(b.capability==null?-1:b.capability)-(a.capability==null?-1:a.capability));
   const rows=list.map(m=>[
     html.raw(stars(CAPRANK[mkey(m)])),
     m.label,
