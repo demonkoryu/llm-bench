@@ -267,11 +267,12 @@ function renderEnv(){
 function recompute(){
   const dials=getDials();
   const ranking=scoreGroups(DATA.models, dials);
-  CAPRANK={}; ranking.forEach((m,i)=>{ if(i<5) CAPRANK[mkey(m)]=i+1; });
   const fleetRes=computeFleet(DATA.models, dials);
   const excl=new Set(fleetRes.fleet.filter(p=>p.n_workers===0).map(p=>mkey(p)));
   const keep=(m)=>!excl.has(mkey(m));
-  renderCap(ranking.filter(keep)); renderFleet(fleetRes); renderCtx(DATA.models.filter(keep)); renderBreakdown(DATA.models.filter(keep)); renderRequired(dials);
+  const filtered=ranking.filter(keep);
+  CAPRANK={}; filtered.forEach((m,i)=>{ if(i<5) CAPRANK[mkey(m)]=i+1; });
+  renderCap(filtered); renderFleet(fleetRes); renderCtx(DATA.models.filter(keep)); renderBreakdown(DATA.models.filter(keep)); renderRequired(dials);
 }
 
 const CAP_HEADERS=[
