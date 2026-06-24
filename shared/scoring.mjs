@@ -835,7 +835,9 @@ export function computeFleet(models, dials = DEFAULT_DIALS) {
       p.fleet_suitability = p.capability ** (f.w_cap ?? 2) * p.ctx_norm ** (f.w_ctx ?? 1) * p.slots_norm ** (f.w_slots ?? 1) * thruTerm;
    }
 
-   const ranking = [...per].filter((p) => p.fleet_suitability != null).sort((a, b) => b.fleet_suitability - a.fleet_suitability);
+   const ranking = [...per]
+      .filter((p) => p.fleet_suitability != null && p.n_workers > 0)
+      .sort((a, b) => b.fleet_suitability - a.fleet_suitability);
    return { fleet: per, fleetRanking: ranking, bestAgg, bestSlots, minTtft };
 }
 

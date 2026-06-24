@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-24T07:33:43.554Z",
+  "generated": "2026-06-24T07:46:46.995Z",
   "sources": [
     "rose-rx7900xt-vulkan-20260623-143954 (suite/complete)",
     "rose-rx7900xt-vulkan-20260623-215944 (suite/complete)",
@@ -3260,54 +3260,6 @@
       "think": "no_think",
       "fleet_suitability": 0.42382811243627133,
       "slots": 4
-    },
-    {
-      "rank": 10,
-      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [best-of]",
-      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--bestof",
-      "think": "best-of",
-      "fleet_suitability": 0.32065402014255867,
-      "slots": 1
-    },
-    {
-      "rank": 11,
-      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think [think]",
-      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--think",
-      "think": "think",
-      "fleet_suitability": 0.31817526563265325,
-      "slots": 1
-    },
-    {
-      "rank": 12,
-      "label": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi [no_think]",
-      "model": "gemma-4-26B-A4B-it-UD-Q4_K_M--kvq4_0--nothi",
-      "think": "no_think",
-      "fleet_suitability": 0.29014887731237693,
-      "slots": 1
-    },
-    {
-      "rank": 13,
-      "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [best-of]",
-      "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--bestof",
-      "think": "best-of",
-      "fleet_suitability": 0.15871636311547246,
-      "slots": 1
-    },
-    {
-      "rank": 14,
-      "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think [think]",
-      "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--think",
-      "think": "think",
-      "fleet_suitability": 0.1549460760297828,
-      "slots": 1
-    },
-    {
-      "rank": 15,
-      "label": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi [no_think]",
-      "model": "Qwen3.6-35B-A3B-UD-IQ4_XS--kvq4_0--nothi",
-      "think": "no_think",
-      "fleet_suitability": 0.14072755210134236,
-      "slots": 1
     }
   ],
   "category_rankings": {
