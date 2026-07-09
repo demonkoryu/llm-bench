@@ -17,7 +17,7 @@ function codingGrade(rows) {
   for (const [bench, w] of Object.entries(CODING_WEIGHTS)) {
     const sub = rows.filter((r) => r.bench === bench);
     if (!sub.length) continue;
-    const pass = pickMean(sub, 'coding_pass_at_1');
+    const pass = ratio(sub, 'coding_pass_at_1', 'coding_total'); // count → pass@1 rate
     const rate = ratio(sub, 'coding_tests_passed', 'coding_tests_total');
     const g = 0.4 * (pass ?? 0) + 0.6 * (rate ?? pass ?? 0);
     acc += w * g; wsum += w;

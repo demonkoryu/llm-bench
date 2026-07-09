@@ -1,0 +1,344 @@
+<title>Froggeric chat-template A/B — Qwen3.6</title>
+<style>
+  :root{
+    --bg:#eef1f3; --panel:#ffffff; --panel-2:#f6f8f9; --ink:#161a1d; --ink-soft:#4a555c;
+    --ink-faint:#7c878e; --line:#dde3e7; --line-strong:#c7d0d6;
+    --accent:#0f8f82; --accent-ink:#0b6f65;
+    --win:#2f8f54; --win-bg:#e6f3ea; --loss:#c53f52; --loss-bg:#fbe8ec; --tie:#8a949b; --tie-bg:#eef1f3;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#0e1215; --panel:#161b1e; --panel-2:#1b2226; --ink:#e7ebed; --ink-soft:#a7b1b7;
+      --ink-faint:#727d83; --line:#262f34; --line-strong:#36424a;
+      --accent:#2bd0be; --accent-ink:#5fe0d2;
+      --win:#54c17c; --win-bg:#16281d; --loss:#e5697b; --loss-bg:#2c161b; --tie:#6f7a81; --tie-bg:#1c2429;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#eef1f3; --panel:#ffffff; --panel-2:#f6f8f9; --ink:#161a1d; --ink-soft:#4a555c;
+    --ink-faint:#7c878e; --line:#dde3e7; --line-strong:#c7d0d6;
+    --accent:#0f8f82; --accent-ink:#0b6f65;
+    --win:#2f8f54; --win-bg:#e6f3ea; --loss:#c53f52; --loss-bg:#fbe8ec; --tie:#8a949b; --tie-bg:#eef1f3;
+  }
+  :root[data-theme="dark"]{
+    --bg:#0e1215; --panel:#161b1e; --panel-2:#1b2226; --ink:#e7ebed; --ink-soft:#a7b1b7;
+    --ink-faint:#727d83; --line:#262f34; --line-strong:#36424a;
+    --accent:#2bd0be; --accent-ink:#5fe0d2;
+    --win:#54c17c; --win-bg:#16281d; --loss:#e5697b; --loss-bg:#2c161b; --tie:#6f7a81; --tie-bg:#1c2429;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1000px;margin:0 auto;padding:clamp(20px,4vw,56px) clamp(16px,4vw,32px) 64px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent-ink);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  h1{font-size:clamp(28px,5vw,44px);line-height:1.08;letter-spacing:-.02em;font-weight:680;
+    margin:.5em 0 .28em;text-wrap:balance;max-width:16ch}
+  .lede{font-size:clamp(16px,2.2vw,18px);color:var(--ink-soft);max-width:64ch;margin:0}
+  .lede b{color:var(--ink);font-weight:640}
+
+  /* verdict band */
+  .verdict{margin-top:32px;background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    padding:24px;display:grid;grid-template-columns:1.2fr 1fr;gap:24px}
+  @media(max-width:640px){.verdict{grid-template-columns:1fr}}
+  .verdict h2{margin:0;font-size:13px;font-family:var(--mono);text-transform:uppercase;
+    letter-spacing:.12em;color:var(--ink-faint);font-weight:600}
+  .headline{font-size:clamp(22px,3.4vw,30px);font-weight:660;letter-spacing:-.015em;margin:.35em 0 .2em;
+    line-height:1.12;text-wrap:balance}
+  .headline .accent{color:var(--accent-ink)}
+  .verdict p{margin:.3em 0 0;color:var(--ink-soft);font-size:15px}
+  .tally{display:flex;gap:10px;align-self:center}
+  .stat{flex:1;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:14px 12px;
+    text-align:center}
+  .stat .n{font-family:var(--mono);font-size:30px;font-weight:640;font-variant-numeric:tabular-nums;
+    line-height:1;letter-spacing:-.02em}
+  .stat .k{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--ink-faint);margin-top:7px}
+  .stat.win .n{color:var(--win)} .stat.loss .n{color:var(--loss)} .stat.tie .n{color:var(--tie)}
+
+  /* section heads */
+  .sec{margin-top:44px}
+  .sec-h{display:flex;align-items:baseline;gap:12px;margin-bottom:16px}
+  .sec-h h3{margin:0;font-size:19px;letter-spacing:-.01em;font-weight:660}
+  .sec-h .note{font-family:var(--mono);font-size:12px;color:var(--ink-faint)}
+
+  /* model cards */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .card-h{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;
+    align-items:center;gap:10px;background:var(--panel-2)}
+  .card-h .id{font-family:var(--mono);font-size:13.5px;font-weight:600;letter-spacing:-.01em}
+  .card-h .arch{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--ink-faint);border:1px solid var(--line-strong);border-radius:999px;padding:3px 9px;white-space:nowrap}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:9px 16px}
+  thead th{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--ink-faint);font-weight:600;border-bottom:1px solid var(--line)}
+  tbody tr+tr td{border-top:1px solid var(--line)}
+  .metric{color:var(--ink)}
+  .metric .think{color:var(--ink-faint);font-family:var(--mono);font-size:11px;margin-left:6px}
+  td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;color:var(--ink-soft)}
+  td.arrow{text-align:center;color:var(--ink-faint);font-family:var(--mono);width:20px}
+  td.delta{text-align:right;width:96px;padding-right:16px}
+  .chip{font-family:var(--mono);font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;
+    padding:2px 8px;border-radius:999px;display:inline-block;min-width:52px;text-align:center}
+  .chip.win{color:var(--win);background:var(--win-bg)}
+  .chip.loss{color:var(--loss);background:var(--loss-bg)}
+  .chip.tie{color:var(--tie);background:var(--tie-bg)}
+  tr.ceiling td.num,tr.ceiling .metric{color:var(--ink-faint)}
+
+  /* throughput */
+  .tp{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .tp table td.num{color:var(--ink)}
+  .barcell{min-width:180px}
+  .bar{height:7px;border-radius:4px;background:var(--panel-2);position:relative;overflow:hidden;
+    border:1px solid var(--line)}
+  .bar>i{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:4px;opacity:.85}
+
+  /* caveats */
+  .caveats{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 24px}
+  .caveats ul{margin:0;padding:0;list-style:none;display:grid;gap:14px}
+  .caveats li{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+  .caveats .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--accent-ink);border:1px solid var(--line-strong);border-radius:7px;padding:3px 8px;white-space:nowrap;
+    margin-top:2px}
+  .caveats b{font-weight:640}
+  .caveats p{margin:0;color:var(--ink-soft);font-size:14.5px}
+
+  /* claims — round 2 */
+  .claim-hi{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-bottom:18px}
+  .mcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+  .mcard .big{font-family:var(--mono);font-size:32px;font-weight:640;letter-spacing:-.02em;line-height:1;
+    display:flex;align-items:baseline;gap:8px}
+  .mcard .big .from{color:var(--ink-faint);text-decoration:line-through;font-size:24px}
+  .mcard .big .to{color:var(--win)}
+  .mcard.cost .big .to{color:var(--loss)}
+  .mcard .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--ink-faint);margin-top:12px}
+  .mcard .sub{font-size:13px;color:var(--ink-soft);margin-top:5px}
+  .claim-table{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .claim-table td.cl{color:var(--ink);font-weight:560;white-space:nowrap}
+  .claim-table td.ev{font-size:13px;color:var(--ink-soft)}
+  .pill{font-family:var(--mono);font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+  .pill.fixed{color:var(--win);background:var(--win-bg)}
+  .pill.bad{color:var(--loss);background:var(--loss-bg)}
+  .pill.neutral{color:var(--tie);background:var(--tie-bg)}
+  .pill.dir{color:var(--accent-ink);background:var(--tie-bg)}
+  /* method */
+  .method{margin-top:40px;border-top:1px solid var(--line);padding-top:22px;
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:18px 24px}
+  .method div{font-size:13px}
+  .method .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--ink-faint);margin-bottom:4px}
+  .method .v{color:var(--ink-soft);font-family:var(--mono);font-size:12.5px;line-height:1.5}
+  a{color:var(--accent-ink)}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <div class="eyebrow"><span class="dot"></span> llm-bench · chat-template A/B · 2026-07-09</div>
+  <h1>Froggeric fixed template vs. built-in</h1>
+  <p class="lede">Does <a href="https://huggingface.co/froggeric/Qwen-Fixed-Chat-Templates">froggeric's
+    <code>chat_template.jinja</code></a> (<b>qwen3.6-froggeric-v21.3</b>, XML tool format, as shipped)
+    beat the stock GGUF template for our Qwen3.6 fleet? Two rounds: <b>capability</b> (matched A/B on
+    short-context benches) and <b>the claims themselves</b> (multi-turn KV-cache, token footprint,
+    robustness — tested by rendering, deterministic).</p>
+
+  <div class="verdict">
+    <div>
+      <h2>Verdict</h2>
+      <div class="headline">Fixes <span class="accent">one</span> real thing — at a token cost.</div>
+      <p><b>Capability</b> (round 1): no material difference — small-N flips that cancel, built-in
+        already at ceiling. <b>Claims</b> (round 2): it genuinely fixes multi-turn KV-cache
+        destruction, but is ~24% heavier and its other advertised fixes don't reproduce as-shipped.</p>
+    </div>
+    <div class="tally">
+      <div class="stat win"><div class="n">5</div><div class="k">wins</div></div>
+      <div class="stat loss"><div class="n">3</div><div class="k">losses</div></div>
+      <div class="stat tie"><div class="n">32</div><div class="k">ties</div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-h"><h3>Round 2 · the claims</h3>
+      <span class="note">rendered via /apply-template · deterministic · identical across all 4 models</span></div>
+    <div class="claim-hi">
+      <div class="mcard">
+        <div class="big"><span class="from">171</span><span>→</span><span class="to">0</span></div>
+        <div class="lbl">KV tokens invalidated / 2 turns</div>
+        <div class="sub">Built-in strips <code>&lt;think&gt;</code> from past turns → prefix cache
+          destroyed each turn (grows with length). Froggeric preserves it → prefix stable.</div>
+      </div>
+      <div class="mcard cost">
+        <div class="big"><span class="to">+24%</span></div>
+        <div class="lbl">token footprint (think-history)</div>
+        <div class="sub">656 → 813 tok on a multi-turn convo; +25% on tool schemas. It <b>trades
+          tokens for cache stability</b> — the opposite of "reduces token waste".</div>
+      </div>
+      <div class="mcard">
+        <div class="big"><span class="to" style="color:var(--tie)">4 / 7</span></div>
+        <div class="lbl">claims that didn't reproduce</div>
+        <div class="sub">empty-think, mid-convo system crash, oversized-return truncation (opt-in,
+          default off), and agentic stall-recovery showed no difference as-shipped.</div>
+      </div>
+    </div>
+    <div class="claim-table"><table>
+      <thead><tr><th>claim</th><th>result</th><th>evidence</th></tr></thead>
+      <tbody id="claims"></tbody>
+    </table></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-h"><h3>Round 1 · capability, per-model</h3>
+      <span class="note">baseline → treatment · |Δ|&gt;0.5 counts</span></div>
+    <div class="grid" id="cards"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-h"><h3>Throughput</h3>
+      <span class="note">power_eff · tok/s under load · no "80% faster" signal</span></div>
+    <div class="tp"><table>
+      <thead><tr><th>Model</th><th style="text-align:right">baseline</th><th></th>
+        <th style="text-align:right">treatment</th><th class="barcell">relative</th></tr></thead>
+      <tbody id="tp"></tbody>
+    </table></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-h"><h3>What this run can&rsquo;t tell you</h3></div>
+    <div class="caveats"><ul>
+      <li><span class="tag">ceiling</span><p><b>The stock template already tops out.</b> Toolcalling
+        10/10, struct-output 100%, instruction-following unchanged on every model — there's almost no
+        headroom for a template to demonstrate a win.</p></li>
+      <li><span class="tag">scope</span><p><b>The headline claims live off-frame.</b> KV-cache
+        invalidation from mutated past turns, long-context token waste, and agentic stalls in long
+        loops are multi-turn / long-context behaviors. This suite is short-context and short-turn (by
+        request), so it neither exercises nor refutes them.</p></li>
+      <li><span class="tag">format</span><p><b>XML tool calls parsed cleanly.</b> Shipped as
+        Qwen3-Coder XML (<code>&lt;function=…&gt;</code>) rather than the models' native Hermes JSON —
+        llama.cpp still extracted structured <code>tool_calls</code>, so the format swap was not a
+        parser regression at these sizes.</p></li>
+      <li><span class="tag">power</span><p><b>Small N, greedy decode.</b> agentic = 5 tasks (one =
+        20%), reasoning = 12 cases (one = 8.3%). Treat every arrow below as directional, not
+        significant.</p></li>
+    </ul></div>
+  </div>
+
+  <div class="method">
+    <div><div class="k">Models</div><div class="v">Qwen3.6 only — 2× dense-hybrid 27B, 2× A3B MoE 35B</div></div>
+    <div><div class="k">Benches</div><div class="v">toolcalling · agentic-loop · struct-output · instruction-following · triage · reasoning</div></div>
+    <div><div class="k">Excluded</div><div class="v">maxctx · speed/quality-decay · kv-probe (long-context)</div></div>
+    <div><div class="k">Environment</div><div class="v">rose / RX 7900 XT · Vulkan · KV q5_0 · ctx 16384 · temp 0</div></div>
+    <div><div class="k">Arms</div><div class="v">built-in --jinja vs. --chat-template-file froggeric.jinja</div></div>
+    <div><div class="k">Reproduce</div><div class="v">results/ab-froggeric-manifest.tsv · node ab-compare.mjs</div></div>
+  </div>
+</div>
+
+<script>
+const claims = [
+  {c:"KV-cache prefix stability (P1)", s:"fixed", t:"fixed", ev:"built-in invalidates 171 tok / 2 turns; froggeric 0, prefix stays exact"},
+  {c:"Real cache reuse (P7)", s:"dir", t:"directional", ev:"froggeric reuses more prefix (627 vs 478 cached @turn 3); small at short length"},
+  {c:"Reduces token waste (P2)", s:"bad", t:"opposite", ev:"froggeric +25% (tools) / +24% (think-history) — heavier, not lighter"},
+  {c:"Empty-think poisoning (P3)", s:"neutral", t:"no diff", ev:"identical render — 66 tok, 1 think shell, both arms"},
+  {c:"Mid-convo system crash (P4)", s:"neutral", t:"not repro", ev:"built-in renders a mid-conversation system message fine, no error"},
+  {c:"Oversized tool return (P5)", s:"neutral", t:"off by default", ev:"both pass 160k chars → ~40k tok; truncation is opt-in (max_tool_response_chars=0)"},
+  {c:"Agentic stall / recovery (P6)", s:"neutral", t:"no diff", ev:"both 3/3: recover on transient & bad-arg, stop gracefully on permanent failure"},
+];
+document.getElementById("claims").innerHTML = claims.map(x=>
+  `<tr><td class="cl">${x.c}</td><td><span class="pill ${x.s}">${x.t}</span></td><td class="ev">${x.ev}</td></tr>`
+).join("");
+
+const DASH = "—";
+const models = [
+  {id:"Qwen3.6-27B-IQ4_XS", arch:"dense-hybrid", rows:[
+    {b:"toolcalling",t:"nothi",base:100,treat:100,raw:"10/10"},
+    {b:"toolcalling",t:"think",base:100,treat:100,raw:"10/10"},
+    {b:"agentic-loop",t:null,base:100,treat:100,raw:"5/5 tasks"},
+    {b:"struct-output",t:null,base:100,treat:100,raw:"parse+schema 100%"},
+    {b:"instruction",t:null,base:92.9,treat:92.9,raw:"26/28 checks"},
+    {b:"triage",t:"nothi",base:89.5,treat:87.7,raw:"halls 8→9"},
+    {b:"triage",t:"think",base:88.3,treat:88.3,raw:"halls 0"},
+    {b:"reasoning",t:"nothi",base:91.7,treat:91.7,raw:"11/12"},
+    {b:"reasoning",t:"think",base:91.7,treat:100,raw:"11/12 → 12/12"},
+  ]},
+  {id:"Qwen3.6-27B-UD-Q4_K_XL", arch:"dense-hybrid", rows:[
+    {b:"toolcalling",t:"nothi",base:100,treat:100,raw:"10/10"},
+    {b:"toolcalling",t:"think",base:100,treat:100,raw:"10/10"},
+    {b:"agentic-loop",t:null,base:100,treat:100,raw:"5/5 tasks"},
+    {b:"struct-output",t:null,base:100,treat:100,raw:"parse+schema 100%"},
+    {b:"instruction",t:null,base:96.4,treat:96.4,raw:"27/28 checks"},
+    {b:"triage",t:"nothi",base:91.4,treat:88.9,raw:"halls 7"},
+    {b:"triage",t:"think",base:88.3,treat:87.7,raw:"halls 0"},
+    {b:"reasoning",t:"nothi",base:100,treat:100,raw:"12/12"},
+    {b:"reasoning",t:"think",base:100,treat:100,raw:"12/12"},
+  ]},
+  {id:"Qwen3.6-35B-IQ4_XS", arch:"A3B MoE · MTP", rows:[
+    {b:"toolcalling",t:"nothi",base:100,treat:100,raw:"10/10"},
+    {b:"toolcalling",t:"think",base:100,treat:100,raw:"10/10"},
+    {b:"agentic-loop",t:null,base:80,treat:100,raw:"4/5 → 5/5 tasks"},
+    {b:"struct-output",t:null,base:100,treat:100,raw:"parse+schema 100%"},
+    {b:"instruction",t:null,base:96.4,treat:96.4,raw:"27/28 checks"},
+    {b:"triage",t:"nothi",base:92.0,treat:92.0,raw:"halls 6"},
+    {b:"triage",t:"think",base:88.3,treat:88.9,raw:"halls 0"},
+    {b:"reasoning",t:"nothi",base:83.3,treat:91.7,raw:"10/12 → 11/12"},
+    {b:"reasoning",t:"think",base:100,treat:100,raw:"12/12"},
+  ]},
+  {id:"Qwen3.6-35B-APEX", arch:"A3B MoE", rows:[
+    {b:"toolcalling",t:"nothi",base:100,treat:100,raw:"10/10"},
+    {b:"toolcalling",t:"think",base:100,treat:100,raw:"10/10"},
+    {b:"agentic-loop",t:null,base:100,treat:100,raw:"5/5 tasks"},
+    {b:"struct-output",t:null,base:100,treat:100,raw:"parse+schema 100%"},
+    {b:"instruction",t:null,base:96.4,treat:96.4,raw:"27/28 checks"},
+    {b:"triage",t:"nothi",base:90.7,treat:93.2,raw:"halls 6"},
+    {b:"triage",t:"think",base:88.3,treat:88.3,raw:"halls 0"},
+    {b:"reasoning",t:"nothi",base:100,treat:100,raw:"12/12"},
+    {b:"reasoning",t:"think",base:100,treat:100,raw:"12/12"},
+  ]},
+];
+const tp = [
+  {id:"Qwen3.6-27B-IQ4_XS", base:25.0, treat:25.2},
+  {id:"Qwen3.6-27B-UD-Q4_K_XL", base:24.2, treat:24.4},
+  {id:"Qwen3.6-35B-APEX", base:75.9, treat:76.1},
+  {id:"Qwen3.6-35B-IQ4_XS", base:127.8, treat:135.9},
+];
+
+function chip(base,treat){
+  const d=treat-base; const a=Math.abs(d);
+  if(a<0.5) return `<span class="chip tie">=</span>`;
+  const cls=d>0?"win":"loss"; const sign=d>0?"+":"−";
+  return `<span class="chip ${cls}">${sign}${a.toFixed(1)}</span>`;
+}
+const fmt=v=>Number.isInteger(v)?v.toFixed(0):v.toFixed(1);
+document.getElementById("cards").innerHTML = models.map(m=>{
+  const rows=m.rows.map(r=>{
+    const d=r.treat-r.base; const ceiling=Math.abs(d)<0.5 && r.base>=99.9;
+    const arrow=Math.abs(d)<0.5?DASH:(d>0?"↗":"↘");
+    const think=r.t?`<span class="think">${r.t}</span>`:"";
+    return `<tr class="${ceiling?'ceiling':''}" title="${r.raw}">
+      <td class="metric">${r.b}${think}</td>
+      <td class="num">${fmt(r.base)}</td>
+      <td class="arrow">${arrow}</td>
+      <td class="num">${fmt(r.treat)}</td>
+      <td class="delta">${chip(r.base,r.treat)}</td></tr>`;
+  }).join("");
+  return `<div class="card">
+    <div class="card-h"><span class="id">${m.id}</span><span class="arch">${m.arch}</span></div>
+    <table><thead><tr><th>bench</th><th style="text-align:right">base</th><th></th>
+      <th style="text-align:right">treat</th><th style="text-align:right">Δ</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
+}).join("");
+
+const tpMax=Math.max(...tp.map(x=>Math.max(x.base,x.treat)));
+document.getElementById("tp").innerHTML = tp.map(x=>{
+  const d=x.treat-x.base; const pct=(d/x.base*100);
+  const arrow=Math.abs(pct)<1?DASH:(d>0?"↗":"↘");
+  return `<tr><td class="metric">${x.id}</td>
+    <td class="num">${x.base.toFixed(1)}</td><td class="arrow">${arrow}</td>
+    <td class="num">${x.treat.toFixed(1)}</td>
+    <td class="barcell"><div class="bar"><i style="width:${(x.treat/tpMax*100).toFixed(1)}%"></i></div></td></tr>`;
+}).join("");
+</script>

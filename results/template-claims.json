@@ -1,0 +1,751 @@
+{
+  "ts": "2026-07-09T14:45:49.829Z",
+  "template": "/home/demonkoryu/froggeric-qwen-chat_template.jinja",
+  "ctx": 32768,
+  "results": {
+    "Qwen3.6-27B-IQ4_XS": {
+      "label": "Qwen3.6-27B IQ4_XS · KV q5_0",
+      "arch": "moe",
+      "baseline": {
+        "p1_prefix_stability": {
+          "stable": false,
+          "invalidatedTotal": 171,
+          "turns": [
+            {
+              "turn": 1,
+              "isPrefix": false,
+              "prevTokens": 508,
+              "survivedTokens": 417,
+              "invalidatedTokens": 91
+            },
+            {
+              "turn": 2,
+              "isPrefix": false,
+              "prevTokens": 572,
+              "survivedTokens": 492,
+              "invalidatedTokens": 80
+            }
+          ]
+        },
+        "p2_token_footprint": {
+          "plain": 54,
+          "tools_schema": 413,
+          "multiturn_think": 656
+        },
+        "p3_empty_think": {
+          "renderTokens": 66,
+          "thinkBlocks": 1,
+          "emptyShells": 1
+        },
+        "p4_mid_system": {
+          "ok": true,
+          "renderTokens": 42
+        },
+        "p5_oversized": {
+          "ok": true,
+          "renderTokens": 40454,
+          "rawChars": 160000
+        },
+        "p6_agentic_recovery": {
+          "passed": 3,
+          "total": 3,
+          "tasks": [
+            {
+              "id": "transient-retry",
+              "pass": true,
+              "steps": 3,
+              "calls": 2,
+              "repeatedCalls": 1,
+              "recovered": true
+            },
+            {
+              "id": "badarg-correct",
+              "pass": true,
+              "steps": 2,
+              "calls": 1,
+              "repeatedCalls": 0,
+              "recovered": true
+            },
+            {
+              "id": "permanent-stop",
+              "pass": true,
+              "steps": 2,
+              "calls": 1,
+              "repeatedCalls": 0,
+              "recovered": null
+            }
+          ]
+        },
+        "p7_real_cache": {
+          "prefillTotal": 605,
+          "perTurn": [
+            {
+              "upto": 2,
+              "prefilledTokens": 418,
+              "cachedTokens": 0
+            },
+            {
+              "upto": 6,
+              "prefilledTokens": 97,
+              "cachedTokens": 396
+            },
+            {
+              "upto": 10,
+              "prefilledTokens": 90,
+              "cachedTokens": 478
+            }
+          ]
+        }
+      },
+      "treatment": {
+        "p1_prefix_stability": {
+          "stable": true,
+          "invalidatedTotal": 0,
+          "turns": [
+            {
+              "turn": 1,
+              "isPrefix": true,
+              "prevTokens": 610,
+              "survivedTokens": 610,
+              "invalidatedTokens": 0
+            },
+            {
+              "turn": 2,
+              "isPrefix": true,
+              "prevTokens": 706,
+              "survivedTokens": 706,
+              "invalidatedTokens": 0
+            }
+          ]
+        },
+        "p2_token_footprint": {
+          "plain": 54,
+          "tools_schema": 515,
+          "multiturn_think": 813
+        },
+        "p3_empty_think": {
+          "renderTokens": 66,
+          "thinkBlocks": 1,
+          "emptyShells": 1
+        },
+        "p4_mid_system": {
+          "ok": true,
+          "renderTokens": 55
+        },
+        "p5_oversized": {
+          "ok": true,
+          "renderTokens": 40556,
+          "rawChars": 160000
+        },
+        "p6_agentic_recovery": {
+          "passed": 3,
+          "total": 3,
+          "tasks": [
+            {
+              "id": "transient-retry",
+              "pass": true,
+              "steps": 3,
+              "calls": 2,
+              "repeatedCalls": 1,
+              "recovered": true
+            },
+            {
+              "id": "badarg-correct",
+              "pass": true,
+              "steps": 2,
+              "calls": 1,
+              "repeatedCalls": 0,
+              "recovered": true
+            },
+            {
+              "id": "permanent-stop",
+              "pass": true,
+              "steps": 2,
+              "calls": 1,
+              "repeatedCalls": 0,
+              "recovered": null
+            }
+          ]
+        },
+        "p7_real_cache": {
+          "prefillTotal": 725,
+          "perTurn": [
+            {
+              "upto": 2,
+              "prefilledTokens": 520,
+              "cachedTokens": 0
+            },
+            {
+              "upto": 6,
+              "prefilledTokens": 107,
+              "cachedTokens": 520
+            },
+            {
+              "upto": 10,
+              "prefilledTokens": 98,
+              "cachedTokens": 627
+            }
+          ]
+        }
+      }
+    },
+    "Qwen3.6-27B-UD-Q4_K_XL": {
+      "label": "Qwen3.6-27B UD-Q4_K_XL · KV q5_0",
+      "arch": "moe",
+      "baseline": {
+        "p1_prefix_stability": {
+          "stable": false,
+          "invalidatedTotal": 171,
+          "turns": [
+            {
+              "turn": 1,
+              "isPrefix": false,
+              "prevTokens": 508,
+              "survivedTokens": 417,
+              "invalidatedTokens": 91
+            },
+            {
+              "turn": 2,
+              "isPrefix": false,
+              "prevTokens": 572,
+              "survivedTokens": 492,
+              "invalidatedTokens": 80
+            }
+          ]
+        },
+        "p2_token_footprint": {
+          "plain": 54,
+          "tools_schema": 413,
+          "multiturn_think": 656
+        },
+        "p3_empty_think": {
+          "renderTokens": 66,
+          "thinkBlocks": 1,
+          "emptyShells": 1
+        },
+        "p4_mid_system": {
+          "ok": true,
+          "renderTokens": 42
+        },
+        "p5_oversized": {
+          "ok": true,
+          "renderTokens": 40454,
+          "rawChars": 160000
+        },
+        "p6_agentic_recovery": {
+          "passed": 3,
+          "total": 3,
+          "tasks": [
+            {
+              "id": "transient-retry",
+              "pass": true,
+              "steps": 3,
+              "calls": 2,
+              "repeatedCalls": 1,
+              "recovered": true
+            },
+            {
+              "id": "badarg-correct",
+              "pass": true,
+              "steps": 2,
+              "calls": 1,
+              "repeatedCalls": 0,
+              "recovered": true
+            },
+            {
+              "id": "permanent-stop",
+              "pass": true,
+              "steps": 2,
+              "calls": 1,
+              "repeatedCalls": 0,
+              "recovered": null
+            }
+          ]
+        },
+        "p7_real_cache": {
+          "prefillTotal": 605,
+          "perTurn": [
+            {
+              "upto": 2,
+              "prefilledTokens": 418,
+              "cachedTokens": 0
+            },
+            {
+              "upto": 6,
+              "prefilledTokens": 97,
+              "cachedTokens": 396
+            },
+            {
+              "upto": 10,
+              "prefilledTokens": 90,
+              "cachedTokens": 478
+            }
+          ]
+        }
+      },
+      "treatment": {
+        "p1_prefix_stability": {
+          "stable": true,
+          "invalidatedTotal": 0,
+          "turns": [
+            {
+              "turn": 1,
+              "isPrefix": true,
+              "prevTokens": 610,
+              "survivedTokens": 610,
+              "invalidatedTokens": 0
+            },
+            {
+              "turn": 2,
+              "isPrefix": true,
+              "prevTokens": 706,
+              "survivedTokens": 706,
+              "invalidatedTokens": 0
+            }
+          ]
+        },
+        "p2_token_footprint": {
+          "plain": 54,
+          "tools_schema": 515,
+          "multiturn_think": 813
+        },
+        "p3_empty_think": {
+          "renderTokens": 66,
+          "thinkBlocks": 1,
+          "emptyShells": 1
+        },
+        "p4_mid_system": {
+          "ok": true,
+          "renderTokens": 55
+        },
+        "p5_oversized": {
+          "ok": true,
+          "renderTokens": 40556,
+          "rawChars": 160000
+        },
+        "p6_agentic_recovery": {
+          "passed": 3,
+          "total": 3,
+          "tasks": [
+            {
+              "id": "transient-retry",
+              "pass": true,
+              "steps": 3,
+              "calls": 2,
+              "repeatedCalls": 1,
+              "recovered": true
+            },
+            {
+              "id": "badarg-correct",
+              "pass": true,
+              "steps": 2,
+              "calls": 1,
+              "repeatedCalls": 0,
+              "recovered": true
+            },
+            {
+              "id": "permanent-stop",
+              "pass": true,
+              "steps": 3,
+              "calls": 2,
+              "repeatedCalls": 1,
+              "recovered": null
+            }
+          ]
+        },
+        "p7_real_cache": {
+          "prefillTotal": 725,
+          "perTurn": [
+            {
+              "upto": 2,
+              "prefilledTokens": 520,
+              "cachedTokens": 0
+            },
+            {
+              "upto": 6,
+              "prefilledTokens": 107,
+              "cachedTokens": 520
+            },
+            {
+              "upto": 10,
+              "prefilledTokens": 98,
+              "cachedTokens": 627
+            }
+          ]
+        }
+      }
+    },
+    "Qwen3.6-35B-A3B-UD-IQ4_XS": {
+      "label": "Qwen3.6-35B IQ4_XS · KV q5_0",
+      "arch": "moe",
+      "baseline": {
+        "p1_prefix_stability": {
+          "stable": false,
+          "invalidatedTotal": 171,
+          "turns": [
+            {
+              "turn": 1,
+              "isPrefix": false,
+              "prevTokens": 508,
+              "survivedTokens": 417,
+              "invalidatedTokens": 91
+            },
+            {
+              "turn": 2,
+              "isPrefix": false,
+              "prevTokens": 572,
+              "survivedTokens": 492,
+              "invalidatedTokens": 80
+            }
+          ]
+        },
+        "p2_token_footprint": {
+          "plain": 54,
+          "tools_schema": 413,
+          "multiturn_think": 656
+        },
+        "p3_empty_think": {
+          "renderTokens": 66,
+          "thinkBlocks": 1,
+          "emptyShells": 1
+        },
+        "p4_mid_system": {
+          "ok": true,
+          "renderTokens": 42
+        },
+        "p5_oversized": {
+          "ok": true,
+          "renderTokens": 40454,
+          "rawChars": 160000
+        },
+        "p6_agentic_recovery": {
+          "passed": 3,
+          "total": 3,
+          "tasks": [
+            {
+              "id": "transient-retry",
+              "pass": true,
+              "steps": 3,
+              "calls": 2,
+              "repeatedCalls": 1,
+              "recovered": true
+            },
+            {
+              "id": "badarg-correct",
+              "pass": true,
+              "steps": 2,
+              "calls": 1,
+              "repeatedCalls": 0,
+              "recovered": true
+            },
+            {
+              "id": "permanent-stop",
+              "pass": true,
+              "steps": 2,
+              "calls": 1,
+              "repeatedCalls": 0,
+              "recovered": null
+            }
+          ]
+        },
+        "p7_real_cache": {
+          "prefillTotal": 605,
+          "perTurn": [
+            {
+              "upto": 2,
+              "prefilledTokens": 418,
+              "cachedTokens": 0
+            },
+            {
+              "upto": 6,
+              "prefilledTokens": 97,
+              "cachedTokens": 396
+            },
+            {
+              "upto": 10,
+              "prefilledTokens": 90,
+              "cachedTokens": 478
+            }
+          ]
+        }
+      },
+      "treatment": {
+        "p1_prefix_stability": {
+          "stable": true,
+          "invalidatedTotal": 0,
+          "turns": [
+            {
+              "turn": 1,
+              "isPrefix": true,
+              "prevTokens": 610,
+              "survivedTokens": 610,
+              "invalidatedTokens": 0
+            },
+            {
+              "turn": 2,
+              "isPrefix": true,
+              "prevTokens": 706,
+              "survivedTokens": 706,
+              "invalidatedTokens": 0
+            }
+          ]
+        },
+        "p2_token_footprint": {
+          "plain": 54,
+          "tools_schema": 515,
+          "multiturn_think": 813
+        },
+        "p3_empty_think": {
+          "renderTokens": 66,
+          "thinkBlocks": 1,
+          "emptyShells": 1
+        },
+        "p4_mid_system": {
+          "ok": true,
+          "renderTokens": 55
+        },
+        "p5_oversized": {
+          "ok": true,
+          "renderTokens": 40556,
+          "rawChars": 160000
+        },
+        "p6_agentic_recovery": {
+          "passed": 3,
+          "total": 3,
+          "tasks": [
+            {
+              "id": "transient-retry",
+              "pass": true,
+              "steps": 3,
+              "calls": 2,
+              "repeatedCalls": 1,
+              "recovered": true
+            },
+            {
+              "id": "badarg-correct",
+              "pass": true,
+              "steps": 2,
+              "calls": 1,
+              "repeatedCalls": 0,
+              "recovered": true
+            },
+            {
+              "id": "permanent-stop",
+              "pass": true,
+              "steps": 3,
+              "calls": 2,
+              "repeatedCalls": 1,
+              "recovered": null
+            }
+          ]
+        },
+        "p7_real_cache": {
+          "prefillTotal": 725,
+          "perTurn": [
+            {
+              "upto": 2,
+              "prefilledTokens": 520,
+              "cachedTokens": 0
+            },
+            {
+              "upto": 6,
+              "prefilledTokens": 107,
+              "cachedTokens": 520
+            },
+            {
+              "upto": 10,
+              "prefilledTokens": 98,
+              "cachedTokens": 627
+            }
+          ]
+        }
+      }
+    },
+    "Qwen3.6-35B-A3B-APEX-I-Compact": {
+      "label": "Qwen3.6-35B APEX I-Compact · KV q5_0",
+      "arch": "moe",
+      "baseline": {
+        "p1_prefix_stability": {
+          "stable": false,
+          "invalidatedTotal": 171,
+          "turns": [
+            {
+              "turn": 1,
+              "isPrefix": false,
+              "prevTokens": 508,
+              "survivedTokens": 417,
+              "invalidatedTokens": 91
+            },
+            {
+              "turn": 2,
+              "isPrefix": false,
+              "prevTokens": 572,
+              "survivedTokens": 492,
+              "invalidatedTokens": 80
+            }
+          ]
+        },
+        "p2_token_footprint": {
+          "plain": 54,
+          "tools_schema": 413,
+          "multiturn_think": 656
+        },
+        "p3_empty_think": {
+          "renderTokens": 66,
+          "thinkBlocks": 1,
+          "emptyShells": 1
+        },
+        "p4_mid_system": {
+          "ok": true,
+          "renderTokens": 42
+        },
+        "p5_oversized": {
+          "ok": true,
+          "renderTokens": 40454,
+          "rawChars": 160000
+        },
+        "p6_agentic_recovery": {
+          "passed": 3,
+          "total": 3,
+          "tasks": [
+            {
+              "id": "transient-retry",
+              "pass": true,
+              "steps": 3,
+              "calls": 2,
+              "repeatedCalls": 1,
+              "recovered": true
+            },
+            {
+              "id": "badarg-correct",
+              "pass": true,
+              "steps": 2,
+              "calls": 1,
+              "repeatedCalls": 0,
+              "recovered": true
+            },
+            {
+              "id": "permanent-stop",
+              "pass": true,
+              "steps": 3,
+              "calls": 2,
+              "repeatedCalls": 0,
+              "recovered": null
+            }
+          ]
+        },
+        "p7_real_cache": {
+          "prefillTotal": 605,
+          "perTurn": [
+            {
+              "upto": 2,
+              "prefilledTokens": 418,
+              "cachedTokens": 0
+            },
+            {
+              "upto": 6,
+              "prefilledTokens": 97,
+              "cachedTokens": 396
+            },
+            {
+              "upto": 10,
+              "prefilledTokens": 90,
+              "cachedTokens": 478
+            }
+          ]
+        }
+      },
+      "treatment": {
+        "p1_prefix_stability": {
+          "stable": true,
+          "invalidatedTotal": 0,
+          "turns": [
+            {
+              "turn": 1,
+              "isPrefix": true,
+              "prevTokens": 610,
+              "survivedTokens": 610,
+              "invalidatedTokens": 0
+            },
+            {
+              "turn": 2,
+              "isPrefix": true,
+              "prevTokens": 706,
+              "survivedTokens": 706,
+              "invalidatedTokens": 0
+            }
+          ]
+        },
+        "p2_token_footprint": {
+          "plain": 54,
+          "tools_schema": 515,
+          "multiturn_think": 813
+        },
+        "p3_empty_think": {
+          "renderTokens": 66,
+          "thinkBlocks": 1,
+          "emptyShells": 1
+        },
+        "p4_mid_system": {
+          "ok": true,
+          "renderTokens": 55
+        },
+        "p5_oversized": {
+          "ok": true,
+          "renderTokens": 40556,
+          "rawChars": 160000
+        },
+        "p6_agentic_recovery": {
+          "passed": 3,
+          "total": 3,
+          "tasks": [
+            {
+              "id": "transient-retry",
+              "pass": true,
+              "steps": 3,
+              "calls": 2,
+              "repeatedCalls": 1,
+              "recovered": true
+            },
+            {
+              "id": "badarg-correct",
+              "pass": true,
+              "steps": 2,
+              "calls": 1,
+              "repeatedCalls": 0,
+              "recovered": true
+            },
+            {
+              "id": "permanent-stop",
+              "pass": true,
+              "steps": 6,
+              "calls": 5,
+              "repeatedCalls": 0,
+              "recovered": null
+            }
+          ]
+        },
+        "p7_real_cache": {
+          "prefillTotal": 725,
+          "perTurn": [
+            {
+              "upto": 2,
+              "prefilledTokens": 520,
+              "cachedTokens": 0
+            },
+            {
+              "upto": 6,
+              "prefilledTokens": 107,
+              "cachedTokens": 520
+            },
+            {
+              "upto": 10,
+              "prefilledTokens": 98,
+              "cachedTokens": 627
+            }
+          ]
+        }
+      }
+    }
+  }
+}

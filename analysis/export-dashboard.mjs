@@ -42,7 +42,7 @@ const M = {
   'struct_output %': {fn: r => avgF(r,x=>x.bench==='struct_output'&&x.metric==='score')},
   'instruction %': {fn: r => avgF(r,x=>x.bench==='instruction_following'&&x.metric==='score')},
   'agentic %': {fn: r => avgF(r,x=>x.bench==='agentic_loop'&&x.metric==='score')},
-  'coding pass@1 %': {fn: r => { const v=avgF(r,x=>x.metric==='coding_pass_at_1'); return v==null?null:100*v; }},
+  'coding pass@1 %': {fn: r => { const t=sumF(r,x=>x.metric==='coding_total'); return t?100*sumF(r,x=>x.metric==='coding_pass_at_1')/t:null; }},
   'decode tok/s': {fn: r => avgF(r,x=>x.bench==='e2e-8k'&&x.metric==='tok_s')},
   'e2e tok/s': {fn: r => avgF(r,x=>x.bench==='e2e-8k'&&x.metric==='score')},
   'ttft ms': {fn: r => avgF(r,x=>x.bench==='ttft-8k'&&x.metric==='score'), lower:true},

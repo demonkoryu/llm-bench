@@ -117,18 +117,9 @@ async function main() {
         await srv.waitHealthy(360000);
       } catch (e) { console.error(`  load failed: ${(e.message ?? '').slice(0, 80)} — skipping`); continue; }
 
-      // maxctx: use the caps cache to SKIP the ladder when this exact config+build was measured.
-      if (benchNames.includes('maxctx')) {
-        const cached = readCap(RESULTS, capKeyFields);
-        if (cached?.coherence_ceiling) {
-          console.error(`  [maxctx] cache HIT (build match) → ${cached.coherence_ceiling}, ladder skipped`);
-          push(tidyRows, { bench: 'maxctx', score: cached.coherence_ceiling, ctx_loaded: cached.ctx_ceiling, oom_ceiling: cached.oom_ceiling, coherence_ceiling: cached.coherence_ceiling, vram_mib: cached.vram_at_ctx, status: 'ok' }, { ...common(run_id, subject, serving, platformBase), think_mode: 'n/a', ts: nowTs() });
-        } else {
-          console.error('  [maxctx] cache MISS for this build → run a dedicated maxctx probe to populate the cache (not run in focused mode)');
-        }
-      }
-
-      for (const benchName of benchNames.filter((b) => BENCHES[b])) {
+      const wantBenches = benchNames.filter((b) => BENCHES[b]);
+      // Regular (client-prompt) benches first — they use the server loaded above.
+      for (const benchName of wantBenches.filter((b) => BENCHES[b].kind !== 'probe')) {
         const bench = BENCHES[benchName];
         const states = bench.thinkDependent ? thinkStatesFor(m) : [m.think === 'optional' ? false : null];
         for (const think of states) {
@@ -145,8 +136,19 @@ async function main() {
           const dims = { ...common(run_id, subject, serving, platformBase), think_mode, ts: nowTs(), sampling_profile: subject.family ? `${subject.family}/${think_mode}` : null };
           for (const r of metricRowsFromResult(raw, dims)) tidyRows.push(r);
           const summary = raw.toolcall_pass != null ? `${raw.toolcall_pass}/${raw.toolcall_total}` : raw.reasoning_correct != null ? `${raw.reasoning_correct}/${raw.reasoning_total}` : 'ok';
-          console.error(`  ${benchName.padEnd(12)} ${think_mode.padEnd(8)} → ${summary}${SAMPLES > 1 ? ` (n=${raw.n})` : ''}`);
+          console.error(`  ${benchName.padEnd(14)} ${think_mode.padEnd(8)} → ${summary}${SAMPLES > 1 ? ` (n=${raw.n})` : ''}`);
         }
+      }
+      // Probe benches last — they self-manage the server (reload at maxctx / --parallel).
+      const caps = readCap(RESULTS, capKeyFields);
+      const probeCtx = { srv, client, model: m, ctx: CTX, maxctx: caps?.coherence_ceiling ?? CTX, caps, sshHost: SSH_HOST, upsertCap: (v) => upsertCap(RESULTS, capKeyFields, { ...v, source_run_id: run_id }) };
+      for (const benchName of wantBenches.filter((b) => BENCHES[b].kind === 'probe')) {
+        let rawRows = [];
+        try { rawRows = (await BENCHES[benchName].run(probeCtx)) || []; }
+        catch (e) { console.error(`  ${benchName}: ${(e.message ?? '').slice(0, 70)}`); }
+        const dims = { ...common(run_id, subject, serving, platformBase), think_mode: 'n/a', ts: nowTs(), sampling_profile: null };
+        for (const raw of rawRows) for (const r of metricRowsFromResult(raw, dims)) tidyRows.push(r);
+        console.error(`  ${benchName.padEnd(14)} probe    → ${rawRows.length} metric-rows`);
       }
       await srv.stopServer().catch(() => {});
     }
