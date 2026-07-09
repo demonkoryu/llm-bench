@@ -7,7 +7,10 @@ import { extraFlagsToString } from '../../runners/llamacpp-server.mjs';
 
 const DEPTHS = [16384, 32768, 65536];
 const REPS = 3;
-const asInt = (s) => { const m = String(s).replace(/<think>[\s\S]*?<\/think>/g, '').match(/-?\d+/); return m ? m[0] : null; };
+// The needle constant name contains digits (e.g. FLOW_RETRY_LIMIT_4), so grabbing the
+// FIRST integer mis-grades "…LIMIT_4 is 88" as "4". Match the expected answer among ALL
+// integers in the (think-stripped) response instead.
+const answersWith = (s, expected) => (String(s).replace(/<think>[\s\S]*?<\/think>/g, '').match(/-?\d+/g) || []).includes(String(expected));
 
 export const bench = {
   name: 'quality_decay', kind: 'probe', thinkDependent: false,
@@ -23,12 +26,14 @@ export const bench = {
       for (let r = 0; r < REPS; r++) {
         const built = makeFillPrompt(Math.max(d, 256));
         let res;
-        try { res = await client.chat(built.messages, { think: null, max_tokens: 32, temperature: 0.0 }, 900000); }
+        // Needle retrieval, not reasoning → disable thinking so the answer lands in
+        // `content` directly (else the model reasons and truncates before answering).
+        try { res = await client.chat(built.messages, { think: false, thinkControl: 'enable_thinking', max_tokens: 64, temperature: 0.0 }, 900000); }
         catch { continue; }
         if (res.timings?.prompt_ms) ttfts.push(res.timings.prompt_ms);
         n++;
-        const content = res.completion?.choices?.[0]?.message?.content ?? '';
-        if (asInt(content) === String(built.expectedAnswer)) correct++;
+        const msg = res.completion?.choices?.[0]?.message ?? {};
+        if (answersWith(`${msg.content ?? ''} ${msg.reasoning_content ?? ''}`, built.expectedAnswer)) correct++;
       }
       const k = Math.round(d / 1024);
       if (n) rows.push({ bench: `quality_decay-${k}k`, score: (correct / n) * 100, status: 'ok' });
