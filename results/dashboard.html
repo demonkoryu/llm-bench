@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>llm-bench explorer</title>
-<meta name="description" content="llm-bench results — generated 2026-07-09T18:45:02.526Z">
+<meta name="description" content="llm-bench results — generated 2026-07-09T18:49:33.797Z">
 <style>
   :root{
     --bg:#0f1214; --panel:#161b1e; --panel2:#1b2226; --ink:#e7ebed; --dim:#8a949b; --faint:#5c666c;
@@ -49,6 +49,17 @@
   .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
   .muted{color:var(--faint);font-family:var(--mono);font-size:12px}
   .tip{position:fixed;pointer-events:none;background:var(--panel);border:1px solid var(--line2);border-radius:6px;padding:6px 9px;font-family:var(--mono);font-size:11px;box-shadow:0 4px 16px rgba(0,0,0,.3);display:none;z-index:9}
+  #view{overflow-x:auto}
+  /* mobile: stack the facet rail above the views; let wide tables scroll */
+  @media (max-width:720px){
+    body{grid-template-columns:1fr;height:auto;min-height:100vh;overflow:auto;display:block}
+    aside{border-right:none;border-bottom:1px solid var(--line);max-height:42vh;position:sticky;top:0;z-index:5}
+    aside .facet{display:inline-block;width:calc(50% - 6px);vertical-align:top;margin-right:4px}
+    main{padding:14px}
+    .tabs{position:sticky;top:0;background:var(--bg)}
+    table{font-size:12px}
+    th,td{padding:6px 8px}
+  }
 </style>
 </head>
 <body>
