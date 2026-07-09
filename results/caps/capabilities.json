@@ -1,0 +1,92 @@
+{
+  "Qwen3.6-35B-A3B-APEX-I-Compact.gguf|APEX-I-Compact|q4_0|vulkan|RX 7900 XT|∅": {
+    "gguf_file": "Qwen3.6-35B-A3B-APEX-I-Compact.gguf",
+    "quant": "APEX-I-Compact",
+    "kv_quant": "q4_0",
+    "backend": "vulkan",
+    "gpu": "RX 7900 XT",
+    "llamacpp_build": null,
+    "native_max_ctx": 262144,
+    "ctx_ceiling": 131072,
+    "coherence_ceiling": 131072,
+    "oom_ceiling": 131072,
+    "kv_bytes_per_token": 10393.6,
+    "vram_at_ctx": 18678,
+    "measured_at": {
+      "micros": 1782202254988000
+    },
+    "source_run_id": "rose-rx7900xt-vulkan-20260623-143954"
+  },
+  "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf|Q4_K_XL|q4_0|vulkan|RX 7900 XT|∅": {
+    "gguf_file": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf",
+    "quant": "Q4_K_XL",
+    "kv_quant": "q4_0",
+    "backend": "vulkan",
+    "gpu": "RX 7900 XT",
+    "llamacpp_build": null,
+    "native_max_ctx": 131072,
+    "ctx_ceiling": 131072,
+    "coherence_ceiling": 131072,
+    "oom_ceiling": 131072,
+    "kv_bytes_per_token": 13952,
+    "vram_at_ctx": 16587,
+    "measured_at": {
+      "micros": 1782203697197000
+    },
+    "source_run_id": "rose-rx7900xt-vulkan-20260623-143954"
+  },
+  "gemma-4-26B-A4B-it-UD-Q4_K_M.gguf|Q4_K_M|q4_0|vulkan|RX 7900 XT|∅": {
+    "gguf_file": "gemma-4-26B-A4B-it-UD-Q4_K_M.gguf",
+    "quant": "Q4_K_M",
+    "kv_quant": "q4_0",
+    "backend": "vulkan",
+    "gpu": "RX 7900 XT",
+    "llamacpp_build": null,
+    "native_max_ctx": 131072,
+    "ctx_ceiling": 102400,
+    "coherence_ceiling": 102400,
+    "oom_ceiling": 102400,
+    "kv_bytes_per_token": 13946.88,
+    "vram_at_ctx": 18779,
+    "measured_at": {
+      "micros": 1782202785452000
+    },
+    "source_run_id": "rose-rx7900xt-vulkan-20260623-143954"
+  },
+  "Qwen3.6-35B-A3B-UD-IQ4_XS.gguf|IQ4_XS|q4_0|vulkan|RX 7900 XT|∅": {
+    "gguf_file": "Qwen3.6-35B-A3B-UD-IQ4_XS.gguf",
+    "quant": "IQ4_XS",
+    "kv_quant": "q4_0",
+    "backend": "vulkan",
+    "gpu": "RX 7900 XT",
+    "llamacpp_build": null,
+    "native_max_ctx": 262144,
+    "ctx_ceiling": 102400,
+    "coherence_ceiling": 102400,
+    "oom_ceiling": 131072,
+    "kv_bytes_per_token": 12822.528,
+    "vram_at_ctx": 19863,
+    "measured_at": {
+      "micros": 1782201787519000
+    },
+    "source_run_id": "rose-rx7900xt-vulkan-20260623-143954"
+  },
+  "gemma-4-26B_q4_0-it.gguf|q4_0|q4_0|vulkan|RX 7900 XT|∅": {
+    "gguf_file": "gemma-4-26B_q4_0-it.gguf",
+    "quant": "q4_0",
+    "kv_quant": "q4_0",
+    "backend": "vulkan",
+    "gpu": "RX 7900 XT",
+    "llamacpp_build": null,
+    "native_max_ctx": 131072,
+    "ctx_ceiling": 102400,
+    "coherence_ceiling": 102400,
+    "oom_ceiling": 102400,
+    "kv_bytes_per_token": 13957.12,
+    "vram_at_ctx": 16387,
+    "measured_at": {
+      "micros": 1782203169953000
+    },
+    "source_run_id": "rose-rx7900xt-vulkan-20260623-143954"
+  }
+}

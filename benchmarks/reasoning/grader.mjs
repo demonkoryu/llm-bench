@@ -4,7 +4,11 @@
  * to avoid promptfoo's array-expansion behavior on YAML vars.
  */
 
-import { CASES } from './cases.mjs';
+import { CASES as BASE_CASES } from './cases.mjs';
+import { HARD_CASES } from './cases-hard.mjs';
+
+// Base + hard tier share one grader; lookup is by case_id so the sets can't collide.
+const CASES = { ...BASE_CASES, ...HARD_CASES };
 
 function norm(s) {
    return String(s ?? '')

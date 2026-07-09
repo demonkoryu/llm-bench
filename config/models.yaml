@@ -231,6 +231,8 @@ models:
      label: "Qwen3.6-35B APEX I-Compact"
      family: qwen3.6
      type: moe
+     quant: APEX-I-Compact       # non-standard APEX imatrix quant (not a Q/IQ token)
+     effective_bpw: 4.0          # ~17 GB over 35B params
      think: optional
      tools: true
      native_max_ctx: 262144
@@ -437,6 +439,9 @@ models:
      disabled: true   # parked 2026-06-07 (user prune)
      family: granite
      type: moe
+     arch: mamba-hybrid          # 7B-A1B MoE with mamba layers (name carries no <n>B token)
+     total_params: 7
+     active_params: 1
      think: none
      tools: true
      native_max_ctx: 131072

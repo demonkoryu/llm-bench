@@ -97,3 +97,88 @@ export function loadModelsConfig(path, { includeDisabled = false } = {}) {
    const models = active.flatMap((m) => expandKvVariants(m, defaults));
    return { ...cfg, defaults, models };
 }
+
+// ── Structured subject dimensions (derive-first, override-friendly) ─────────────
+// The tidy store needs arch/params/finetune/quant/bpw as queryable columns. Rather
+// than hand-editing every YAML entry, derive them from the fields already present
+// (hf_file / label / family / type / repo) and let a model override any of them by
+// declaring the field explicitly. Same function feeds live-emit and backfill so a
+// historical run and a fresh run tag identically.
+
+// Approximate bits-per-weight by quant token prefix (longest match wins).
+const BPW = [
+   ['Q8_0', 8.5], ['Q6_K', 6.6], ['Q5_K_M', 5.7], ['Q5_K_S', 5.5], ['Q5_0', 5.5], ['Q5_1', 6.0],
+   ['Q4_K_XL', 4.8], ['Q4_K_M', 4.85], ['Q4_K_S', 4.6], ['UD-Q4_K_XL', 4.8], ['Q4_0', 4.5], ['Q4_1', 4.9],
+   ['IQ4_XS', 4.25], ['IQ4_NL', 4.5], ['IQ3_M', 3.7], ['IQ3_XS', 3.3], ['IQ2_M', 2.7],
+   ['Q3_K_M', 3.9], ['Q3_K_L', 4.3], ['Q2_K', 3.0], ['F16', 16], ['BF16', 16], ['F32', 32],
+];
+const QUANT_RE = /(?:UD-)?(IQ\d(?:_[A-Z]+)?|Q\d(?:_\d|_K(?:_[A-Z]+)?)?|F16|BF16|F32)/i;
+
+export function parseQuant(hf_file = '') {
+   const base = String(hf_file).replace(/\.gguf$/i, '');
+   const m = QUANT_RE.exec(base);
+   if (m) return m[0].replace(/^UD-/i, '');
+   const seg = base.split('-').pop();
+   return seg || null;
+}
+export function bpwForQuant(quant) {
+   if (!quant) return null;
+   const q = quant.toUpperCase();
+   let best = null;
+   for (const [tok, v] of BPW) if (q.includes(tok) && (!best || tok.length > best[0].length)) best = [tok, v];
+   return best ? best[1] : null;
+}
+function parseParams(text = '') {
+   // total = first "<n>B"; active = "A<n>B" (MoE). Dense → active = total.
+   const total = /(\d+(?:\.\d+)?)\s*B\b/i.exec(text);
+   const active = /A(\d+(?:\.\d+)?)\s*B\b/i.exec(text);
+   const t = total ? Number(total[1]) : null;
+   const a = active ? Number(active[1]) : t;
+   return { total_params: t, active_params: a };
+}
+function parseFinetune(text = '') {
+   const s = text.toLowerCase();
+   if (/coder/.test(s)) return 'coder';
+   if (/abliterat|uncensor/.test(s)) return 'abliterated';
+   if (/\bapex\b/.test(s)) return 'apex';
+   if (/\bqat\b/.test(s)) return 'qat';
+   if (/distill|(^|[^a-z])r1([^a-z]|$)|reasoning/.test(s)) return 'reasoning-distill';
+   if (/instruct|-it\b|-it-|\bit\b/.test(s)) return 'instruct';
+   return null;
+}
+// Classify by SPARSITY (active < total → MoE) crossed with family hybrid-ness, so the
+// dense-hybrid 27B (active==total) and the sparse 35B-A3B (active≪total) — same family —
+// separate correctly. This is the axis the dense-vs-MoE study turns on.
+function deriveArch(family = '', total = null, active = null) {
+   const f = String(family).toLowerCase();
+   const sparse = total != null && active != null && active < total;
+   if (/qwen3\.[56]/.test(f)) return sparse ? 'gated-delta-moe' : 'gated-delta-dense';
+   if (/lfm|mamba|falcon-h|jamba|hybrid/.test(f)) return 'mamba-hybrid';
+   return sparse ? 'moe' : 'dense';
+}
+
+/** Subject dims for a (possibly kv-variant-expanded) model entry. Overrides win. */
+export function deriveSubjectDims(model = {}) {
+   const hf_file = model.hf_file ?? null;
+   const label = model.label ?? '';
+   const text = `${model.hf_repo ?? ''} ${hf_file ?? ''} ${label}`;
+   const quant = model.quant ?? parseQuant(hf_file);
+   // Parse from hf_file first — it reliably carries the MoE "A<n>B" active-param token
+   // (labels often omit it, which would wrongly make a 35B-A3B MoE look 35B-active).
+   const fromFile = parseParams(hf_file ?? '');
+   const params = fromFile.total_params != null ? fromFile : parseParams(label);
+   const total_params = model.total_params ?? params.total_params;
+   const active_params = model.active_params ?? params.active_params;
+   return {
+      family: model.family ?? null,
+      type: model.type ?? null,
+      arch: model.arch ?? deriveArch(model.family, total_params, active_params),
+      total_params,
+      active_params,
+      finetune: model.finetune ?? parseFinetune(text) ?? 'instruct',
+      repo: model.hf_repo ?? null,
+      gguf_file: hf_file,
+      quant,
+      effective_bpw: model.effective_bpw ?? bpwForQuant(quant),
+   };
+}
