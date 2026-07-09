@@ -5,15 +5,23 @@ each model on document comprehension, coding/tool-use, speed, context length and
 footprint, then ranks them by a **capability** score and a **fleet-suitability** score,
 and renders an interactive, self-contained dashboard.
 
-- **Orchestrator** — Node, runs on your dev host (benches, graders, scoring, charts).
+- **Orchestrator** — `runners/bench-run.mjs` (Node, dev host): the model × think × bench
+  matrix loop. Bench modules live in `benches/` (reuse the graders in `benchmarks/*`);
+  performance/capacity **probes** (`benches/probes/`) self-manage the server.
 - **Inference** — a `llama.cpp` server on a GPU host, driven over SSH; system concerns
-  (start/stop, VRAM, health) are shell scripts in `scripts/llm2/`.
-- **Config** — `config/models.yaml` (models, sampling, `defaults.extra_flags`) and
-  `config/hosts.yaml` (GPU host endpoints/SSH). Quant is baked into each GGUF filename.
-
-Results live in `results/` (now tracked in git): immutable run dirs under
-`results/runs/<run_id>/run.json`, plus the generated `report.json`, `dashboard.html`,
-and `chart`/`fleet` SV**G**/PNG.
+  (start/stop, VRAM, health, systemd-router coexistence) are in `runners/llamacpp-server.mjs`
+  + `scripts/llm2/`.
+- **Store** — a **tidy DuckDB/Parquet** dataset: `results/tidy/**/measurements.parquet`,
+  one row per measured metric with every config axis (chat_template, kv_quant, quant, arch,
+  finetune, llamacpp_build, sampling, think…) as a queryable column. Expensive facts
+  (context ceilings, KV footprint) are memoized in `results/caps/capabilities.json`,
+  keyed by (gguf, quant, kv, backend, gpu, **llamacpp_build**) so a llama.cpp upgrade
+  invalidates them.
+- **Analysis** — `analysis/` (fresh, tidy-native): `score.mjs` (+ `scoring-config.mjs`)
+  computes capability/fleet over any filtered slice; `backfill.mjs` imports legacy
+  `run.json`; `export-dashboard.mjs` snapshots the static page.
+- **Config** — `config/models.yaml` (models, sampling, structured subject dims) and
+  `config/hosts.yaml` (GPU host endpoints/SSH; set `SSH_HOST` if the alias doesn't resolve).
 
 ---
 
@@ -23,27 +31,27 @@ Prerequisites: Node ≥ 22, `npm install`, and a reachable GPU host configured i
 `config/hosts.yaml` with the `llama.cpp` server scripts deployed (`npm run deploy`).
 
 ```bash
-npm run dry-run                 # print the model × think × bench matrix and exit (no GPU)
-npm run bench                   # core suite (triage, reasoning, toolcalling, summarization,
-                                #   docqa, coding, speed, maxctx) for every enabled model
-node runners/run-suite.mjs --full   # core suite + ALL secondary runners, then rebuild report+charts
+SSH_HOST=<ip> npm run bench -- --models Qwen3.6 --benches toolcalling,reasoning,triage \
+    --think both --samples 1 --ctx 16384
 ```
 
-A **full run** chains the secondaries that feed the dashboard: `kv-probe`,
-`struct-output`, `throughput-ttft`, `speed-decay`, `quality-decay`,
-`instruction-following`, `prompt-cache`, `agentic-loop`.
+The orchestrator emits **tidy Parquet** natively (plus a small run manifest under
+`results/runs/<run_id>/`) and consults the capabilities cache to skip re-probing
+context ceilings. Flags: `--models <substr,…>`, `--benches <name,…>`, `--think both|no_think|think`,
+`--samples N` (multi-sample → per-metric mean + `spread`), `--ctx <n>`, `--target <host>`,
+`--chat-template <path-on-host>` (A/B a custom template), `--keep-router` (don't stop the
+host's systemd `llama-server` service).
 
-> **Note:** `parallel-gen` (pargen) is **not** in the `--full` chain. It produces the
-> `speed_pargen-*` rows that the fleet score's _throughput_ term uses. Run it explicitly
-> when you want measured throughput in the fleet ranking:
->
-> ```bash
-> node runners/parallel-gen.mjs --input <run-id>
-> ```
+Benches (`benches/`): `triage, reasoning, reasoning_hard, toolcalling, summarization,
+docqa, coding_{multipl,hard,practical,bugfix}, agentic_loop, struct_output,
+instruction_following`, plus **probes** (`benches/probes/`, self-manage the server):
+`maxctx, kv_per_tok, throughput` (e2e/ttft), `speed, prefix_cache, quality_decay,
+parallel_gen`.
 
-Useful `run-suite` flags: `--models <substr,…>`, `--benches <name,…>`, `--skip-think`
-(hybrids, no-think only), `--skip-maxctx`, `--resume` (skip combos already `ok` in the
-prior run), `--target <host>`, `--backend <vulkan|rocm>`, `--debug`.
+> **Host note:** the GPU host runs a systemd `llama-server` model-router on port 8090.
+> `bench-run` stops it for the run and restarts it after; it needs passwordless sudo on
+> the host. Historical results are already in the store — `npm run backfill` re-imports
+> any legacy `run.json`, `npm run caps-seed` re-seeds ceilings from it.
 
 ### The config marker
 
@@ -56,69 +64,40 @@ or GPU driver — it labels runs for comparability, not bit-for-bit reproducibil
 
 ---
 
-## 2. Post-processing results
+## 2. Querying the store
 
-Each runner writes its own immutable run dir. **Consolidate** them into one checkpoint,
-then build the report/dashboard from it.
+Everything lands in the tidy Parquet dataset — analyse it any way you like, no fixed
+"report" step. DuckDB reads it directly:
 
 ```bash
-npm run consolidate             # merge all runs → ONE checkpoint carrying the fingerprint
-                                #   + report the coverage gap (what still needs running)
-npm run report                  # results/report.json  (capability + fleet + provenance, machine-readable)
-npm run dashboard               # results/dashboard.html  (interactive, self-contained)
-npm run chart                   # results/chart.svg|png   (static ranking + per-metric panels)
-npm run results                 # results/report.md       (human-readable tables)
-node runners/fleet-analysis.mjs # results/fleet.svg|png   (static VRAM-packing tables)
+duckdb -c "SELECT chat_template, 100.0*sum(metric_value) FILTER(WHERE metric='toolcall_pass')
+             /sum(metric_value) FILTER(WHERE metric='toolcall_total') AS pct
+           FROM read_parquet('results/tidy/**/*.parquet', hive_partitioning=true)
+           WHERE bench='toolcalling' GROUP BY 1"
 ```
 
-`consolidate-checkpoint` merges deterministically (a successful measurement beats an
-error, newest timestamp wins), preserves original timestamps, asserts no measurement is
-dropped, then **archives** the absorbed run dirs under `results/runs/_archive/` (it never
-hard-deletes — pass `--purge-delete` only if you mean it). Re-run it after a gap-fill
-(e.g. after `parallel-gen`) to fold the new run back into a single checkpoint.
-
-All consumers default to the newest run (= the checkpoint); pass `--input <run-id>` one or
-more times to merge specific runs instead.
+Or use the app's API / the scorer (`analysis/score.mjs`) programmatically. The store never
+collapses configs: two runs that differ in *any* dimension (template, quant, KV, build…)
+are distinct, queryable rows — the thing the old `model|think|bench` merge couldn't do.
 
 ---
 
-## 3. Showing the dashboard
+## 3. The dashboard
 
-**Live:** the latest dashboard is published at **<https://pages.xor0.de/llm-bench/>**
-(every push to `main` that changes `results/dashboard.html` redeploys it via Forgejo
-Actions → the `pages` branch → a Caddy static server).
-
-The dashboard is the primary way to read results. It is a **single self-contained
-`results/dashboard.html`** — no server, no network, no dependencies (the scoring code and
-all data are inlined). Turning the weight **dials** re-ranks everything live in-browser
-using the exact same scoring code as Node, so the numbers can't drift from `report.json`.
+A **unified explorer**: a facet rail (filter by any dimension) driving four views —
+**Pivot** (A/B any axis with Δ), **Pareto** (quality vs throughput, for dense-vs-MoE),
+**Leaderboard** (capability/fleet with weight dials), **Coverage** (run vs not).
 
 ```bash
-npm run dashboard               # (re)generate results/dashboard.html from the latest checkpoint
+npm run dashboard            # local interactive app (Node + DuckDB) → http://localhost:5178
+npm run dashboard:export     # snapshot a self-contained results/dashboard.html (static)
 ```
 
-Then open `results/dashboard.html` in a browser (double-click, or `file://` the absolute
-path). It shows: the **capability** ranking (top-5 get 1–5 star badges, carried across
-every table), the **fleet-suitability** ranking (main ctx + worker slots), a **context**
-view, a per-model normalized **breakdown**, a **data-sources / required-runs** coverage
-panel, the environment header + comparability banner, and a tidy-CSV export.
-
-### For agents
-
-- **To present results to a human:** regenerate and open the dashboard.
-  ```bash
-  npm run dashboard
-  # then open the file, e.g. on Windows:
-  start results/dashboard.html      # macOS: open  ·  Linux: xdg-open
-  ```
-  If you have a browser/preview tool, point it at the absolute path of
-  `results/dashboard.html`. It renders offline from `file://`.
-- **To read results programmatically (no browser):** use **`results/report.json`** — it
-  carries the same data the dashboard computes: `ranking` (capability), `fleet` +
-  `fleet_ranking`, per-model group scores, `environment`, and `provenance` (whether merged
-  runs share a server config). Don't scrape the HTML.
-- **If the data looks empty or stale:** run `npm run consolidate` first (the dashboard/report
-  read the newest checkpoint), then `npm run dashboard`.
+- **Local app** — live DuckDB querying, richest interactivity. Run it while iterating.
+- **Static export** — one self-contained HTML (data + scorer + engine inlined; faceting
+  runs client-side). Published to **<https://pages.xor0.de/llm-bench/>** and mobile-friendly:
+  a push to `main` that changes `results/dashboard.html` redeploys via Forgejo Actions →
+  the `pages` branch → Caddy. Regenerate with `dashboard:export` before pushing.
 
 ---
 
