@@ -53,14 +53,14 @@ parallel_gen`.
 > the host. Historical results are already in the store — `npm run backfill` re-imports
 > any legacy `run.json`, `npm run caps-seed` re-seeds ceilings from it.
 
-### The config marker
+### Comparability
 
-Every run records a readable **`environment`** fingerprint (GPU, backend, KV-cache quant,
-flash-attn, ngl/np, batch/ubatch defaults, and the verbatim `start-server.sh` launch line)
-— see `shared/run-fingerprint.mjs`. On start, `run-suite` compares it to the previous run
-and **warns if the server config changed** (measurements across a change aren't
-comparable). It is config-file derived, so it does _not_ capture the llama.cpp build commit
-or GPU driver — it labels runs for comparability, not bit-for-bit reproducibility.
+There's no separate "fingerprint" to reconcile any more: every measurement row carries
+its own serving/platform dimensions (backend, kv_quant, flash_attn, batch/ubatch,
+`llamacpp_build`, gpu, …). To compare like-for-like, filter on them; to see a config
+difference, pivot on it. `llamacpp_build` (from `llama-server --version`) is captured per
+run, so a silent llama.cpp upgrade shows up as a new value and invalidates the cached
+context ceilings for that build.
 
 ---
 
