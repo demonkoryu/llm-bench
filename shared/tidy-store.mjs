@@ -50,10 +50,12 @@ function deBig(v) {
  * Write one run's tidy rows to its immutable Parquet file (idempotent — overwrites
  * that run's file only). Returns { path, rows }.
  */
-export async function writeRunParquet(resultsDir, { host, backend, run_id, rows }) {
+export async function writeRunParquet(resultsDir, { host, backend, run_id, rows, part = null }) {
   const dir = join(tidyDir(resultsDir), `host=${slug(host)}`, `backend=${slug(backend)}`, `run_id=${run_id}`);
   mkdirSync(dir, { recursive: true });
-  const out = join(dir, 'measurements.parquet');
+  // `part` → an incremental file (part-0001.parquet) so a long run persists after each
+  // result; the dataset glob unions all parts. No part → the single measurements.parquet.
+  const out = join(dir, part != null ? `part-${String(part).padStart(4, '0')}.parquet` : 'measurements.parquet');
   if (!rows.length) return { path: out, rows: 0 };
   const tmp = join(tmpdir(), `tidy-${run_id}-${Date.now()}.ndjson`);
   writeFileSync(tmp, rows.map((r) => JSON.stringify(r)).join('\n'));

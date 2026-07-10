@@ -93,7 +93,10 @@ async function main() {
 
   const srv = llamacppServer({ sshHost: SSH_HOST, llamaUrl: host.llamaUrl, backend: host.backend, debug: !!process.env.BENCH_DEBUG });
   const client = srv.client;
-  const tidyRows = [];
+  // Incremental persistence: each bench/probe result is flushed to its own part-file
+  // immediately, so a crash or kill never loses completed work (the dataset globs parts).
+  let partCounter = 0, writtenTotal = 0;
+  const flush = async (rows) => { if (!rows.length) return; const r = await writeRunParquet(RESULTS, { host: flags.target, backend: host.backend, run_id, rows, part: partCounter++ }); writtenTotal += r.rows; };
   const platformBase = { host: host.raw?.label ? flags.target : flags.target, gpu: host.gpu, vram_total: host.vramTotalMib, backend: host.backend, llamacpp_build, driver: null };
 
   try {
@@ -134,7 +137,7 @@ async function main() {
           if (!runs.length) continue;
           const raw = aggregate(runs);
           const dims = { ...common(run_id, subject, serving, platformBase), think_mode, ts: nowTs(), sampling_profile: subject.family ? `${subject.family}/${think_mode}` : null };
-          for (const r of metricRowsFromResult(raw, dims)) tidyRows.push(r);
+          await flush(metricRowsFromResult(raw, dims));
           const summary = raw.toolcall_pass != null ? `${raw.toolcall_pass}/${raw.toolcall_total}` : raw.reasoning_correct != null ? `${raw.reasoning_correct}/${raw.reasoning_total}` : 'ok';
           console.error(`  ${benchName.padEnd(14)} ${think_mode.padEnd(8)} → ${summary}${SAMPLES > 1 ? ` (n=${raw.n})` : ''}`);
         }
@@ -147,8 +150,8 @@ async function main() {
         try { rawRows = (await BENCHES[benchName].run(probeCtx)) || []; }
         catch (e) { console.error(`  ${benchName}: ${(e.message ?? '').slice(0, 70)}`); }
         const dims = { ...common(run_id, subject, serving, platformBase), think_mode: 'n/a', ts: nowTs(), sampling_profile: null };
-        for (const raw of rawRows) for (const r of metricRowsFromResult(raw, dims)) tidyRows.push(r);
-        console.error(`  ${benchName.padEnd(14)} probe    → ${rawRows.length} metric-rows`);
+        await flush(rawRows.flatMap((raw) => metricRowsFromResult(raw, dims)));
+        console.error(`  ${benchName.padEnd(14)} probe    → ${rawRows.length} rows`);
       }
       await srv.stopServer().catch(() => {});
     }
@@ -157,11 +160,10 @@ async function main() {
     await restore();
   }
 
-  const wr = await writeRunParquet(RESULTS, { host: flags.target, backend: host.backend, run_id, rows: tidyRows });
-  // minimal run manifest (lifecycle/provenance; the tidy parquet is the analytical source)
+  // manifest (lifecycle/provenance; the tidy parquet parts are the analytical source)
   const manDir = join(RESULTS, 'runs', run_id); mkdirSync(manDir, { recursive: true });
-  writeFileSync(join(manDir, 'run.json'), JSON.stringify({ run_id, kind: 'benchrun', host: flags.target, gpu: host.gpu, backend: host.backend, llamacpp_build, chat_template: chatTemplate, benches: benchNames, samples: SAMPLES, ctx: CTX, tidy_rows: wr.rows, started: nowTs(), status: 'complete' }, null, 2));
-  console.error(`\n[bench-run] wrote ${wr.rows} tidy rows → ${wr.path}`);
+  writeFileSync(join(manDir, 'run.json'), JSON.stringify({ run_id, kind: 'benchrun', host: flags.target, gpu: host.gpu, backend: host.backend, llamacpp_build, chat_template: chatTemplate, benches: benchNames, samples: SAMPLES, ctx: CTX, tidy_rows: writtenTotal, started: nowTs(), status: 'complete' }, null, 2));
+  console.error(`\n[bench-run] wrote ${writtenTotal} tidy rows (${partCounter} parts) → run ${run_id}`);
 }
 
 function slug(s) { return String(s ?? '').toLowerCase().replace(/[^a-z0-9]+/g, ''); }
