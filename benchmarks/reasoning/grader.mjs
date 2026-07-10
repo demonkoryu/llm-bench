@@ -6,9 +6,10 @@
 
 import { CASES as BASE_CASES } from './cases.mjs';
 import { HARD_CASES } from './cases-hard.mjs';
+import { EXPERT_CASES } from './cases-expert.mjs';
 
-// Base + hard tier share one grader; lookup is by case_id so the sets can't collide.
-const CASES = { ...BASE_CASES, ...HARD_CASES };
+// Base + hard + expert tiers share one grader; lookup is by case_id so they can't collide.
+const CASES = { ...BASE_CASES, ...HARD_CASES, ...EXPERT_CASES };
 
 function norm(s) {
    return String(s ?? '')
@@ -32,9 +33,11 @@ export default function (output, context) {
 
    let answer = null;
    const stripped = stripThink(output);
-   // Primary: model followed the JSON instruction.
+   // Primary: model followed the JSON instruction. A bare value (e.g. "686") parses as a
+   // JSON number, not an object with .answer — treat that as the answer itself, not undefined.
    try {
-      answer = JSON.parse(stripped).answer;
+      const parsed = JSON.parse(stripped);
+      answer = (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed.answer : String(parsed);
    } catch {
       // Tolerant fallback 1: extract first {...} span (trailing token / preamble).
       const m = stripped.match(/\{[\s\S]*\}/);
@@ -53,7 +56,8 @@ export default function (output, context) {
    }
 
    const a = norm(answer);
-   const correct = c.accepted.some((acc) => {
+   // Guard: an empty normalized answer must not match (else n.includes('') is always true).
+   const correct = a !== '' && c.accepted.some((acc) => {
       const n = norm(acc);
       return a === n || a.includes(n) || n.includes(a);
    });

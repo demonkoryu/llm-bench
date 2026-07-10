@@ -6,6 +6,7 @@ import { benches as codingBenches } from './coding.mjs';
 import { bench as docqa } from './docqa.mjs';
 import { bench as instruction_following } from './instruction_following.mjs';
 import { bench as reasoning } from './reasoning.mjs';
+import { bench as reasoning_expert } from './reasoning_expert.mjs';
 import { bench as reasoning_hard } from './reasoning_hard.mjs';
 import { bench as struct_output } from './struct_output.mjs';
 import { bench as summarization } from './summarization.mjs';
@@ -21,7 +22,7 @@ import { bench as speed } from './probes/speed.mjs';
 import { bench as throughput } from './probes/throughput.mjs';
 
 const all = [
-  triage, reasoning, reasoning_hard, toolcalling, summarization, docqa,
+  triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa,
   ...codingBenches, agentic_loop, struct_output, instruction_following,
   maxctx, kv_per_tok, throughput, speed, prefix_cache, quality_decay, parallel_gen,
 ];
