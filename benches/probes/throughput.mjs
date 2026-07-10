@@ -10,7 +10,7 @@ const DEPTHS = [2048, 8192, 32768];
 const GEN = 128, REPS = 2;
 
 export const bench = {
-  name: 'throughput', kind: 'probe', thinkDependent: false, resumeBench: 'e2e-8k',
+  name: 'throughput', kind: 'probe', thinkDependent: false, resumeBench: 'e2e-32k',
   async run({ srv, client, model, maxctx }) {
     const ctx = Math.max(maxctx, 8192);
     await srv.killAll(); await srv.waitVramClear(30000);

@@ -165,10 +165,12 @@ async function main() {
         }
       }
       // Probe benches last — they self-manage the server (reload at maxctx / --parallel).
-      const caps = readCap(RESULTS, capKeyFields);
-      const probeCtx = { srv, client, model: m, ctx: CTX, maxctx: caps?.coherence_ceiling ?? CTX, caps, sshHost: SSH_HOST, upsertCap: (v) => upsertCap(RESULTS, capKeyFields, { ...v, source_run_id: run_id }) };
+      // Re-read caps PER PROBE so the maxctx probe (if run first) populates the ceiling
+      // that the depth probes (throughput/quality_decay) then load at.
       for (const benchName of wantBenches.filter((b) => BENCHES[b].kind === 'probe')) {
         if (!need(BENCHES[benchName].resumeBench ?? benchName, 'n/a')) { console.error(`  ${benchName.padEnd(14)} probe    — done (resume)`); continue; }
+        const caps = readCap(RESULTS, capKeyFields);
+        const probeCtx = { srv, client, model: m, ctx: CTX, maxctx: caps?.coherence_ceiling ?? CTX, caps, sshHost: SSH_HOST, upsertCap: (v) => upsertCap(RESULTS, capKeyFields, { ...v, source_run_id: run_id }) };
         let rawRows = [];
         try { rawRows = (await BENCHES[benchName].run(probeCtx)) || []; }
         catch (e) { console.error(`  ${benchName}: ${(e.message ?? '').slice(0, 70)}`); }
