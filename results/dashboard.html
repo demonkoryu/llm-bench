@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>llm-bench explorer</title>
-<meta name="description" content="llm-bench results — generated 2026-07-10T11:16:06.202Z">
+<meta name="description" content="llm-bench results — generated 2026-07-10T11:25:09.903Z">
 <style>
   :root{
     --bg:#0f1214; --panel:#161b1e; --panel2:#1b2226; --ink:#e7ebed; --dim:#8a949b; --faint:#5c666c;
@@ -420,10 +420,12 @@ function renderPareto(d) {
   const NS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(NS, 'svg'); svg.setAttribute('id', 'pareto'); svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width', '100%'); svg.style.maxWidth = W + 'px';
   const mk = (t, a) => { const n = document.createElementNS(NS, t); for (const k in a) n.setAttribute(k, a[k]); return n; };
+  // Node.append() returns undefined, so set textContent BEFORE appending.
+  const mkt = (a, s) => { const n = mk('text', a); n.textContent = s; svg.append(n); return n; };
   // grid + axes
-  for (let i = 0; i <= 4; i++) { const gy = P + i * (H - 2 * P) / 4; svg.append(mk('line', { x1: P, y1: gy, x2: W - P, y2: gy, stroke: 'var(--line)' })); svg.append(mk('text', { x: 8, y: gy + 4, fill: 'var(--faint)', 'font-size': 10, 'font-family': 'var(--mono)' })).textContent = fmt(ymax - i * (ymax - ymin) / 4, 0); }
-  svg.append(mk('text', { x: W / 2, y: H - 12, fill: 'var(--dim)', 'font-size': 11, 'text-anchor': 'middle', 'font-family': 'var(--mono)' })).textContent = d.xMetric + ' →';
-  svg.append(mk('text', { x: 14, y: 20, fill: 'var(--dim)', 'font-size': 11, 'font-family': 'var(--mono)' })).textContent = '↑ ' + d.yMetric;
+  for (let i = 0; i <= 4; i++) { const gy = P + i * (H - 2 * P) / 4; svg.append(mk('line', { x1: P, y1: gy, x2: W - P, y2: gy, stroke: 'var(--line)' })); mkt({ x: 8, y: gy + 4, fill: 'var(--faint)', 'font-size': 10, 'font-family': 'var(--mono)' }, fmt(ymax - i * (ymax - ymin) / 4, 0)); }
+  mkt({ x: W / 2, y: H - 12, fill: 'var(--dim)', 'font-size': 11, 'text-anchor': 'middle', 'font-family': 'var(--mono)' }, d.xMetric + ' →');
+  mkt({ x: 14, y: 20, fill: 'var(--dim)', 'font-size': 11, 'font-family': 'var(--mono)' }, '↑ ' + d.yMetric);
   const tip = $('#tip');
   for (const p of pts) {
     const c = mk('circle', { cx: sx(p.x), cy: sy(p.y), r: rOf(p.vram), fill: archColor(p.arch), 'fill-opacity': 0.75, stroke: archColor(p.arch), 'stroke-width': 1 });
