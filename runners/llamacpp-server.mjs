@@ -13,11 +13,8 @@
  * Deploy path:           ~/llm-bench   (set via REMOTE_BENCH_DIR)
  */
 
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
 import { createClient } from '../shared/llm/index.mjs';
-
-const execP = promisify(execFile);
+import { LOCAL_HOST, runHostCmd } from '../shared/host-exec.mjs';
 
 /**
  * Convert an extra_flags value from models.yaml to a CLI argument string.
@@ -55,15 +52,6 @@ export function extraFlagsToString(flags) {
 const SCRIPTS_DIR = '~/llm-bench/scripts/llm2';
 const DEFAULT_PORT = 8090;
 
-async function ssh(host, cmd, { timeout = 30_000 } = {}) {
-   try {
-      const { stdout, stderr } = await execP('ssh', ['-o', 'BatchMode=yes', '-o', 'ConnectTimeout=30', host, cmd], { timeout });
-      return { stdout: stdout.trim(), stderr: stderr.trim(), ok: true };
-   } catch (e) {
-      return { stdout: '', stderr: e.stderr ?? e.message, ok: false, exitCode: e.code };
-   }
-}
-
 /**
  * Create a server manager for a specific SSH host + LLAMA_URL pair.
  *
@@ -73,6 +61,8 @@ async function ssh(host, cmd, { timeout = 30_000 } = {}) {
  *   backend   {string}   'vulkan' | 'rocm' (default: 'vulkan')
  *   port      {number}   llama-server port (default: 8090)
  *   debug     {boolean}  verbose logging
+ *   local     {boolean}  run the llm2 scripts locally (Node is ON the test host)
+ *                        instead of over SSH; defaults to env BENCH_LOCAL=1.
  */
 export function llamacppServer({
    sshHost,
@@ -80,16 +70,17 @@ export function llamacppServer({
    backend = 'vulkan',
    port = DEFAULT_PORT,
    debug = false,
+   local = LOCAL_HOST,
 }) {
    const client = createClient(llamaUrl, { debug });
 
-   /** Run a script on llm2, return stdout. Throws on failure unless tolerant=true. */
+   /** Run a script on the host (locally or over SSH). Throws on failure unless tolerant=true. */
    async function runScript(script, args = '', { tolerant = false, timeout = 30_000 } = {}) {
       const cmd = `bash ${SCRIPTS_DIR}/${script} ${args}`;
       if (debug) {
-         console.error(`[ssh] ${cmd}`);
+         console.error(`[${local ? 'local' : 'ssh'}] ${cmd}`);
       }
-      const r = await ssh(sshHost, cmd, { timeout });
+      const r = await runHostCmd(cmd, { local, sshHost, timeout });
       if (!r.ok && !tolerant) {
          throw new Error(`${script} failed: ${r.stderr.slice(0, 200)}`);
       }
@@ -180,7 +171,7 @@ export function llamacppServer({
 
    /** Check for crash patterns in the server log. Returns true if crashed. */
    async function hasCrashed() {
-      const r = await ssh(sshHost, `bash ${SCRIPTS_DIR}/log-tail.sh --lines 20`, { timeout: 10_000 });
+      const r = await runHostCmd(`bash ${SCRIPTS_DIR}/log-tail.sh --lines 20`, { local, sshHost, timeout: 10_000 });
       return r.exitCode === 2;
    }
 

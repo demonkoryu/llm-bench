@@ -1,0 +1,7 @@
+[Unit]
+Description=llm-bench dashboard export + publish to pages.xor0.de
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/llm-bench
+ExecStart=/usr/bin/env bash scripts/rose/publish.sh

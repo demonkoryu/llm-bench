@@ -9,12 +9,12 @@
 //   SSH_HOST=192.168.1.120 node runners/bench-run.mjs --models Qwen3.6-35B \
 //       --benches toolcalling,reasoning --think both --samples 1 --ctx 16384 \
 //       [--chat-template /path/to/tmpl.jinja] [--no-router-restart]
-import { execFile } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseArgs, promisify } from 'node:util';
+import { parseArgs } from 'node:util';
 import { BENCHES } from '../benches/index.mjs';
+import { LOCAL_HOST, runHostCmd } from '../shared/host-exec.mjs';
 import { resolveSampling } from '../shared/llm/index.mjs';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
 import { probeHostBuild } from '../shared/host-probe.mjs';
@@ -24,7 +24,6 @@ import { query, writeRunParquet } from '../shared/tidy-store.mjs';
 import { readCap, upsertCap } from '../analysis/caps-cache.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
 
-const execP = promisify(execFile);
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RESULTS = join(ROOT, 'results');
 const { values: flags } = parseArgs({ options: {
@@ -39,11 +38,14 @@ const { values: flags } = parseArgs({ options: {
   'no-router-restart': { type: 'boolean', default: false },
   resume: { type: 'boolean', default: false }, // skip (config × bench × think) combos already in the store
   'keep-router': { type: 'boolean', default: false }, // don't stop the systemd router (assume host already free)
+  local: { type: 'boolean', default: false }, // run host scripts locally (Node is ON the test host); default SSH
 } });
 
 const SSH = process.env.SSH_HOST || null;
 const host = loadHostConfig(join(ROOT, 'config/hosts.yaml'), flags.target);
 const SSH_HOST = SSH || host.sshHost;
+const LOCAL = flags.local || LOCAL_HOST; // run host scripts locally vs over SSH
+const SUDO = LOCAL ? 'sudo -n' : 'sudo';  // non-interactive sudo when on-host
 const CTX = Number(flags.ctx);
 const SAMPLES = Math.max(1, Number(flags.samples));
 const modelFilter = flags.models ? flags.models.split(',').map((s) => s.trim()) : [];
@@ -54,7 +56,7 @@ const chatTemplate = flags['template-name'] ?? (chatTemplatePath ? 'froggeric' :
 const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
 const std = (xs) => { if (xs.length < 2) return null; const m = mean(xs); return Math.sqrt(mean(xs.map((x) => (x - m) ** 2))); };
 
-async function ssh(cmd) { try { const { stdout } = await execP('ssh', ['-o', 'BatchMode=yes', SSH_HOST, cmd], { timeout: 30000 }); return stdout.trim(); } catch { return ''; } }
+async function ssh(cmd) { const r = await runHostCmd(cmd, { local: LOCAL, sshHost: SSH_HOST }); return r.stdout; }
 
 function thinkStatesFor(model) {
   let s = model.think === 'optional' ? [false, true] : (model.think === 'required' || model.think === 'reasoning') ? [true] : [null];
@@ -85,14 +87,14 @@ async function main() {
 
   const stamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14).replace(/(\d{8})(\d{6})/, '$1-$2');
   const run_id = `${slug(host.gpu)}-${host.backend}-${stamp}-benchrun`;
-  const { llamacpp_build } = await probeHostBuild({ sshHost: SSH_HOST, binPath: host.backends?.[host.backend]?.bin });
-  console.error(`[bench-run] ${models.length} models · benches=[${benchNames}] · think=${flags.think} · samples=${SAMPLES} · build=${llamacpp_build} · template=${chatTemplate}`);
+  const { llamacpp_build } = await probeHostBuild({ sshHost: SSH_HOST, binPath: host.backends?.[host.backend]?.bin, local: LOCAL });
+  console.error(`[bench-run] ${models.length} models · benches=[${benchNames}] · think=${flags.think} · samples=${SAMPLES} · build=${llamacpp_build} · template=${chatTemplate} · exec=${LOCAL ? 'local' : 'ssh'}`);
 
-  if (!flags['keep-router']) { const r = await ssh('sudo systemctl stop llama-server 2>&1 && echo stopped'); console.error(`[bench-run] router: ${r || 'n/a'}`); }
-  const restore = async () => { if (!flags['no-router-restart'] && !flags['keep-router']) { await ssh('sudo systemctl start llama-server'); console.error('[bench-run] router restarted'); } };
+  if (!flags['keep-router']) { const r = await ssh(`${SUDO} systemctl stop llama-server 2>&1 && echo stopped`); console.error(`[bench-run] router: ${r || 'n/a'}`); }
+  const restore = async () => { if (!flags['no-router-restart'] && !flags['keep-router']) { await ssh(`${SUDO} systemctl start llama-server`); console.error('[bench-run] router restarted'); } };
   process.on('SIGINT', async () => { await restore(); process.exit(130); });
 
-  const srv = llamacppServer({ sshHost: SSH_HOST, llamaUrl: host.llamaUrl, backend: host.backend, debug: !!process.env.BENCH_DEBUG });
+  const srv = llamacppServer({ sshHost: SSH_HOST, llamaUrl: host.llamaUrl, backend: host.backend, debug: !!process.env.BENCH_DEBUG, local: LOCAL });
   const client = srv.client;
   // Incremental persistence: each bench/probe result is flushed to its own part-file
   // immediately, so a crash or kill never loses completed work (the dataset globs parts).
@@ -170,7 +172,7 @@ async function main() {
       for (const benchName of wantBenches.filter((b) => BENCHES[b].kind === 'probe')) {
         if (!need(BENCHES[benchName].resumeBench ?? benchName, 'n/a')) { console.error(`  ${benchName.padEnd(14)} probe    — done (resume)`); continue; }
         const caps = readCap(RESULTS, capKeyFields);
-        const probeCtx = { srv, client, model: m, ctx: CTX, maxctx: caps?.coherence_ceiling ?? CTX, caps, sshHost: SSH_HOST, upsertCap: (v) => upsertCap(RESULTS, capKeyFields, { ...v, source_run_id: run_id }) };
+        const probeCtx = { srv, client, model: m, ctx: CTX, maxctx: caps?.coherence_ceiling ?? CTX, caps, upsertCap: (v) => upsertCap(RESULTS, capKeyFields, { ...v, source_run_id: run_id }) };
         let rawRows = [];
         try { rawRows = (await BENCHES[benchName].run(probeCtx)) || []; }
         catch (e) { console.error(`  ${benchName}: ${(e.message ?? '').slice(0, 70)}`); }

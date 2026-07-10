@@ -1,0 +1,10 @@
+[Unit]
+Description=Publish llm-bench dashboard every 15 min (progress + final)
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=15min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
