@@ -7,7 +7,7 @@ import { extraFlagsToString } from '../../runners/llamacpp-server.mjs';
 const CONC = [1, 2, 4, 8], MAXP = 8, GEN = 128;
 
 export const bench = {
-  name: 'parallel_gen', kind: 'probe', thinkDependent: false,
+  name: 'parallel_gen', kind: 'probe', thinkDependent: false, resumeBench: 'speed_pargen-1',
   async run({ srv, client, model }) {
     await srv.killAll(); await srv.waitVramClear(30000);
     const extra = `--parallel ${MAXP} ${extraFlagsToString(model.extra_flags)}`.trim();

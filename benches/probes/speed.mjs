@@ -9,7 +9,7 @@ const SHORT = 'Tell me a single short sentence about the sky.';
 const LONG = 'Tell me about the history of computing. Be as comprehensive as possible and write at least 2000 words covering all major developments from ancient times to today.';
 
 export const bench = {
-  name: 'speed', kind: 'probe', thinkDependent: false,
+  name: 'speed', kind: 'probe', thinkDependent: false, resumeBench: 'speed_short',
   async run({ srv, client, model, maxctx }) {
     const ctx = Math.max(maxctx, 16384);
     await srv.killAll(); await srv.waitVramClear(30000);

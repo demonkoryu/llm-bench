@@ -13,7 +13,7 @@ const REPS = 3;
 const answersWith = (s, expected) => (String(s).replace(/<think>[\s\S]*?<\/think>/g, '').match(/-?\d+/g) || []).includes(String(expected));
 
 export const bench = {
-  name: 'quality_decay', kind: 'probe', thinkDependent: false,
+  name: 'quality_decay', kind: 'probe', thinkDependent: false, resumeBench: 'quality_decay-0k',
   async run({ srv, client, model, maxctx }) {
     const ctx = Math.max(maxctx, 16384);
     await srv.killAll(); await srv.waitVramClear(30000);

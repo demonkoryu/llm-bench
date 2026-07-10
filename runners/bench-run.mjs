@@ -20,7 +20,7 @@ import { loadHostConfig } from '../shared/hosts-config.mjs';
 import { probeHostBuild } from '../shared/host-probe.mjs';
 import { deriveSubjectDims, loadModelsConfig } from '../shared/models-config.mjs';
 import { metricRowsFromResult } from '../shared/tidy-schema.mjs';
-import { writeRunParquet } from '../shared/tidy-store.mjs';
+import { query, writeRunParquet } from '../shared/tidy-store.mjs';
 import { readCap, upsertCap } from '../analysis/caps-cache.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
 
@@ -37,6 +37,7 @@ const { values: flags } = parseArgs({ options: {
   'chat-template': { type: 'string' },             // path on host → chat_template='froggeric-…' unless --template-name
   'template-name': { type: 'string' },
   'no-router-restart': { type: 'boolean', default: false },
+  resume: { type: 'boolean', default: false }, // skip (config × bench × think) combos already in the store
   'keep-router': { type: 'boolean', default: false }, // don't stop the systemd router (assume host already free)
 } });
 
@@ -99,6 +100,20 @@ async function main() {
   const flush = async (rows) => { if (!rows.length) return; const r = await writeRunParquet(RESULTS, { host: flags.target, backend: host.backend, run_id, rows, part: partCounter++ }); writtenTotal += r.rows; };
   const platformBase = { host: host.raw?.label ? flags.target : flags.target, gpu: host.gpu, vram_total: host.vramTotalMib, backend: host.backend, llamacpp_build, driver: null };
 
+  // Resume: skip (config × bench × think) combos already in the store (incl. from prior
+  // runs / a crashed partial). Keyed on the full identity so a different build re-measures.
+  const SEP = '␟';
+  const doneSet = new Set();
+  if (flags.resume) {
+    try {
+      for (const r of await query(RESULTS, `SELECT DISTINCT gguf_file, kv_quant, chat_template, backend, gpu, llamacpp_build, bench, think_mode FROM $TIDY`))
+        doneSet.add([r.gguf_file, r.kv_quant ?? '', r.chat_template, r.backend, r.gpu, r.llamacpp_build ?? '', r.bench, r.think_mode].join(SEP));
+    } catch { /* empty store */ }
+    console.error(`[bench-run] --resume: ${doneSet.size} (config×bench×think) combos already measured — will skip them`);
+  }
+  const needed = (subject, kv_quant, bench, think_mode) =>
+    !flags.resume || !doneSet.has([subject.gguf_file, kv_quant ?? '', chatTemplate, host.backend, host.gpu, llamacpp_build ?? '', bench, think_mode].join(SEP));
+
   try {
     for (const m of models) {
       const subject = deriveSubjectDims(m);
@@ -110,6 +125,13 @@ async function main() {
         spec_decode: ef['spec-type'] ?? null,
       };
       const capKeyFields = { gguf_file: subject.gguf_file, quant: subject.quant, kv_quant, backend: host.backend, gpu: host.gpu, llamacpp_build };
+      const wantBenches = benchNames.filter((b) => BENCHES[b]);
+      const need = (benchName, think_mode) => needed(subject, kv_quant, benchName, think_mode);
+      // Nothing pending for this model? Skip it entirely (no server load).
+      const anyNeeded = wantBenches.some((b) => BENCHES[b].kind === 'probe'
+        ? need(BENCHES[b].resumeBench ?? b, 'n/a')
+        : (BENCHES[b].thinkDependent ? thinkStatesFor(m) : [null]).some((t) => need(b, BENCHES[b].thinkDependent ? thinkModeOf(t) : 'n/a')));
+      if (!anyNeeded) { console.error(`\n══ ${m.label ?? m.hf_file} — all requested benches already measured (resume), skipping`); continue; }
 
       console.error(`\n══ ${m.label ?? m.hf_file}`);
       await srv.killAll();
@@ -120,13 +142,13 @@ async function main() {
         await srv.waitHealthy(360000);
       } catch (e) { console.error(`  load failed: ${(e.message ?? '').slice(0, 80)} — skipping`); continue; }
 
-      const wantBenches = benchNames.filter((b) => BENCHES[b]);
       // Regular (client-prompt) benches first — they use the server loaded above.
       for (const benchName of wantBenches.filter((b) => BENCHES[b].kind !== 'probe')) {
         const bench = BENCHES[benchName];
         const states = bench.thinkDependent ? thinkStatesFor(m) : [m.think === 'optional' ? false : null];
         for (const think of states) {
           const think_mode = bench.thinkDependent ? thinkModeOf(think) : 'n/a';
+          if (!need(benchName, think_mode)) { console.error(`  ${benchName.padEnd(14)} ${think_mode.padEnd(8)} — done (resume)`); continue; }
           const sampling = resolveSampling(m, think, benchName, matrix);
           const thinkControl = m.think_control ?? 'enable_thinking';
           const runs = [];
@@ -146,6 +168,7 @@ async function main() {
       const caps = readCap(RESULTS, capKeyFields);
       const probeCtx = { srv, client, model: m, ctx: CTX, maxctx: caps?.coherence_ceiling ?? CTX, caps, sshHost: SSH_HOST, upsertCap: (v) => upsertCap(RESULTS, capKeyFields, { ...v, source_run_id: run_id }) };
       for (const benchName of wantBenches.filter((b) => BENCHES[b].kind === 'probe')) {
+        if (!need(BENCHES[benchName].resumeBench ?? benchName, 'n/a')) { console.error(`  ${benchName.padEnd(14)} probe    — done (resume)`); continue; }
         let rawRows = [];
         try { rawRows = (await BENCHES[benchName].run(probeCtx)) || []; }
         catch (e) { console.error(`  ${benchName}: ${(e.message ?? '').slice(0, 70)}`); }

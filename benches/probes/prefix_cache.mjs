@@ -8,7 +8,7 @@ const median = (xs) => { const s = xs.filter(Number.isFinite).sort((a, b) => a -
 const REPS = 3, DEPTH = 8192;
 
 export const bench = {
-  name: 'prefix_cache', kind: 'probe', thinkDependent: false,
+  name: 'prefix_cache', kind: 'probe', thinkDependent: false, resumeBench: 'prefix_cache_cold_ms',
   async run({ srv, client, model, maxctx }) {
     const ctx = Math.max(maxctx, 16384);
     const depth = Math.min(DEPTH, Math.max(1024, ctx - 1024));
