@@ -99,13 +99,11 @@ npm run dashboard:export     # snapshot a self-contained results/dashboard.html 
   a push to `main` that changes `results/dashboard.html` redeploys via Forgejo Actions →
   the `pages` branch → Caddy. Regenerate with `dashboard:export` before pushing.
 
-## 4. Rose-native runs (dev PC can be off)
+## 4. Local-exec mode (run on the GPU host)
 
-Run the whole pipeline **on the GPU host** so it survives the dev PC shutting down.
 `bench-run.mjs --local` (env `BENCH_LOCAL=1`) runs the host scripts + router `systemctl`
-locally instead of over SSH; a systemd `--user` service keeps the resumable run going and a
-15-min timer exports + pushes the dashboard (→ pages.xor0.de). See
-[`scripts/rose/README.md`](scripts/rose/README.md). The default SSH mode is unchanged.
+locally instead of over SSH — handy for driving the pipeline directly on the GPU host
+rather than from the dev PC. The default SSH mode is unchanged.
 
 ---
 
