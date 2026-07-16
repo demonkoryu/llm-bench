@@ -7,16 +7,16 @@
 import { LOCAL_HOST, runHostCmd } from './host-exec.mjs';
 
 async function hostCmd(cmd, opts) {
-  const r = await runHostCmd(cmd, { timeout: 15_000, ...opts });
-  return r.ok ? r.stdout : '';
+   const r = await runHostCmd(cmd, { timeout: 15_000, ...opts });
+   return r.ok ? r.stdout : '';
 }
 
 /** Parse `version: 9780 (1191758c5)` (llama-server --version, printed on stderr). */
 export function parseLlamacppBuild(versionText) {
-  const m = /version:\s*(\d+)\s*\(([0-9a-f]+)\)/i.exec(versionText || '');
-  if (m) return `${m[1]} (${m[2]})`;
-  const alt = /version:\s*(\S+)/i.exec(versionText || '');
-  return alt ? alt[1] : null;
+   const m = /version:\s*(\d+)\s*\(([0-9a-f]+)\)/i.exec(versionText || '');
+   if (m) return `${m[1]} (${m[2]})`;
+   const alt = /version:\s*(\S+)/i.exec(versionText || '');
+   return alt ? alt[1] : null;
 }
 
 /**
@@ -27,12 +27,12 @@ export function parseLlamacppBuild(versionText) {
  * @returns {Promise<{ llamacpp_build: string|null, driver: string|null }>}
  */
 export async function probeHostBuild({ sshHost, binPath, local = LOCAL_HOST }) {
-  const o = { local, sshHost };
-  // --version prints to stderr; redirect so we capture it.
-  const verOut = binPath ? await hostCmd(`${binPath} --version 2>&1 | head -3`, o) : '';
-  const llamacpp_build = parseLlamacppBuild(verOut);
-  // Driver is best-effort (nullable in the schema). Try ROCm first, then any Mesa/DRM hint.
-  const drvOut = await hostCmd(`rocm-smi --version 2>/dev/null | grep -iE "driver" | head -1`, o);
-  const driver = drvOut ? drvOut.replace(/\s+/g, ' ').trim() : null;
-  return { llamacpp_build, driver };
+   const o = { local, sshHost };
+   // --version prints to stderr; redirect so we capture it.
+   const verOut = binPath ? await hostCmd(`${binPath} --version 2>&1 | head -3`, o) : '';
+   const llamacpp_build = parseLlamacppBuild(verOut);
+   // Driver is best-effort (nullable in the schema). Try ROCm first, then any Mesa/DRM hint.
+   const drvOut = await hostCmd(`rocm-smi --version 2>/dev/null | grep -iE "driver" | head -1`, o);
+   const driver = drvOut ? drvOut.replace(/\s+/g, ' ').trim() : null;
+   return { llamacpp_build, driver };
 }

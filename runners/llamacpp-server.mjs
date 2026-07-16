@@ -13,8 +13,8 @@
  * Deploy path:           ~/llm-bench   (set via REMOTE_BENCH_DIR)
  */
 
-import { createClient } from '../shared/llm/index.mjs';
 import { LOCAL_HOST, runHostCmd } from '../shared/host-exec.mjs';
+import { createClient } from '../shared/llm/index.mjs';
 
 /**
  * Convert an extra_flags value from models.yaml to a CLI argument string.

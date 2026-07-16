@@ -19,12 +19,12 @@ export const LOCAL_HOST = process.env.BENCH_LOCAL === '1';
  * Tilde paths in `cmd` expand the same way under both (login-ish bash / ssh shell).
  */
 export async function runHostCmd(cmd, { local = LOCAL_HOST, sshHost, timeout = 30_000 } = {}) {
-  const file = local ? 'bash' : 'ssh';
-  const args = local ? ['-c', cmd] : ['-o', 'BatchMode=yes', '-o', 'ConnectTimeout=30', sshHost, cmd];
-  try {
-    const { stdout, stderr } = await execP(file, args, { timeout, maxBuffer: 16 * 1024 * 1024 });
-    return { stdout: stdout.trim(), stderr: stderr.trim(), ok: true };
-  } catch (e) {
-    return { stdout: (e.stdout ?? '').trim?.() ?? '', stderr: e.stderr ?? e.message, ok: false, exitCode: e.code };
-  }
+   const file = local ? 'bash' : 'ssh';
+   const args = local ? ['-c', cmd] : ['-o', 'BatchMode=yes', '-o', 'ConnectTimeout=30', sshHost, cmd];
+   try {
+      const { stdout, stderr } = await execP(file, args, { timeout, maxBuffer: 16 * 1024 * 1024 });
+      return { stdout: stdout.trim(), stderr: stderr.trim(), ok: true };
+   } catch (e) {
+      return { stdout: (e.stdout ?? '').trim?.() ?? '', stderr: e.stderr ?? e.message, ok: false, exitCode: e.code };
+   }
 }

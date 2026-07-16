@@ -372,6 +372,25 @@ models:
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
      kv_variants: [q5_0]
 
+   # ── Gemma4-31B QAT q4_0 (Google official, dense) ────────────────────────────
+   # Dense 31B, hybrid think, native FC. ~16.8 GB → fits 20.5 GB card.
+   # Google QAT recipe recovers accuracy lost during quantization vs post-hoc q4.
+   # Ships a new chat template baked into the GGUF (used automatically as 'builtin').
+   # No MTP draft available for this model. kv_variants q4_0 → q5_0 progressive sweep.
+   - hf_repo: google/gemma-4-31B-it-qat-q4_0-gguf
+     hf_file: gemma-4-31B_q4_0-it.gguf
+     label: "Gemma4-31B QAT q4_0"
+     family: gemma4
+     type: dense
+     think: optional
+     think_control: enable_thinking
+     tools: true
+     native_max_ctx: 131072
+     kv_bytes_per_token: 16384
+     extra_flags: { "no-mmproj": true }   # repo ships gemma-4-31B-it-mmproj.gguf — skip it (text-only)
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, maxctx]
+     kv_variants: [q4_0, q5_0]
+
    # ── Gemma4 QAT — Unsloth Dynamic UD-Q4_K_XL (QAT base, unsloth's dynamic quant) ─
    # Unsloth's quantization-aware-trained GGUFs: same QAT recipe as Google's q4_0
    # but repacked as the UD-Q4_K_XL dynamic mix (per-tensor bit allocation) for

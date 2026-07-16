@@ -16,11 +16,11 @@ const WEB = join(ROOT, 'app', 'web');
 // Inline the pure scorer as classic script: strip its import line + `export`s so
 // scoring-config's consts and score's functions share the page's global scope.
 function inlineScorer() {
-  const cfg = readFileSync(join(ROOT, 'analysis/scoring-config.mjs'), 'utf8').replace(/^export /gm, '');
-  const score = readFileSync(join(ROOT, 'analysis/score.mjs'), 'utf8')
-    .replace(/^import[^\n]*\n/gm, '')
-    .replace(/^export /gm, '');
-  return cfg + '\n' + score;
+   const cfg = readFileSync(join(ROOT, 'analysis/scoring-config.mjs'), 'utf8').replace(/^export /gm, '');
+   const score = readFileSync(join(ROOT, 'analysis/score.mjs'), 'utf8')
+      .replace(/^import[^\n]*\n/gm, '')
+      .replace(/^export /gm, '');
+   return cfg + '\n' + score;
 }
 
 // Client engine + metric catalog + fetch shim (mirrors app/server.mjs in JS over ROWS).
@@ -81,22 +81,23 @@ window.fetch = async (url, opts) => { const u=String(url);
 `;
 
 async function main() {
-  const rows = await query(RESULTS, `SELECT * FROM $TIDY`);
-  const html = readFileSync(join(WEB, 'index.html'), 'utf8');
-  const appJs = readFileSync(join(WEB, 'app.js'), 'utf8');
-  const dataScript = `<script>window.__ROWS__=${JSON.stringify(rows)};</script>`;
-  const inlined = [
-    dataScript,
-    `<script>${inlineScorer()}</script>`,
-    `<script>${ENGINE}</script>`,
-    `<script>${appJs}</script>`,
-  ].join('\n');
-  // add mobile-friendliness note + a generated stamp, replace the external app.js include
-  const out = html
-    .replace('<script src="/app.js"></script>', inlined)
-    .replace('<title>llm-bench explorer</title>', `<title>llm-bench explorer</title>\n<meta name="description" content="llm-bench results — generated ${new Date().toISOString()}">`);
-  const dest = join(RESULTS, 'dashboard.html');
-  writeFileSync(dest, out);
-  console.error(`[export] ${rows.length} rows → ${dest} (${(out.length / 1024).toFixed(0)} KiB, self-contained)`);
+   const rows = await query(RESULTS, `SELECT * FROM $TIDY`);
+   const html = readFileSync(join(WEB, 'index.html'), 'utf8');
+   const appJs = readFileSync(join(WEB, 'app.js'), 'utf8');
+   const dataScript = `<script>window.__ROWS__=${JSON.stringify(rows)};</script>`;
+   const inlined = [dataScript, `<script>${inlineScorer()}</script>`, `<script>${ENGINE}</script>`, `<script>${appJs}</script>`].join('\n');
+   // add mobile-friendliness note + a generated stamp, replace the external app.js include
+   const out = html
+      .replace('<script src="/app.js"></script>', inlined)
+      .replace(
+         '<title>llm-bench explorer</title>',
+         `<title>llm-bench explorer</title>\n<meta name="description" content="llm-bench results — generated ${new Date().toISOString()}">`,
+      );
+   const dest = join(RESULTS, 'dashboard.html');
+   writeFileSync(dest, out);
+   console.error(`[export] ${rows.length} rows → ${dest} (${(out.length / 1024).toFixed(0)} KiB, self-contained)`);
 }
-main().catch((e) => { console.error(e); process.exit(1); });
+main().catch((e) => {
+   console.error(e);
+   process.exit(1);
+});
