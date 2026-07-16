@@ -59,13 +59,22 @@ function pivot(b){ const rows=filt(b.facets); const mfn=M[b.metric].fn; const rs
   const rows2=[...rset].sort(), cols=[...cset].sort();
   const cells=rows2.map(rr=>{ const base=b.baseline!=null?cm.get(rr+'\\u241f'+b.baseline):null; return { r:rr, vals:cols.map(cc=>{ const v=cm.get(rr+'\\u241f'+cc)??null; return {c:cc,v,delta:(base!=null&&v!=null)?v-base:null}; }) }; });
   return { rows:rows2, cols, cells, metric:b.metric, lower:!!M[b.metric].lower, baseline:b.baseline }; }
-function pareto(b){ const think=b.think||'no_think'; const rows=filt(b.facets).filter(r=>r.think_mode==='n/a'||r.think_mode===think);
-  const xf=M[b.xMetric].fn, yf=M[b.yMetric].fn, vf=M['VRAM MiB'].fn; const points=[];
-  for(const [k,grp] of groupBy(rows, r=>JSON.stringify([r.gguf_file,r.quant,r.kv_quant,r.chat_template,r.arch,r.active_params,r.total_params]))){
+function paretoPts(rows, xf, yf, vf, think){ const rs=rows.filter(r=>r.think_mode==='n/a'||r.think_mode===think); const out=[];
+  for(const [k,grp] of groupBy(rs, r=>JSON.stringify([r.gguf_file,r.quant,r.kv_quant,r.chat_template,r.arch,r.active_params,r.total_params]))){
     const [g,q,kv,ct,arch,ap,tp]=JSON.parse(k); const x=xf(grp),y=yf(grp); if(x==null||y==null)continue;
-    points.push({x,y,vram:vf(grp),arch,label:(g.replace('.gguf','')+' '+(kv||'')+' '+ct).replace(/\\s+/g,' ').trim(),dims:{gguf_file:g,arch,active_params:ap,total_params:tp}}); }
-  return { points, xMetric:b.xMetric, yMetric:b.yMetric }; }
-function leaderboard(b){ const rows=filt(b.facets); const {entities,denom}=scoreSelection(rows,{think:b.think||'no_think',dials:b.dials||DEFAULT_DIALS}); return {entities,denom,count:rows.length}; }
+    out.push({x,y,vram:vf(grp),arch,think,cfg:{gguf_file:g,quant:q,kv_quant:kv,chat_template:ct,think},label:(g.replace('.gguf','')+' '+(kv||'')+' '+ct+' ['+think+']').replace(/\\s+/g,' ').trim(),dims:{gguf_file:g,arch,active_params:ap,total_params:tp}}); }
+  return out; }
+function pareto(b){ const think=b.think||'both'; const rows=filt(b.facets); const xf=M[b.xMetric].fn, yf=M[b.yMetric].fn, vf=M['VRAM MiB'].fn;
+  const modes=think==='both'?['no_think','think']:[think]; const points=modes.flatMap(m=>paretoPts(rows,xf,yf,vf,m));
+  return { points, xMetric:b.xMetric, yMetric:b.yMetric, think }; }
+function leaderboard(b){ const think=b.think||'both'; const rows=filt(b.facets); const dials=b.dials||DEFAULT_DIALS;
+  if(think!=='both'){ const {entities,denom}=scoreSelection(rows,{think,dials}); return {entities,denom,count:rows.length}; }
+  const variants=new Map();
+  for(const r of rows){ const k=entityKey(r); const tm=r.think_mode||'n/a'; if(!variants.has(k))variants.set(k,new Set()); if(tm!=='n/a')variants.get(k).add(tm); }
+  const noT=scoreSelection(rows,{think:'no_think',dials}); const yesT=scoreSelection(rows,{think:'think',dials}); const entities=[];
+  for(const e of noT.entities){ const v=variants.get(e.key)||new Set(); if(v.size===0){e.think='n/a';entities.push(e);} else if(v.has('no_think'))entities.push(e); }
+  for(const e of yesT.entities){ if((variants.get(e.key)||new Set()).has('think'))entities.push(e); }
+  return {entities,denom:noT.denom,count:rows.length}; }
 function coverage(b){ const rows=filt(b.facets); const cfg=r=>r.gguf_file.replace('.gguf','')+'|'+(r.kv_quant||'')+'|'+r.chat_template;
   const configs=[...new Set(rows.map(cfg))].sort(), benches=[...new Set(rows.map(r=>r.bench))].sort();
   const have=new Set(rows.map(r=>cfg(r)+'\\u241f'+r.bench));
