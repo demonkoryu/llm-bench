@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>llm-bench explorer</title>
-<meta name="description" content="llm-bench results — generated 2026-07-12T16:15:09.056Z">
+<meta name="description" content="llm-bench results — generated 2026-07-16T15:16:18.848Z">
 <style>
   :root{
     --bg:#0f1214; --panel:#161b1e; --panel2:#1b2226; --ink:#e7ebed; --dim:#8a949b; --faint:#5c666c;
@@ -42,6 +42,15 @@
   .chip{font-family:var(--mono);font-size:11px;padding:1px 6px;border-radius:999px}
   .chip.win{color:var(--win);background:var(--winbg)} .chip.loss{color:var(--loss);background:var(--lossbg)} .chip.tie{color:var(--tie)}
   .cap{font-family:var(--mono);font-weight:600}
+  /* leaderboard: draggable sort headers + row excludes */
+  th.draggable{cursor:grab;user-select:none;white-space:nowrap}
+  th.draggable:active{cursor:grabbing}
+  th.draggable.sortkey{color:var(--accent)}
+  th.draggable.drag-over{background:var(--panel2);box-shadow:inset 2px 0 0 var(--accent)}
+  tr.excluded td:not(.exsel){color:var(--faint);opacity:.5}
+  td.exsel,th:first-child{text-align:center;padding-left:6px;padding-right:6px}
+  .resetbtn{background:var(--panel2);color:var(--ink);border:1px solid var(--line2);border-radius:6px;padding:5px 10px;cursor:pointer;font-family:var(--mono);font-size:12px}
+  .resetbtn:hover{border-color:var(--accent2)}
   .cov{width:22px;height:16px;border-radius:3px;display:inline-block}
   .cov.y{background:var(--accent2)} .cov.n{background:var(--line)}
   #pareto{background:var(--panel);border:1px solid var(--line);border-radius:10px}
@@ -86,9 +95,7 @@ const SCORING_VERSION = 3;
 
 // Which dimension columns identify one rankable entity (a "served configuration").
 // think_mode is handled separately (per-think rows + a synthesized best-of).
-const ENTITY_DIMS = [
-  'family', 'gguf_file', 'quant', 'kv_quant', 'chat_template', 'backend', 'gpu', 'llamacpp_build',
-];
+const ENTITY_DIMS = ['family', 'gguf_file', 'quant', 'kv_quant', 'chat_template', 'backend', 'gpu', 'llamacpp_build'];
 
 // Normalization strategies (per metric). Applied across the entities in the current
 // selection → re-normalizes per filtered view (an A/B or a dense-vs-MoE slice answers
@@ -97,9 +104,13 @@ const NORM = { identity: 'identity', ratioMax: 'ratioMax', minmax: 'minmax', inv
 
 // Group structure (membership fixed here; the UI only turns weights/strengths).
 const GROUPS = {
-  comprehension: { kind: 'geometric', members: ['triage', 'summarization', 'docqa', 'reasoning'] },
-  coding: { kind: 'gate-competence', gates: ['toolcalling', 'struct_output', 'instruction_following', 'agentic_loop'], competence: ['coding_grade'] },
-  speed: { kind: 'additive', members: ['e2e_throughput', 'ttft', 'decode_retention'] },
+   comprehension: { kind: 'geometric', members: ['triage', 'summarization', 'docqa', 'reasoning'] },
+   coding: {
+      kind: 'gate-competence',
+      gates: ['toolcalling', 'struct_output', 'instruction_following', 'agentic_loop'],
+      competence: ['coding_grade'],
+   },
+   speed: { kind: 'additive', members: ['e2e_throughput', 'ttft', 'decode_retention'] },
 };
 
 // Coding grade blend across the four coding benches (each = 0.4·pass@1 + 0.6·test-rate).
@@ -107,10 +118,10 @@ const CODING_WEIGHTS = { coding_multipl: 0.2, coding_hard: 0.35, coding_practica
 
 // Default dial values (the documented baseline; dashboard overrides live).
 const DEFAULT_DIALS = {
-  comprehension: { strength: 1, weights: { triage: 0.27, summarization: 0.22, docqa: 0.2, reasoning: 0.31 } },
-  coding: { strength: 1, weights: { coding_grade: 1.0 } },
-  speed: { weights: { e2e_throughput: 0.5, ttft: 0.4, decode_retention: 0.1 } },
-  fleet: { worker_ctx: 65536, reserve: 512, parallel_overhead: 512, ctx_tier: 100000, w_cap: 2, w_ctx: 1, w_slots: 1, w_thru: 0.5 },
+   comprehension: { strength: 1, weights: { triage: 0.27, summarization: 0.22, docqa: 0.2, reasoning: 0.31 } },
+   coding: { strength: 1, weights: { coding_grade: 1.0 } },
+   speed: { weights: { e2e_throughput: 0.5, ttft: 0.4, decode_retention: 0.1 } },
+   fleet: { worker_ctx: 65536, reserve: 512, parallel_overhead: 512, ctx_tier: 100000, w_cap: 2, w_ctx: 1, w_slots: 1, w_thru: 0.5 },
 };
 
 const CARD_TOTAL_MIB = 20464; // RX 7900 XT usable VRAM (mirrors hosts.yaml)
@@ -124,41 +135,82 @@ const CARD_TOTAL_MIB = 20464; // RX 7900 XT usable VRAM (mirrors hosts.yaml)
 const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
 const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
 const sum = (xs) => xs.reduce((a, b) => a + (b ?? 0), 0);
-function vals(rows, pred) { return rows.filter(pred).map((r) => num(r.metric_value)).filter((v) => v != null); }
+function vals(rows, pred) {
+   return rows
+      .filter(pred)
+      .map((r) => num(r.metric_value))
+      .filter((v) => v != null);
+}
 const pickMean = (rows, metric, bench) => mean(vals(rows, (r) => r.metric === metric && (!bench || r.bench === bench)));
-const ratio = (rows, a, b) => { const t = sum(vals(rows, (r) => r.metric === b)); return t ? sum(vals(rows, (r) => r.metric === a)) / t : null; };
+const ratio = (rows, a, b) => {
+   const t = sum(vals(rows, (r) => r.metric === b));
+   return t ? sum(vals(rows, (r) => r.metric === a)) / t : null;
+};
 
 function codingGrade(rows) {
-  let wsum = 0, acc = 0;
-  for (const [bench, w] of Object.entries(CODING_WEIGHTS)) {
-    const sub = rows.filter((r) => r.bench === bench);
-    if (!sub.length) continue;
-    const pass = ratio(sub, 'coding_pass_at_1', 'coding_total'); // count → pass@1 rate
-    const rate = ratio(sub, 'coding_tests_passed', 'coding_tests_total');
-    const g = 0.4 * (pass ?? 0) + 0.6 * (rate ?? pass ?? 0);
-    acc += w * g; wsum += w;
-  }
-  return wsum ? acc / wsum : null;
+   let wsum = 0,
+      acc = 0;
+   for (const [bench, w] of Object.entries(CODING_WEIGHTS)) {
+      const sub = rows.filter((r) => r.bench === bench);
+      if (!sub.length) continue;
+      const pass = ratio(sub, 'coding_pass_at_1', 'coding_total'); // count → pass@1 rate
+      const rate = ratio(sub, 'coding_tests_passed', 'coding_tests_total');
+      const g = 0.4 * (pass ?? 0) + 0.6 * (rate ?? pass ?? 0);
+      acc += w * g;
+      wsum += w;
+   }
+   return wsum ? acc / wsum : null;
 }
 
 // ── metric definitions: raw(rows) → number|null, plus direction + normalization ──
 const METRIC_DEFS = {
-  triage: { raw: (r) => mean(vals(r, (x) => /^triage_[RC]\d+$/.test(x.metric))), norm: 'identity' },
-  reasoning: { raw: (r) => ratio(r, 'reasoning_correct', 'reasoning_total'), norm: 'identity' },
-  toolcalling: { raw: (r) => ratio(r, 'toolcall_pass', 'toolcall_total'), norm: 'identity' },
-  summarization: { raw: (r) => mean(vals(r, (x) => /^summ_/.test(x.metric))), norm: 'identity' },
-  docqa: { raw: (r) => { const m = mean(vals(r, (x) => /^docqa_/.test(x.metric))); return m == null ? null : m / 10; }, norm: 'identity' },
-  struct_output: { raw: (r) => { const m = pickMean(r, 'score', 'struct_output'); return m == null ? null : m / 100; }, norm: 'identity' },
-  instruction_following: { raw: (r) => { const m = pickMean(r, 'score', 'instruction_following'); return m == null ? null : m / 100; }, norm: 'identity' },
-  agentic_loop: { raw: (r) => { const m = pickMean(r, 'score', 'agentic_loop'); return m == null ? null : m / 100; }, norm: 'identity' },
-  coding_grade: { raw: codingGrade, norm: 'identity' },
-  e2e_throughput: { raw: (r) => pickMean(r, 'score', 'e2e-8k') ?? pickMean(r, 'score', 'e2e-2k'), norm: 'ratioMax' },
-  ttft: { raw: (r) => pickMean(r, 'score', 'ttft-8k') ?? pickMean(r, 'score', 'ttft-2k'), dir: 'lower', norm: 'inverseMin' },
-  decode_retention: { raw: (r) => { const a = pickMean(r, 'score', 'speed_long-32k'); const b = pickMean(r, 'score', 'speed_short'); return a != null && b ? Math.min(1, a / b) : null; }, norm: 'identity' },
-  maxctx: { raw: (r) => pickMean(r, 'score', 'maxctx'), norm: 'ratioMax' },
-  // fleet inputs (not scored directly)
-  _vram_at_maxctx: { raw: (r) => pickMean(r, 'vram_mib', 'maxctx'), norm: 'raw' },
-  _kv_per_tok_kib: { raw: (r) => pickMean(r, 'score', 'kv_per_tok'), norm: 'raw' },
+   triage: { raw: (r) => mean(vals(r, (x) => /^triage_[RC]\d+$/.test(x.metric))), norm: 'identity' },
+   reasoning: { raw: (r) => ratio(r, 'reasoning_correct', 'reasoning_total'), norm: 'identity' },
+   toolcalling: { raw: (r) => ratio(r, 'toolcall_pass', 'toolcall_total'), norm: 'identity' },
+   summarization: { raw: (r) => mean(vals(r, (x) => /^summ_/.test(x.metric))), norm: 'identity' },
+   docqa: {
+      raw: (r) => {
+         const m = mean(vals(r, (x) => /^docqa_/.test(x.metric)));
+         return m == null ? null : m / 10;
+      },
+      norm: 'identity',
+   },
+   struct_output: {
+      raw: (r) => {
+         const m = pickMean(r, 'score', 'struct_output');
+         return m == null ? null : m / 100;
+      },
+      norm: 'identity',
+   },
+   instruction_following: {
+      raw: (r) => {
+         const m = pickMean(r, 'score', 'instruction_following');
+         return m == null ? null : m / 100;
+      },
+      norm: 'identity',
+   },
+   agentic_loop: {
+      raw: (r) => {
+         const m = pickMean(r, 'score', 'agentic_loop');
+         return m == null ? null : m / 100;
+      },
+      norm: 'identity',
+   },
+   coding_grade: { raw: codingGrade, norm: 'identity' },
+   e2e_throughput: { raw: (r) => pickMean(r, 'score', 'e2e-8k') ?? pickMean(r, 'score', 'e2e-2k'), norm: 'ratioMax' },
+   ttft: { raw: (r) => pickMean(r, 'score', 'ttft-8k') ?? pickMean(r, 'score', 'ttft-2k'), dir: 'lower', norm: 'inverseMin' },
+   decode_retention: {
+      raw: (r) => {
+         const a = pickMean(r, 'score', 'speed_long-32k');
+         const b = pickMean(r, 'score', 'speed_short');
+         return a != null && b ? Math.min(1, a / b) : null;
+      },
+      norm: 'identity',
+   },
+   maxctx: { raw: (r) => pickMean(r, 'score', 'maxctx'), norm: 'ratioMax' },
+   // fleet inputs (not scored directly)
+   _vram_at_maxctx: { raw: (r) => pickMean(r, 'vram_mib', 'maxctx'), norm: 'raw' },
+   _kv_per_tok_kib: { raw: (r) => pickMean(r, 'score', 'kv_per_tok'), norm: 'raw' },
 };
 
 // ── entity grouping ─────────────────────────────────────────────────────────────
@@ -166,76 +218,107 @@ const SEP = '␟';
 // An entity is a SERVED CONFIG (ENTITY_DIMS) — NOT split by think. think is a view
 // parameter: think-dependent core benches use the chosen think; think-independent
 // benches (think_mode='n/a') always attach. This keeps one config's metrics together.
-function entityKey(row) { return ENTITY_DIMS.map((d) => row[d] ?? '').join(SEP); }
+function entityKey(row) {
+   return ENTITY_DIMS.map((d) => row[d] ?? '').join(SEP);
+}
 function groupEntities(rows, think) {
-  const m = new Map();
-  for (const r of rows) {
-    const tm = r.think_mode ?? 'n/a';
-    if (tm !== 'n/a' && tm !== think) continue; // drop the non-selected think's core rows
-    const k = entityKey(r);
-    if (!m.has(k)) {
-      const dims = {}; for (const d of ENTITY_DIMS) dims[d] = r[d] ?? null;
-      m.set(k, { key: k, dims, think, rows: [] });
-    }
-    m.get(k).rows.push(r);
-  }
-  return [...m.values()];
+   const m = new Map();
+   for (const r of rows) {
+      const tm = r.think_mode ?? 'n/a';
+      if (tm !== 'n/a' && tm !== think) continue; // drop the non-selected think's core rows
+      const k = entityKey(r);
+      if (!m.has(k)) {
+         const dims = {};
+         for (const d of ENTITY_DIMS) dims[d] = r[d] ?? null;
+         m.set(k, { key: k, dims, think, rows: [] });
+      }
+      m.get(k).rows.push(r);
+   }
+   return [...m.values()];
 }
 
 // ── normalization across the selection ──────────────────────────────────────────
 function normalizeMetric(entities, name, def, pin) {
-  const raws = entities.map((e) => e.raw[name]).filter((v) => v != null);
-  const strat = def.norm;
-  let denom = null;
-  if (strat === 'ratioMax') denom = pin?.[name] ?? (Math.max(...raws, 0) || 1);
-  if (strat === 'inverseMin') denom = pin?.[name] ?? Math.min(...raws.filter((v) => v > 0), Infinity);
-  let mn = 0, mx = 1;
-  if (strat === 'minmax') { mn = Math.min(...raws); mx = Math.max(...raws); }
-  for (const e of entities) {
-    const v = e.raw[name];
-    if (v == null) { e.norm[name] = null; continue; }
-    if (strat === 'identity') e.norm[name] = Math.max(0, Math.min(1, v));
-    else if (strat === 'ratioMax') e.norm[name] = denom ? Math.max(0, Math.min(1, v / denom)) : null;
-    else if (strat === 'inverseMin') e.norm[name] = Number.isFinite(denom) && v > 0 ? Math.max(0, Math.min(1, denom / v)) : null;
-    else if (strat === 'minmax') e.norm[name] = mx > mn ? (v - mn) / (mx - mn) : 1;
-    else e.norm[name] = v; // raw passthrough
-  }
-  return denom;
+   const raws = entities.map((e) => e.raw[name]).filter((v) => v != null);
+   const strat = def.norm;
+   let denom = null;
+   if (strat === 'ratioMax') denom = pin?.[name] ?? (Math.max(...raws, 0) || 1);
+   if (strat === 'inverseMin') denom = pin?.[name] ?? Math.min(...raws.filter((v) => v > 0), Infinity);
+   let mn = 0,
+      mx = 1;
+   if (strat === 'minmax') {
+      mn = Math.min(...raws);
+      mx = Math.max(...raws);
+   }
+   for (const e of entities) {
+      const v = e.raw[name];
+      if (v == null) {
+         e.norm[name] = null;
+         continue;
+      }
+      if (strat === 'identity') e.norm[name] = Math.max(0, Math.min(1, v));
+      else if (strat === 'ratioMax') e.norm[name] = denom ? Math.max(0, Math.min(1, v / denom)) : null;
+      else if (strat === 'inverseMin') e.norm[name] = Number.isFinite(denom) && v > 0 ? Math.max(0, Math.min(1, denom / v)) : null;
+      else if (strat === 'minmax') e.norm[name] = mx > mn ? (v - mn) / (mx - mn) : 1;
+      else e.norm[name] = v; // raw passthrough
+   }
+   return denom;
 }
 
 // ── composites ──────────────────────────────────────────────────────────────────
-const geomean = (xs) => { const v = xs.filter((x) => x != null && x > 0); return v.length ? Math.exp(mean(v.map(Math.log))) : (xs.some((x) => x === 0) ? 0 : null); };
-function wGeomean(pairs) { // [[val,weight]]
-  const p = pairs.filter(([v]) => v != null); const W = sum(p.map(([, w]) => w));
-  if (!W) return null; let s = 0; for (const [v, w] of p) s += (w / W) * Math.log(Math.max(v, 1e-9)); return Math.exp(s);
+const geomean = (xs) => {
+   const v = xs.filter((x) => x != null && x > 0);
+   return v.length ? Math.exp(mean(v.map(Math.log))) : xs.some((x) => x === 0) ? 0 : null;
+};
+function wGeomean(pairs) {
+   // [[val,weight]]
+   const p = pairs.filter(([v]) => v != null);
+   const W = sum(p.map(([, w]) => w));
+   if (!W) return null;
+   let s = 0;
+   for (const [v, w] of p) s += (w / W) * Math.log(Math.max(v, 1e-9));
+   return Math.exp(s);
 }
-function wSum(pairs) { const p = pairs.filter(([v]) => v != null); const W = sum(p.map(([, w]) => w)); return W ? sum(p.map(([v, w]) => (w / W) * v)) : null; }
+function wSum(pairs) {
+   const p = pairs.filter(([v]) => v != null);
+   const W = sum(p.map(([, w]) => w));
+   return W ? sum(p.map(([v, w]) => (w / W) * v)) : null;
+}
 
 function capability(e, dials) {
-  const cw = dials.comprehension.weights, comp = wGeomean(GROUPS.comprehension.members.map((m) => [e.norm[m], cw[m] ?? 0]));
-  const gates = geomean(GROUPS.coding.gates.map((m) => e.norm[m]).filter((v) => v != null)); // absent gate = neutral (skipped)
-  const competence = e.norm.coding_grade;
-  const coding = gates == null && competence == null ? null : (gates ?? 1) * (competence ?? 1);
-  const cS = dials.comprehension.strength, kS = dials.coding.strength;
-  const compTerm = comp == null ? 1 : comp ** cS;
-  const codeTerm = coding == null ? 1 : coding ** kS;
-  const cap = (comp == null && coding == null) ? null : compTerm * codeTerm;
-  return { comprehension: comp, coding, capability: cap == null ? null : cap * 100 };
+   const cw = dials.comprehension.weights,
+      comp = wGeomean(GROUPS.comprehension.members.map((m) => [e.norm[m], cw[m] ?? 0]));
+   const gates = geomean(GROUPS.coding.gates.map((m) => e.norm[m]).filter((v) => v != null)); // absent gate = neutral (skipped)
+   const competence = e.norm.coding_grade;
+   const coding = gates == null && competence == null ? null : (gates ?? 1) * (competence ?? 1);
+   const cS = dials.comprehension.strength,
+      kS = dials.coding.strength;
+   const compTerm = comp == null ? 1 : comp ** cS;
+   const codeTerm = coding == null ? 1 : coding ** kS;
+   const cap = comp == null && coding == null ? null : compTerm * codeTerm;
+   return { comprehension: comp, coding, capability: cap == null ? null : cap * 100 };
 }
-function speed(e, dials) { const w = dials.speed.weights; return wSum(GROUPS.speed.members.map((m) => [e.norm[m], w[m] ?? 0])); }
+function speed(e, dials) {
+   const w = dials.speed.weights;
+   return wSum(GROUPS.speed.members.map((m) => [e.norm[m], w[m] ?? 0]));
+}
 
 function fleet(e, dials, ctxNormMax) {
-  const d = dials.fleet, vram = e.raw._vram_at_maxctx, kvKib = e.raw._kv_per_tok_kib, mctx = e.raw.maxctx, cap = e.capability;
-  if (vram == null || kvKib == null || mctx == null || cap == null) return null;
-  const kvMib = (kvKib * mctx) / 1024;               // KV MiB at max ctx
-  const weights = Math.max(0, vram - kvMib);          // resident weights (VRAM at ctx0)
-  const slotVram = weights + (kvKib * d.worker_ctx) / 1024 + d.parallel_overhead;
-  const budget = CARD_TOTAL_MIB - d.reserve - vram;   // room beyond the main slot
-  const slots = 1 + Math.max(0, Math.floor(budget / Math.max(slotVram, 1)));
-  const ctxNorm = Math.min(mctx, d.ctx_tier) / d.ctx_tier;
-  const slotNorm = Math.min(1, slots / 4);
-  const thru = e.norm.e2e_throughput ?? 0;
-  return { slots, suitability: (cap / 100) ** d.w_cap * ctxNorm ** d.w_ctx * slotNorm ** d.w_slots * (thru || 0.01) ** d.w_thru * 100 };
+   const d = dials.fleet,
+      vram = e.raw._vram_at_maxctx,
+      kvKib = e.raw._kv_per_tok_kib,
+      mctx = e.raw.maxctx,
+      cap = e.capability;
+   if (vram == null || kvKib == null || mctx == null || cap == null) return null;
+   const kvMib = (kvKib * mctx) / 1024; // KV MiB at max ctx
+   const weights = Math.max(0, vram - kvMib); // resident weights (VRAM at ctx0)
+   const slotVram = weights + (kvKib * d.worker_ctx) / 1024 + d.parallel_overhead;
+   const budget = CARD_TOTAL_MIB - d.reserve - vram; // room beyond the main slot
+   const slots = 1 + Math.max(0, Math.floor(budget / Math.max(slotVram, 1)));
+   const ctxNorm = Math.min(mctx, d.ctx_tier) / d.ctx_tier;
+   const slotNorm = Math.min(1, slots / 4);
+   const thru = e.norm.e2e_throughput ?? 0;
+   return { slots, suitability: (cap / 100) ** d.w_cap * ctxNorm ** d.w_ctx * slotNorm ** d.w_slots * (thru || 0.01) ** d.w_thru * 100 };
 }
 
 /**
@@ -243,14 +326,26 @@ function fleet(e, dials, ctxNormMax) {
  * @returns {{ entities: object[], denom: object, version }}
  */
 function scoreSelection(rows, { dials = DEFAULT_DIALS, pinNorm = null, think = 'no_think' } = {}) {
-  const entities = groupEntities(rows, think);
-  for (const e of entities) { e.raw = {}; e.norm = {}; for (const [name, def] of Object.entries(METRIC_DEFS)) e.raw[name] = def.raw(e.rows); }
-  const denom = {};
-  for (const [name, def] of Object.entries(METRIC_DEFS)) denom[name] = normalizeMetric(entities, name, def, pinNorm);
-  for (const e of entities) { Object.assign(e, capability(e, dials)); e.speed = speed(e, dials); }
-  for (const e of entities) { const fl = fleet(e, dials); e.fleet_slots = fl?.slots ?? null; e.fleet_suitability = fl?.suitability ?? null; delete e.rows; }
-  entities.sort((a, b) => (b.capability ?? -1) - (a.capability ?? -1));
-  return { entities, denom, version: 3 };
+   const entities = groupEntities(rows, think);
+   for (const e of entities) {
+      e.raw = {};
+      e.norm = {};
+      for (const [name, def] of Object.entries(METRIC_DEFS)) e.raw[name] = def.raw(e.rows);
+   }
+   const denom = {};
+   for (const [name, def] of Object.entries(METRIC_DEFS)) denom[name] = normalizeMetric(entities, name, def, pinNorm);
+   for (const e of entities) {
+      Object.assign(e, capability(e, dials));
+      e.speed = speed(e, dials);
+   }
+   for (const e of entities) {
+      const fl = fleet(e, dials);
+      e.fleet_slots = fl?.slots ?? null;
+      e.fleet_suitability = fl?.suitability ?? null;
+      delete e.rows;
+   }
+   entities.sort((a, b) => (b.capability ?? -1) - (a.capability ?? -1));
+   return { entities, denom, version: 3 };
 }
 </script>
 <script>
@@ -288,13 +383,22 @@ function pivot(b){ const rows=filt(b.facets); const mfn=M[b.metric].fn; const rs
   const rows2=[...rset].sort(), cols=[...cset].sort();
   const cells=rows2.map(rr=>{ const base=b.baseline!=null?cm.get(rr+'\u241f'+b.baseline):null; return { r:rr, vals:cols.map(cc=>{ const v=cm.get(rr+'\u241f'+cc)??null; return {c:cc,v,delta:(base!=null&&v!=null)?v-base:null}; }) }; });
   return { rows:rows2, cols, cells, metric:b.metric, lower:!!M[b.metric].lower, baseline:b.baseline }; }
-function pareto(b){ const think=b.think||'no_think'; const rows=filt(b.facets).filter(r=>r.think_mode==='n/a'||r.think_mode===think);
-  const xf=M[b.xMetric].fn, yf=M[b.yMetric].fn, vf=M['VRAM MiB'].fn; const points=[];
-  for(const [k,grp] of groupBy(rows, r=>JSON.stringify([r.gguf_file,r.quant,r.kv_quant,r.chat_template,r.arch,r.active_params,r.total_params]))){
+function paretoPts(rows, xf, yf, vf, think){ const rs=rows.filter(r=>r.think_mode==='n/a'||r.think_mode===think); const out=[];
+  for(const [k,grp] of groupBy(rs, r=>JSON.stringify([r.gguf_file,r.quant,r.kv_quant,r.chat_template,r.arch,r.active_params,r.total_params]))){
     const [g,q,kv,ct,arch,ap,tp]=JSON.parse(k); const x=xf(grp),y=yf(grp); if(x==null||y==null)continue;
-    points.push({x,y,vram:vf(grp),arch,label:(g.replace('.gguf','')+' '+(kv||'')+' '+ct).replace(/\s+/g,' ').trim(),dims:{gguf_file:g,arch,active_params:ap,total_params:tp}}); }
-  return { points, xMetric:b.xMetric, yMetric:b.yMetric }; }
-function leaderboard(b){ const rows=filt(b.facets); const {entities,denom}=scoreSelection(rows,{think:b.think||'no_think',dials:b.dials||DEFAULT_DIALS}); return {entities,denom,count:rows.length}; }
+    out.push({x,y,vram:vf(grp),arch,think,cfg:{gguf_file:g,quant:q,kv_quant:kv,chat_template:ct,think},label:(g.replace('.gguf','')+' '+(kv||'')+' '+ct+' ['+think+']').replace(/\s+/g,' ').trim(),dims:{gguf_file:g,arch,active_params:ap,total_params:tp}}); }
+  return out; }
+function pareto(b){ const think=b.think||'both'; const rows=filt(b.facets); const xf=M[b.xMetric].fn, yf=M[b.yMetric].fn, vf=M['VRAM MiB'].fn;
+  const modes=think==='both'?['no_think','think']:[think]; const points=modes.flatMap(m=>paretoPts(rows,xf,yf,vf,m));
+  return { points, xMetric:b.xMetric, yMetric:b.yMetric, think }; }
+function leaderboard(b){ const think=b.think||'both'; const rows=filt(b.facets); const dials=b.dials||DEFAULT_DIALS;
+  if(think!=='both'){ const {entities,denom}=scoreSelection(rows,{think,dials}); return {entities,denom,count:rows.length}; }
+  const variants=new Map();
+  for(const r of rows){ const k=entityKey(r); const tm=r.think_mode||'n/a'; if(!variants.has(k))variants.set(k,new Set()); if(tm!=='n/a')variants.get(k).add(tm); }
+  const noT=scoreSelection(rows,{think:'no_think',dials}); const yesT=scoreSelection(rows,{think:'think',dials}); const entities=[];
+  for(const e of noT.entities){ const v=variants.get(e.key)||new Set(); if(v.size===0){e.think='n/a';entities.push(e);} else if(v.has('no_think'))entities.push(e); }
+  for(const e of yesT.entities){ if((variants.get(e.key)||new Set()).has('think'))entities.push(e); }
+  return {entities,denom:noT.denom,count:rows.length}; }
 function coverage(b){ const rows=filt(b.facets); const cfg=r=>r.gguf_file.replace('.gguf','')+'|'+(r.kv_quant||'')+'|'+r.chat_template;
   const configs=[...new Set(rows.map(cfg))].sort(), benches=[...new Set(rows.map(r=>r.bench))].sort();
   const have=new Set(rows.map(r=>cfg(r)+'\u241f'+r.bench));
@@ -310,142 +414,420 @@ window.fetch = async (url, opts) => { const u=String(url);
 </script>
 <script>// llm-bench explorer — vanilla JS client for the DuckDB-backed API.
 const $ = (s) => document.querySelector(s);
-const el = (t, a = {}, ...k) => { const n = document.createElement(t); for (const p in a) p === 'html' ? (n.innerHTML = a[p]) : p.startsWith('on') ? n.addEventListener(p.slice(2), a[p]) : n.setAttribute(p, a[p]); for (const c of k) n.append(c?.nodeType ? c : document.createTextNode(c ?? '')); return n; };
+const el = (t, a = {}, ...k) => {
+   const n = document.createElement(t);
+   for (const p in a)
+      p === 'html' ? (n.innerHTML = a[p]) : p.startsWith('on') ? n.addEventListener(p.slice(2), a[p]) : n.setAttribute(p, a[p]);
+   for (const c of k) n.append(c?.nodeType ? c : document.createTextNode(c ?? ''));
+   return n;
+};
 const fmt = (v, d = 1) => (v == null || Number.isNaN(v) ? '—' : (+v).toFixed(d));
-const ARCH_COLORS = { 'gated-delta-moe': '#2bd0be', 'gated-delta-dense': '#e5a54f', 'moe': '#7aa2f7', 'dense': '#e5697b', 'mamba-hybrid': '#b48ead' };
+const ARCH_COLORS = {
+   'gated-delta-moe': '#2bd0be',
+   'gated-delta-dense': '#e5a54f',
+   moe: '#7aa2f7',
+   dense: '#e5697b',
+   'mamba-hybrid': '#b48ead',
+};
 const archColor = (a) => ARCH_COLORS[a] || '#8a949b';
 
-const state = { facets: {}, facetValues: {}, meta: {}, view: 'pivot', ctl: {} };
-async function api(path, body) { const r = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); return r.json(); }
-const selFacets = () => Object.fromEntries(Object.entries(state.facets).filter(([, v]) => v.size).map(([k, v]) => [k, [...v]]));
+const state = { facets: {}, facetValues: {}, meta: {}, view: 'pivot', ctl: {}, excludes: new Set(), boardCols: null, lastBoard: null };
+// Config identity shared by the leaderboard (exclude toggles) and the pareto (dim excluded points).
+const exKey = (c) => [c.gguf_file, c.quant, c.kv_quant, c.chat_template, c.think].join('|');
+async function api(path, body) {
+   const r = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+   return r.json();
+}
+const selFacets = () =>
+   Object.fromEntries(
+      Object.entries(state.facets)
+         .filter(([, v]) => v.size)
+         .map(([k, v]) => [k, [...v]]),
+   );
 
 // ── facet rail ──────────────────────────────────────────────────────────────
 function buildRail() {
-  const host = $('#facets'); host.innerHTML = '';
-  for (const dim of state.meta.dims) {
-    const vals = state.facetValues[dim] || [];
-    if (!vals.length) continue;
-    const opts = el('div', { class: 'opts' });
-    for (const v of vals) {
-      const cb = el('input', { type: 'checkbox' });
-      cb.checked = state.facets[dim]?.has(v) || false;
-      cb.addEventListener('change', () => { (state.facets[dim] ??= new Set()); cb.checked ? state.facets[dim].add(v) : state.facets[dim].delete(v); refresh(); });
-      opts.append(el('label', {}, cb, String(v)));
-    }
-    host.append(el('details', { class: 'facet', ...(state.facets[dim]?.size ? { open: '' } : {}) },
-      el('summary', {}, dim, el('span', { class: 'cnt' }, String(vals.length))), opts));
-  }
+   const host = $('#facets');
+   host.innerHTML = '';
+   for (const dim of state.meta.dims) {
+      const vals = state.facetValues[dim] || [];
+      if (!vals.length) continue;
+      const opts = el('div', { class: 'opts' });
+      for (const v of vals) {
+         const cb = el('input', { type: 'checkbox' });
+         cb.checked = state.facets[dim]?.has(v) || false;
+         cb.addEventListener('change', () => {
+            state.facets[dim] ??= new Set();
+            cb.checked ? state.facets[dim].add(v) : state.facets[dim].delete(v);
+            refresh();
+         });
+         opts.append(el('label', {}, cb, String(v)));
+      }
+      host.append(
+         el(
+            'details',
+            { class: 'facet', ...(state.facets[dim]?.size ? { open: '' } : {}) },
+            el('summary', {}, dim, el('span', { class: 'cnt' }, String(vals.length))),
+            opts,
+         ),
+      );
+   }
 }
 
 // ── tabs + controls ───────────────────────────────────────────────────────────
 const VIEWS = ['pivot', 'pareto', 'leaderboard', 'coverage'];
 function buildTabs() {
-  const t = $('#tabs'); t.innerHTML = '';
-  for (const v of VIEWS) t.append(el('button', { class: state.view === v ? 'on' : '', onclick: () => { state.view = v; buildTabs(); buildCtrls(); refresh(); } }, v));
+   const t = $('#tabs');
+   t.innerHTML = '';
+   for (const v of VIEWS)
+      t.append(
+         el(
+            'button',
+            {
+               class: state.view === v ? 'on' : '',
+               onclick: () => {
+                  state.view = v;
+                  buildTabs();
+                  buildCtrls();
+                  refresh();
+               },
+            },
+            v,
+         ),
+      );
 }
 function selCtl(key, label, options, def) {
-  const s = el('select', { onchange: () => { state.ctl[key] = s.value; refresh(); } });
-  for (const o of options) s.append(el('option', { value: o, ...(o === (state.ctl[key] ?? def) ? { selected: '' } : {}) }, o));
-  state.ctl[key] ??= def;
-  return el('label', {}, label, s);
+   const s = el('select', {
+      onchange: () => {
+         state.ctl[key] = s.value;
+         refresh();
+      },
+   });
+   for (const o of options) s.append(el('option', { value: o, ...(o === (state.ctl[key] ?? def) ? { selected: '' } : {}) }, o));
+   state.ctl[key] ??= def;
+   return el('label', {}, label, s);
 }
 function buildCtrls() {
-  const c = $('#ctrls'); c.innerHTML = '';
-  const M = state.meta.metrics, D = state.meta.pivotDims;
-  if (state.view === 'pivot') {
-    c.append(selCtl('rowsDim', 'rows', D, 'gguf_file'), selCtl('colsDim', 'columns', D, 'chat_template'),
-      selCtl('metric', 'metric', M, 'reasoning %'), selCtl('baseline', 'Δ baseline', ['(none)', ...(state.facetValues[state.ctl.colsDim || 'chat_template'] || [])], '(none)'));
-  } else if (state.view === 'pareto') {
-    c.append(selCtl('xMetric', 'x axis', M, 'decode tok/s'), selCtl('yMetric', 'y axis', M, 'reasoning %'), selCtl('think', 'think', ['no_think', 'think'], 'no_think'));
-  } else if (state.view === 'leaderboard') {
-    c.append(selCtl('think', 'think', ['no_think', 'think'], 'no_think'));
-  }
+   const c = $('#ctrls');
+   c.innerHTML = '';
+   const M = state.meta.metrics,
+      D = state.meta.pivotDims;
+   if (state.view === 'pivot') {
+      c.append(
+         selCtl('rowsDim', 'rows', D, 'gguf_file'),
+         selCtl('colsDim', 'columns', D, 'chat_template'),
+         selCtl('metric', 'metric', M, 'reasoning %'),
+         selCtl('baseline', 'Δ baseline', ['(none)', ...(state.facetValues[state.ctl.colsDim || 'chat_template'] || [])], '(none)'),
+      );
+   } else if (state.view === 'pareto') {
+      c.append(
+         selCtl('xMetric', 'x axis', M, 'decode tok/s'),
+         selCtl('yMetric', 'y axis', M, 'reasoning %'),
+         selCtl('think', 'think', ['no_think', 'think', 'both'], 'both'),
+      );
+   } else if (state.view === 'leaderboard') {
+      const reset = el(
+         'button',
+         {
+            class: 'resetbtn',
+            onclick: () => {
+               state.excludes.clear();
+               if (state.lastBoard) renderBoard(state.lastBoard);
+            },
+         },
+         'reset excludes',
+      );
+      c.append(selCtl('think', 'think', ['no_think', 'think', 'both'], 'both'), el('label', {}, ' ', reset));
+   }
 }
 
 // ── views ─────────────────────────────────────────────────────────────────────
 async function refresh() {
-  const facets = selFacets();
-  const v = $('#view'); v.innerHTML = '<div class="muted">querying…</div>';
-  try {
-    if (state.view === 'pivot') return renderPivot(await api('/api/pivot', { facets, rowsDim: state.ctl.rowsDim, colsDim: state.ctl.colsDim, metric: state.ctl.metric, baseline: state.ctl.baseline === '(none)' ? null : state.ctl.baseline }));
-    if (state.view === 'pareto') return renderPareto(await api('/api/pareto', { facets, xMetric: state.ctl.xMetric, yMetric: state.ctl.yMetric, think: state.ctl.think }));
-    if (state.view === 'leaderboard') return renderBoard(await api('/api/leaderboard', { facets, think: state.ctl.think }));
-    if (state.view === 'coverage') return renderCoverage(await api('/api/coverage', { facets }));
-  } catch (e) { v.innerHTML = `<div class="muted">error: ${e.message}</div>`; }
+   const facets = selFacets();
+   const v = $('#view');
+   v.innerHTML = '<div class="muted">querying…</div>';
+   try {
+      if (state.view === 'pivot')
+         return renderPivot(
+            await api('/api/pivot', {
+               facets,
+               rowsDim: state.ctl.rowsDim,
+               colsDim: state.ctl.colsDim,
+               metric: state.ctl.metric,
+               baseline: state.ctl.baseline === '(none)' ? null : state.ctl.baseline,
+            }),
+         );
+      if (state.view === 'pareto')
+         return renderPareto(
+            await api('/api/pareto', { facets, xMetric: state.ctl.xMetric, yMetric: state.ctl.yMetric, think: state.ctl.think }),
+         );
+      if (state.view === 'leaderboard') return renderBoard(await api('/api/leaderboard', { facets, think: state.ctl.think }));
+      if (state.view === 'coverage') return renderCoverage(await api('/api/coverage', { facets }));
+   } catch (e) {
+      v.innerHTML = `<div class="muted">error: ${e.message}</div>`;
+   }
 }
 
 function renderPivot(d) {
-  const lower = d.lower;
-  const head = el('tr', {}, el('th', {}, d.metric)); d.cols.forEach((c) => head.append(el('th', { class: 'num' }, String(c))));
-  const body = d.cells.map((row) => {
-    const tr = el('tr', {}, el('td', {}, row.r.replace('.gguf', '')));
-    row.vals.forEach((cell) => {
-      let chip = '';
-      if (cell.delta != null && Math.abs(cell.delta) > 0.05) { const good = lower ? cell.delta < 0 : cell.delta > 0; chip = ` <span class="chip ${good ? 'win' : 'loss'}">${cell.delta > 0 ? '+' : ''}${fmt(cell.delta)}</span>`; }
-      tr.append(el('td', { class: 'num', html: `${fmt(cell.v)}${chip}` }));
-    });
-    return tr;
-  });
-  $('#view').replaceChildren(el('table', {}, el('thead', {}, head), el('tbody', {}, ...body)));
+   const lower = d.lower;
+   const head = el('tr', {}, el('th', {}, d.metric));
+   d.cols.forEach((c) => head.append(el('th', { class: 'num' }, String(c))));
+   const body = d.cells.map((row) => {
+      const tr = el('tr', {}, el('td', {}, row.r.replace('.gguf', '')));
+      row.vals.forEach((cell) => {
+         let chip = '';
+         if (cell.delta != null && Math.abs(cell.delta) > 0.05) {
+            const good = lower ? cell.delta < 0 : cell.delta > 0;
+            chip = ` <span class="chip ${good ? 'win' : 'loss'}">${cell.delta > 0 ? '+' : ''}${fmt(cell.delta)}</span>`;
+         }
+         tr.append(el('td', { class: 'num', html: `${fmt(cell.v)}${chip}` }));
+      });
+      return tr;
+   });
+   $('#view').replaceChildren(el('table', {}, el('thead', {}, head), el('tbody', {}, ...body)));
 }
 
+// Draggable/sortable numeric columns. `lower:true` ⇒ smaller is better. `get` yields the
+// display+sort value (null ⇒ always sinks to the bottom). Order = sort priority (leftmost
+// first); drag a header left to make it the primary key. `dir` ('best'|'worst') flips on click.
+const pct = (v) => (v == null ? null : v * 100);
+function defaultBoardCols() {
+   return [
+      { key: 'capability', label: 'capability', get: (e) => e.capability, dec: 1 },
+      { key: 'comprehension', label: 'comp', get: (e) => pct(e.comprehension), dec: 1 },
+      { key: 'coding', label: 'coding', get: (e) => pct(e.coding), dec: 1 },
+      { key: 'speed', label: 'speed', get: (e) => pct(e.speed), dec: 1 },
+      { key: 'fleet', label: 'fleet', get: (e) => e.fleet_suitability, dec: 1 },
+      { key: 'inst64k', label: '64k inst', get: (e) => e.fleet_slots, dec: 0 },
+      { key: 'maxctx', label: 'maxctx k', get: (e) => (e.raw?.maxctx == null ? null : e.raw.maxctx / 1000), dec: 0 },
+      { key: 'e2e', label: 'e2e tok/s', get: (e) => e.raw?.e2e_throughput, dec: 1 },
+      { key: 'ttft', label: 'ttft ms', get: (e) => e.raw?.ttft, dec: 0, lower: true },
+      { key: 'vram', label: 'vram MiB', get: (e) => e.raw?._vram_at_maxctx, dec: 0, lower: true },
+      { key: 'kvtok', label: 'kv KiB/tok', get: (e) => e.raw?._kv_per_tok_kib, dec: 2, lower: true },
+   ];
+}
+function boardCompare(cols) {
+   return (a, b) => {
+      for (const c of cols) {
+         const av = c.get(a),
+            bv = c.get(b);
+         if (av == null && bv == null) continue;
+         if (av == null) return 1; // nulls last, regardless of direction
+         if (bv == null) return -1;
+         if (av === bv) continue;
+         const better = c.lower ? -1 : 1;
+         const dir = c.dir === 'worst' ? -1 : 1;
+         return -(av - bv) * better * dir; // best-first by default
+      }
+      return 0;
+   };
+}
 function renderBoard(d) {
-  const cols = [['capability', 'cap', 2, 1], ['comprehension', 'comp', 3, 1], ['coding', 'code', 3, 1], ['speed', 'speed', 2, 1], ['fleet_suitability', 'fleet', 1, 1]];
-  const head = el('tr', {}, el('th', {}, 'model'), el('th', {}, 'template'), el('th', {}, 'kv'), ...cols.map(([, l]) => el('th', { class: 'num' }, l)));
-  const body = d.entities.map((e) => el('tr', {},
-    el('td', {}, e.dims.gguf_file.replace('.gguf', '')), el('td', {}, e.dims.chat_template), el('td', {}, e.dims.kv_quant ?? '—'),
-    ...cols.map(([k, , dec]) => el('td', { class: 'num cap' }, fmt(e[k], dec)))));
-  $('#view').replaceChildren(el('div', { class: 'muted' }, `${d.count} rows · ${d.entities.length} configs · normalized within this selection`), el('table', {}, el('thead', {}, head), el('tbody', {}, ...body)));
+   state.lastBoard = d;
+   state.boardCols ??= defaultBoardCols();
+   const cols = state.boardCols;
+   const entities = [...d.entities].sort(boardCompare(cols));
+
+   const drag = { from: null };
+   const move = (from, to) => {
+      if (to == null || from === to) return;
+      const [c] = cols.splice(from, 1);
+      cols.splice(to, 0, c);
+      renderBoard(d);
+   };
+   const th = (c, i) => {
+      const arrow = c.dir === 'worst' ? (c.lower ? ' ↓' : ' ↑') : c.lower ? ' ↑' : ' ↓';
+      const primary = i === 0;
+      const n = el(
+         'th',
+         {
+            class: `num draggable${primary ? ' sortkey' : ''}`,
+            draggable: 'true',
+            title: 'drag to set sort priority · click to flip direction',
+            onclick: () => {
+               c.dir = c.dir === 'worst' ? 'best' : 'worst';
+               renderBoard(d);
+            },
+            ondragstart: (ev) => {
+               drag.from = i;
+               ev.dataTransfer.effectAllowed = 'move';
+            },
+            ondragover: (ev) => {
+               ev.preventDefault();
+               n.classList.add('drag-over');
+            },
+            ondragleave: () => n.classList.remove('drag-over'),
+            ondrop: (ev) => {
+               ev.preventDefault();
+               n.classList.remove('drag-over');
+               move(drag.from, i);
+            },
+         },
+         c.label + arrow,
+      );
+      return n;
+   };
+   const head = el(
+      'tr',
+      {},
+      el('th', { title: 'uncheck to gray out (exclude) · reset excludes to restore' }, '✓'),
+      el('th', {}, 'model'),
+      el('th', {}, 'template'),
+      el('th', {}, 'kv'),
+      el('th', {}, 'think'),
+      ...cols.map((c, i) => th(c, i)),
+   );
+   const body = entities.map((e) => {
+      const k = exKey({ ...e.dims, think: e.think });
+      const excluded = state.excludes.has(k);
+      const cb = el('input', { type: 'checkbox' });
+      cb.checked = !excluded;
+      cb.addEventListener('change', () => {
+         cb.checked ? state.excludes.delete(k) : state.excludes.add(k);
+         renderBoard(d);
+      });
+      return el(
+         'tr',
+         { class: excluded ? 'excluded' : '' },
+         el('td', { class: 'exsel' }, cb),
+         el('td', {}, e.dims.gguf_file.replace('.gguf', '')),
+         el('td', {}, e.dims.chat_template),
+         el('td', {}, e.dims.kv_quant ?? '—'),
+         el('td', {}, e.think ?? '—'),
+         ...cols.map((c) => el('td', { class: 'num cap' }, fmt(c.get(e), c.dec))),
+      );
+   });
+   $('#view').replaceChildren(
+      el(
+         'div',
+         { class: 'muted' },
+         `${d.count} rows · ${entities.length} configs · normalized within this selection · drag headers to prioritize sort`,
+      ),
+      el('table', {}, el('thead', {}, head), el('tbody', {}, ...body)),
+   );
 }
 
 function renderCoverage(d) {
-  if (!d.configs.length) { $('#view').innerHTML = '<div class="muted">no data in selection</div>'; return; }
-  const head = el('tr', {}, el('th', {}, 'config')); d.benches.forEach((b) => head.append(el('th', {}, b)));
-  const body = d.cells.map((row) => el('tr', {}, el('td', {}, row.cfg.replace(/\|/g, ' · ')), ...row.has.map((h) => el('td', {}, el('span', { class: `cov ${h ? 'y' : 'n'}`, title: h ? 'run' : 'missing' })))));
-  const wrap = el('div', { style: 'overflow-x:auto' }, el('table', {}, el('thead', {}, head), el('tbody', {}, ...body)));
-  $('#view').replaceChildren(wrap);
+   if (!d.configs.length) {
+      $('#view').innerHTML = '<div class="muted">no data in selection</div>';
+      return;
+   }
+   const head = el('tr', {}, el('th', {}, 'config'));
+   d.benches.forEach((b) => head.append(el('th', {}, b)));
+   const body = d.cells.map((row) =>
+      el(
+         'tr',
+         {},
+         el('td', {}, row.cfg.replace(/\|/g, ' · ')),
+         ...row.has.map((h) => el('td', {}, el('span', { class: `cov ${h ? 'y' : 'n'}`, title: h ? 'run' : 'missing' }))),
+      ),
+   );
+   const wrap = el('div', { style: 'overflow-x:auto' }, el('table', {}, el('thead', {}, head), el('tbody', {}, ...body)));
+   $('#view').replaceChildren(wrap);
 }
 
 function renderPareto(d) {
-  const W = 720, H = 460, P = 54;
-  const pts = d.points.filter((p) => p.x != null && p.y != null);
-  const view = $('#view');
-  if (!pts.length) { view.innerHTML = '<div class="muted">no configs have both axes in this selection (need overlapping benches)</div>'; return; }
-  const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);
-  const xmin = Math.min(...xs) * 0.95, xmax = Math.max(...xs) * 1.05, ymin = Math.min(...ys, 0), ymax = Math.max(...ys) * 1.02;
-  const sx = (x) => P + ((x - xmin) / (xmax - xmin || 1)) * (W - 2 * P);
-  const sy = (y) => H - P - ((y - ymin) / (ymax - ymin || 1)) * (H - 2 * P);
-  const vmax = Math.max(...pts.map((p) => p.vram || 0), 1);
-  const rOf = (v) => 5 + 9 * Math.sqrt((v || vmax / 2) / vmax);
-  const NS = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(NS, 'svg'); svg.setAttribute('id', 'pareto'); svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width', '100%'); svg.style.maxWidth = W + 'px';
-  const mk = (t, a) => { const n = document.createElementNS(NS, t); for (const k in a) n.setAttribute(k, a[k]); return n; };
-  // Node.append() returns undefined, so set textContent BEFORE appending.
-  const mkt = (a, s) => { const n = mk('text', a); n.textContent = s; svg.append(n); return n; };
-  // grid + axes
-  for (let i = 0; i <= 4; i++) { const gy = P + i * (H - 2 * P) / 4; svg.append(mk('line', { x1: P, y1: gy, x2: W - P, y2: gy, stroke: 'var(--line)' })); mkt({ x: 8, y: gy + 4, fill: 'var(--faint)', 'font-size': 10, 'font-family': 'var(--mono)' }, fmt(ymax - i * (ymax - ymin) / 4, 0)); }
-  mkt({ x: W / 2, y: H - 12, fill: 'var(--dim)', 'font-size': 11, 'text-anchor': 'middle', 'font-family': 'var(--mono)' }, d.xMetric + ' →');
-  mkt({ x: 14, y: 20, fill: 'var(--dim)', 'font-size': 11, 'font-family': 'var(--mono)' }, '↑ ' + d.yMetric);
-  const tip = $('#tip');
-  for (const p of pts) {
-    const c = mk('circle', { cx: sx(p.x), cy: sy(p.y), r: rOf(p.vram), fill: archColor(p.arch), 'fill-opacity': 0.75, stroke: archColor(p.arch), 'stroke-width': 1 });
-    c.addEventListener('mousemove', (ev) => { tip.style.display = 'block'; tip.style.left = ev.clientX + 12 + 'px'; tip.style.top = ev.clientY + 12 + 'px'; tip.innerHTML = `${p.label}<br>${d.xMetric}: ${fmt(p.x)} · ${d.yMetric}: ${fmt(p.y)}<br>${p.arch} · active ${p.dims.active_params}B · VRAM ${fmt(p.vram, 0)}MiB`; });
-    c.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
-    svg.append(c);
-  }
-  const archs = [...new Set(pts.map((p) => p.arch))];
-  const legend = el('div', { class: 'legend' }, ...archs.map((a) => el('span', {}, el('span', { class: 'dot', style: `background:${archColor(a)}` }), a)), el('span', {}, '○ size = VRAM · up-and-left = smarter+faster'));
-  view.replaceChildren(svg, legend);
+   const W = 720,
+      H = 460,
+      P = 54;
+   const pts = d.points.filter((p) => p.x != null && p.y != null);
+   const view = $('#view');
+   if (!pts.length) {
+      view.innerHTML = '<div class="muted">no configs have both axes in this selection (need overlapping benches)</div>';
+      return;
+   }
+   const xs = pts.map((p) => p.x),
+      ys = pts.map((p) => p.y);
+   const xmin = Math.min(...xs) * 0.95,
+      xmax = Math.max(...xs) * 1.05,
+      ymin = Math.min(...ys, 0),
+      ymax = Math.max(...ys) * 1.02;
+   const sx = (x) => P + ((x - xmin) / (xmax - xmin || 1)) * (W - 2 * P);
+   const sy = (y) => H - P - ((y - ymin) / (ymax - ymin || 1)) * (H - 2 * P);
+   const vmax = Math.max(...pts.map((p) => p.vram || 0), 1);
+   const rOf = (v) => 5 + 9 * Math.sqrt((v || vmax / 2) / vmax);
+   const NS = 'http://www.w3.org/2000/svg';
+   const svg = document.createElementNS(NS, 'svg');
+   svg.setAttribute('id', 'pareto');
+   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+   svg.setAttribute('width', '100%');
+   svg.style.maxWidth = W + 'px';
+   const mk = (t, a) => {
+      const n = document.createElementNS(NS, t);
+      for (const k in a) n.setAttribute(k, a[k]);
+      return n;
+   };
+   // Node.append() returns undefined, so set textContent BEFORE appending.
+   const mkt = (a, s) => {
+      const n = mk('text', a);
+      n.textContent = s;
+      svg.append(n);
+      return n;
+   };
+   // grid + axes
+   for (let i = 0; i <= 4; i++) {
+      const gy = P + (i * (H - 2 * P)) / 4;
+      svg.append(mk('line', { x1: P, y1: gy, x2: W - P, y2: gy, stroke: 'var(--line)' }));
+      mkt({ x: 8, y: gy + 4, fill: 'var(--faint)', 'font-size': 10, 'font-family': 'var(--mono)' }, fmt(ymax - (i * (ymax - ymin)) / 4, 0));
+   }
+   mkt(
+      { x: W / 2, y: H - 12, fill: 'var(--dim)', 'font-size': 11, 'text-anchor': 'middle', 'font-family': 'var(--mono)' },
+      d.xMetric + ' →',
+   );
+   mkt({ x: 14, y: 20, fill: 'var(--dim)', 'font-size': 11, 'font-family': 'var(--mono)' }, '↑ ' + d.yMetric);
+   const tip = $('#tip');
+   for (const p of pts) {
+      const col = archColor(p.arch);
+      const r = rOf(p.vram);
+      // think = hollow ring, no_think = filled disc → the two configs read apart at a glance.
+      const isThink = p.think === 'think';
+      const excluded = p.cfg && state.excludes.has(exKey(p.cfg));
+      const c = mk('circle', {
+         cx: sx(p.x),
+         cy: sy(p.y),
+         r,
+         fill: isThink ? 'none' : col,
+         'fill-opacity': excluded ? 0.12 : 0.75,
+         stroke: col,
+         'stroke-opacity': excluded ? 0.35 : 1,
+         'stroke-width': isThink ? 2 : 1,
+      });
+      c.addEventListener('mousemove', (ev) => {
+         tip.style.display = 'block';
+         tip.style.left = ev.clientX + 12 + 'px';
+         tip.style.top = ev.clientY + 12 + 'px';
+         tip.innerHTML = `${p.label}<br>${d.xMetric}: ${fmt(p.x)} · ${d.yMetric}: ${fmt(p.y)}<br>${p.arch} · active ${p.dims.active_params}B · VRAM ${fmt(p.vram, 0)}MiB`;
+      });
+      c.addEventListener('mouseleave', () => {
+         tip.style.display = 'none';
+      });
+      svg.append(c);
+   }
+   const archs = [...new Set(pts.map((p) => p.arch))];
+   const legend = el(
+      'div',
+      { class: 'legend' },
+      ...archs.map((a) => el('span', {}, el('span', { class: 'dot', style: `background:${archColor(a)}` }), a)),
+      el('span', {}, '● no_think · ○ think · size = VRAM · up-and-left = smarter+faster'),
+   );
+   view.replaceChildren(svg, legend);
 }
 
 // ── boot ────────────────────────────────────────────────────────────────────
 (async () => {
-  state.meta = await (await fetch('/api/meta')).json();
-  state.facetValues = await (await fetch('/api/facets')).json();
-  const board = await api('/api/leaderboard', { facets: {}, think: 'no_think' });
-  $('#rowcount').textContent = `${board.count} measurements`;
-  $('#clear').addEventListener('click', () => { state.facets = {}; buildRail(); refresh(); });
-  buildRail(); buildTabs(); buildCtrls(); refresh();
+   state.meta = await (await fetch('/api/meta')).json();
+   state.facetValues = await (await fetch('/api/facets')).json();
+   const board = await api('/api/leaderboard', { facets: {}, think: 'no_think' });
+   $('#rowcount').textContent = `${board.count} measurements`;
+   $('#clear').addEventListener('click', () => {
+      state.facets = {};
+      buildRail();
+      refresh();
+   });
+   buildRail();
+   buildTabs();
+   buildCtrls();
+   refresh();
 })();
 </script>
 </body>

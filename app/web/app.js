@@ -17,7 +17,9 @@ const ARCH_COLORS = {
 };
 const archColor = (a) => ARCH_COLORS[a] || '#8a949b';
 
-const state = { facets: {}, facetValues: {}, meta: {}, view: 'pivot', ctl: {} };
+const state = { facets: {}, facetValues: {}, meta: {}, view: 'pivot', ctl: {}, excludes: new Set(), boardCols: null, lastBoard: null };
+// Config identity shared by the leaderboard (exclude toggles) and the pareto (dim excluded points).
+const exKey = (c) => [c.gguf_file, c.quant, c.kv_quant, c.chat_template, c.think].join('|');
 async function api(path, body) {
    const r = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
    return r.json();
@@ -107,10 +109,21 @@ function buildCtrls() {
       c.append(
          selCtl('xMetric', 'x axis', M, 'decode tok/s'),
          selCtl('yMetric', 'y axis', M, 'reasoning %'),
-         selCtl('think', 'think', ['no_think', 'think'], 'no_think'),
+         selCtl('think', 'think', ['no_think', 'think', 'both'], 'both'),
       );
    } else if (state.view === 'leaderboard') {
-      c.append(selCtl('think', 'think', ['no_think', 'think'], 'no_think'));
+      const reset = el(
+         'button',
+         {
+            class: 'resetbtn',
+            onclick: () => {
+               state.excludes.clear();
+               if (state.lastBoard) renderBoard(state.lastBoard);
+            },
+         },
+         'reset excludes',
+      );
+      c.append(selCtl('think', 'think', ['no_think', 'think', 'both'], 'both'), el('label', {}, ' ', reset));
    }
 }
 
@@ -160,34 +173,122 @@ function renderPivot(d) {
    $('#view').replaceChildren(el('table', {}, el('thead', {}, head), el('tbody', {}, ...body)));
 }
 
-function renderBoard(d) {
-   const cols = [
-      ['capability', 'cap', 2, 1],
-      ['comprehension', 'comp', 3, 1],
-      ['coding', 'code', 3, 1],
-      ['speed', 'speed', 2, 1],
-      ['fleet_suitability', 'fleet', 1, 1],
+// Draggable/sortable numeric columns. `lower:true` ⇒ smaller is better. `get` yields the
+// display+sort value (null ⇒ always sinks to the bottom). Order = sort priority (leftmost
+// first); drag a header left to make it the primary key. `dir` ('best'|'worst') flips on click.
+const pct = (v) => (v == null ? null : v * 100);
+function defaultBoardCols() {
+   return [
+      { key: 'capability', label: 'capability', get: (e) => e.capability, dec: 1 },
+      { key: 'comprehension', label: 'comp', get: (e) => pct(e.comprehension), dec: 1 },
+      { key: 'coding', label: 'coding', get: (e) => pct(e.coding), dec: 1 },
+      { key: 'speed', label: 'speed', get: (e) => pct(e.speed), dec: 1 },
+      { key: 'fleet', label: 'fleet', get: (e) => e.fleet_suitability, dec: 1 },
+      { key: 'inst64k', label: '64k inst', get: (e) => e.fleet_slots, dec: 0 },
+      { key: 'maxctx', label: 'maxctx k', get: (e) => (e.raw?.maxctx == null ? null : e.raw.maxctx / 1000), dec: 0 },
+      { key: 'e2e', label: 'e2e tok/s', get: (e) => e.raw?.e2e_throughput, dec: 1 },
+      { key: 'ttft', label: 'ttft ms', get: (e) => e.raw?.ttft, dec: 0, lower: true },
+      { key: 'vram', label: 'vram MiB', get: (e) => e.raw?._vram_at_maxctx, dec: 0, lower: true },
+      { key: 'kvtok', label: 'kv KiB/tok', get: (e) => e.raw?._kv_per_tok_kib, dec: 2, lower: true },
    ];
+}
+function boardCompare(cols) {
+   return (a, b) => {
+      for (const c of cols) {
+         const av = c.get(a),
+            bv = c.get(b);
+         if (av == null && bv == null) continue;
+         if (av == null) return 1; // nulls last, regardless of direction
+         if (bv == null) return -1;
+         if (av === bv) continue;
+         const better = c.lower ? -1 : 1;
+         const dir = c.dir === 'worst' ? -1 : 1;
+         return -(av - bv) * better * dir; // best-first by default
+      }
+      return 0;
+   };
+}
+function renderBoard(d) {
+   state.lastBoard = d;
+   state.boardCols ??= defaultBoardCols();
+   const cols = state.boardCols;
+   const entities = [...d.entities].sort(boardCompare(cols));
+
+   const drag = { from: null };
+   const move = (from, to) => {
+      if (to == null || from === to) return;
+      const [c] = cols.splice(from, 1);
+      cols.splice(to, 0, c);
+      renderBoard(d);
+   };
+   const th = (c, i) => {
+      const arrow = c.dir === 'worst' ? (c.lower ? ' ↓' : ' ↑') : c.lower ? ' ↑' : ' ↓';
+      const primary = i === 0;
+      const n = el(
+         'th',
+         {
+            class: `num draggable${primary ? ' sortkey' : ''}`,
+            draggable: 'true',
+            title: 'drag to set sort priority · click to flip direction',
+            onclick: () => {
+               c.dir = c.dir === 'worst' ? 'best' : 'worst';
+               renderBoard(d);
+            },
+            ondragstart: (ev) => {
+               drag.from = i;
+               ev.dataTransfer.effectAllowed = 'move';
+            },
+            ondragover: (ev) => {
+               ev.preventDefault();
+               n.classList.add('drag-over');
+            },
+            ondragleave: () => n.classList.remove('drag-over'),
+            ondrop: (ev) => {
+               ev.preventDefault();
+               n.classList.remove('drag-over');
+               move(drag.from, i);
+            },
+         },
+         c.label + arrow,
+      );
+      return n;
+   };
    const head = el(
       'tr',
       {},
+      el('th', { title: 'uncheck to gray out (exclude) · reset excludes to restore' }, '✓'),
       el('th', {}, 'model'),
       el('th', {}, 'template'),
       el('th', {}, 'kv'),
-      ...cols.map(([, l]) => el('th', { class: 'num' }, l)),
+      el('th', {}, 'think'),
+      ...cols.map((c, i) => th(c, i)),
    );
-   const body = d.entities.map((e) =>
-      el(
+   const body = entities.map((e) => {
+      const k = exKey({ ...e.dims, think: e.think });
+      const excluded = state.excludes.has(k);
+      const cb = el('input', { type: 'checkbox' });
+      cb.checked = !excluded;
+      cb.addEventListener('change', () => {
+         cb.checked ? state.excludes.delete(k) : state.excludes.add(k);
+         renderBoard(d);
+      });
+      return el(
          'tr',
-         {},
+         { class: excluded ? 'excluded' : '' },
+         el('td', { class: 'exsel' }, cb),
          el('td', {}, e.dims.gguf_file.replace('.gguf', '')),
          el('td', {}, e.dims.chat_template),
          el('td', {}, e.dims.kv_quant ?? '—'),
-         ...cols.map(([k, , dec]) => el('td', { class: 'num cap' }, fmt(e[k], dec))),
-      ),
-   );
+         el('td', {}, e.think ?? '—'),
+         ...cols.map((c) => el('td', { class: 'num cap' }, fmt(c.get(e), c.dec))),
+      );
+   });
    $('#view').replaceChildren(
-      el('div', { class: 'muted' }, `${d.count} rows · ${d.entities.length} configs · normalized within this selection`),
+      el(
+         'div',
+         { class: 'muted' },
+         `${d.count} rows · ${entities.length} configs · normalized within this selection · drag headers to prioritize sort`,
+      ),
       el('table', {}, el('thead', {}, head), el('tbody', {}, ...body)),
    );
 }
@@ -262,14 +363,20 @@ function renderPareto(d) {
    mkt({ x: 14, y: 20, fill: 'var(--dim)', 'font-size': 11, 'font-family': 'var(--mono)' }, '↑ ' + d.yMetric);
    const tip = $('#tip');
    for (const p of pts) {
+      const col = archColor(p.arch);
+      const r = rOf(p.vram);
+      // think = hollow ring, no_think = filled disc → the two configs read apart at a glance.
+      const isThink = p.think === 'think';
+      const excluded = p.cfg && state.excludes.has(exKey(p.cfg));
       const c = mk('circle', {
          cx: sx(p.x),
          cy: sy(p.y),
-         r: rOf(p.vram),
-         fill: archColor(p.arch),
-         'fill-opacity': 0.75,
-         stroke: archColor(p.arch),
-         'stroke-width': 1,
+         r,
+         fill: isThink ? 'none' : col,
+         'fill-opacity': excluded ? 0.12 : 0.75,
+         stroke: col,
+         'stroke-opacity': excluded ? 0.35 : 1,
+         'stroke-width': isThink ? 2 : 1,
       });
       c.addEventListener('mousemove', (ev) => {
          tip.style.display = 'block';
@@ -287,7 +394,7 @@ function renderPareto(d) {
       'div',
       { class: 'legend' },
       ...archs.map((a) => el('span', {}, el('span', { class: 'dot', style: `background:${archColor(a)}` }), a)),
-      el('span', {}, '○ size = VRAM · up-and-left = smarter+faster'),
+      el('span', {}, '● no_think · ○ think · size = VRAM · up-and-left = smarter+faster'),
    );
    view.replaceChildren(svg, legend);
 }

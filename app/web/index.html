@@ -41,6 +41,15 @@
   .chip{font-family:var(--mono);font-size:11px;padding:1px 6px;border-radius:999px}
   .chip.win{color:var(--win);background:var(--winbg)} .chip.loss{color:var(--loss);background:var(--lossbg)} .chip.tie{color:var(--tie)}
   .cap{font-family:var(--mono);font-weight:600}
+  /* leaderboard: draggable sort headers + row excludes */
+  th.draggable{cursor:grab;user-select:none;white-space:nowrap}
+  th.draggable:active{cursor:grabbing}
+  th.draggable.sortkey{color:var(--accent)}
+  th.draggable.drag-over{background:var(--panel2);box-shadow:inset 2px 0 0 var(--accent)}
+  tr.excluded td:not(.exsel){color:var(--faint);opacity:.5}
+  td.exsel,th:first-child{text-align:center;padding-left:6px;padding-right:6px}
+  .resetbtn{background:var(--panel2);color:var(--ink);border:1px solid var(--line2);border-radius:6px;padding:5px 10px;cursor:pointer;font-family:var(--mono);font-size:12px}
+  .resetbtn:hover{border-color:var(--accent2)}
   .cov{width:22px;height:16px;border-radius:3px;display:inline-block}
   .cov.y{background:var(--accent2)} .cov.n{background:var(--line)}
   #pareto{background:var(--panel);border:1px solid var(--line);border-radius:10px}
