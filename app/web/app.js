@@ -221,20 +221,38 @@ function renderBoard(d) {
       cols.splice(to, 0, c);
       renderBoard(d);
    };
+   // Click a header → sort by that column (promote to primary); click the already-primary
+   // column again → flip its direction. We can't use a native `onclick`: `draggable` elements
+   // swallow click events in Chromium, so detect a click as a mousedown/mouseup with no drag.
+   const clickSort = (c) => {
+      const idx = cols.indexOf(c);
+      if (idx === 0) c.dir = c.dir === 'worst' ? 'best' : 'worst';
+      else {
+         cols.splice(idx, 1);
+         cols.unshift(c);
+      }
+      renderBoard(d);
+   };
    const th = (c, i) => {
       const arrow = c.dir === 'worst' ? (c.lower ? ' ↓' : ' ↑') : c.lower ? ' ↑' : ' ↓';
       const primary = i === 0;
+      let down = null;
       const n = el(
          'th',
          {
             class: `num draggable${primary ? ' sortkey' : ''}`,
             draggable: 'true',
-            title: 'drag to set sort priority · click to flip direction',
-            onclick: () => {
-               c.dir = c.dir === 'worst' ? 'best' : 'worst';
-               renderBoard(d);
+            title: 'click to sort by this column (click again to reverse) · drag to arrange secondary keys',
+            onmousedown: (ev) => {
+               down = { x: ev.clientX, y: ev.clientY };
+            },
+            onmouseup: (ev) => {
+               const wasClick = down && Math.abs(ev.clientX - down.x) + Math.abs(ev.clientY - down.y) < 5;
+               down = null;
+               if (wasClick) clickSort(c);
             },
             ondragstart: (ev) => {
+               down = null; // a real drag started → the following mouseup is not a click
                drag.from = i;
                ev.dataTransfer.effectAllowed = 'move';
             },
@@ -287,7 +305,7 @@ function renderBoard(d) {
       el(
          'div',
          { class: 'muted' },
-         `${d.count} rows · ${entities.length} configs · normalized within this selection · drag headers to prioritize sort`,
+         `${d.count} rows · ${entities.length} configs · normalized within this selection · click a header to sort, drag to arrange keys`,
       ),
       el('table', {}, el('thead', {}, head), el('tbody', {}, ...body)),
    );
