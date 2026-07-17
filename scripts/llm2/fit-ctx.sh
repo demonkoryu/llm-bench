@@ -25,18 +25,25 @@ VK_BIN="${VK_BIN:-$HOME/llama.cpp/build-vulkan/bin/llama-fit-params}"
 VRAM_CLEAR_TIMEOUT=60
 
 backend=vulkan
-ngl=99
 fit_floor=4096
+fit_target=0     # MiB free margin to leave. 0 = use all VRAM (matches production,
+                 # which runs -ngl 99 --mlock). A non-zero margin makes fit-params
+                 # offload layers to CPU on tight models instead of reducing ctx.
 hf_repo=""
 hf_file=""
 model_path=""
 extra_flags=""
 
+# NOTE: we intentionally do NOT pass -ngl. llama-fit-params treats n_gpu_layers as a
+# free variable it must be allowed to adjust; pinning it aborts the fit on tight models
+# ("n_gpu_layers already set by user to 99, abort"). With --fit-target 0 it keeps all
+# layers on GPU (-ngl -1) and reduces CONTEXT to fit — exactly the number we want.
 while [[ $# -gt 0 ]]; do
    case "$1" in
-      --backend)  backend="$2";   shift 2 ;;
-      --ngl)      ngl="$2";       shift 2 ;;
-      --fit-ctx)  fit_floor="$2"; shift 2 ;;
+      --backend)     backend="$2";    shift 2 ;;
+      --ngl)         shift 2 ;;   # accepted but ignored (see NOTE above)
+      --fit-ctx)     fit_floor="$2";  shift 2 ;;
+      --fit-target)  fit_target="$2"; shift 2 ;;
       --hf-repo)  hf_repo="$2";   shift 2 ;;
       --hf-file)  hf_file="$2";   shift 2 ;;
       --model)    model_path="$2"; shift 2 ;;
@@ -94,14 +101,16 @@ while [ $SECONDS -lt $deadline ]; do
 done
 
 # Compute the fit. llama-fit-params prints the fitted CLI args to stdout, e.g.
-# "-c 204032 -ngl 99"  (or "-c 0 -ngl 99" when it fits at native). Diagnostics go
-# to stderr (captured for error reporting). --fit-ctx sets the minimum ctx the
-# fitter may pick. Caller must pass only fit-params-accepted flags (KV quant, batch);
-# server-only flags like --no-mmproj / --spec-type make it exit non-zero.
+# "-c 6912 -ngl -1"  (context reduced to fit, all layers on GPU) or "-c 0 -ngl -1"
+# (fits at the native window). Diagnostics go to stderr (captured for error reporting).
+# --fit-ctx sets the minimum ctx the fitter may pick. Caller must pass only
+# fit-params-accepted flags (KV quant, batch); server-only flags like --no-mmproj /
+# --spec-type make it exit non-zero. `|| true` so a non-zero exit doesn't skip the
+# diagnostic below (the script's `set -e` would otherwise abort silently).
 err_log=$(mktemp)
-out=$(eval "${vk_env}\"\$VK_BIN\" $model_args -ngl $ngl -fa on $ctk_flag --fit-ctx $fit_floor $extra_flags" 2>"$err_log")
+out=$(eval "${vk_env}\"\$VK_BIN\" $model_args -fa on $ctk_flag --fit-ctx $fit_floor --fit-target $fit_target $extra_flags" 2>"$err_log") || true
 
-# Extract the fitted -c value.
+# Extract the fitted -c value (0 = fits at native window; caller resolves to native).
 fitted=$(printf '%s\n' "$out" | grep -oP '(?<=-c )\d+' | head -1)
 if [ -z "$fitted" ]; then
    echo "ERROR: no fitted -c parsed. stdout=[$out] stderr_tail=[$(tail -3 "$err_log" | tr '\n' ' ')]" >&2
