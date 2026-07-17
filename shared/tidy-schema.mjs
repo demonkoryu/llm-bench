@@ -127,6 +127,7 @@ const UNIT_EXACT = {
 // score's unit depends on the bench that produced it.
 const SCORE_UNIT_BY_BENCH = [
    [/^maxctx$/, 'tokens'],
+   [/^fit_ctx$/, 'tokens'],
    [/^kv_per_tok$/, 'kib'],
    [/^power_eff$/, 'tok_s_per_w'],
    [/^e2e-/, 'tok_s'],

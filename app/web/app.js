@@ -186,6 +186,7 @@ function defaultBoardCols() {
       { key: 'fleet', label: 'fleet', get: (e) => e.fleet_suitability, dec: 1 },
       { key: 'inst64k', label: '64k inst', get: (e) => e.fleet_slots, dec: 0 },
       { key: 'maxctx', label: 'maxctx k', get: (e) => (e.raw?.maxctx == null ? null : e.raw.maxctx / 1000), dec: 0 },
+      { key: 'fit_ctx', label: 'fit-ctx k', get: (e) => (e.raw?.fit_ctx == null ? null : e.raw.fit_ctx / 1000), dec: 0 },
       { key: 'e2e', label: 'e2e tok/s', get: (e) => e.raw?.e2e_throughput, dec: 1 },
       { key: 'ttft', label: 'ttft ms', get: (e) => e.raw?.ttft, dec: 0, lower: true },
       { key: 'vram', label: 'vram MiB', get: (e) => e.raw?._vram_at_maxctx, dec: 0, lower: true },

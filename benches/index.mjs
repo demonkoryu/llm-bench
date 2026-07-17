@@ -6,6 +6,7 @@ import { benches as codingBenches } from './coding.mjs';
 import { bench as docqa } from './docqa.mjs';
 import { bench as instruction_following } from './instruction_following.mjs';
 // performance/capacity probes (kind: 'probe' — self-manage the server)
+import { bench as fit_ctx } from './probes/fit_ctx.mjs';
 import { bench as kv_per_tok } from './probes/kv_per_tok.mjs';
 import { bench as maxctx } from './probes/maxctx.mjs';
 import { bench as parallel_gen } from './probes/parallel_gen.mjs';
@@ -34,6 +35,7 @@ const all = [
    struct_output,
    instruction_following,
    maxctx,
+   fit_ctx,
    kv_per_tok,
    throughput,
    speed,

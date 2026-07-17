@@ -81,6 +81,7 @@ const METRIC_DEFS = {
       norm: 'identity',
    },
    maxctx: { raw: (r) => pickMean(r, 'score', 'maxctx'), norm: 'ratioMax' },
+   fit_ctx: { raw: (r) => pickMean(r, 'score', 'fit_ctx'), norm: 'ratioMax' },
    // fleet inputs (not scored directly)
    _vram_at_maxctx: { raw: (r) => pickMean(r, 'vram_mib', 'maxctx'), norm: 'raw' },
    _kv_per_tok_kib: { raw: (r) => pickMean(r, 'score', 'kv_per_tok'), norm: 'raw' },

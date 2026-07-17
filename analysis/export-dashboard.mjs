@@ -47,6 +47,7 @@ const M = {
   'e2e tok/s': {fn: r => avgF(r,x=>x.bench==='e2e-8k'&&x.metric==='score')},
   'ttft ms': {fn: r => avgF(r,x=>x.bench==='ttft-8k'&&x.metric==='score'), lower:true},
   'maxctx': {fn: r => maxF(r,x=>x.bench==='maxctx'&&x.metric==='score')},
+  'fit-ctx': {fn: r => maxF(r,x=>x.bench==='fit_ctx'&&x.metric==='score')},
   'VRAM MiB': {fn: r => maxF(r,x=>x.bench==='maxctx'&&x.metric==='vram_mib'), lower:true},
   'KV bytes/tok': {fn: r => { const v=avgF(r,x=>x.bench==='kv_per_tok'&&x.metric==='score'); return v==null?null:1024*v; }, lower:true},
 };

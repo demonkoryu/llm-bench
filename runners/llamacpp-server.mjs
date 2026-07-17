@@ -501,6 +501,41 @@ export function llamacppServer({
    }
 
    /**
+    * Probe llama.cpp's NATIVE auto-fit context ceiling for a model (fit-ctx.sh →
+    * llama-fit-params). This is a fast, memory-fit-only estimate — no coherence
+    * check — computed analytically without a full model load. It self-manages the
+    * GPU (kills any running server + waits for VRAM to clear) and leaves none running,
+    * so it should run alongside the maxctx probe rather than between server-dependent ones.
+    *
+    * The helper prints the fitted `-c N` (or `-c 0` when the model fits at its native
+    * window). We resolve 0 → native_max_ctx so the row always carries a real ceiling.
+    *
+    * @param {object} modelCfg  model entry from models.yaml
+    * @returns {{ fitCtx: number|null, fitRaw: number|null }}
+    */
+   async function probeFitCtx(modelCfg) {
+      const args = [
+         `--backend ${backend}`,
+         `--hf-repo '${modelCfg.hf_repo}'`,
+         `--hf-file '${modelCfg.hf_file}'`,
+         extraFlagsToString(modelCfg.extra_flags),
+      ]
+         .filter(Boolean)
+         .join(' ');
+
+      const out = await runScript('fit-ctx.sh', args, { tolerant: true, timeout: 180_000 });
+      const raw = Number.parseInt(String(out).trim(), 10);
+      if (Number.isNaN(raw)) {
+         console.warn(`  [fit_ctx] no fitted ctx parsed from fit-ctx.sh output: ${String(out).slice(0, 120)}`);
+         return { fitCtx: null, fitRaw: null };
+      }
+      // -c 0 → fits at native window (no VRAM reduction needed).
+      const fitCtx = raw === 0 ? (modelCfg.native_max_ctx ?? null) : raw;
+      console.log(`  [fit_ctx] fitted=${raw}${raw === 0 ? ` (native ${modelCfg.native_max_ctx ?? '?'})` : ''}`);
+      return { fitCtx, fitRaw: raw };
+   }
+
+   /**
     * Check if the server is still alive. Restart once if dead.
     * Returns false only if restart also fails.
     */
@@ -537,6 +572,7 @@ export function llamacppServer({
       client,
       detectBackends,
       startForModel,
+      probeFitCtx,
       probeCeiling,
       startServer,
       stopServer,
