@@ -9,3 +9,9 @@ logs/
 
 # bench concurrency lock — written by run-suite.mjs, cleared on exit
 .bench.lock
+
+# JetBrains IDE config
+.idea/
+
+# ephemeral top-level run summary stubs (empty results[]; raw data lives in results/runs/*/run.json)
+/results/run-*.json
