@@ -231,5 +231,20 @@
     "native_max_ctx": 131072,
     "source_run_id": "rx7900xt-vulkan-20260716-153300-benchrun",
     "measured_at": "2026-07-16T16:08:54.961Z"
+  },
+  "gemma-4-31B_q4_0-it.gguf|q4_0|q5_0|vulkan|RX 7900 XT|10050 (b15ca938a)": {
+    "gguf_file": "gemma-4-31B_q4_0-it.gguf",
+    "quant": "q4_0",
+    "kv_quant": "q5_0",
+    "backend": "vulkan",
+    "gpu": "RX 7900 XT",
+    "llamacpp_build": "10050 (b15ca938a)",
+    "ctx_ceiling": 65536,
+    "oom_ceiling": 131072,
+    "coherence_ceiling": 65536,
+    "vram_at_ctx": 20431,
+    "native_max_ctx": 131072,
+    "source_run_id": "rx7900xt-vulkan-20260716-161359-benchrun",
+    "measured_at": "2026-07-16T16:50:31.702Z"
   }
 }
