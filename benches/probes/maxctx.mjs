@@ -5,6 +5,9 @@ export const bench = {
    name: 'maxctx',
    kind: 'probe',
    thinkDependent: false,
+   // Self-manages the server: a cache hit needs none, and a miss calls
+   // srv.startForModel (its own kill + ladder + start). No pre-start required.
+   selfManagesServer: true,
    async run({ srv, model, caps, upsertCap }) {
       if (caps?.coherence_ceiling) {
          // cache hit under the current build → no re-probe

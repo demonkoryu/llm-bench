@@ -12,6 +12,10 @@ export const bench = {
    name: 'fit_ctx',
    kind: 'probe',
    thinkDependent: false,
+   // fit-ctx.sh kills any running server, clears VRAM, and computes the fit itself,
+   // so bench-run must NOT pre-start a full model server for it (that pre-start is
+   // slow and hangs past the health timeout on cold non-QAT models).
+   selfManagesServer: true,
    async run({ srv, model }) {
       const r = await srv.probeFitCtx(model);
       if (r?.fitCtx == null) {

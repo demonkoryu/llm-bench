@@ -222,17 +222,26 @@ async function main() {
          }
 
          console.error(`\n══ ${m.label ?? m.hf_file}`);
-         await srv.killAll();
-         await srv.waitVramClear(30000).catch(() => {});
-         const extraFlags = [extraFlagsToString(m.extra_flags), chatTemplatePath ? `--chat-template-file ${chatTemplatePath}` : '']
-            .filter(Boolean)
-            .join(' ');
-         try {
-            await srv.startServer({ hf_repo: m.hf_repo, hf_file: m.hf_file, ctx: CTX, extraFlags });
-            await srv.waitHealthy(360000);
-         } catch (e) {
-            console.error(`  load failed: ${(e.message ?? '').slice(0, 80)} — skipping`);
-            continue;
+         // Only pre-start a full model server when something needs it. Regular benches
+         // run against this server; but self-managing probes (maxctx, fit_ctx) reload or
+         // kill it themselves. For a probe-only run of those, skip the pre-start — it is
+         // slow and can hang past waitHealthy on cold non-QAT models (fit_ctx doesn't even
+         // need a running server; it computes the fit analytically via llama-fit-params).
+         const needsPrestartServer = (b) => BENCHES[b].kind !== 'probe' || !BENCHES[b].selfManagesServer;
+         const doPrestart = wantBenches.some(needsPrestartServer);
+         if (doPrestart) {
+            await srv.killAll();
+            await srv.waitVramClear(30000).catch(() => {});
+            const extraFlags = [extraFlagsToString(m.extra_flags), chatTemplatePath ? `--chat-template-file ${chatTemplatePath}` : '']
+               .filter(Boolean)
+               .join(' ');
+            try {
+               await srv.startServer({ hf_repo: m.hf_repo, hf_file: m.hf_file, ctx: CTX, extraFlags });
+               await srv.waitHealthy(360000);
+            } catch (e) {
+               console.error(`  load failed: ${(e.message ?? '').slice(0, 80)} — skipping`);
+               continue;
+            }
          }
 
          // Regular (client-prompt) benches first — they use the server loaded above.

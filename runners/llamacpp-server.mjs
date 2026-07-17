@@ -536,12 +536,7 @@ export function llamacppServer({
          console.warn('  [fit_ctx] string extra_flags — KV quant not forwarded to fit-params (using its q8_0 default)');
       }
 
-      const args = [
-         `--backend ${backend}`,
-         `--hf-repo '${modelCfg.hf_repo}'`,
-         `--hf-file '${modelCfg.hf_file}'`,
-         fitFlags,
-      ]
+      const args = [`--backend ${backend}`, `--hf-repo '${modelCfg.hf_repo}'`, `--hf-file '${modelCfg.hf_file}'`, fitFlags]
          .filter(Boolean)
          .join(' ');
 
