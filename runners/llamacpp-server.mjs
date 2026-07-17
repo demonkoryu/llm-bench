@@ -514,11 +514,33 @@ export function llamacppServer({
     * @returns {{ fitCtx: number|null, fitRaw: number|null }}
     */
    async function probeFitCtx(modelCfg) {
+      // llama-fit-params only accepts a subset of serving flags — it rejects
+      // server-only ones (--no-mmproj, --spec-type, --model-draft, …). Pass ONLY the
+      // flags that both (a) it accepts and (b) affect the memory fit: KV-cache quant
+      // (the big lever) and batch sizing. NOTE: this deliberately ignores a speculative
+      // draft model's VRAM, so for MTP configs fit_ctx slightly over-estimates the
+      // headroom the production server actually has. Object extra_flags only; a legacy
+      // string extra_flags opts out of the KV match (falls back to fit-ctx.sh's q8_0).
+      const FIT_FLAG_KEYS = ['cache-type-k', 'cache-type-v', 'batch-size', 'ubatch-size'];
+      const ef = modelCfg.extra_flags;
+      let fitFlags = '';
+      if (ef && typeof ef === 'object') {
+         const picked = {};
+         for (const k of FIT_FLAG_KEYS) {
+            if (ef[k] != null) {
+               picked[k] = ef[k];
+            }
+         }
+         fitFlags = extraFlagsToString(picked);
+      } else if (typeof ef === 'string') {
+         console.warn('  [fit_ctx] string extra_flags — KV quant not forwarded to fit-params (using its q8_0 default)');
+      }
+
       const args = [
          `--backend ${backend}`,
          `--hf-repo '${modelCfg.hf_repo}'`,
          `--hf-file '${modelCfg.hf_file}'`,
-         extraFlagsToString(modelCfg.extra_flags),
+         fitFlags,
       ]
          .filter(Boolean)
          .join(' ');

@@ -95,13 +95,18 @@ done
 
 # Compute the fit. llama-fit-params prints the fitted CLI args to stdout, e.g.
 # "-c 204032 -ngl 99"  (or "-c 0 -ngl 99" when it fits at native). Diagnostics go
-# to stderr. --fit-ctx sets the minimum ctx the fitter may pick.
-out=$(eval "${vk_env}\"\$VK_BIN\" $model_args -ngl $ngl -fa on $ctk_flag --fit-ctx $fit_floor $extra_flags" 2>/dev/null)
+# to stderr (captured for error reporting). --fit-ctx sets the minimum ctx the
+# fitter may pick. Caller must pass only fit-params-accepted flags (KV quant, batch);
+# server-only flags like --no-mmproj / --spec-type make it exit non-zero.
+err_log=$(mktemp)
+out=$(eval "${vk_env}\"\$VK_BIN\" $model_args -ngl $ngl -fa on $ctk_flag --fit-ctx $fit_floor $extra_flags" 2>"$err_log")
 
 # Extract the fitted -c value.
 fitted=$(printf '%s\n' "$out" | grep -oP '(?<=-c )\d+' | head -1)
 if [ -z "$fitted" ]; then
-   echo "ERROR: could not parse fitted -c from: $out" >&2
+   echo "ERROR: no fitted -c parsed. stdout=[$out] stderr_tail=[$(tail -3 "$err_log" | tr '\n' ' ')]" >&2
+   rm -f "$err_log"
    exit 1
 fi
+rm -f "$err_log"
 echo "$fitted"
