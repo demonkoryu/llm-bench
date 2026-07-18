@@ -1,0 +1,17 @@
+{
+  "run_id": "rx7900xt-vulkan-20260718-080226-benchrun",
+  "kind": "benchrun",
+  "host": "rose",
+  "gpu": "RX 7900 XT",
+  "backend": "vulkan",
+  "llamacpp_build": "10064 (86d86ed43)",
+  "chat_template": "builtin",
+  "benches": [
+    "fit_ctx"
+  ],
+  "samples": 1,
+  "ctx": 16384,
+  "tidy_rows": 6,
+  "started": "2026-07-18T08:02:51.783Z",
+  "status": "complete"
+}
