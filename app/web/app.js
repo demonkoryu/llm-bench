@@ -325,14 +325,15 @@ function renderPareto(d) {
    }
    const xs = pts.map((p) => p.x),
       ys = pts.map((p) => p.y);
-   const xmin = Math.min(...xs) * 0.95,
+   // Both axes start at 0 so bubble positions read as absolute magnitudes.
+   const xmin = 0,
       xmax = Math.max(...xs) * 1.05,
-      ymin = Math.min(...ys, 0),
+      ymin = 0,
       ymax = Math.max(...ys) * 1.02;
    const sx = (x) => P + ((x - xmin) / (xmax - xmin || 1)) * (W - 2 * P);
    const sy = (y) => H - P - ((y - ymin) / (ymax - ymin || 1)) * (H - 2 * P);
    const vmax = Math.max(...pts.map((p) => p.vram || 0), 1);
-   const rOf = (v) => 5 + 9 * Math.sqrt((v || vmax / 2) / vmax);
+   const rOf = (v) => 3 + 6 * Math.sqrt((v || vmax / 2) / vmax);
    const NS = 'http://www.w3.org/2000/svg';
    const svg = document.createElementNS(NS, 'svg');
    svg.setAttribute('id', 'pareto');
