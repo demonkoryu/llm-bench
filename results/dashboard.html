@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>llm-bench explorer</title>
-<meta name="description" content="llm-bench results — generated 2026-07-18T11:59:41.431Z">
+<meta name="description" content="llm-bench results — generated 2026-07-18T12:03:55.722Z">
 <style>
   :root{
     --bg:#0f1214; --panel:#161b1e; --panel2:#1b2226; --ink:#e7ebed; --dim:#8a949b; --faint:#5c666c;
@@ -772,6 +772,15 @@ function renderPareto(d) {
       const gy = P + (i * (H - 2 * P)) / 4;
       svg.append(mk('line', { x1: P, y1: gy, x2: W - P, y2: gy, stroke: 'var(--line)' }));
       mkt({ x: 8, y: gy + 4, fill: 'var(--faint)', 'font-size': 10, 'font-family': 'var(--mono)' }, fmt(ymax - (i * (ymax - ymin)) / 4, 0));
+   }
+   // x grid + step labels (mirror the y axis)
+   for (let i = 0; i <= 4; i++) {
+      const gx = P + (i * (W - 2 * P)) / 4;
+      svg.append(mk('line', { x1: gx, y1: P, x2: gx, y2: H - P, stroke: 'var(--line)' }));
+      mkt(
+         { x: gx, y: H - P + 16, fill: 'var(--faint)', 'font-size': 10, 'text-anchor': 'middle', 'font-family': 'var(--mono)' },
+         fmt(xmin + (i * (xmax - xmin)) / 4, 0),
+      );
    }
    mkt(
       { x: W / 2, y: H - 12, fill: 'var(--dim)', 'font-size': 11, 'text-anchor': 'middle', 'font-family': 'var(--mono)' },

@@ -357,6 +357,15 @@ function renderPareto(d) {
       svg.append(mk('line', { x1: P, y1: gy, x2: W - P, y2: gy, stroke: 'var(--line)' }));
       mkt({ x: 8, y: gy + 4, fill: 'var(--faint)', 'font-size': 10, 'font-family': 'var(--mono)' }, fmt(ymax - (i * (ymax - ymin)) / 4, 0));
    }
+   // x grid + step labels (mirror the y axis)
+   for (let i = 0; i <= 4; i++) {
+      const gx = P + (i * (W - 2 * P)) / 4;
+      svg.append(mk('line', { x1: gx, y1: P, x2: gx, y2: H - P, stroke: 'var(--line)' }));
+      mkt(
+         { x: gx, y: H - P + 16, fill: 'var(--faint)', 'font-size': 10, 'text-anchor': 'middle', 'font-family': 'var(--mono)' },
+         fmt(xmin + (i * (xmax - xmin)) / 4, 0),
+      );
+   }
    mkt(
       { x: W / 2, y: H - 12, fill: 'var(--dim)', 'font-size': 11, 'text-anchor': 'middle', 'font-family': 'var(--mono)' },
       d.xMetric + ' →',
