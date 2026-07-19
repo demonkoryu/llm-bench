@@ -95,7 +95,7 @@ const SEP = '␟';
 // An entity is a SERVED CONFIG (ENTITY_DIMS) — NOT split by think. think is a view
 // parameter: think-dependent core benches use the chosen think; think-independent
 // benches (think_mode='n/a') always attach. This keeps one config's metrics together.
-function entityKey(row) {
+export function entityKey(row) {
    return ENTITY_DIMS.map((d) => row[d] ?? '').join(SEP);
 }
 function groupEntities(rows, think) {
