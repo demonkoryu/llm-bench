@@ -8,17 +8,15 @@
    },
    "scripts": {
       "bench": "node runners/bench-run.mjs",
-      "dashboard": "node app/server.mjs",
-      "dashboard:export": "node analysis/export-dashboard.mjs",
       "pg:sync": "node analysis/pg-sync.mjs",
       "backfill": "node analysis/backfill.mjs",
       "caps-seed": "node analysis/caps-cache.mjs seed",
       "smoke": "node runners/smoke.mjs",
       "coding-smoke": "node runners/coding-smoke.mjs",
       "deploy": "bash scripts/deploy.sh",
-      "lint": "biome lint shared runners benchmarks analysis app benches",
-      "format": "biome format --write shared runners benchmarks analysis app benches",
-      "check": "biome check --write shared runners benchmarks analysis app benches"
+      "lint": "biome lint shared runners benchmarks analysis benches",
+      "format": "biome format --write shared runners benchmarks analysis benches",
+      "check": "biome check --write shared runners benchmarks analysis benches"
    },
    "devDependencies": {
       "@biomejs/biome": "^2.4.16",

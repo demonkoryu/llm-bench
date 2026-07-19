@@ -3,7 +3,7 @@
 Local LLM benchmark suite for picking an **agentic fleet** on a single GPU. It measures
 each model on document comprehension, coding/tool-use, speed, context length and VRAM
 footprint, then ranks them by a **capability** score and a **fleet-suitability** score,
-and renders an interactive, self-contained dashboard.
+and renders an interactive **Observable Framework** dashboard.
 
 - **Orchestrator** — `runners/bench-run.mjs` (Node, dev host): the model × think × bench
   matrix loop. Bench modules live in `benches/` (reuse the graders in `benchmarks/*`);
@@ -17,9 +17,10 @@ and renders an interactive, self-contained dashboard.
   (context ceilings, KV footprint) are memoized in `results/caps/capabilities.json`,
   keyed by (gguf, quant, kv, backend, gpu, **llamacpp_build**) so a llama.cpp upgrade
   invalidates them.
-- **Analysis** — `analysis/` (fresh, tidy-native): `score.mjs` (+ `scoring-config.mjs`)
-  computes capability/fleet over any filtered slice; `backfill.mjs` imports legacy
-  `run.json`; `export-dashboard.mjs` snapshots the static page.
+- **Analysis** — `analysis/` (tidy-native): `score.mjs` (+ `scoring-config.mjs`) computes
+  capability/fleet over any filtered slice; `query-engine.mjs` owns the dashboard's metric
+  catalog + pivot/pareto/leaderboard/coverage reshaping; `backfill.mjs` imports legacy
+  `run.json`; `pg-sync.mjs` mirrors the tidy rows into central Postgres for the dashboard.
 - **Config** — `config/models.yaml` (models, sampling, structured subject dims) and
   `config/hosts.yaml` (GPU host endpoints/SSH; set `SSH_HOST` if the alias doesn't resolve).
 
@@ -84,20 +85,29 @@ are distinct, queryable rows — the thing the old `model|think|bench` merge cou
 
 ## 3. The dashboard
 
-A **unified explorer**: a facet rail (filter by any dimension) driving four views —
-**Pivot** (A/B any axis with Δ), **Pareto** (quality vs throughput, for dense-vs-MoE),
-**Leaderboard** (capability/fleet with weight dials), **Coverage** (run vs not).
+An **Observable Framework** app in `dashboard/` — a shared facet form driving four views:
+**Leaderboard** (capability/speed/fleet, sortable), **Pareto** (quality vs throughput, bubble
+size = VRAM), **Pivot** (A/B any two dims as a heatmap, with a Δ baseline), **Coverage** (run
+vs not). The compute is the same pure `analysis/query-engine.mjs` + `score.mjs` the rest of the
+suite uses (mirrored into `dashboard/src/lib/` at build time), so the dashboard can't drift
+from the scoring.
+
+**Data flow.** Benchmark runs write tidy Parquet (`results/tidy/**`); `npm run pg:sync` mirrors
+those rows into the **central Postgres** (`llmbench.measurements` on llm2). The dashboard's
+build-time data loader reads them back through DuckDB's `postgres` extension and bakes a static
+snapshot, so the published page needs no live DB connection.
 
 ```bash
-npm run dashboard            # local interactive app (Node + DuckDB) → http://localhost:5178
-npm run dashboard:export     # snapshot a self-contained results/dashboard.html (static)
+export LLMBENCH_DB_PASSWORD=…              # the llmbench role password (see infra/postgres/.env)
+npm run pg:sync                            # tidy Parquet -> central Postgres
+cd dashboard && npm ci && npm run dev      # local preview → http://localhost:3000
+npm run build                              # static dist/ (what CI publishes)
 ```
 
-- **Local app** — live DuckDB querying, richest interactivity. Run it while iterating.
-- **Static export** — one self-contained HTML (data + scorer + engine inlined; faceting
-  runs client-side). Published to **<https://pages.xor0.de/llm-bench/>** and mobile-friendly:
-  a push to `main` that changes `results/dashboard.html` redeploys via Forgejo Actions →
-  the `pages` branch → Caddy. Regenerate with `dashboard:export` before pushing.
+Published to **<https://pages.xor0.de/llm-bench/>** (mobile-friendly). A push to `main` touching
+`dashboard/` or `analysis/` — or a manual **Run workflow** after a data refresh — builds `dist/`
+on the Forgejo runner and deploys it via the `pages` branch → Caddy. CI needs the
+`LLMBENCH_DB_PASSWORD` Actions secret.
 
 ## 4. Local-exec mode (run on the GPU host)
 

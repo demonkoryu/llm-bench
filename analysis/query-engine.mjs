@@ -1,11 +1,11 @@
 // Dashboard query engine — the SINGLE source of truth for the metric catalog plus the
 // pivot / pareto / leaderboard / coverage / meta / facets logic. Pure: every function takes
-// the tidy `rows` array (leaf-metric rows) as input and returns the same shapes the frontend
-// (app/web/app.js) consumes over /api/*.
+// the tidy `rows` array (leaf-metric rows) as input and returns the shapes the Observable
+// Framework dashboard (dashboard/) renders.
 //
-// Consumed BOTH by the live server (app/server.mjs, over DuckDB rows) and by the static export
-// (analysis/export-dashboard.mjs, inlined and run over window.__ROWS__) so the two dashboards
-// can no longer drift. Scoring stays in analysis/score.mjs; this module only owns the
+// The Framework client imports this unchanged (dashboard/copy-lib.mjs mirrors it into
+// dashboard/src/lib/ at build time); its build-time data loader pulls the rows from central-db
+// via analysis/pg-store.mjs. Scoring stays in analysis/score.mjs; this module only owns the
 // friendly-metric catalog and the tabular/scatter reshaping.
 import { entityKey, scoreSelection } from './score.mjs';
 import { DEFAULT_DIALS } from './scoring-config.mjs';
