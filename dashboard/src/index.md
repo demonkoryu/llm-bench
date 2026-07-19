@@ -28,9 +28,10 @@ const top = [...data].sort((a, b) => (b.capability ?? -1) - (a.capability ?? -1)
 <div class="muted">${lb.count.toLocaleString()} measurements · ${data.length} configs · normalized within this selection</div>
 
 ```js
-display(Plot.plot({
+// Fill on desktop; on a phone keep a readable min width and scroll inside the card.
+display(html`<div class="scroll-x">${Plot.plot({
   marginLeft: 250,
-  width,
+  width: Math.max(560, width),
   height: Math.max(160, top.length * 24 + 40),
   x: { label: "capability →", grid: true, domain: [0, 100] },
   y: { label: null },
@@ -40,7 +41,7 @@ display(Plot.plot({
     Plot.ruleX([0]),
     Plot.text(top, { x: "capability", y: "label", text: (d) => (d.capability == null ? "" : d.capability.toFixed(0)), dx: 14, fill: "currentColor" }),
   ],
-}));
+})}</div>`);
 ```
 
 ```js

@@ -27,16 +27,19 @@ const long = cov.cells.flatMap((row) => row.has.map((h, i) => ({ cfg: cfg(row.cf
 if (cov.configs.length === 0) {
   display(html`<div class="muted">No data in this selection.</div>`);
 } else {
-  display(Plot.plot({
+  // Cap cell size on desktop, but never shrink below a readable min — scroll on mobile.
+  const ideal = 300 + cov.benches.length * 30;
+  const minW = 300 + cov.benches.length * 16;
+  display(html`<div class="scroll-x">${Plot.plot({
     marginLeft: 300,
     marginBottom: 100,
-    width: Math.min(width, Math.max(640, cov.benches.length * 32 + 320)),
+    width: Math.max(minW, Math.min(width, ideal)),
     height: Math.max(200, cov.configs.length * 22 + 120),
     x: { label: "bench", domain: cov.benches, tickRotate: -45 },
     y: { label: null, domain: cov.configs.map(cfg) },
     color: { domain: [false, true], range: ["#262f34", "#0f8f82"], legend: true, tickFormat: (d) => (d ? "run" : "missing") },
     marks: [Plot.cell(long, { x: "bench", y: "cfg", fill: "has", inset: 0.5 })],
-  }));
+  })}</div>`);
 }
 ```
 

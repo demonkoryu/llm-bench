@@ -36,10 +36,13 @@ const hasDelta = baseline !== "(none)";
 if (long.length === 0) {
   display(html`<div class="muted">No data in this selection.</div>`);
 } else {
-  display(Plot.plot({
+  // Cap cell size on desktop, but never shrink below a readable min — scroll on mobile.
+  const ideal = 220 + pv.cols.length * 120;
+  const minW = 220 + pv.cols.length * 60;
+  display(html`<div class="scroll-x">${Plot.plot({
     marginLeft: 220,
     marginBottom: 90,
-    width: Math.min(width, Math.max(640, pv.cols.length * 130 + 240)),
+    width: Math.max(minW, Math.min(width, ideal)),
     x: { label: colsDim, domain: pv.cols.map(String), tickRotate: -40 },
     y: { label: rowsDim, domain: pv.rows.map(clean) },
     color: hasDelta
@@ -50,6 +53,6 @@ if (long.length === 0) {
       // black text with a white halo stays legible over any cell colour, light or dark.
       Plot.text(long, { x: "c", y: "r", text: (d) => (d.v == null ? "" : d.v.toFixed(1)), fill: "black", stroke: "white", strokeWidth: 2, paintOrder: "stroke", fontSize: 10 }),
     ],
-  }));
+  })}</div>`);
 }
 ```

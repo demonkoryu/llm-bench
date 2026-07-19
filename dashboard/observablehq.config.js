@@ -11,7 +11,11 @@ export default {
    // Full-width dashboard: no per-page table-of-contents column (pages have no sub-headings),
    // and a generous content max-width so wide tables/charts use the screen.
    toc: false,
-   head: '<style>:root{--observablehq-max-width:2000px}#observablehq-center{margin-left:1rem;margin-right:1rem}</style>',
+   head:
+      '<style>:root{--observablehq-max-width:2000px}#observablehq-center{margin-left:1rem;margin-right:1rem}' +
+      // Wide charts scroll horizontally on narrow screens instead of scaling to unreadable —
+      // override Plot's default max-width:100% so the SVG keeps its width and the box scrolls.
+      '.scroll-x{overflow-x:auto}.scroll-x svg{max-width:none;height:auto}</style>',
    header: '',
    footer: 'llm-bench · reads central-db (llmbench.measurements) at build time',
    pages: [
