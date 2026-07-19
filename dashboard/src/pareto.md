@@ -8,6 +8,7 @@ import * as Inputs from "npm:@observablehq/inputs";
 import { pareto, meta, facets as facetValues } from "./lib/query-engine.js";
 import { facetForm } from "./components/facets.js";
 import * as palette from "./components/palette.js";
+import { sizeLegend } from "./components/size-legend.js";
 
 const rows = await FileAttachment("data/measurements.json").json();
 const fv = facetValues(rows);
@@ -36,7 +37,7 @@ const thinkPts = pts.filter((p) => p.think === "think");
 if (pts.length === 0) {
   display(html`<div class="muted">No configs have both axes measured in this selection (need overlapping benches).</div>`);
 } else {
-  display(html`<div class="scroll-x">${Plot.plot({
+  const chart = Plot.plot({
     width: Math.max(360, Math.min(width, 1100)),
     height: 540,
     grid: true,
@@ -48,7 +49,13 @@ if (pts.length === 0) {
       Plot.dot(noThink, { x: "x", y: "y", r: "vramR", fill: "cat", stroke: "cat", fillOpacity: 0.7, channels: { config: "label", VRAM: "vram", arch: "arch" }, tip: true }),
       Plot.dot(thinkPts, { x: "x", y: "y", r: "vramR", stroke: "cat", fill: "none", strokeWidth: 2, channels: { config: "label", VRAM: "vram", arch: "arch" }, tip: true }),
     ],
-  })}</div>`);
+  });
+  display(html`<div class="scroll-x">${chart}</div>`);
+  // Size legend: 3 reference bubbles spanning the scale (fractions of max VRAM, rounded to 1 GiB),
+  // sized by the chart's own r-scale so a given radius reads the same as the plotted bubbles.
+  const vmax = Math.max(...pts.map((p) => p.vram ?? 0));
+  const legendVals = [...new Set([0.3, 0.6, 1].map((f) => Math.round((vmax * f) / 1024) * 1024))].filter((v) => v > 0);
+  if (legendVals.length) display(sizeLegend(chart.scale("r"), legendVals));
 }
 ```
 
