@@ -6,6 +6,8 @@ export default {
    root: 'src',
    base: '/llm-bench/',
    theme: ['dark', 'near-midnight'],
+   // Plain Caddy file_server can't rewrite /pareto -> pareto.html, so keep .html in links.
+   cleanUrls: false,
    header: '',
    footer: 'llm-bench · reads central-db (llmbench.measurements) at build time',
    pages: [

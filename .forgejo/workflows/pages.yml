@@ -1,22 +1,29 @@
-# Publishes the self-contained benchmark dashboard — GitHub Pages-style.
+# Publishes the Observable Framework dashboard — GitHub Pages-style.
 #
-# Flow (mirrors GitHub Pages + a publish action):
-#   1. push to main touching results/dashboard.html triggers this workflow ("build"),
-#   2. it copies results/dashboard.html -> index.html and FORCE-PUSHES the `pages`
-#      branch — the published artifact, exactly like a gh-pages branch,
-#   3. it rsyncs that same tree over SSH to the Caddy static server, so what is
-#      served at https://pages.xor0.de/llm-bench/ is byte-identical to the `pages`
-#      branch. Caddy just hosts a mirror of the branch.
+# Flow:
+#   1. push to main touching dashboard/ or analysis/ (or manual dispatch) triggers this,
+#   2. the runner builds the Framework project (dashboard/ -> dist/), reading the tidy rows
+#      from central-db (llmbench.measurements) at build time via the data loader,
+#   3. it FORCE-PUSHES the built dist/ as the `pages` branch (the published artifact,
+#      like a gh-pages branch),
+#   4. and rsyncs that same tree over SSH to the Caddy static server, so what is served
+#      at https://pages.xor0.de/llm-bench/ is byte-identical to the `pages` branch.
 #
-# Self-contained: clones the source via PAGES_TOKEN in a plain run step (no external
-# action), and deploys with a restricted SSH key (PAGES_DEPLOY_KEY) whose authorized
-# command is `rrsync -wo /srv/pages` — write-only, scoped to the pages root.
+# The build needs the DB password: add LLMBENCH_DB_PASSWORD as an Actions secret on this
+# repo (Settings -> Actions -> Secrets). The runner reaches central-db over the LAN port
+# 192.168.1.120:5432. A data refresh (npm run pg:sync) doesn't touch the repo, so rebuild
+# after new data via "Run workflow" (workflow_dispatch).
+#
+# Self-contained: clones the source via PAGES_TOKEN, deploys with a restricted SSH key
+# (PAGES_DEPLOY_KEY) whose authorized command is `rrsync -wo /srv/pages` — write-only,
+# scoped to the pages root.
 name: pages
 on:
   push:
     branches: [main]
     paths:
-      - results/dashboard.html
+      - dashboard/**
+      - analysis/**
       - .forgejo/workflows/pages.yml
   workflow_dispatch:
 
@@ -27,6 +34,9 @@ jobs:
       TOKEN: ${{ secrets.PAGES_TOKEN }}
       REPO: ${{ github.repository }}
       DEPLOY_KEY: ${{ secrets.PAGES_DEPLOY_KEY }}
+      # llmbench role password (same value as infra/postgres/.env); read at build time.
+      LLMBENCH_DB_PASSWORD: ${{ secrets.LLMBENCH_DB_PASSWORD }}
+      LLMBENCH_PG_HOST: 192.168.1.120
     steps:
       - name: Install ssh + rsync
         run: |
@@ -34,15 +44,26 @@ jobs:
           apt-get update -qq
           DEBIAN_FRONTEND=noninteractive apt-get install -y -qq openssh-client rsync >/dev/null
 
-      - name: Build site + publish pages branch
+      - name: Clone source
         run: |
           set -euo pipefail
           remote="https://forgejo-actions:${TOKEN}@git.xor0.de/${REPO}.git"
           git clone --depth 1 --branch main "$remote" src
-          test -f src/results/dashboard.html
-          mkdir site
-          cp src/results/dashboard.html site/index.html
-          cd site
+
+      - name: Build Framework dashboard (reads central-db)
+        run: |
+          set -euo pipefail
+          test -n "$LLMBENCH_DB_PASSWORD" || { echo "::error::LLMBENCH_DB_PASSWORD secret is not set"; exit 1; }
+          cd src/dashboard
+          npm ci
+          npm run build
+          test -f dist/index.html
+
+      - name: Publish pages branch
+        run: |
+          set -euo pipefail
+          remote="https://forgejo-actions:${TOKEN}@git.xor0.de/${REPO}.git"
+          cd src/dashboard/dist
           git init -q -b pages
           git config user.name  "forgejo-actions"
           git config user.email "actions@git.xor0.de"
@@ -61,8 +82,8 @@ jobs:
             "192.168.1.120 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHRU9Tgc2aRGFZ24l/xIoc6vczxrjNuUUo2wgghZU81H" \
             > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
-          # The deploy key's forced command is `rrsync -wo /srv/pages`, so the remote
-          # path is RELATIVE to /srv/pages -> this writes /srv/pages/llm-bench/.
+          # The deploy key's forced command is `rrsync -wo /srv/pages`, so the remote path
+          # is RELATIVE to /srv/pages -> this writes /srv/pages/llm-bench/.
           rsync -az --delete \
             -e "ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes" \
-            site/ demonkoryu@192.168.1.120:llm-bench/
+            src/dashboard/dist/ demonkoryu@192.168.1.120:llm-bench/
