@@ -54,6 +54,10 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$LLMBENCH_DB_PASSWORD" || { echo "::error::LLMBENCH_DB_PASSWORD secret is not set"; exit 1; }
+          # Root deps first: the dashboard's build-time data loader imports analysis/pg-store.mjs,
+          # which needs @duckdb/node-api resolved from the repo-root node_modules (up-tree from
+          # analysis/, NOT from dashboard/node_modules).
+          (cd src && npm ci)
           cd src/dashboard
           npm ci
           npm run build
