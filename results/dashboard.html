@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>llm-bench explorer</title>
-<meta name="description" content="llm-bench results — generated 2026-07-18T22:14:17.815Z">
+<meta name="description" content="llm-bench results — generated 2026-07-19T13:59:39.901Z">
 <style>
   :root{
     --bg:#0f1214; --panel:#161b1e; --panel2:#1b2226; --ink:#e7ebed; --dim:#8a949b; --faint:#5c666c;
@@ -436,6 +436,12 @@ const ARCH_COLORS = {
    'mamba-hybrid': '#b48ead',
 };
 const archColor = (a) => ARCH_COLORS[a] || '#8a949b';
+// KV-cache quant palette (for the pareto "color by kv_quant" mode — compare quants at a glance).
+const KV_COLORS = { q4_0: '#e5697b', q4_1: '#e5a54f', q5_0: '#7aa2f7', q5_1: '#2bd0be', q8_0: '#b48ead', f16: '#88c0d0' };
+const kvColor = (kv) => KV_COLORS[kv] || '#8a949b';
+// Pareto point category + colour, switched by the "color" control (arch | kv_quant).
+const ptCat = (p) => (state.ctl.colorBy === 'kv_quant' ? (p.cfg?.kv_quant ?? '—') : p.arch);
+const catColor = (cat) => (state.ctl.colorBy === 'kv_quant' ? kvColor(cat) : archColor(cat));
 
 const state = { facets: {}, facetValues: {}, meta: {}, view: 'pivot', ctl: {}, excludes: new Set(), boardCols: null, lastBoard: null };
 // Config identity shared by the leaderboard (exclude toggles) and the pareto (dim excluded points).
@@ -530,6 +536,7 @@ function buildCtrls() {
          selCtl('xMetric', 'x axis', M, 'decode tok/s'),
          selCtl('yMetric', 'y axis', M, 'reasoning %'),
          selCtl('think', 'think', ['no_think', 'think', 'both'], 'both'),
+         selCtl('colorBy', 'color', ['arch', 'kv_quant'], 'arch'),
       );
    } else if (state.view === 'leaderboard') {
       const reset = el(
@@ -794,7 +801,7 @@ function renderPareto(d) {
    mkt({ x: 14, y: 20, fill: 'var(--dim)', 'font-size': 11, 'font-family': 'var(--mono)' }, '↑ ' + d.yMetric);
    const tip = $('#tip');
    for (const p of pts) {
-      const col = archColor(p.arch);
+      const col = catColor(ptCat(p));
       const r = rOf(p.vram);
       // think = hollow ring, no_think = filled disc → the two configs read apart at a glance.
       const isThink = p.think === 'think';
@@ -820,11 +827,11 @@ function renderPareto(d) {
       });
       svg.append(c);
    }
-   const archs = [...new Set(pts.map((p) => p.arch))];
+   const cats = [...new Set(pts.map(ptCat))].sort();
    const legend = el(
       'div',
       { class: 'legend' },
-      ...archs.map((a) => el('span', {}, el('span', { class: 'dot', style: `background:${archColor(a)}` }), a)),
+      ...cats.map((a) => el('span', {}, el('span', { class: 'dot', style: `background:${catColor(a)}` }), a)),
       el('span', {}, '● no_think · ○ think · size = VRAM · up-and-left = smarter+faster'),
    );
    view.replaceChildren(svg, legend);
