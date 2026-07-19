@@ -46,9 +46,11 @@ const M = {
   'decode tok/s': {fn: r => avgF(r,x=>x.bench==='e2e-8k'&&x.metric==='tok_s')},
   'e2e tok/s': {fn: r => avgF(r,x=>x.bench==='e2e-8k'&&x.metric==='score')},
   'ttft ms': {fn: r => avgF(r,x=>x.bench==='ttft-8k'&&x.metric==='score'), lower:true},
-  'maxctx': {fn: r => maxF(r,x=>x.bench==='maxctx'&&x.metric==='score')},
+  'coder slots': {fn: r => maxF(r,x=>x.bench==='agent_ctx'&&x.metric==='n_coders')},
+  'agent pool k': {fn: r => { const v=maxF(r,x=>x.bench==='agent_ctx'&&x.metric==='total_ctx'); return v==null?null:v/1000; }},
+  'planner ctx k': {fn: r => { const v=maxF(r,x=>x.bench==='agent_ctx'&&x.metric==='planner_ctx'); return v==null?null:v/1000; }},
   'fit-ctx': {fn: r => maxF(r,x=>x.bench==='fit_ctx'&&x.metric==='score')},
-  'VRAM MiB': {fn: r => maxF(r,x=>x.bench==='maxctx'&&x.metric==='vram_mib'), lower:true},
+  'VRAM MiB': {fn: r => maxF(r,x=>x.bench==='agent_ctx'&&x.metric==='vram_mib'), lower:true},
   'KV bytes/tok': {fn: r => { const v=avgF(r,x=>x.bench==='kv_per_tok'&&x.metric==='score'); return v==null?null:1024*v; }, lower:true},
 };
 const filt = (facets) => ROWS.filter(r => Object.entries(facets||{}).every(([d,vs]) => !vs || !vs.length || vs.includes(r[d])));

@@ -50,10 +50,13 @@ export function upsertCap(resultsDir, keyFields, values) {
 }
 
 /**
- * Seed the cache from the backfilled tidy store: derive ceilings from `maxctx` rows and
+ * Seed the cache from the backfilled tidy store: derive ceilings from `agent_ctx` rows and
  * KV footprint from `kv_per_tok` rows, per config key. Historical rows carry
- * llamacpp_build=null, so these entries won't satisfy a fresh run on build 9945 — they
+ * llamacpp_build=null, so these entries won't satisfy a fresh run on a newer build — they
  * document what WAS measured and force one honest re-probe under the new build.
+ *
+ * agent_ctx measures a shared multi-agent KV pool, so the single-slot ceiling used by the
+ * depth probes is taken as its verified planner_ctx; total_ctx / vram document the pool.
  */
 export async function seedFromTidy(resultsDir = join(ROOT, 'results')) {
    const nativeByGguf = new Map();
@@ -64,12 +67,12 @@ export async function seedFromTidy(resultsDir = join(ROOT, 'results')) {
       resultsDir,
       `
     SELECT gguf_file, quant, kv_quant, backend, gpu, llamacpp_build,
-           max(CASE WHEN metric='coherence_ceiling' THEN metric_value END) AS coherence_ceiling,
-           max(CASE WHEN metric='oom_ceiling'       THEN metric_value END) AS oom_ceiling,
-           max(CASE WHEN metric='score'             THEN metric_value END) AS ctx_ceiling,
-           max(CASE WHEN metric='vram_mib'          THEN metric_value END) AS vram_at_ctx,
+           max(CASE WHEN metric='planner_ctx' THEN metric_value END) AS coherence_ceiling,
+           max(CASE WHEN metric='total_ctx'   THEN metric_value END) AS oom_ceiling,
+           max(CASE WHEN metric='total_ctx'   THEN metric_value END) AS ctx_ceiling,
+           max(CASE WHEN metric='vram_mib'    THEN metric_value END) AS vram_at_ctx,
            max(ts) AS measured_at, arg_max(run_id, ts) AS source_run_id
-    FROM $TIDY WHERE bench='maxctx' GROUP BY 1,2,3,4,5,6`,
+    FROM $TIDY WHERE bench='agent_ctx' GROUP BY 1,2,3,4,5,6`,
    );
    const kv = await query(
       resultsDir,

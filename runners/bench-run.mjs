@@ -54,7 +54,7 @@ const modelFilter = flags.models ? flags.models.split(',').map((s) => s.trim()) 
 const benchNames = flags.benches
    .split(',')
    .map((s) => s.trim())
-   .filter((b) => BENCHES[b] || b === 'maxctx');
+   .filter((b) => BENCHES[b]);
 const chatTemplatePath = flags['chat-template'] ?? null;
 const chatTemplate = flags['template-name'] ?? (chatTemplatePath ? 'froggeric' : 'builtin');
 
@@ -97,9 +97,12 @@ function aggregate(rawRows) {
 }
 
 async function main() {
+   // includeDisabled so an explicit --models filter can still target a parked model by name;
+   // but an UNfiltered run is active-only (parked models never reach the runner by default,
+   // matching the "runners never see disabled" contract in shared/models-config.mjs).
    const cfg = loadModelsConfig(join(ROOT, 'config/models.yaml'), { includeDisabled: true });
-   const models = cfg.models.filter(
-      (m) => !modelFilter.length || modelFilter.some((f) => (m.label ?? '').includes(f) || m.hf_file.includes(f)),
+   const models = cfg.models.filter((m) =>
+      modelFilter.length ? modelFilter.some((f) => (m.label ?? '').includes(f) || m.hf_file.includes(f)) : m.disabled !== true,
    );
    if (!models.length) {
       console.error('no models matched');
@@ -223,7 +226,7 @@ async function main() {
 
          console.error(`\n══ ${m.label ?? m.hf_file}`);
          // Only pre-start a full model server when something needs it. Regular benches
-         // run against this server; but self-managing probes (maxctx, fit_ctx) reload or
+         // run against this server; but self-managing probes (agent_ctx, fit_ctx) reload or
          // kill it themselves. For a probe-only run of those, skip the pre-start — it is
          // slow and can hang past waitHealthy on cold non-QAT models (fit_ctx doesn't even
          // need a running server; it computes the fit analytically via llama-fit-params).
@@ -282,8 +285,8 @@ async function main() {
                console.error(`  ${benchName.padEnd(14)} ${think_mode.padEnd(8)} → ${summary}${SAMPLES > 1 ? ` (n=${raw.n})` : ''}`);
             }
          }
-         // Probe benches last — they self-manage the server (reload at maxctx / --parallel).
-         // Re-read caps PER PROBE so the maxctx probe (if run first) populates the ceiling
+         // Probe benches last — they self-manage the server (reload at ceiling / --parallel).
+         // Re-read caps PER PROBE so a capacity probe (if run first) populates the ceiling
          // that the depth probes (throughput/quality_decay) then load at.
          for (const benchName of wantBenches.filter((b) => BENCHES[b].kind === 'probe')) {
             if (!need(BENCHES[benchName].resumeBench ?? benchName, 'n/a')) {
@@ -296,7 +299,12 @@ async function main() {
                client,
                model: m,
                ctx: CTX,
-               maxctx: caps?.coherence_ceiling ?? CTX,
+               // depth at which server-reloading probes (throughput/speed/quality_decay/…)
+               // load. Sourced from the caps cache if a capacity probe populated it, else the
+               // model's empirical ctx_cap, else the requested CTX. (The old maxctx probe used
+               // to seed coherence_ceiling; agent_ctx measures a shared pool, not a single-slot
+               // ceiling, so these depth probes fall back to ctx_cap.)
+               maxctx: caps?.coherence_ceiling ?? m.ctx_cap ?? CTX,
                caps,
                upsertCap: (v) => upsertCap(RESULTS, capKeyFields, { ...v, source_run_id: run_id }),
             };

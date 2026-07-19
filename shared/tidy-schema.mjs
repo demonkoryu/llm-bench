@@ -90,11 +90,11 @@ export const DIM_COLUMNS = [
 // ── Spine fields that are NOT measurements (skip when exploding) ─────────────────
 const SPINE = new Set(['target', 'backend', 'model', 'think', 'bench', 'status', 'ts', 'notes', 'n', 'spread', 'case_id']);
 
-// Capability ceilings are carried onto EVERY core-suite row (duplicated from the maxctx
-// probe). Only emit them where the bench actually owns them, else the store fills with noise.
+// Capacity/VRAM facts must only be emitted by the probe that owns them, not duplicated
+// onto every core-quality row (which would fill the store with noise).
 const CARRIED = new Set(['ctx_loaded', 'oom_ceiling', 'coherence_ceiling', 'vram_mib']);
 const CORE_QUALITY = /^(triage|reasoning|toolcalling|summarization|docqa|coding_)/;
-const ownsCarried = (bench) => bench === 'maxctx' || !CORE_QUALITY.test(bench);
+const ownsCarried = (bench) => !CORE_QUALITY.test(bench);
 
 // ── Unit resolution ─────────────────────────────────────────────────────────────
 const UNIT_EXACT = {
@@ -104,6 +104,15 @@ const UNIT_EXACT = {
    ctx_loaded: 'tokens',
    oom_ceiling: 'tokens',
    coherence_ceiling: 'tokens',
+   // agent_ctx (multi-agent shared-pool capacity)
+   total_ctx: 'tokens',
+   planner_ctx: 'tokens',
+   coder_ctx: 'tokens',
+   n_slots: 'count',
+   n_coders: 'count',
+   coherent_slots: 'count',
+   gtt_mib: 'mib',
+   verified: 'bool',
    halls: 'count',
    json_fail: 'count',
    wall_s: 's',
@@ -126,7 +135,7 @@ const UNIT_EXACT = {
 };
 // score's unit depends on the bench that produced it.
 const SCORE_UNIT_BY_BENCH = [
-   [/^maxctx$/, 'tokens'],
+   [/^agent_ctx$/, 'count'], // score = n_coders (coder agents alongside the planner)
    [/^fit_ctx$/, 'tokens'],
    [/^kv_per_tok$/, 'kib'],
    [/^power_eff$/, 'tok_s_per_w'],

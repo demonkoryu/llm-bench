@@ -6,9 +6,9 @@ import { benches as codingBenches } from './coding.mjs';
 import { bench as docqa } from './docqa.mjs';
 import { bench as instruction_following } from './instruction_following.mjs';
 // performance/capacity probes (kind: 'probe' — self-manage the server)
+import { bench as agent_ctx } from './probes/agent_ctx.mjs';
 import { bench as fit_ctx } from './probes/fit_ctx.mjs';
 import { bench as kv_per_tok } from './probes/kv_per_tok.mjs';
-import { bench as maxctx } from './probes/maxctx.mjs';
 import { bench as parallel_gen } from './probes/parallel_gen.mjs';
 import { bench as prefix_cache } from './probes/prefix_cache.mjs';
 import { bench as quality_decay } from './probes/quality_decay.mjs';
@@ -34,7 +34,7 @@ const all = [
    agentic_loop,
    struct_output,
    instruction_following,
-   maxctx,
+   agent_ctx,
    fit_ctx,
    kv_per_tok,
    throughput,

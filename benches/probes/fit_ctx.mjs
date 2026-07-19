@@ -2,12 +2,12 @@
 //
 // A fast, memory-fit-only estimate of the largest context that fits VRAM — computed
 // analytically by llama.cpp with the model's real serving flags (KV quant, batch, -fa,
-// full GPU offload) and NO explicit `-c`. Unlike the maxctx ladder there is NO coherence
-// check, so this is an upper "will it allocate" bound: a different lens on max context,
-// meant to be compared against maxctx's validated coherence_ceiling.
+// full GPU offload) and NO explicit `-c`. Unlike agent_ctx there is NO coherence or
+// concurrency check, so this is an upper "will it allocate" bound: a different, cheaper
+// lens on max context, meant to be compared against agent_ctx's verified shared-pool total.
 //
 // Self-manages the GPU (fit-ctx.sh kills any running server + waits for VRAM to clear)
-// and leaves none running — best placed alongside the maxctx probe.
+// and leaves none running — best placed alongside the agent_ctx probe.
 export const bench = {
    name: 'fit_ctx',
    kind: 'probe',

@@ -2,7 +2,7 @@
 // selection), derives per-entity composite metrics, normalizes them ACROSS the
 // selection, and composes capability / speed / fleet. Clean-slate rewrite; reads the
 // declarative analysis/scoring-config.mjs. No imports from the retired scoring.mjs.
-import { CARD_TOTAL_MIB, CODING_WEIGHTS, DEFAULT_DIALS, ENTITY_DIMS, GROUPS } from './scoring-config.mjs';
+import { CODING_WEIGHTS, DEFAULT_DIALS, ENTITY_DIMS, GROUPS } from './scoring-config.mjs';
 
 // ── leaf helpers ────────────────────────────────────────────────────────────────
 const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
@@ -80,10 +80,13 @@ const METRIC_DEFS = {
       },
       norm: 'identity',
    },
-   maxctx: { raw: (r) => pickMean(r, 'score', 'maxctx'), norm: 'ratioMax' },
+   // shared multi-agent KV pool (total_ctx across 1 planner + n coders), from agent_ctx
+   agent_ctx: { raw: (r) => pickMean(r, 'total_ctx', 'agent_ctx'), norm: 'ratioMax' },
    fit_ctx: { raw: (r) => pickMean(r, 'score', 'fit_ctx'), norm: 'ratioMax' },
-   // fleet inputs (not scored directly)
-   _vram_at_maxctx: { raw: (r) => pickMean(r, 'vram_mib', 'maxctx'), norm: 'raw' },
+   // fleet inputs (empirical, from the agent_ctx probe; not scored directly)
+   _agent_slots: { raw: (r) => pickMean(r, 'n_slots', 'agent_ctx'), norm: 'raw' },
+   _agent_planner_ctx: { raw: (r) => pickMean(r, 'planner_ctx', 'agent_ctx'), norm: 'raw' },
+   _vram_at_ctx: { raw: (r) => pickMean(r, 'vram_mib', 'agent_ctx'), norm: 'raw' },
    _kv_per_tok_kib: { raw: (r) => pickMean(r, 'score', 'kv_per_tok'), norm: 'raw' },
 };
 
@@ -177,18 +180,17 @@ function speed(e, dials) {
    return wSum(GROUPS.speed.members.map((m) => [e.norm[m], w[m] ?? 0]));
 }
 
-function fleet(e, dials, ctxNormMax) {
+// Fleet suitability from the EMPIRICAL agent_ctx probe: it directly measured how many
+// slots (1 planner + n coders) verifiably load + cohere from a single shared KV pool, so
+// there is no VRAM formula here anymore — `slots` and the planner ctx come straight from the
+// measurement. worker_ctx / reserve / parallel_overhead dials are retired (they parameterized
+// the old estimate); ctx_tier + the weight exponents still shape the composite.
+function fleet(e, dials) {
    const d = dials.fleet,
-      vram = e.raw._vram_at_maxctx,
-      kvKib = e.raw._kv_per_tok_kib,
-      mctx = e.raw.maxctx,
+      slots = e.raw._agent_slots,
+      mctx = e.raw._agent_planner_ctx,
       cap = e.capability;
-   if (vram == null || kvKib == null || mctx == null || cap == null) return null;
-   const kvMib = (kvKib * mctx) / 1024; // KV MiB at max ctx
-   const weights = Math.max(0, vram - kvMib); // resident weights (VRAM at ctx0)
-   const slotVram = weights + (kvKib * d.worker_ctx) / 1024 + d.parallel_overhead;
-   const budget = CARD_TOTAL_MIB - d.reserve - vram; // room beyond the main slot
-   const slots = 1 + Math.max(0, Math.floor(budget / Math.max(slotVram, 1)));
+   if (slots == null || mctx == null || cap == null) return null;
    const ctxNorm = Math.min(mctx, d.ctx_tier) / d.ctx_tier;
    const slotNorm = Math.min(1, slots / 4);
    const thru = e.norm.e2e_throughput ?? 0;

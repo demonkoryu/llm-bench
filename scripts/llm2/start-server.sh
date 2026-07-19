@@ -143,6 +143,16 @@ if [[ "$extra_flags" == *"--cache-type-k"* ]]; then
    ctk_flag=""
 fi
 
+# Slot count defaults to a single server slot, but a multi-agent probe overrides it via
+# extra_flags (--parallel K, usually with --kv-unified for a shared KV pool). Same
+# first-occurrence rule as ctk_flag/rf_flag: suppress the hardcoded -np 1 when extra_flags
+# already sets --parallel / -np, otherwise our default would win and silently pin 1 slot
+# (this previously no-op'd parallel_gen's --parallel too).
+np_flag="-np 1"
+if [[ "$extra_flags" == *"--parallel"* || "$extra_flags" == *"-np "* ]]; then
+   np_flag=""
+fi
+
 # Launch llama-server.
 # NOTE: batch sizing (-b / -ub) is intentionally NOT set here — it comes per-model
 # from config/models.yaml extra_flags (every entry carries batch-size:2048
@@ -153,7 +163,7 @@ cmd="nohup ${vk_env}$BIN $model_args \
    -ngl $ngl \
    $ctk_flag \
    -fa on \
-   -np 1 \
+   $np_flag \
    --no-mmap --mlock \
    --prio 2 \
    --jinja \
