@@ -54,10 +54,11 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$LLMBENCH_DB_PASSWORD" || { echo "::error::LLMBENCH_DB_PASSWORD secret is not set"; exit 1; }
-          # Root deps first: the dashboard's build-time data loader imports analysis/pg-store.mjs,
-          # which needs @duckdb/node-api resolved from the repo-root node_modules (up-tree from
-          # analysis/, NOT from dashboard/node_modules).
-          (cd src && npm ci)
+          # The data loader imports analysis/pg-store.mjs, which needs @duckdb/node-api resolved
+          # from the repo-root node_modules (up-tree from analysis/, NOT dashboard/node_modules).
+          # Install just that one package: it's all the loader needs, and it sidesteps the root
+          # lockfile (which is stale, so `npm ci` there fails) and sharp's native build.
+          (cd src && npm install --no-save --no-package-lock --no-audit --no-fund '@duckdb/node-api@^1.5.4-r.1')
           cd src/dashboard
           npm ci
           npm run build
