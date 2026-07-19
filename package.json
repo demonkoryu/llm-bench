@@ -10,6 +10,7 @@
       "bench": "node runners/bench-run.mjs",
       "dashboard": "node app/server.mjs",
       "dashboard:export": "node analysis/export-dashboard.mjs",
+      "pg:sync": "node analysis/pg-sync.mjs",
       "backfill": "node analysis/backfill.mjs",
       "caps-seed": "node analysis/caps-cache.mjs seed",
       "smoke": "node runners/smoke.mjs",
