@@ -8,6 +8,10 @@ export default {
    theme: ['dark', 'near-midnight'],
    // Plain Caddy file_server can't rewrite /pareto -> pareto.html, so keep .html in links.
    cleanUrls: false,
+   // Full-width dashboard: no per-page table-of-contents column (pages have no sub-headings),
+   // and a generous content max-width so wide tables/charts use the screen.
+   toc: false,
+   head: '<style>:root{--observablehq-max-width:2000px}#observablehq-center{margin-left:1rem;margin-right:1rem}</style>',
    header: '',
    footer: 'llm-bench · reads central-db (llmbench.measurements) at build time',
    pages: [

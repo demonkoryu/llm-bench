@@ -39,7 +39,7 @@ if (long.length === 0) {
   display(Plot.plot({
     marginLeft: 220,
     marginBottom: 90,
-    width: Math.max(640, pv.cols.length * 90 + 240),
+    width: Math.min(width, Math.max(640, pv.cols.length * 130 + 240)),
     x: { label: colsDim, domain: pv.cols.map(String), tickRotate: -40 },
     y: { label: rowsDim, domain: pv.rows.map(clean) },
     color: hasDelta

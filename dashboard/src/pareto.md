@@ -37,7 +37,7 @@ if (pts.length === 0) {
   display(html`<div class="muted">No configs have both axes measured in this selection (need overlapping benches).</div>`);
 } else {
   display(Plot.plot({
-    width: 820,
+    width: Math.min(width, 1100),
     height: 540,
     grid: true,
     x: { label: `${xMetric} →`, domain: [0, Math.max(...pts.map((p) => p.x)) * 1.05], nice: true },

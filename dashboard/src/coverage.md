@@ -30,7 +30,7 @@ if (cov.configs.length === 0) {
   display(Plot.plot({
     marginLeft: 300,
     marginBottom: 100,
-    width: Math.max(640, cov.benches.length * 44 + 320),
+    width: Math.min(width, Math.max(640, cov.benches.length * 32 + 320)),
     height: Math.max(200, cov.configs.length * 22 + 120),
     x: { label: "bench", domain: cov.benches, tickRotate: -45 },
     y: { label: null, domain: cov.configs.map(cfg) },

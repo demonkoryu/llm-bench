@@ -30,7 +30,7 @@ const top = [...data].sort((a, b) => (b.capability ?? -1) - (a.capability ?? -1)
 ```js
 display(Plot.plot({
   marginLeft: 250,
-  width: 820,
+  width,
   height: Math.max(160, top.length * 24 + 40),
   x: { label: "capability →", grid: true, domain: [0, 100] },
   y: { label: null },
@@ -50,5 +50,6 @@ display(Inputs.table(data, {
   reverse: true,
   format: boardFormat,
   align: Object.fromEntries(BOARD_COLUMNS.map((c) => [c.key, "right"])),
+  width,
 }));
 ```
