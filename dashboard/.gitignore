@@ -1,0 +1,6 @@
+node_modules/
+dist/
+# Framework's dev-server state + downloaded-npm cache (rebuildable) — at repo root and under src/
+.observablehq/
+# generated fresh from ../analysis by copy-lib.mjs on every dev/build — never commit (would drift)
+src/lib/

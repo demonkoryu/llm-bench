@@ -1,0 +1,21 @@
+{
+   "name": "llm-bench-dashboard",
+   "version": "0.1.0",
+   "type": "module",
+   "private": true,
+   "description": "Observable Framework dashboard for llm-bench (reads central-db via a build-time loader)",
+   "scripts": {
+      "predev": "node copy-lib.mjs",
+      "dev": "observable preview",
+      "prebuild": "node copy-lib.mjs",
+      "build": "observable build",
+      "clean": "observable clean"
+   },
+   "devDependencies": {
+      "@observablehq/framework": "^1.13.3"
+   },
+   "allowScripts": {
+      "esbuild@0.27.7": true,
+      "esbuild@0.28.1": true
+   }
+}
