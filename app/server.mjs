@@ -1,6 +1,8 @@
 #!/usr/bin/env node
-// Local dashboard server — DuckDB-backed query API for the unified explorer, plus it
-// serves the single-file frontend. No build step; run `npm run dashboard`.
+// Local dashboard server — Postgres-backed query API for the unified explorer, plus it
+// serves the single-file frontend. Reads central-db (llmbench.measurements) through
+// DuckDB's postgres extension; needs LLMBENCH_DB_PASSWORD in the env. Keep it current with
+// `npm run pg:sync`. No build step; run `npm run dashboard`.
 //
 // Endpoints (all POST JSON unless noted):
 //   GET  /api/facets              -> { dim: [values...] } for the facet rail
@@ -13,20 +15,19 @@ import { readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { pgInfo, query } from '../analysis/pg-store.mjs';
 import * as engine from '../analysis/query-engine.mjs';
-import { query } from '../shared/tidy-store.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const RESULTS = join(ROOT, 'results');
 const WEB = join(ROOT, 'app', 'web');
 const PORT = Number(process.env.PORT || 5178);
 
 // The metric catalog + pivot/pareto/leaderboard/coverage/meta/facets logic lives in
 // analysis/query-engine.mjs — the SAME pure module the static export inlines, so the two
-// dashboards can't drift. This server is a thin shell: pull the tidy rows from DuckDB once per
-// request and hand them to the shared engine. (Dataset is small — a few thousand rows — so a
-// full SELECT * per request is cheap.)
-const allRows = () => query(RESULTS, 'SELECT * FROM $TIDY');
+// dashboards can't drift. This server is a thin shell: pull the tidy rows from Postgres once
+// per request and hand them to the shared engine. (Dataset is small — a few thousand rows —
+// so a full SELECT * per request is cheap.)
+const allRows = () => query('SELECT * FROM $TIDY');
 
 const HANDLERS = {
    '/api/pivot': async (b) => engine.pivot(await allRows(), b),
@@ -61,4 +62,4 @@ const server = createServer(async (req, res) => {
       return send(res, 500, { error: String(e.message || e) });
    }
 });
-server.listen(PORT, () => console.error(`[dashboard] http://localhost:${PORT}  (DuckDB over results/tidy)`));
+server.listen(PORT, () => console.error(`[dashboard] http://localhost:${PORT}  (Postgres: ${pgInfo()})`));

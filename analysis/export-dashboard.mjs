@@ -1,13 +1,15 @@
 #!/usr/bin/env node
-// Static export — snapshots the tidy store into ONE self-contained, responsive
-// results/dashboard.html for pages.xor0.de + mobile. No server: the data, the pure
+// Static export — snapshots the measurement store into ONE self-contained, responsive
+// results/dashboard.html for pages.xor0.de + mobile. Rows come from central-db
+// (llmbench.measurements) via DuckDB's postgres extension — needs LLMBENCH_DB_PASSWORD in the
+// env; keep it current with `npm run pg:sync` before exporting. No server: the data, the pure
 // scorer (analysis/score.mjs), the shared query engine (analysis/query-engine.mjs — the SAME
 // module app/server.mjs uses, so the two dashboards can't drift), and a tiny fetch() shim are
 // all inlined so the SAME app/web/app.js runs unchanged. `npm run dashboard:export`.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { query } from '../shared/tidy-store.mjs';
+import { query } from './pg-store.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RESULTS = join(ROOT, 'results');
@@ -46,7 +48,9 @@ window.fetch = async (url, opts) => { const u=String(url); const body = (opts&&o
 `;
 
 async function main() {
-   const rows = await query(RESULTS, `SELECT * FROM $TIDY`);
+   // ORDER BY ALL → a stable row order in the baked snapshot (the engine sorts internally,
+   // so order is cosmetic) which keeps results/dashboard.html diffs minimal run-to-run.
+   const rows = await query(`SELECT * FROM $TIDY ORDER BY ALL`);
    const html = readFileSync(join(WEB, 'index.html'), 'utf8');
    const appJs = readFileSync(join(WEB, 'app.js'), 'utf8');
    const dataScript = `<script>window.__ROWS__=${JSON.stringify(rows)};</script>`;
