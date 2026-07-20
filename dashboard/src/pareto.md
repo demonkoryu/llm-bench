@@ -5,6 +5,8 @@ Every served config as a bubble: pick the two axes, size is VRAM. **Up-and-left 
 ```js
 import * as Plot from "npm:@observablehq/plot";
 import * as Inputs from "npm:@observablehq/inputs";
+import { scaleLinear, scaleSqrt } from "npm:d3-scale";
+import { forceSimulation, forceX, forceY, forceCollide } from "npm:d3-force";
 import { pareto, meta, facets as facetValues } from "./lib/query-engine.js";
 import { facetForm } from "./components/facets.js";
 import * as palette from "./components/palette.js";
@@ -35,34 +37,69 @@ const pts = pr.points
 if (pts.length === 0) {
   display(html`<div class="muted">No configs have both axes measured in this selection (need overlapping benches).</div>`);
 } else {
-  // Split by whether VRAM was actually measured for this exact config (kv_quant included).
-  // Configs with no VRAM are drawn as a grey ✕ so missing data can't masquerade as size 0.
-  const known = pts.filter((p) => p.vram != null && p.vram > 0);
-  const unknown = pts.filter((p) => !(p.vram != null && p.vram > 0));
-  const kNo = known.filter((p) => p.think !== "think");
-  const kYes = known.filter((p) => p.think === "think");
-  const vr = known.map((p) => p.vram);
-  // Size across the MEASURED VRAM range (not from 0) so the tightly-clustered real values
-  // still show contrast; the caption + legend flag that it's a relative scale.
+  const vr = pts.filter((p) => p.vram != null && p.vram > 0).map((p) => p.vram);
+  // Size across the MEASURED VRAM range (not from 0) so the tightly-clustered real values still
+  // show contrast; the legend + caption flag that it's a relative scale.
   const rDomain = vr.length ? [Math.min(...vr), Math.max(...vr)] : [0, 1];
-  // One shared tooltip over ALL bubbles (see Plot.tip below): VRAM as GiB, or "n/a" if unmeasured.
   const fmtVram = (v) => (v != null && v > 0 ? `${(v / 1024).toFixed(1)} GiB` : "n/a");
-  const tipPts = pts.map((p) => ({ ...p, vramLabel: fmtVram(p.vram) }));
+
+  // Spread overlapping bubbles apart WITHOUT lying about the frontier: a collision layout where
+  // forceX/Y anchor every bubble to its TRUE (x,y) and forceCollide only pushes apart the ones
+  // that would overlap — isolated frontier points barely move, crowded clusters fan out. Run it
+  // in pixel space (scales + margins kept exactly in sync with Plot), then invert back to data
+  // space so Plot re-draws each bubble where the simulation placed it. The tooltip always shows
+  // each bubble's TRUE metrics (x_true / y_true), not its nudged position.
+  const W = Math.max(360, Math.min(width, 1100));
+  const H = 540;
+  const mg = { left: 54, right: 20, top: 20, bottom: 44 };
+  const xDom = [0, Math.max(...pts.map((p) => p.x)) * 1.05];
+  const yDom = [0, Math.max(...pts.map((p) => p.y)) * 1.05];
+  const xs = scaleLinear(xDom, [mg.left, W - mg.right]);
+  const ys = scaleLinear(yDom, [H - mg.bottom, mg.top]);
+  const rs = scaleSqrt(rDomain, [4, 16]);
+  const rOf = (p) => (p.vram != null && p.vram > 0 ? rs(p.vram) : 4);
+
+  const nodes = pts.map((p) => ({ ...p, x_true: p.x, y_true: p.y, ax: xs(p.x), ay: ys(p.y), vramLabel: fmtVram(p.vram) }));
+  for (const n of nodes) {
+    n.x = n.ax;
+    n.y = n.ay;
+  }
+  forceSimulation(nodes)
+    .force("x", forceX((d) => d.ax).strength(0.4))
+    .force("y", forceY((d) => d.ay).strength(0.4))
+    .force("collide", forceCollide((d) => rOf(d) + 1.5).strength(0.9))
+    .stop()
+    .tick(200);
+  for (const n of nodes) {
+    n.px = xs.invert(n.x);
+    n.py = ys.invert(n.y);
+  }
+  const kNo = nodes.filter((p) => p.vram > 0 && p.think !== "think");
+  const kYes = nodes.filter((p) => p.vram > 0 && p.think === "think");
+  const kX = nodes.filter((p) => !(p.vram > 0));
+
   const chart = Plot.plot({
-    width: Math.max(360, Math.min(width, 1100)),
-    height: 540,
+    width: W,
+    height: H,
+    marginLeft: mg.left,
+    marginRight: mg.right,
+    marginTop: mg.top,
+    marginBottom: mg.bottom,
     grid: true,
-    x: { label: `${xMetric} →`, domain: [0, Math.max(...pts.map((p) => p.x)) * 1.05], nice: true },
-    y: { label: `↑ ${yMetric}`, domain: [0, Math.max(...pts.map((p) => p.y)) * 1.05], nice: true },
+    x: { label: `${xMetric} →`, domain: xDom },
+    y: { label: `↑ ${yMetric}`, domain: yDom },
     r: { domain: rDomain, range: [4, 16] },
     color: { ...palette.colorScale(pts.map((p) => p.cat), pal), legend: true },
     marks: [
-      Plot.dot(kNo, { x: "x", y: "y", r: "vram", fill: "cat", stroke: "cat", fillOpacity: 0.7 }),
-      Plot.dot(kYes, { x: "x", y: "y", r: "vram", stroke: "cat", fill: "none", strokeWidth: 2 }),
-      Plot.dot(unknown, { x: "x", y: "y", symbol: "times", r: 4, stroke: "#8a949b", strokeWidth: 1.4 }),
-      // Single shared tooltip: the pointer transform selects the ONE nearest bubble (x+y), so
-      // tips no longer stack when bubbles share an x position.
-      Plot.tip(tipPts, Plot.pointer({ x: "x", y: "y", channels: { config: "label", VRAM: "vramLabel", arch: "arch" } })),
+      Plot.dot(kNo, { x: "px", y: "py", r: "vram", fill: "cat", stroke: "cat", fillOpacity: 0.7 }),
+      Plot.dot(kYes, { x: "px", y: "py", r: "vram", stroke: "cat", fill: "none", strokeWidth: 2 }),
+      Plot.dot(kX, { x: "px", y: "py", symbol: "times", r: 4, stroke: "#8a949b", strokeWidth: 1.4 }),
+      // One shared tooltip: pointer picks the single nearest bubble; title shows its TRUE metrics.
+      Plot.tip(nodes, Plot.pointer({
+        x: "px",
+        y: "py",
+        title: (d) => `${d.label}\n${xMetric}: ${d.x_true.toFixed(1)} · ${yMetric}: ${d.y_true.toFixed(1)}\nVRAM: ${d.vramLabel} · ${d.arch}`,
+      })),
     ],
   });
   display(html`<div class="scroll-x">${chart}</div>`);
@@ -70,12 +107,10 @@ if (pts.length === 0) {
   // r-scale so a given radius reads the same as the plotted bubbles.
   if (vr.length) {
     const [lo, hi] = rDomain;
-    // Exact range endpoints (+ geometric mid) so the 3 refs stay distinct and in-domain even
-    // when the measured VRAM spread is narrow.
     const legendVals = [...new Set([lo, Math.sqrt(lo * hi), hi].map((v) => Math.round(v)))];
     display(sizeLegend(chart.scale("r"), legendVals));
   }
 }
 ```
 
-<div class="muted">${pts.length} configs plotted · ● filled = no_think · ○ ring = think · bubble size = VRAM (scaled across the measured range) · grey ✕ = VRAM not measured</div>
+<div class="muted">${pts.length} configs plotted · ● filled = no_think · ○ ring = think · bubble size = VRAM (scaled across the measured range) · grey ✕ = VRAM not measured · crowded points are fanned out to stay readable (hover shows each bubble's exact values)</div>
