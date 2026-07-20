@@ -1,12 +1,14 @@
 # Pareto frontier
 
-Every served config is a small **✕** at its exact (speed, quality). **Up-and-left is smarter + faster.** Colour by arch, KV-quant, or VRAM; hover any cross for its config, think mode and exact values.
+Every served config is a small **✕** at its exact (speed, quality). **Up-and-left is smarter + faster.** Colour by arch, KV-quant, or VRAM; hover any cross for details. **Scroll to zoom, drag to pan, double-click to reset.**
 
 ```js
 import * as Plot from "npm:@observablehq/plot";
 import * as Inputs from "npm:@observablehq/inputs";
 import { scaleLinear } from "npm:d3-scale";
 import { forceSimulation, forceX, forceY, forceCollide } from "npm:d3-force";
+import { zoom as d3zoom, zoomIdentity } from "npm:d3-zoom";
+import { select } from "npm:d3-selection";
 import { pareto, meta, facets as facetValues, METRIC_HELP } from "./lib/query-engine.js";
 import { facetForm } from "./components/facets.js";
 import { metricHelp } from "./components/metric-help.js";
@@ -74,6 +76,7 @@ if (pts.length === 0) {
   }
   const measured = nodes.filter((p) => p.vram > 0);
   const kX = nodes.filter((p) => !(p.vram > 0));
+  const tipText = (d) => `${d.label}\n${xMetric}: ${d.x_true.toFixed(1)} · ${yMetric}: ${d.y_true.toFixed(1)}\nVRAM: ${d.vramLabel}`;
 
   const chart = Plot.plot({
     width: W,
@@ -91,17 +94,25 @@ if (pts.length === 0) {
         : { ...palette.colorScale(pts.map((p) => p.cat), pal), legend: true },
     marks: [
       // Small uniform stroke-only ✕: the CENTRE marks the exact (x,y). Colour = arch / KV / VRAM;
-      // grey ✕ = VRAM not measured. Size is fixed — VRAM is a colour option, not a size.
-      Plot.dot(measured, { x: "px", y: "py", r: R, symbol: "times", stroke: colorBy === "vram" ? "vram" : "cat", fill: "none", strokeWidth: 2.4 }),
-      Plot.dot(kX, { x: "px", y: "py", r: R, symbol: "times", stroke: "#8a949b", fill: "none", strokeWidth: 2 }),
-      // One shared tooltip: pointer picks the single nearest cross; title shows its TRUE metrics.
-      Plot.tip(nodes, Plot.pointer({
-        x: "px",
-        y: "py",
-        title: (d) => `${d.label}\n${xMetric}: ${d.x_true.toFixed(1)} · ${yMetric}: ${d.y_true.toFixed(1)}\nVRAM: ${d.vramLabel} · ${d.arch}`,
-      })),
+      // grey ✕ = VRAM not measured. Native hover tooltip (title) survives the zoom transform.
+      Plot.dot(measured, { x: "px", y: "py", r: R, symbol: "times", stroke: colorBy === "vram" ? "vram" : "cat", fill: "none", strokeWidth: 2.4, title: tipText }),
+      Plot.dot(kX, { x: "px", y: "py", r: R, symbol: "times", stroke: "#8a949b", fill: "none", strokeWidth: 2, title: tipText }),
     ],
   });
+
+  // Scroll to zoom, drag to pan: wrap all svg content in a <g> and apply the d3-zoom transform to
+  // it (the svg's own coordinate space stays fixed, so native hover tooltips stay accurate).
+  // Double-click resets; an axis/facet change re-renders a fresh svg at identity.
+  const svgEl = chart.querySelector("svg") ?? chart;
+  const zoomLayer = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  while (svgEl.firstChild) zoomLayer.appendChild(svgEl.firstChild);
+  svgEl.appendChild(zoomLayer);
+  svgEl.style.cursor = "grab";
+  const zb = d3zoom()
+    .scaleExtent([1, 30])
+    .on("zoom", (event) => zoomLayer.setAttribute("transform", event.transform));
+  select(svgEl).call(zb).on("dblclick.zoom", null);
+  select(svgEl).on("dblclick", () => select(svgEl).call(zb.transform, zoomIdentity));
   display(html`<div class="scroll-x">${chart}</div>`);
 }
 ```
