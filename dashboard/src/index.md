@@ -5,8 +5,9 @@ Composite **capability**, **speed** and **fleet** scores, normalized within the 
 ```js
 import * as Plot from "npm:@observablehq/plot";
 import * as Inputs from "npm:@observablehq/inputs";
-import { leaderboard, meta, facets as facetValues } from "./lib/query-engine.js";
+import { leaderboard, meta, facets as facetValues, METRIC_HELP } from "./lib/query-engine.js";
 import { facetForm } from "./components/facets.js";
+import { metricHelp } from "./components/metric-help.js";
 import { BOARD_COLUMNS, boardRows, boardFormat, boardLabel } from "./components/board.js";
 
 const rows = await FileAttachment("data/measurements.json").json();
@@ -53,4 +54,5 @@ display(Inputs.table(data, {
   align: Object.fromEntries(BOARD_COLUMNS.map((c) => [c.key, "right"])),
   width,
 }));
+display(metricHelp(METRIC_HELP, BOARD_COLUMNS.map((c) => c.key), { title: "What the columns mean" }));
 ```

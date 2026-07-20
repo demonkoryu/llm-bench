@@ -5,8 +5,9 @@ A metric across two dimensions as a heatmap. Set a **Δ baseline** column to col
 ```js
 import * as Plot from "npm:@observablehq/plot";
 import * as Inputs from "npm:@observablehq/inputs";
-import { pivot, meta, facets as facetValues } from "./lib/query-engine.js";
+import { pivot, meta, facets as facetValues, METRIC_HELP } from "./lib/query-engine.js";
 import { facetForm } from "./components/facets.js";
+import { metricHelp } from "./components/metric-help.js";
 
 const rows = await FileAttachment("data/measurements.json").json();
 const fv = facetValues(rows);
@@ -55,4 +56,5 @@ if (long.length === 0) {
     ],
   })}</div>`);
 }
+display(metricHelp(METRIC_HELP, m.metrics));
 ```

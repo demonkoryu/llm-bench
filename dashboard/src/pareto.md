@@ -7,8 +7,9 @@ import * as Plot from "npm:@observablehq/plot";
 import * as Inputs from "npm:@observablehq/inputs";
 import { scaleLinear } from "npm:d3-scale";
 import { forceSimulation, forceX, forceY, forceCollide } from "npm:d3-force";
-import { pareto, meta, facets as facetValues } from "./lib/query-engine.js";
+import { pareto, meta, facets as facetValues, METRIC_HELP } from "./lib/query-engine.js";
 import { facetForm } from "./components/facets.js";
+import { metricHelp } from "./components/metric-help.js";
 import * as palette from "./components/palette.js";
 
 const rows = await FileAttachment("data/measurements.json").json();
@@ -99,6 +100,7 @@ if (pts.length === 0) {
   });
   display(html`<div class="scroll-x">${chart}</div>`);
 }
+display(metricHelp(METRIC_HELP, m.metrics));
 ```
 
 <div class="muted">${pts.length} configs plotted · each ✕ = one config at its exact position · colour = ${colorBy === "vram" ? "VRAM" : colorBy} · grey ✕ = VRAM not measured · near-identical configs sit close together (hover for think + exact values)</div>

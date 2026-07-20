@@ -15,7 +15,13 @@ export default {
       '<style>:root{--observablehq-max-width:2000px}#observablehq-center{margin-left:1rem;margin-right:1rem}' +
       // Wide charts scroll horizontally on narrow screens instead of scaling to unreadable —
       // override Plot's default max-width:100% so the SVG keeps its width and the box scrolls.
-      '.scroll-x{overflow-x:auto}.scroll-x svg{max-width:none;height:auto}</style>',
+      '.scroll-x{overflow-x:auto}.scroll-x svg{max-width:none;height:auto}' +
+      // Metric glossary (components/metric-help.js): a compact collapsible name → description list.
+      '.metric-help{margin:.7rem 0;font-size:13px}' +
+      '.metric-help summary{cursor:pointer;color:var(--theme-foreground-muted)}' +
+      '.metric-help dl{margin:.5rem 0 0;display:grid;grid-template-columns:max-content 1fr;gap:3px 14px}' +
+      '.metric-help dt{font-family:var(--monospace,ui-monospace,monospace);white-space:nowrap;color:var(--theme-foreground)}' +
+      '.metric-help dd{margin:0;color:var(--theme-foreground-muted)}</style>',
    header: '',
    footer: 'llm-bench · reads central-db (llmbench.measurements) at build time',
    pages: [

@@ -109,6 +109,46 @@ export const METRIC_CATALOG = {
 };
 const M = METRIC_CATALOG;
 
+// One-line explanation of every metric the dashboard displays — the pivot/pareto axis metrics
+// (keys above) AND the leaderboard's composite columns. Keyed by the exact label shown in the UI.
+// Consumed by the dashboard's metric-help glossary. Single source of truth, mirrored to the client.
+export const METRIC_HELP = {
+   // capability sub-scores (0–100, higher is better)
+   'toolcalling %': 'Tool/function-call success rate — calls that parsed and matched the expected tool + arguments.',
+   'reasoning %': 'Multi-step reasoning accuracy — fraction of reasoning problems answered correctly.',
+   triage: 'Support-ticket triage rubric (0–100): correct routing, priority and tags against a graded checklist.',
+   summarization: 'Summary quality (0–100): keyword coverage, key-area recall, tag accuracy and length discipline.',
+   docqa: 'Document-QA quality (0–100): answer correctness, coverage and faithfulness to the source.',
+   'struct_output %': 'Structured-output conformance — responses that match the requested JSON schema.',
+   'instruction %': 'Instruction-following score — adherence to explicit formatting/constraint instructions.',
+   'agentic %': 'Agentic-loop score — success on a multi-turn, tool-using task.',
+   'coding pass@1 %': 'Coding pass@1 — fraction of coding tasks whose first solution passes the tests.',
+   // speed / throughput
+   'decode tok/s': 'Decode throughput — average generated tokens/sec on the 8k end-to-end run.',
+   'e2e tok/s': 'End-to-end throughput — prompt-eval + decode tokens/sec on the 8k run.',
+   'ttft ms': 'Time to first token (ms) at 8k context. Lower is better.',
+   // multi-agent capacity (from the agent_ctx probe)
+   'coder slots': 'Coder agents (alongside 1 planner) that load AND stay coherent from one shared KV pool.',
+   'agent pool k': 'Total shared KV context (K tokens) across the planner + all coders.',
+   'planner ctx k': 'Context window (K tokens) reserved for the planner agent in the shared pool.',
+   'fit-ctx': 'llama.cpp native auto-fit context length (tokens) it allocates for this config.',
+   // footprint (lower is better)
+   'VRAM MiB': 'Peak GPU memory (MiB) measured at the agent_ctx probe. Lower is better.',
+   'KV bytes/tok': 'KV-cache size in bytes per token. Lower is better.',
+   // leaderboard composites (0–100, normalized within the current selection)
+   capability: 'Overall capability — comprehension × coding, each raised to its dial weight (0–100).',
+   comp: 'Comprehension composite — weighted blend of triage, reasoning, tool-calling, summarization, docqa, structured-output, instruction-following and agentic scores.',
+   coding: 'Coding composite — pass@1 and unit-test pass-rate across the coding benches, with gates.',
+   speed: 'Speed composite — throughput, TTFT and long-context decode retention combined.',
+   fleet: 'Fleet-suitability — how well it serves a multi-agent fleet: capability × agent slots × pool context × throughput.',
+   // leaderboard raw columns (different labels for the same underlying measures)
+   'agent slots': 'Coder agents that fit + stay coherent alongside the planner (from agent_ctx).',
+   'pool k': 'Total shared KV context (K tokens) across planner + coders.',
+   'fit-ctx k': 'Native auto-fit context length (K tokens).',
+   'vram MiB': 'Peak GPU memory (MiB). Lower is better.',
+   'kv KiB/tok': 'KV-cache size (KiB per token). Lower is better.',
+};
+
 const filt = (rows, facets) => rows.filter((r) => Object.entries(facets || {}).every(([d, vs]) => !vs || !vs.length || vs.includes(r[d])));
 const groupBy = (rows, keyFn) => {
    const m = new Map();
