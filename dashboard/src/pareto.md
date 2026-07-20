@@ -94,9 +94,13 @@ if (pts.length === 0) {
         : { ...palette.colorScale(pts.map((p) => p.cat), pal), legend: true },
     marks: [
       // Small uniform stroke-only ✕: the CENTRE marks the exact (x,y). Colour = arch / KV / VRAM;
-      // grey ✕ = VRAM not measured. Native hover tooltip (title) survives the zoom transform.
-      Plot.dot(measured, { x: "px", y: "py", r: R, symbol: "times", stroke: colorBy === "vram" ? "vram" : "cat", fill: "none", strokeWidth: 2.4, title: tipText }),
-      Plot.dot(kX, { x: "px", y: "py", r: R, symbol: "times", stroke: "#8a949b", fill: "none", strokeWidth: 2, title: tipText }),
+      // grey ✕ = VRAM not measured.
+      Plot.dot(measured, { x: "px", y: "py", r: R, symbol: "times", stroke: colorBy === "vram" ? "vram" : "cat", fill: "none", strokeWidth: 2.4 }),
+      Plot.dot(kX, { x: "px", y: "py", r: R, symbol: "times", stroke: "#8a949b", fill: "none", strokeWidth: 2 }),
+      // Invisible larger hover targets: a stroke-only ✕ has almost no hit area, so the native title
+      // tooltip barely triggers. These transparent discs carry the title and are hoverable across
+      // the whole cross. Inside the zoom <g>, so the hit area stays aligned at any zoom level.
+      Plot.dot(nodes, { x: "px", y: "py", r: 11, fill: "transparent", title: tipText }),
     ],
   });
 
