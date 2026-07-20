@@ -45,6 +45,9 @@ if (pts.length === 0) {
   // Size across the MEASURED VRAM range (not from 0) so the tightly-clustered real values
   // still show contrast; the caption + legend flag that it's a relative scale.
   const rDomain = vr.length ? [Math.min(...vr), Math.max(...vr)] : [0, 1];
+  // One shared tooltip over ALL bubbles (see Plot.tip below): VRAM as GiB, or "n/a" if unmeasured.
+  const fmtVram = (v) => (v != null && v > 0 ? `${(v / 1024).toFixed(1)} GiB` : "n/a");
+  const tipPts = pts.map((p) => ({ ...p, vramLabel: fmtVram(p.vram) }));
   const chart = Plot.plot({
     width: Math.max(360, Math.min(width, 1100)),
     height: 540,
@@ -54,9 +57,12 @@ if (pts.length === 0) {
     r: { domain: rDomain, range: [4, 16] },
     color: { ...palette.colorScale(pts.map((p) => p.cat), pal), legend: true },
     marks: [
-      Plot.dot(kNo, { x: "x", y: "y", r: "vram", fill: "cat", stroke: "cat", fillOpacity: 0.7, channels: { config: "label", VRAM: "vram", arch: "arch" }, tip: true }),
-      Plot.dot(kYes, { x: "x", y: "y", r: "vram", stroke: "cat", fill: "none", strokeWidth: 2, channels: { config: "label", VRAM: "vram", arch: "arch" }, tip: true }),
-      Plot.dot(unknown, { x: "x", y: "y", symbol: "times", r: 4, stroke: "#8a949b", strokeWidth: 1.4, channels: { config: "label", VRAM: () => "n/a", arch: "arch" }, tip: true }),
+      Plot.dot(kNo, { x: "x", y: "y", r: "vram", fill: "cat", stroke: "cat", fillOpacity: 0.7 }),
+      Plot.dot(kYes, { x: "x", y: "y", r: "vram", stroke: "cat", fill: "none", strokeWidth: 2 }),
+      Plot.dot(unknown, { x: "x", y: "y", symbol: "times", r: 4, stroke: "#8a949b", strokeWidth: 1.4 }),
+      // Single shared tooltip: the pointer transform selects the ONE nearest bubble (x+y), so
+      // tips no longer stack when bubbles share an x position.
+      Plot.tip(tipPts, Plot.pointer({ x: "x", y: "y", channels: { config: "label", VRAM: "vramLabel", arch: "arch" } })),
     ],
   });
   display(html`<div class="scroll-x">${chart}</div>`);
