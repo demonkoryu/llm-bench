@@ -33,7 +33,7 @@ export function boardRows(entities) {
          think: e.think ?? '—',
          family: e.dims.family,
       };
-      for (const c of BOARD_COLUMNS) row[c.key] = c.get(e);
+      for (const c of BOARD_COLUMNS) { row[c.key] = c.get(e); }
       return row;
    });
 }

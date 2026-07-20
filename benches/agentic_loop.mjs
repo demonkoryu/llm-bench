@@ -37,10 +37,10 @@ export const bench = {
          } catch {
             g = { pass: false };
          }
-         if (g.pass) passed++;
+         if (g.pass) { passed++; }
          if ('recovered' in g) {
             recTasks++;
-            if (g.recovered) recOk++;
+            if (g.recovered) { recOk++; }
          }
       }
       return { bench: 'agentic_loop', score: CASES.length ? (passed / CASES.length) * 100 : 0, status: 'ok' };

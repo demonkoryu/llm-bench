@@ -136,15 +136,15 @@ const QUANT_RE = /(?:UD-)?(IQ\d(?:_[A-Z]+)?|Q\d(?:_\d|_K(?:_[A-Z]+)?)?|F16|BF16|
 export function parseQuant(hf_file = '') {
    const base = String(hf_file).replace(/\.gguf$/i, '');
    const m = QUANT_RE.exec(base);
-   if (m) return m[0].replace(/^UD-/i, '');
+   if (m) { return m[0].replace(/^UD-/i, ''); }
    const seg = base.split('-').pop();
    return seg || null;
 }
 export function bpwForQuant(quant) {
-   if (!quant) return null;
+   if (!quant) { return null; }
    const q = quant.toUpperCase();
    let best = null;
-   for (const [tok, v] of BPW) if (q.includes(tok) && (!best || tok.length > best[0].length)) best = [tok, v];
+   for (const [tok, v] of BPW) { if (q.includes(tok) && (!best || tok.length > best[0].length)) { best = [tok, v]; } }
    return best ? best[1] : null;
 }
 function parseParams(text = '') {
@@ -157,12 +157,12 @@ function parseParams(text = '') {
 }
 function parseFinetune(text = '') {
    const s = text.toLowerCase();
-   if (/coder/.test(s)) return 'coder';
-   if (/abliterat|uncensor/.test(s)) return 'abliterated';
-   if (/\bapex\b/.test(s)) return 'apex';
-   if (/\bqat\b/.test(s)) return 'qat';
-   if (/distill|(^|[^a-z])r1([^a-z]|$)|reasoning/.test(s)) return 'reasoning-distill';
-   if (/instruct|-it\b|-it-|\bit\b/.test(s)) return 'instruct';
+   if (/coder/.test(s)) { return 'coder'; }
+   if (/abliterat|uncensor/.test(s)) { return 'abliterated'; }
+   if (/\bapex\b/.test(s)) { return 'apex'; }
+   if (/\bqat\b/.test(s)) { return 'qat'; }
+   if (/distill|(^|[^a-z])r1([^a-z]|$)|reasoning/.test(s)) { return 'reasoning-distill'; }
+   if (/instruct|-it\b|-it-|\bit\b/.test(s)) { return 'instruct'; }
    return null;
 }
 // Classify by SPARSITY (active < total → MoE) crossed with family hybrid-ness, so the
@@ -171,8 +171,8 @@ function parseFinetune(text = '') {
 function deriveArch(family = '', total = null, active = null) {
    const f = String(family).toLowerCase();
    const sparse = total != null && active != null && active < total;
-   if (/qwen3\.[56]/.test(f)) return sparse ? 'gated-delta-moe' : 'gated-delta-dense';
-   if (/lfm|mamba|falcon-h|jamba|hybrid/.test(f)) return 'mamba-hybrid';
+   if (/qwen3\.[56]/.test(f)) { return sparse ? 'gated-delta-moe' : 'gated-delta-dense'; }
+   if (/lfm|mamba|falcon-h|jamba|hybrid/.test(f)) { return 'mamba-hybrid'; }
    return sparse ? 'moe' : 'dense';
 }
 

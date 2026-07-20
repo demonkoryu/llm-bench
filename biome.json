@@ -21,7 +21,7 @@
       "enabled": true,
       "rules": {
          "recommended": true,
-         "style": { "useBlockStatements": "warn" }
+         "style": { "useBlockStatements": "error" }
       }
    },
    "overrides": [

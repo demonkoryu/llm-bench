@@ -33,7 +33,7 @@ export const bench = {
          });
          const toks = (await Promise.all(reqs)).reduce((a, b) => a + b, 0);
          const wallS = (Date.now() - t0) / 1000;
-         if (toks > 0 && wallS > 0)
+         if (toks > 0 && wallS > 0) {
             rows.push({
                bench: `speed_pargen-${k}`,
                score: toks / wallS,
@@ -42,6 +42,7 @@ export const bench = {
                status: 'ok',
                notes: `parallel=${MAXP} conc=${k}`,
             });
+         }
       }
       return rows;
    },

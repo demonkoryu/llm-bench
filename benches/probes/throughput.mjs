@@ -51,16 +51,17 @@ export const bench = {
                pm = t?.prompt_ms,
                gn = t?.predicted_n,
                gm = t?.predicted_ms;
-            if (![pn, pm, gn, gm].every(Number.isFinite) || pm + gm <= 0) continue;
+            if (![pn, pm, gn, gm].every(Number.isFinite) || pm + gm <= 0) { continue; }
             ttfts.push(pm);
             e2es.push(((pn + gn) / (pm + gm)) * 1000);
             decs.push(gn / (gm / 1000));
             prefs.push(pn / (pm / 1000));
          }
          const k = Math.round(d / 1024);
-         if (e2es.length)
+         if (e2es.length) {
             rows.push({ bench: `e2e-${k}k`, score: median(e2es), tok_s: median(decs), prefill_tps: median(prefs), status: 'ok' });
-         if (ttfts.length) rows.push({ bench: `ttft-${k}k`, score: median(ttfts), status: 'ok' });
+         }
+         if (ttfts.length) { rows.push({ bench: `ttft-${k}k`, score: median(ttfts), status: 'ok' }); }
       }
       return rows;
    },

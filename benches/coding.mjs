@@ -42,10 +42,10 @@ function codingBench(name, cases, buildSystem, maxTok, thinkTok) {
                /* no-code → fails */
             }
             const g = await codingGradeCase(c, raw);
-            if (g.pass) passAt1++;
+            if (g.pass) { passAt1++; }
             testsPassed += g.passed ?? 0;
             testsTotal += g.total ?? 0;
-            if (/^no-code/.test(g.reason ?? '')) noCode++;
+            if (/^no-code/.test(g.reason ?? '')) { noCode++; }
          }
          return {
             bench: name,

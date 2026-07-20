@@ -6,7 +6,7 @@ import { html } from 'npm:htl';
 export function metricHelp(help, keys, { title = 'metrics' } = {}) {
    const seen = new Set();
    const rows = keys.filter((k) => help[k] && !seen.has(k) && seen.add(k));
-   if (!rows.length) return html``;
+   if (!rows.length) { return html``; }
    return html`<div class="metric-help">
     <span class="metric-help-title">${title}</span>
     <dl>${rows.map((k) => html`<dt>${k}</dt><dd>${help[k]}</dd>`)}</dl>

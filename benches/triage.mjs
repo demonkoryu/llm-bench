@@ -31,8 +31,8 @@ export const bench = {
          }
          const raw = completion.choices?.[0]?.message?.content ?? '';
          const grade = triageGradeOne(item, raw);
-         if (grade.anchorHallucination) halls++;
-         if (!grade.parsedOk) jsonFail++;
+         if (grade.anchorHallucination) { halls++; }
+         if (!grade.parsedOk) { jsonFail++; }
          itemResults.push({ item, grade });
       }
       const { perRule } = triageComputeScore(itemResults);

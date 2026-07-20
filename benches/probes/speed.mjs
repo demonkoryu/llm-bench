@@ -41,7 +41,7 @@ export const bench = {
       }
       let nonce = 0;
       for (const promptTokens of [4096, 12288]) {
-         if (promptTokens + 512 >= ctx) continue;
+         if (promptTokens + 512 >= ctx) { continue; }
          const built = makeFillPrompt(promptTokens);
          const um = built.messages[built.messages.length - 1];
          um.content = `// speed prefill ${++nonce}\n${um.content}`;

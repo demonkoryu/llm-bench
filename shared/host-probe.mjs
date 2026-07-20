@@ -14,7 +14,7 @@ async function hostCmd(cmd, opts) {
 /** Parse `version: 9780 (1191758c5)` (llama-server --version, printed on stderr). */
 export function parseLlamacppBuild(versionText) {
    const m = /version:\s*(\d+)\s*\(([0-9a-f]+)\)/i.exec(versionText || '');
-   if (m) return `${m[1]} (${m[2]})`;
+   if (m) { return `${m[1]} (${m[2]})`; }
    const alt = /version:\s*(\S+)/i.exec(versionText || '');
    return alt ? alt[1] : null;
 }

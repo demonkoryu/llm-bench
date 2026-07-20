@@ -50,7 +50,7 @@ const { values: flags } = parseArgs({
 // ── tiny endpoint helpers ────────────────────────────────────────────────────
 async function applyTemplate(baseUrl, model, messages, tools, addGen = true) {
    const body = { model, messages, add_generation_prompt: addGen };
-   if (tools) body.tools = tools;
+   if (tools) { body.tools = tools; }
    const r = await fetch(`${baseUrl}/apply-template`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -76,7 +76,7 @@ async function tokLen(baseUrl, model, content) {
 const commonPrefixLen = (a, b) => {
    let i = 0;
    const n = Math.min(a.length, b.length);
-   while (i < n && a[i] === b[i]) i++;
+   while (i < n && a[i] === b[i]) { i++; }
    return i;
 };
 const countMatches = (s, re) => (s.match(re) || []).length;
@@ -88,7 +88,7 @@ async function renderProbes(baseUrl, model) {
    {
       const { messages, cutsHistory, tools } = FIXTURES.agentic;
       const renders = [];
-      for (const c of cutsHistory) renders.push(await applyTemplate(baseUrl, model, messages.slice(0, c), tools, false));
+      for (const c of cutsHistory) { renders.push(await applyTemplate(baseUrl, model, messages.slice(0, c), tools, false)); }
       const turns = [];
       let invalidatedTotal = 0,
          stable = true;
@@ -96,7 +96,7 @@ async function renderProbes(baseUrl, model) {
          const prev = renders[i - 1],
             cur = renders[i];
          const isPrefix = cur.startsWith(prev);
-         if (!isPrefix) stable = false;
+         if (!isPrefix) { stable = false; }
          const common = commonPrefixLen(prev, cur);
          const survived = await tokLen(baseUrl, model, prev.slice(0, common));
          const prevTok = await tokLen(baseUrl, model, prev);

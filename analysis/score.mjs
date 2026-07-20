@@ -25,7 +25,7 @@ function codingGrade(rows) {
       acc = 0;
    for (const [bench, w] of Object.entries(CODING_WEIGHTS)) {
       const sub = rows.filter((r) => r.bench === bench);
-      if (!sub.length) continue;
+      if (!sub.length) { continue; }
       const pass = ratio(sub, 'coding_pass_at_1', 'coding_total'); // count → pass@1 rate
       const rate = ratio(sub, 'coding_tests_passed', 'coding_tests_total');
       const g = 0.4 * (pass ?? 0) + 0.6 * (rate ?? pass ?? 0);
@@ -102,11 +102,12 @@ function groupEntities(rows, think) {
    const m = new Map();
    for (const r of rows) {
       const tm = r.think_mode ?? 'n/a';
-      if (tm !== 'n/a' && tm !== think) continue; // drop the non-selected think's core rows
+      if (tm !== 'n/a' && tm !== think) { continue; // drop the non-selected think's core rows
+}
       const k = entityKey(r);
       if (!m.has(k)) {
          const dims = {};
-         for (const d of ENTITY_DIMS) dims[d] = r[d] ?? null;
+         for (const d of ENTITY_DIMS) { dims[d] = r[d] ?? null; }
          m.set(k, { key: k, dims, think, rows: [] });
       }
       m.get(k).rows.push(r);
@@ -119,8 +120,8 @@ function normalizeMetric(entities, name, def, pin) {
    const raws = entities.map((e) => e.raw[name]).filter((v) => v != null);
    const strat = def.norm;
    let denom = null;
-   if (strat === 'ratioMax') denom = pin?.[name] ?? (Math.max(...raws, 0) || 1);
-   if (strat === 'inverseMin') denom = pin?.[name] ?? Math.min(...raws.filter((v) => v > 0), Infinity);
+   if (strat === 'ratioMax') { denom = pin?.[name] ?? (Math.max(...raws, 0) || 1); }
+   if (strat === 'inverseMin') { denom = pin?.[name] ?? Math.min(...raws.filter((v) => v > 0), Infinity); }
    let mn = 0,
       mx = 1;
    if (strat === 'minmax') {
@@ -133,11 +134,12 @@ function normalizeMetric(entities, name, def, pin) {
          e.norm[name] = null;
          continue;
       }
-      if (strat === 'identity') e.norm[name] = Math.max(0, Math.min(1, v));
-      else if (strat === 'ratioMax') e.norm[name] = denom ? Math.max(0, Math.min(1, v / denom)) : null;
-      else if (strat === 'inverseMin') e.norm[name] = Number.isFinite(denom) && v > 0 ? Math.max(0, Math.min(1, denom / v)) : null;
-      else if (strat === 'minmax') e.norm[name] = mx > mn ? (v - mn) / (mx - mn) : 1;
-      else e.norm[name] = v; // raw passthrough
+      if (strat === 'identity') { e.norm[name] = Math.max(0, Math.min(1, v)); }
+      else if (strat === 'ratioMax') { e.norm[name] = denom ? Math.max(0, Math.min(1, v / denom)) : null; }
+      else if (strat === 'inverseMin') { e.norm[name] = Number.isFinite(denom) && v > 0 ? Math.max(0, Math.min(1, denom / v)) : null; }
+      else if (strat === 'minmax') { e.norm[name] = mx > mn ? (v - mn) / (mx - mn) : 1; }
+      else { e.norm[name] = v; // raw passthrough
+}
    }
    return denom;
 }
@@ -151,9 +153,9 @@ function wGeomean(pairs) {
    // [[val,weight]]
    const p = pairs.filter(([v]) => v != null);
    const W = sum(p.map(([, w]) => w));
-   if (!W) return null;
+   if (!W) { return null; }
    let s = 0;
-   for (const [v, w] of p) s += (w / W) * Math.log(Math.max(v, 1e-9));
+   for (const [v, w] of p) { s += (w / W) * Math.log(Math.max(v, 1e-9)); }
    return Math.exp(s);
 }
 function wSum(pairs) {
@@ -190,7 +192,7 @@ function fleet(e, dials) {
       slots = e.raw._agent_slots,
       mctx = e.raw._agent_planner_ctx,
       cap = e.capability;
-   if (slots == null || mctx == null || cap == null) return null;
+   if (slots == null || mctx == null || cap == null) { return null; }
    const ctxNorm = Math.min(mctx, d.ctx_tier) / d.ctx_tier;
    const slotNorm = Math.min(1, slots / 4);
    const thru = e.norm.e2e_throughput ?? 0;
@@ -206,10 +208,10 @@ export function scoreSelection(rows, { dials = DEFAULT_DIALS, pinNorm = null, th
    for (const e of entities) {
       e.raw = {};
       e.norm = {};
-      for (const [name, def] of Object.entries(METRIC_DEFS)) e.raw[name] = def.raw(e.rows);
+      for (const [name, def] of Object.entries(METRIC_DEFS)) { e.raw[name] = def.raw(e.rows); }
    }
    const denom = {};
-   for (const [name, def] of Object.entries(METRIC_DEFS)) denom[name] = normalizeMetric(entities, name, def, pinNorm);
+   for (const [name, def] of Object.entries(METRIC_DEFS)) { denom[name] = normalizeMetric(entities, name, def, pinNorm); }
    for (const e of entities) {
       Object.assign(e, capability(e, dials));
       e.speed = speed(e, dials);

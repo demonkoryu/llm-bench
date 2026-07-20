@@ -42,10 +42,10 @@ for (const [arch, arm, runner, runId] of rows) {
   const j = JSON.parse(readFileSync(p, 'utf8'));
   const owned = OWNER[runner] || [];
   for (const r of j.results) {
-    if (!owned.includes(r.bench)) continue;
-    if (r.status !== 'ok') continue;
+    if (!owned.includes(r.bench)) { continue; }
+    if (r.status !== 'ok') { continue; }
     const key = `${shortModel(r.model)}|${r.think}|${r.bench}`;
-    if (!cells.has(key)) cells.set(key, {});
+    if (!cells.has(key)) { cells.set(key, {}); }
     cells.get(key)[arm] = metric(r.bench, r);
   }
 }
@@ -63,12 +63,12 @@ for (const k of keys) {
   const [m, t, b] = k.split('|');
   const c = cells.get(k);
   const base = c.baseline, treat = c.treatment;
-  if (!base || !treat) continue;
+  if (!base || !treat) { continue; }
   const bv = base.pct, tv = treat.pct;
   const d = (bv != null && tv != null) ? tv - bv : null;
   const fmt = (x) => (x == null ? '—' : x.toFixed(1));
   const dstr = d == null ? '—' : (d > 0 ? '+' : '') + d.toFixed(1);
-  if (d != null) { if (d > 0.5) wins++; else if (d < -0.5) losses++; else ties++; }
+  if (d != null) { if (d > 0.5) { wins++;  }else if (d < -0.5) { losses++;  }else { ties++;  }}
   const note = `${base.extra || ''} → ${treat.extra || ''}`;
   console.log(`| ${m} | ${b} | ${t} | ${fmt(bv)} | ${fmt(tv)} | ${dstr} | ${note} |`);
 }
