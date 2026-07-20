@@ -27,6 +27,10 @@ const baseline = view(Inputs.select(colVals, { value: "(none)", label: "Δ basel
 ```
 
 ```js
+display(metricHelp(METRIC_HELP, [metric], { title: "current metric" }));
+```
+
+```js
 const pv = pivot(rows, { rowsDim, colsDim, metric, baseline: baseline === "(none)" ? null : baseline, facets: facetsSel });
 const clean = (s) => String(s).replace(".gguf", "");
 const long = pv.cells.flatMap((row) => row.vals.map((cell) => ({ r: clean(row.r), c: String(cell.c), v: cell.v, delta: cell.delta })));
@@ -56,5 +60,4 @@ if (long.length === 0) {
     ],
   })}</div>`);
 }
-display(metricHelp(METRIC_HELP, m.metrics));
 ```

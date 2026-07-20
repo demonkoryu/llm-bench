@@ -1,13 +1,14 @@
-// Collapsible metric glossary. Renders "<name> — <description>" rows for the given metric keys
-// using the shared METRIC_HELP map (analysis/query-engine.mjs). Collapsed by default so it stays
-// out of the way; used on every view that displays metrics (pareto, pivot, leaderboard).
+// Always-visible metric glossary: a compact "<name> — <description>" list for the given metric
+// keys (from the shared METRIC_HELP map in analysis/query-engine.mjs). Placed right under a view's
+// controls so the meaning of what's on screen is visible without scrolling or clicking.
 import { html } from 'npm:htl';
 
-export function metricHelp(help, keys, { title = 'What do these metrics mean?', open = false } = {}) {
+export function metricHelp(help, keys, { title = 'metrics' } = {}) {
    const seen = new Set();
    const rows = keys.filter((k) => help[k] && !seen.has(k) && seen.add(k));
-   return html`<details class="metric-help" open=${open}>
-    <summary>ℹ ${title}</summary>
+   if (!rows.length) return html``;
+   return html`<div class="metric-help">
+    <span class="metric-help-title">${title}</span>
     <dl>${rows.map((k) => html`<dt>${k}</dt><dd>${help[k]}</dd>`)}</dl>
-  </details>`;
+  </div>`;
 }

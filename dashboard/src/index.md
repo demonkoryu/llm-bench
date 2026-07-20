@@ -21,6 +21,10 @@ const facetsSel = view(facetForm(fv, m.dims));
 ```
 
 ```js
+display(metricHelp(METRIC_HELP, BOARD_COLUMNS.map((c) => c.key), { title: "score & column meanings" }));
+```
+
+```js
 const lb = leaderboard(rows, { think, facets: facetsSel });
 const data = boardRows(lb.entities).map((d) => ({ ...d, label: boardLabel(d) }));
 const top = [...data].sort((a, b) => (b.capability ?? -1) - (a.capability ?? -1)).slice(0, 20);
@@ -54,5 +58,4 @@ display(Inputs.table(data, {
   align: Object.fromEntries(BOARD_COLUMNS.map((c) => [c.key, "right"])),
   width,
 }));
-display(metricHelp(METRIC_HELP, BOARD_COLUMNS.map((c) => c.key), { title: "What the columns mean" }));
 ```

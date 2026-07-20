@@ -26,6 +26,10 @@ const facetsSel = view(facetForm(fv, m.dims));
 ```
 
 ```js
+display(metricHelp(METRIC_HELP, [xMetric, yMetric, ...(colorBy === "vram" ? ["VRAM MiB"] : [])], { title: "current axes" }));
+```
+
+```js
 const pr = pareto(rows, { xMetric, yMetric, think, facets: facetsSel });
 const pal = colorBy === "kv_quant" ? palette.KV_COLORS : palette.ARCH_COLORS;
 const pts = pr.points
@@ -100,7 +104,6 @@ if (pts.length === 0) {
   });
   display(html`<div class="scroll-x">${chart}</div>`);
 }
-display(metricHelp(METRIC_HELP, m.metrics));
 ```
 
 <div class="muted">${pts.length} configs plotted · each ✕ = one config at its exact position · colour = ${colorBy === "vram" ? "VRAM" : colorBy} · grey ✕ = VRAM not measured · near-identical configs sit close together (hover for think + exact values)</div>
