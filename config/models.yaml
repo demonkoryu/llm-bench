@@ -313,7 +313,7 @@ models:
         spec-type: draft-mtp
         spec-draft-n-max: 4
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
-     kv_variants: [q5_0]
+     kv_variants: [q4_0, q5_0]   # q4_0 added 2026-07-20 to align agent_ctx/VRAM with the q4_0 quality rows
 
    # ── Gemma4-12B (dense "unified" — encoder-free multimodal, run text-only) ──────
    # Released 2026-06-02. Dense 12B, hybrid think, native FC; ~8.4 GB at Q5_K_M.
@@ -370,7 +370,7 @@ models:
         spec-type: draft-mtp
         spec-draft-n-max: 4
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
-     kv_variants: [q5_0]
+     kv_variants: [q4_0, q5_0]   # q4_0 added 2026-07-20 to align agent_ctx/VRAM with the q4_0 quality rows
 
    # ── Gemma4-31B QAT q4_0 (Google official, dense) ────────────────────────────
    # Dense 31B, hybrid think, native FC. ~16.8 GB → fits 20.5 GB card.
@@ -428,7 +428,7 @@ models:
         spec-type: draft-mtp
         spec-draft-n-max: 4
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_multipl, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
-     kv_variants: [q5_0]
+     kv_variants: [q4_0, q5_0]   # q4_0 added 2026-07-20 to align agent_ctx/VRAM with the q4_0 quality rows
 
    # ── LFM2.5-8B-A1B ────────────────────────────────────────────────────────────
    # Always-reasoning: outputs to reasoning_content field, not content.
