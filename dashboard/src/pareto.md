@@ -64,10 +64,12 @@ if (pts.length === 0) {
     n.x = n.ax;
     n.y = n.ay;
   }
+  // Gentle: crosses overlap legibly, so only a slight nudge (half-radius collision) — near-identical
+  // configs stay clustered, they just don't sit exactly on top of each other.
   forceSimulation(nodes)
-    .force("x", forceX((d) => d.ax).strength(0.4))
-    .force("y", forceY((d) => d.ay).strength(0.4))
-    .force("collide", forceCollide((d) => rOf(d) + 1.5).strength(0.9))
+    .force("x", forceX((d) => d.ax).strength(0.6))
+    .force("y", forceY((d) => d.ay).strength(0.6))
+    .force("collide", forceCollide((d) => rOf(d) * 0.5).strength(0.5))
     .stop()
     .tick(200);
   for (const n of nodes) {
@@ -91,10 +93,12 @@ if (pts.length === 0) {
     r: { domain: rDomain, range: [4, 16] },
     color: { ...palette.colorScale(pts.map((p) => p.cat), pal), legend: true },
     marks: [
-      Plot.dot(kNo, { x: "px", y: "py", r: "vram", fill: "cat", stroke: "cat", fillOpacity: 0.7 }),
-      Plot.dot(kYes, { x: "px", y: "py", r: "vram", stroke: "cat", fill: "none", strokeWidth: 2 }),
-      Plot.dot(kX, { x: "px", y: "py", symbol: "times", r: 4, stroke: "#8a949b", strokeWidth: 1.4 }),
-      // One shared tooltip: pointer picks the single nearest bubble; title shows its TRUE metrics.
+      // Thin stroke-only crosses: the CENTRE marks the exact (x,y) and arms overlap legibly.
+      // ✕ = no_think, + = think, sized by VRAM; grey ✕ = VRAM not measured (fixed size).
+      Plot.dot(kNo, { x: "px", y: "py", r: "vram", symbol: "times", stroke: "cat", fill: "none", strokeWidth: 1.6 }),
+      Plot.dot(kYes, { x: "px", y: "py", r: "vram", symbol: "plus", stroke: "cat", fill: "none", strokeWidth: 1.6 }),
+      Plot.dot(kX, { x: "px", y: "py", r: 5, symbol: "times", stroke: "#8a949b", fill: "none", strokeWidth: 1.4 }),
+      // One shared tooltip: pointer picks the single nearest cross; title shows its TRUE metrics.
       Plot.tip(nodes, Plot.pointer({
         x: "px",
         y: "py",
@@ -113,4 +117,4 @@ if (pts.length === 0) {
 }
 ```
 
-<div class="muted">${pts.length} configs plotted · ● filled = no_think · ○ ring = think · bubble size = VRAM (scaled across the measured range) · grey ✕ = VRAM not measured · crowded points are fanned out to stay readable (hover shows each bubble's exact values)</div>
+<div class="muted">${pts.length} configs plotted · ✕ = no_think · + = think · size = VRAM (scaled across the measured range) · grey ✕ = VRAM not measured · near-identical configs sit close together (hover for exact values)</div>
