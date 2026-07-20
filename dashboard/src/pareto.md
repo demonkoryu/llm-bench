@@ -1,6 +1,6 @@
 # Pareto frontier
 
-Every served config as a bubble: pick the two axes, size is VRAM. **Up-and-left is smarter + faster.** Filled = `no_think`, hollow ring = `think`.
+Every served config is a **✕** at its exact (speed, quality); cross size = VRAM. **Up-and-left is smarter + faster.** Hover any cross for its config, think mode and exact values.
 
 ```js
 import * as Plot from "npm:@observablehq/plot";
@@ -56,8 +56,8 @@ if (pts.length === 0) {
   const yDom = [0, Math.max(...pts.map((p) => p.y)) * 1.05];
   const xs = scaleLinear(xDom, [mg.left, W - mg.right]);
   const ys = scaleLinear(yDom, [H - mg.bottom, mg.top]);
-  const rs = scaleSqrt(rDomain, [4, 16]);
-  const rOf = (p) => (p.vram != null && p.vram > 0 ? rs(p.vram) : 4);
+  const rs = scaleSqrt(rDomain, [6, 18]);
+  const rOf = (p) => (p.vram != null && p.vram > 0 ? rs(p.vram) : 6);
 
   const nodes = pts.map((p) => ({ ...p, x_true: p.x, y_true: p.y, ax: xs(p.x), ay: ys(p.y), vramLabel: fmtVram(p.vram) }));
   for (const n of nodes) {
@@ -76,8 +76,7 @@ if (pts.length === 0) {
     n.px = xs.invert(n.x);
     n.py = ys.invert(n.y);
   }
-  const kNo = nodes.filter((p) => p.vram > 0 && p.think !== "think");
-  const kYes = nodes.filter((p) => p.vram > 0 && p.think === "think");
+  const measured = nodes.filter((p) => p.vram > 0);
   const kX = nodes.filter((p) => !(p.vram > 0));
 
   const chart = Plot.plot({
@@ -90,14 +89,13 @@ if (pts.length === 0) {
     grid: true,
     x: { label: `${xMetric} →`, domain: xDom },
     y: { label: `↑ ${yMetric}`, domain: yDom },
-    r: { domain: rDomain, range: [4, 16] },
+    r: { domain: rDomain, range: [6, 18] },
     color: { ...palette.colorScale(pts.map((p) => p.cat), pal), legend: true },
     marks: [
-      // Thin stroke-only crosses: the CENTRE marks the exact (x,y) and arms overlap legibly.
-      // ✕ = no_think, + = think, sized by VRAM; grey ✕ = VRAM not measured (fixed size).
-      Plot.dot(kNo, { x: "px", y: "py", r: "vram", symbol: "times", stroke: "cat", fill: "none", strokeWidth: 1.6 }),
-      Plot.dot(kYes, { x: "px", y: "py", r: "vram", symbol: "plus", stroke: "cat", fill: "none", strokeWidth: 1.6 }),
-      Plot.dot(kX, { x: "px", y: "py", r: 5, symbol: "times", stroke: "#8a949b", fill: "none", strokeWidth: 1.4 }),
+      // Stroke-only ✕ crosses: the CENTRE marks the exact (x,y) and arms overlap legibly.
+      // Sized by VRAM, coloured by arch/kv; grey ✕ = VRAM not measured. (think is in the tooltip.)
+      Plot.dot(measured, { x: "px", y: "py", r: "vram", symbol: "times", stroke: "cat", fill: "none", strokeWidth: 2.4 }),
+      Plot.dot(kX, { x: "px", y: "py", r: 6, symbol: "times", stroke: "#8a949b", fill: "none", strokeWidth: 2 }),
       // One shared tooltip: pointer picks the single nearest cross; title shows its TRUE metrics.
       Plot.tip(nodes, Plot.pointer({
         x: "px",
@@ -117,4 +115,4 @@ if (pts.length === 0) {
 }
 ```
 
-<div class="muted">${pts.length} configs plotted · ✕ = no_think · + = think · size = VRAM (scaled across the measured range) · grey ✕ = VRAM not measured · near-identical configs sit close together (hover for exact values)</div>
+<div class="muted">${pts.length} configs plotted · each ✕ = one config · size = VRAM (scaled across the measured range) · grey ✕ = VRAM not measured · near-identical configs sit close together (hover for think + exact values)</div>
