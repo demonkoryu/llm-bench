@@ -103,7 +103,12 @@ if (pts.length === 0) {
   // Scroll to zoom, drag to pan: wrap all svg content in a <g> and apply the d3-zoom transform to
   // it (the svg's own coordinate space stays fixed, so native hover tooltips stay accurate).
   // Double-click resets; an axis/facet change re-renders a fresh svg at identity.
-  const svgEl = chart.querySelector("svg") ?? chart;
+  // The main plot svg — NOT the colour legend's swatch/ramp svg (Plot puts the legend svg(s) first
+  // in the figure). Pick the svg that actually holds the dot marks; fall back to the widest.
+  const svgs = chart.tagName?.toLowerCase() === "svg" ? [chart] : [...chart.querySelectorAll("svg")];
+  const svgEl =
+    svgs.find((s) => s.querySelector('g[aria-label*="dot"]')) ??
+    svgs.sort((a, b) => (+b.getAttribute("width") || 0) - (+a.getAttribute("width") || 0))[0];
   const zoomLayer = document.createElementNS("http://www.w3.org/2000/svg", "g");
   while (svgEl.firstChild) zoomLayer.appendChild(svgEl.firstChild);
   svgEl.appendChild(zoomLayer);
