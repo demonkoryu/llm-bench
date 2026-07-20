@@ -30,10 +30,11 @@ display(metricHelp(METRIC_HELP, [xMetric, yMetric, ...(colorBy === "vram" ? ["VR
 ```
 
 ```js
-// `zoomView` = the visible {x,y} domain, or null for the full extent. Written by the wheel/drag
-// handlers and the data-change reset below; read only via `dom` so no single cell both reads and
-// writes it.
+// `zoomView` = the visible {x,y} domain, or null for full extent. A Framework Mutable can only be
+// read as a plain value in OTHER cells (see `dom`) and written via setters defined alongside it.
 const zoomView = Mutable(null);
+const setZoom = (v) => (zoomView.value = v);
+const resetZoom = () => (zoomView.value = null);
 ```
 
 ```js
@@ -73,13 +74,19 @@ const layout = ((width) => {
   }
   return { W, H, mg, fullXDom, fullYDom, vramDomain, nodes };
 })(width);
-zoomView.value = null; // reset the zoom whenever the data / axes change
 ```
 
 ```js
-// The visible domain: the zoom override, else the full extent. (Reads zoomView; the render cell
-// only WRITES zoomView, so no cell both reads and writes it.)
-const dom = layout ? (zoomView.value ?? { x: layout.fullXDom, y: layout.fullYDom }) : null;
+// The visible domain: the zoom override if still within the current full extent, else full (a
+// stored zoom goes stale after an axis change). Reads `zoomView` as a plain value; only the render
+// cell's handlers write it (via setters), so no cell both reads and writes the mutable.
+const dom = (() => {
+  if (!layout) return null;
+  const full = { x: layout.fullXDom, y: layout.fullYDom };
+  const z = zoomView;
+  const ok = (d, f) => Array.isArray(d) && d[1] > d[0] && d[0] >= f[0] - 1e-6 && d[1] <= f[1] + 1e-6;
+  return z && ok(z.x, full.x) && ok(z.y, full.y) ? z : full;
+})();
 ```
 
 ```js
@@ -172,10 +179,10 @@ if (!layout) {
       const dataX = scaleLinear(xd, [mg.left, W - mg.right]).invert(ux);
       const dataY = scaleLinear(yd, [H - mg.bottom, mg.top]).invert(uy);
       const f = e.deltaY < 0 ? 1 / 1.2 : 1.2;
-      zoomView.value = {
+      setZoom({
         x: clampZoom([dataX + (xd[0] - dataX) * f, dataX + (xd[1] - dataX) * f], fullXDom),
         y: clampZoom([dataY + (yd[0] - dataY) * f, dataY + (yd[1] - dataY) * f], fullYDom),
-      };
+      });
     },
     { passive: false },
   );
@@ -190,10 +197,10 @@ if (!layout) {
     const move = (me) => {
       const dxData = ((me.clientX - sx) * (W / rect.width) * (x0[1] - x0[0])) / plotW;
       const dyData = ((me.clientY - sy) * (H / rect.height) * (y0[1] - y0[0])) / plotH;
-      zoomView.value = {
+      setZoom({
         x: clampPan([x0[0] - dxData, x0[1] - dxData], fullXDom),
         y: clampPan([y0[0] + dyData, y0[1] + dyData], fullYDom),
-      };
+      });
     };
     const up = () => {
       window.removeEventListener("pointermove", move);
@@ -204,7 +211,7 @@ if (!layout) {
     window.addEventListener("pointerup", up);
   });
   svgEl.addEventListener("dblclick", () => {
-    zoomView.value = null;
+    resetZoom();
   });
   display(html`<div class="scroll-x">${chart}</div>`);
 }
