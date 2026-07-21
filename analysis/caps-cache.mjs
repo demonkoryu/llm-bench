@@ -70,7 +70,7 @@ export async function seedFromTidy(resultsDir = join(ROOT, 'results')) {
            max(CASE WHEN metric='total_ctx'   THEN metric_value END) AS oom_ceiling,
            max(CASE WHEN metric='total_ctx'   THEN metric_value END) AS ctx_ceiling,
            max(CASE WHEN metric='vram_mib'    THEN metric_value END) AS vram_at_ctx,
-           max(ts) AS measured_at, arg_max(run_id, ts) AS source_run_id
+           max(ts) AS measured_at, (array_agg(run_id ORDER BY ts DESC))[1] AS source_run_id
     FROM $TIDY WHERE bench='agent_ctx' GROUP BY 1,2,3,4,5,6`,
    );
    const kv = await query(

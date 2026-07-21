@@ -3,7 +3,8 @@
   "configurations": [
     {
       "name": "dashboard",
-      "program": "serve-dashboard.mjs",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "dashboard", "run", "dev", "--", "--port", "8099", "--no-open"],
       "port": 8099
     }
   ]

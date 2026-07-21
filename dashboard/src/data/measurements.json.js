@@ -14,5 +14,5 @@ import { loadModelsConfig } from '../../../shared/models-config.mjs';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const active = new Set(loadModelsConfig(join(ROOT, 'config', 'models.yaml')).models.map((m) => m.hf_file));
 
-const rows = (await query('SELECT * FROM $TIDY ORDER BY ALL')).filter((r) => active.has(r.gguf_file));
+const rows = (await query('SELECT * FROM $TIDY')).filter((r) => active.has(r.gguf_file));
 process.stdout.write(JSON.stringify(rows));

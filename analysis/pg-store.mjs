@@ -3,9 +3,8 @@
 // (insertRows), and the dashboard/analysis read here (query). There is no Parquet dataset and
 // no sync step — Postgres is the single source of truth.
 //
-// All access goes through DuckDB's `postgres` extension, so the SAME SQL engine the rest of the
-// app uses talks to Postgres — no separate pg driver. The table schema is GENERATED from
-// shared/tidy-schema.mjs (COLUMNS) so it can't drift. NOTE: measurement_id is a SOFT dedup hint,
+// Access is a thin native-Postgres client (porsager `postgres`). The table schema is GENERATED
+// from shared/tidy-schema.mjs (COLUMNS) so it can't drift. NOTE: measurement_id is a SOFT dedup hint,
 // not unique — a few ids legitimately map to >1 row (a bench sampled twice, the same config
 // re-measured across runs); the engine reads every row and scoring averages duplicates.
 //
@@ -15,16 +14,15 @@
 //   LLMBENCH_PG_DB        (default llmbench)
 //   LLMBENCH_PG_USER      (default llmbench)
 //   LLMBENCH_DB_PASSWORD  (required; also accepts LLMBENCH_PG_PASSWORD / PGPASSWORD)
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DuckDBInstance } from '@duckdb/node-api';
+import postgres from 'postgres';
 import { COLUMN_NAMES, COLUMNS } from '../shared/tidy-schema.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-// DuckDB type (tidy-schema) → PostgreSQL column type.
+// Schema type token (tidy-schema COLUMNS) → PostgreSQL column type.
 const PG_TYPE = { VARCHAR: 'TEXT', DOUBLE: 'DOUBLE PRECISION', TIMESTAMP: 'TIMESTAMP', BOOLEAN: 'BOOLEAN', BIGINT: 'BIGINT' };
 
 // Load the repo-root `.env` into process.env ONCE, but only for keys not already set — so an
@@ -71,10 +69,8 @@ export function pgInfo() {
    return `${c.user}@${c.host}:${c.port}/${c.database}`;
 }
 
-const sqlStr = (v) => `'${String(v).replaceAll("'", "''")}'`;
-
-// One CREATE TABLE, generated from the tidy COLUMNS (order + types). No PK — the mirror is
-// a faithful copy and measurement_id is not unique across the dataset (see header note).
+// One CREATE TABLE, generated from the tidy COLUMNS (order + types). No PK — the store is
+// append-only and measurement_id is not unique across the dataset (see header note).
 function ddl() {
    const cols = COLUMN_NAMES.map((c) => {
       const t = PG_TYPE[COLUMNS[c]];
@@ -89,77 +85,81 @@ function scrub(msg, pw) {
    return pw ? String(msg).replaceAll(pw, '***') : String(msg);
 }
 
-let _conn = null;
-async function conn() {
-   if (_conn) { return _conn; }
-   const cfg = pgConfig();
-   const c = await (await DuckDBInstance.create(':memory:')).connect();
-   try {
-      await c.run('INSTALL postgres; LOAD postgres;');
-      // A DuckDB SECRET keeps the credential out of the ATTACH statement text.
-      await c.run(
-         `CREATE OR REPLACE SECRET pgsecret (TYPE postgres, HOST ${sqlStr(cfg.host)}, PORT ${cfg.port}, ` +
-            `DATABASE ${sqlStr(cfg.database)}, USER ${sqlStr(cfg.user)}, PASSWORD ${sqlStr(cfg.password)})`,
-      );
-      await c.run("ATTACH '' AS pg (TYPE postgres, SECRET pgsecret)");
-   } catch (e) {
-      throw new Error(scrub(e.message || e, cfg.password));
-   }
-   _conn = c;
-   return c;
-}
+// Numeric column OIDs: int2/int4/int8, float4/float8, numeric. Some (int8, numeric — and, under
+// the simple-query path, floats) arrive as strings to guard precision; coerce them all to JS
+// Number so consumers see numbers, matching the old DuckDB boundary. Non-numeric types (text,
+// timestamp→Date, bool) are left as the driver returns them.
+const NUMERIC_OIDS = new Set([20, 21, 23, 700, 701, 1700]);
 
-// DuckDB hands back BigInt for integer columns; coerce to Number at the JS boundary.
-function deBig(v) {
-   if (typeof v === 'bigint') { return Number(v); }
-   if (Array.isArray(v)) { return v.map(deBig); }
-   if (v && typeof v === 'object') {
-      const o = {};
-      for (const k in v) { o[k] = deBig(v[k]); }
-      return o;
-   }
-   return v;
+let _sql = null;
+function conn() {
+   if (_sql) { return _sql; }
+   const cfg = pgConfig();
+   _sql = postgres({
+      host: cfg.host,
+      port: cfg.port,
+      database: cfg.database,
+      username: cfg.user,
+      password: cfg.password,
+      max: 4,
+      // Let idle connections close so short-lived CLIs (dashboard loader, caps-seed) exit
+      // naturally without a caller having to close the pool.
+      idle_timeout: 3,
+      onnotice: () => {},
+   });
+   return _sql;
 }
 
 /** Create the measurements table in Postgres if absent (idempotent). */
 export async function ensureSchema() {
-   const c = await conn();
-   // Run the DDL natively on the Postgres side (via the postgres extension).
-   await c.run(`CALL postgres_execute('pg', ${sqlStr(ddl())})`);
+   const sql = conn();
+   const { password } = pgConfig();
+   try {
+      await sql.unsafe(ddl());
+   } catch (e) {
+      throw new Error(scrub(e.message || e, password));
+   }
 }
 
 /**
- * Append tidy measurement rows to pg.measurements — the PG-native write path used by bench-run.
- * Rows go through a temp NDJSON → read_json(columns=…) so column TYPES and nulls are explicit
- * (DuckDB won't infer DECIMAL from literals; metric_value stays DOUBLE), matching the schema
- * exactly. Append-only by design: the dataset has always unioned every run and scoring averages
- * duplicates; re-run idempotency comes from bench-run's --resume, not from dedup here.
+ * Append tidy measurement rows to measurements — the write path used by bench-run. A
+ * parameterized bulk insert, chunked to stay under Postgres' parameter cap; JS numbers/nulls
+ * map straight onto the DOUBLE/BIGINT/NULL column types. Append-only by design: the dataset
+ * unions every run and scoring averages duplicates; re-run idempotency comes from bench-run's
+ * --resume, not from dedup here.
  * @returns {{ rows: number }}
  */
 export async function insertRows(rows) {
    if (!rows.length) { return { rows: 0 }; }
    await ensureSchema();
-   const c = await conn();
-   const colList = COLUMN_NAMES.map((k) => `"${k}"`).join(', ');
-   const colsSpec = Object.entries(COLUMNS)
-      .map(([k, t]) => `'${k}': '${t}'`)
-      .join(', ');
-   const tmp = join(tmpdir(), `pgins-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}.ndjson`);
-   writeFileSync(tmp, rows.map((r) => JSON.stringify(r)).join('\n'));
+   const sql = conn();
+   const { password } = pgConfig();
+   // ~37 columns/row; keep params well under Postgres' 65535 cap.
+   const CHUNK = 1000;
    try {
-      await c.run(
-         `INSERT INTO pg.measurements (${colList}) ` +
-            `SELECT ${colList} FROM read_json('${tmp}', format='newline_delimited', columns={${colsSpec}})`,
-      );
-   } finally {
-      rmSync(tmp, { force: true });
+      for (let i = 0; i < rows.length; i += CHUNK) {
+         const batch = rows.slice(i, i + CHUNK);
+         await sql`INSERT INTO measurements ${sql(batch, ...COLUMN_NAMES)}`;
+      }
+   } catch (e) {
+      throw new Error(scrub(e.message || e, password));
    }
    return { rows: rows.length };
 }
 
-/** Run engine SQL against Postgres. `$TIDY` expands to the attached `pg.measurements` table. */
-export async function query(sql) {
-   const c = await conn();
-   const reader = await c.runAndReadAll(sql.replaceAll('$TIDY', 'pg.measurements'));
-   return reader.getRowObjects().map(deBig);
+/** Run engine SQL against Postgres. `$TIDY` expands to the `measurements` table. */
+export async function query(text) {
+   const sql = conn();
+   const { password } = pgConfig();
+   try {
+      const rows = await sql.unsafe(text.replaceAll('$TIDY', 'measurements'));
+      const numCols = (rows.columns || []).filter((c) => NUMERIC_OIDS.has(c.type)).map((c) => c.name);
+      return rows.map((r) => {
+         const o = { ...r };
+         for (const c of numCols) { if (o[c] != null) { o[c] = Number(o[c]); } }
+         return o;
+      });
+   } catch (e) {
+      throw new Error(scrub(e.message || e, password));
+   }
 }

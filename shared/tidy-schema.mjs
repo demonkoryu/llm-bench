@@ -7,7 +7,7 @@
 // `metricRowsFromResult(rawRow, dims)` explodes a heterogeneous per-bench result object
 // into leaf rows, which the orchestrator inserts into Postgres (analysis/pg-store.mjs).
 
-// ── Column order + DuckDB types (drives the Postgres measurements table schema) ──
+// ── Column order + schema type tokens (drives the Postgres measurements table schema) ──
 export const COLUMNS = {
    // identity / provenance
    measurement_id: 'VARCHAR',
