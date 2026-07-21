@@ -1,10 +1,9 @@
-// Bench modules: coding_multipl / coding_hard / coding_practical / coding_bugfix.
+// Bench modules: coding_hard / coding_practical / coding_bugfix.
 // Reuses the executable grader (benchmarks/coding/grader.mjs runs the tests) + case
 // sets. Emits COUNTS (coding_pass_at_1 = #cases fully passing, coding_total = #cases);
 // consumers derive the pass@1 rate as coding_pass_at_1/coding_total.
 import { CASES as BUGFIX } from '../benchmarks/coding/cases-bugfix.mjs';
 import { CASES as HARD } from '../benchmarks/coding/cases-hard.mjs';
-import { CASES as MULTIPL } from '../benchmarks/coding/cases-multipl.mjs';
 import { CASES as PRACTICAL } from '../benchmarks/coding/cases-practical.mjs';
 import { gradeCase as codingGradeCase } from '../benchmarks/coding/grader.mjs';
 
@@ -61,7 +60,6 @@ function codingBench(name, cases, buildSystem, maxTok, thinkTok) {
 }
 
 export const benches = [
-   codingBench('coding_multipl', MULTIPL, defaultSystem, 2048, 8192),
    codingBench('coding_hard', HARD, defaultSystem, 4096, 8192),
    codingBench('coding_practical', PRACTICAL, defaultSystem, 4096, 8192),
    codingBench('coding_bugfix', BUGFIX, bugfixSystem, 8192, 16384),

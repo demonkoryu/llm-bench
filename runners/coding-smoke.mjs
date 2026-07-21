@@ -3,10 +3,9 @@
 /**
  * Standalone smoke test for the coding grader/sandbox — no llama-server required.
  *
- * The coding benchmark itself is now sourced entirely from benchmarks/coding/
- * cases-multipl.mjs (imported MultiPL-E / HumanEval-JS), so this smoke test no
- * longer exercises a fixed set of curated problems. Instead it feeds a few
- * self-contained cases (covering both the `{args,expected}` pure-fn form and the
+ * This smoke test doesn't exercise the benchmark corpora (benchmarks/coding/
+ * cases-{hard,practical,bugfix}.mjs). Instead it feeds a few self-contained
+ * cases (covering both the `{args,expected}` pure-fn form and the
  * `{call,expected}` stateful form) through the real grader to prove that
  * extraction, vm isolation, deep-equality, and the timeout path all work before
  * spending a model run. It also seeds negative cases (a wrong solution, an

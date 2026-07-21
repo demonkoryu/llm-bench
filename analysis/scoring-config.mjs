@@ -31,7 +31,7 @@ export const GROUPS = {
 };
 
 // Coding grade blend across the four coding benches (each = 0.4·pass@1 + 0.6·test-rate).
-export const CODING_WEIGHTS = { coding_multipl: 0.2, coding_hard: 0.35, coding_practical: 0.25, coding_bugfix: 0.2 };
+export const CODING_WEIGHTS = { coding_hard: 0.35, coding_practical: 0.25, coding_bugfix: 0.2 };
 
 // Default dial values (the documented baseline; dashboard overrides live).
 export const DEFAULT_DIALS = {
