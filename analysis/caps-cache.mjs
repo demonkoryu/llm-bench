@@ -7,12 +7,12 @@
 // changes RoPE/ctx behavior, so it misses the cache and forces a clean re-probe.
 //
 // Small keyed store → a single JSON file (results/caps/capabilities.json), which is
-// git-diffable and trivial to upsert; the big measurement store stays Parquet.
+// git-diffable and trivial to upsert; the big measurement store is Postgres (pg-store.mjs).
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadModelsConfig } from '../shared/models-config.mjs';
-import { query } from '../shared/tidy-store.mjs';
+import { query } from './pg-store.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const capsPath = (resultsDir) => join(resultsDir, 'caps', 'capabilities.json');
@@ -22,7 +22,7 @@ export function capKey({ gguf_file, quant, kv_quant, backend, gpu, llamacpp_buil
 }
 function load(resultsDir) {
    const p = capsPath(resultsDir);
-   if (!existsSync(p)) return {};
+   if (!existsSync(p)) { return {}; }
    try {
       return JSON.parse(readFileSync(p, 'utf8'));
    } catch {
@@ -50,7 +50,7 @@ export function upsertCap(resultsDir, keyFields, values) {
 }
 
 /**
- * Seed the cache from the backfilled tidy store: derive ceilings from `agent_ctx` rows and
+ * Seed the cache from the measurement store (Postgres): derive ceilings from `agent_ctx` rows and
  * KV footprint from `kv_per_tok` rows, per config key. Historical rows carry
  * llamacpp_build=null, so these entries won't satisfy a fresh run on a newer build — they
  * document what WAS measured and force one honest re-probe under the new build.
@@ -61,10 +61,9 @@ export function upsertCap(resultsDir, keyFields, values) {
 export async function seedFromTidy(resultsDir = join(ROOT, 'results')) {
    const nativeByGguf = new Map();
    for (const m of loadModelsConfig(join(ROOT, 'config/models.yaml'), { includeDisabled: true }).models) {
-      if (m.hf_file && m.native_max_ctx) nativeByGguf.set(m.hf_file, m.native_max_ctx);
+      if (m.hf_file && m.native_max_ctx) { nativeByGguf.set(m.hf_file, m.native_max_ctx); }
    }
    const ceil = await query(
-      resultsDir,
       `
     SELECT gguf_file, quant, kv_quant, backend, gpu, llamacpp_build,
            max(CASE WHEN metric='planner_ctx' THEN metric_value END) AS coherence_ceiling,
@@ -75,7 +74,6 @@ export async function seedFromTidy(resultsDir = join(ROOT, 'results')) {
     FROM $TIDY WHERE bench='agent_ctx' GROUP BY 1,2,3,4,5,6`,
    );
    const kv = await query(
-      resultsDir,
       `
     SELECT gguf_file, quant, kv_quant, backend, gpu, llamacpp_build,
            avg(CASE WHEN metric='score' THEN metric_value END) AS kv_kib_per_tok

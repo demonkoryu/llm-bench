@@ -11,16 +11,18 @@ and renders an interactive **Observable Framework** dashboard.
 - **Inference** — a `llama.cpp` server on a GPU host, driven over SSH; system concerns
   (start/stop, VRAM, health, systemd-router coexistence) are in `runners/llamacpp-server.mjs`
   + `scripts/llm2/`.
-- **Store** — a **tidy DuckDB/Parquet** dataset: `results/tidy/**/measurements.parquet`,
-  one row per measured metric with every config axis (chat_template, kv_quant, quant, arch,
-  finetune, llamacpp_build, sampling, think…) as a queryable column. Expensive facts
-  (context ceilings, KV footprint) are memoized in `results/caps/capabilities.json`,
-  keyed by (gguf, quant, kv, backend, gpu, **llamacpp_build**) so a llama.cpp upgrade
-  invalidates them.
-- **Analysis** — `analysis/` (tidy-native): `score.mjs` (+ `scoring-config.mjs`) computes
-  capability/fleet over any filtered slice; `query-engine.mjs` owns the dashboard's metric
-  catalog + pivot/pareto/leaderboard/coverage reshaping; `backfill.mjs` imports legacy
-  `run.json`; `pg-sync.mjs` mirrors the tidy rows into central Postgres for the dashboard.
+- **Store** — a **central Postgres** table, `llmbench.measurements` (central-db @
+  192.168.1.120), one row per measured metric with every config axis (chat_template, kv_quant,
+  quant, arch, finetune, llamacpp_build, sampling, think…) as a queryable column. `bench-run`
+  writes rows here directly (`analysis/pg-store.mjs` `insertRows`); there is no Parquet file
+  and no sync step — Postgres is the single source of truth. Access needs `LLMBENCH_DB_PASSWORD`
+  (auto-loaded from a gitignored `.env`; see `.env.example`). Expensive facts (context ceilings,
+  KV footprint) are still memoized in `results/caps/capabilities.json`, keyed by (gguf, quant,
+  kv, backend, gpu, **llamacpp_build**) so a llama.cpp upgrade invalidates them.
+- **Analysis** — `analysis/`: `score.mjs` (+ `scoring-config.mjs`) computes capability/fleet
+  over any filtered slice; `query-engine.mjs` owns the dashboard's metric catalog +
+  pivot/pareto/leaderboard/coverage reshaping; `pg-store.mjs` is the read/write layer (all SQL
+  runs through DuckDB's `postgres` extension, `$TIDY` → `pg.measurements`).
 - **Config** — `config/models.yaml` (models, sampling, structured subject dims) and
   `config/hosts.yaml` (GPU host endpoints/SSH; set `SSH_HOST` if the alias doesn't resolve).
 
@@ -36,9 +38,10 @@ SSH_HOST=<ip> npm run bench -- --models Qwen3.6 --benches toolcalling,reasoning,
     --think both --samples 1 --ctx 16384
 ```
 
-The orchestrator emits **tidy Parquet** natively (plus a small run manifest under
-`results/runs/<run_id>/`) and consults the capabilities cache to skip re-probing
-context ceilings. Flags: `--models <substr,…>`, `--benches <name,…>`, `--think both|no_think|think`,
+The orchestrator writes each result straight to Postgres as it completes (plus a small run
+manifest under `results/runs/<run_id>/`) and consults the capabilities cache to skip re-probing
+context ceilings. Needs `LLMBENCH_DB_PASSWORD` in the env or `.env`. Flags: `--models <substr,…>`,
+`--benches <name,…>`, `--think both|no_think|think`,
 `--samples N` (multi-sample → per-metric mean + `spread`), `--ctx <n>`, `--target <host>`,
 `--chat-template <path-on-host>` (A/B a custom template), `--keep-router` (don't stop the
 host's systemd `llama-server` service).
@@ -67,19 +70,23 @@ context ceilings for that build.
 
 ## 2. Querying the store
 
-Everything lands in the tidy Parquet dataset — analyse it any way you like, no fixed
-"report" step. DuckDB reads it directly:
+Everything lands in the central Postgres table `llmbench.measurements` — analyse it any way you
+like, no fixed "report" step. Query it through the app's engine (`$TIDY` expands to the table):
 
 ```bash
-duckdb -c "SELECT chat_template, 100.0*sum(metric_value) FILTER(WHERE metric='toolcall_pass')
-             /sum(metric_value) FILTER(WHERE metric='toolcall_total') AS pct
-           FROM read_parquet('results/tidy/**/*.parquet', hive_partitioning=true)
-           WHERE bench='toolcalling' GROUP BY 1"
+node -e "import('./analysis/pg-store.mjs').then(async m=>{
+  const r = await m.query(\`SELECT chat_template,
+      100.0*sum(metric_value) FILTER(WHERE metric='toolcall_pass')
+           /sum(metric_value) FILTER(WHERE metric='toolcall_total') AS pct
+    FROM \$TIDY WHERE bench='toolcalling' GROUP BY 1\`);
+  console.table(r);})"
 ```
 
-Or use the app's API / the scorer (`analysis/score.mjs`) programmatically. The store never
-collapses configs: two runs that differ in *any* dimension (template, quant, KV, build…)
-are distinct, queryable rows — the thing the old `model|think|bench` merge couldn't do.
+…or hit the DB directly (`docker exec central-db psql -U llmbench -d llmbench`), or use the
+scorer (`analysis/score.mjs`) programmatically. The store never collapses configs: two runs that
+differ in any measured dimension (template, quant, KV, build…) are distinct, queryable rows —
+the thing the old `model|think|bench` merge couldn't do. (Scoring intentionally merges across
+`llamacpp_build`, but the rows themselves keep the build for provenance.)
 
 ---
 
@@ -92,14 +99,13 @@ vs not). The compute is the same pure `analysis/query-engine.mjs` + `score.mjs` 
 suite uses (mirrored into `dashboard/src/lib/` at build time), so the dashboard can't drift
 from the scoring.
 
-**Data flow.** Benchmark runs write tidy Parquet (`results/tidy/**`); `npm run pg:sync` mirrors
-those rows into the **central Postgres** (`llmbench.measurements` on llm2). The dashboard's
-build-time data loader reads them back through DuckDB's `postgres` extension and bakes a static
-snapshot, so the published page needs no live DB connection.
+**Data flow.** Benchmark runs write rows directly to the **central Postgres**
+(`llmbench.measurements` on llm2). The dashboard's build-time data loader reads them through
+DuckDB's `postgres` extension and bakes a static snapshot, so the published page needs no live
+DB connection. No sync step — the store the run writes is the store the dashboard reads.
 
 ```bash
-export LLMBENCH_DB_PASSWORD=…              # the llmbench role password (see infra/postgres/.env)
-npm run pg:sync                            # tidy Parquet -> central Postgres
+cp .env.example .env && edit .env         # set LLMBENCH_DB_PASSWORD (llmbench role password)
 cd dashboard && npm ci && npm run dev      # local preview → http://localhost:3000
 npm run build                              # static dist/ (what CI publishes)
 ```

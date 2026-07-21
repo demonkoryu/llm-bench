@@ -1,8 +1,8 @@
 // Build-time data loader: snapshot the tidy measurement rows from central-db
 // (llmbench.measurements) into a static JSON the client loads with FileAttachment.
 // Runs as a plain Node process at build time, so it can import analysis/ + shared/
-// freely and needs LLMBENCH_DB_PASSWORD in the env. Keep central-db current with
-// `npm run pg:sync` before building.
+// freely and needs LLMBENCH_DB_PASSWORD in the env. Benchmark runs write to central-db
+// directly, so it is always current — no sync step before building.
 //
 // Filters to CURRENTLY-ACTIVE models: config/models.yaml entries flagged `disabled: true`
 // (parked/retired configs) are dropped so they don't clutter the dashboard.

@@ -11,8 +11,8 @@
 #
 # The build needs the DB password: add LLMBENCH_DB_PASSWORD as an Actions secret on this
 # repo (Settings -> Actions -> Secrets). The runner reaches central-db over the LAN port
-# 192.168.1.120:5432. A data refresh (npm run pg:sync) doesn't touch the repo, so rebuild
-# after new data via "Run workflow" (workflow_dispatch).
+# 192.168.1.120:5432. A benchmark run writes straight to central-db but doesn't touch the
+# repo, so rebuild after new data via "Run workflow" (workflow_dispatch).
 #
 # Self-contained: clones the source via PAGES_TOKEN, deploys with a restricted SSH key
 # (PAGES_DEPLOY_KEY) whose authorized command is `rrsync -wo /srv/pages` — write-only,

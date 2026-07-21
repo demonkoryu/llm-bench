@@ -13,5 +13,10 @@ logs/
 # JetBrains IDE config
 .idea/
 
+# secrets — DB credentials for the central Postgres store (never commit)
+.env
+.env.*
+!.env.example
+
 # ephemeral top-level run summary stubs (empty results[]; raw data lives in results/runs/*/run.json)
 /results/run-*.json

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Fresh orchestrator — the model × think × bench matrix loop, emitting tidy Parquet.
+// Fresh orchestrator — the model × think × bench matrix loop, writing rows to Postgres.
 //
 // Reuses ONLY the execution/conflict layer (llamacpp-server.mjs server lifecycle,
 // client, sampling, host config) + the validated bench cases/graders (benches/*).
@@ -14,6 +14,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { readCap, upsertCap } from '../analysis/caps-cache.mjs';
+import { ensureSchema, insertRows, query } from '../analysis/pg-store.mjs';
 import { BENCHES } from '../benches/index.mjs';
 import { LOCAL_HOST, runHostCmd } from '../shared/host-exec.mjs';
 import { probeHostBuild } from '../shared/host-probe.mjs';
@@ -21,7 +22,6 @@ import { loadHostConfig } from '../shared/hosts-config.mjs';
 import { resolveSampling } from '../shared/llm/index.mjs';
 import { deriveSubjectDims, loadModelsConfig } from '../shared/models-config.mjs';
 import { metricRowsFromResult } from '../shared/tidy-schema.mjs';
-import { query, writeRunParquet } from '../shared/tidy-store.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -60,7 +60,7 @@ const chatTemplate = flags['template-name'] ?? (chatTemplatePath ? 'froggeric' :
 
 const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
 const std = (xs) => {
-   if (xs.length < 2) return null;
+   if (xs.length < 2) { return null; }
    const m = mean(xs);
    return Math.sqrt(mean(xs.map((x) => (x - m) ** 2)));
 };
@@ -72,25 +72,25 @@ async function ssh(cmd) {
 
 function thinkStatesFor(model) {
    let s = model.think === 'optional' ? [false, true] : model.think === 'required' || model.think === 'reasoning' ? [true] : [null];
-   if (flags.think === 'no_think') s = s.filter((x) => x !== true);
-   if (flags.think === 'think') s = s.filter((x) => x === true);
+   if (flags.think === 'no_think') { s = s.filter((x) => x !== true); }
+   if (flags.think === 'think') { s = s.filter((x) => x === true); }
    return s.length ? s : [null];
 }
 const thinkModeOf = (s) => (s === true ? 'think' : 'no_think');
 
 // Aggregate N sample rawRows → one rawRow with means, n, and per-primary spread.
 function aggregate(rawRows) {
-   if (rawRows.length === 1) return { ...rawRows[0], n: 1 };
+   if (rawRows.length === 1) { return { ...rawRows[0], n: 1 }; }
    const out = { bench: rawRows[0].bench, status: 'ok', n: rawRows.length, __spread: {} };
    const keys = new Set();
-   rawRows.forEach((r) => Object.keys(r).forEach((k) => keys.add(k)));
+   for (const r of rawRows) { for (const k of Object.keys(r)) { keys.add(k); } }
    for (const k of keys) {
-      if (k === 'bench' || k === 'status') continue;
+      if (k === 'bench' || k === 'status') { continue; }
       const nums = rawRows.map((r) => r[k]).filter((v) => typeof v === 'number');
       if (nums.length) {
          out[k] = mean(nums);
          const s = std(nums);
-         if (s != null) out.__spread[k] = s;
+         if (s != null) { out.__spread[k] = s; }
       }
    }
    return out;
@@ -144,13 +144,13 @@ async function main() {
       local: LOCAL,
    });
    const client = srv.client;
-   // Incremental persistence: each bench/probe result is flushed to its own part-file
-   // immediately, so a crash or kill never loses completed work (the dataset globs parts).
-   let partCounter = 0,
-      writtenTotal = 0;
+   // Incremental persistence: each bench/probe result is inserted into Postgres immediately, so
+   // a crash or kill never loses completed work (--resume re-reads what's already in the store).
+   await ensureSchema();
+   let writtenTotal = 0;
    const flush = async (rows) => {
-      if (!rows.length) return;
-      const r = await writeRunParquet(RESULTS, { host: flags.target, backend: host.backend, run_id, rows, part: partCounter++ });
+      if (!rows.length) { return; }
+      const r = await insertRows(rows);
       writtenTotal += r.rows;
    };
    const platformBase = {
@@ -169,12 +169,12 @@ async function main() {
    if (flags.resume) {
       try {
          for (const r of await query(
-            RESULTS,
             `SELECT DISTINCT gguf_file, kv_quant, chat_template, backend, gpu, llamacpp_build, bench, think_mode FROM $TIDY`,
-         ))
+         )) {
             doneSet.add(
                [r.gguf_file, r.kv_quant ?? '', r.chat_template, r.backend, r.gpu, r.llamacpp_build ?? '', r.bench, r.think_mode].join(SEP),
             );
+         }
       } catch {
          /* empty store */
       }
@@ -267,7 +267,7 @@ async function main() {
                      console.error(`  ${benchName}/${think_mode} sample ${i}: ${(e.message ?? '').slice(0, 60)}`);
                   }
                }
-               if (!runs.length) continue;
+               if (!runs.length) { continue; }
                const raw = aggregate(runs);
                const dims = {
                   ...common(run_id, subject, serving, platformBase),
@@ -325,7 +325,7 @@ async function main() {
       await restore();
    }
 
-   // manifest (lifecycle/provenance; the tidy parquet parts are the analytical source)
+   // manifest (lifecycle/provenance only; the measurement rows live in Postgres)
    const manDir = join(RESULTS, 'runs', run_id);
    mkdirSync(manDir, { recursive: true });
    writeFileSync(
@@ -350,7 +350,7 @@ async function main() {
          2,
       ),
    );
-   console.error(`\n[bench-run] wrote ${writtenTotal} tidy rows (${partCounter} parts) → run ${run_id}`);
+   console.error(`\n[bench-run] wrote ${writtenTotal} measurement rows → Postgres · run ${run_id}`);
 }
 
 function slug(s) {
@@ -365,7 +365,7 @@ function common(run_id, subject, serving, platform) {
    return { run_id, run_kind: 'benchrun', seed_run_id: null, ...subject, ...serving, ...platform };
 }
 function push(rows, raw, dims) {
-   for (const r of metricRowsFromResult(raw, dims)) rows.push(r);
+   for (const r of metricRowsFromResult(raw, dims)) { rows.push(r); }
 }
 
 main().catch((e) => {

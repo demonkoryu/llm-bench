@@ -4,11 +4,10 @@
 // queryable column. This is the clean-slate replacement for the string-encoded model
 // ids + per-run environment blobs that made cross-config comparison impossible.
 //
-// `metricRowsFromResult(rawRow, dims)` explodes today's heterogeneous per-bench result
-// object (from run.json `results[]`) into leaf rows. Used identically by the live
-// orchestrator (P4) and the historical backfill (analysis/backfill.mjs).
+// `metricRowsFromResult(rawRow, dims)` explodes a heterogeneous per-bench result object
+// into leaf rows, which the orchestrator inserts into Postgres (analysis/pg-store.mjs).
 
-// ── Column order + DuckDB types (drives tidy-store's Parquet schema) ─────────────
+// ── Column order + DuckDB types (drives the Postgres measurements table schema) ──
 export const COLUMNS = {
    // identity / provenance
    measurement_id: 'VARCHAR',
