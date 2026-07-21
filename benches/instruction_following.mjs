@@ -29,7 +29,9 @@ export const bench = {
             } catch {
                ok = false;
             }
-            if (ok) { passedChecks++; }
+            if (ok) {
+               passedChecks++;
+            }
             totalChecks++;
          }
       }

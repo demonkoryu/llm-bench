@@ -35,9 +35,13 @@ export const bench = {
             continue;
          }
          const t = client.tokPerSec();
-         if (t) { tps.push(t); }
+         if (t) {
+            tps.push(t);
+         }
          const raw = completion.choices?.[0]?.message?.content ?? '';
-         if (reasoningGrader(stripThink(raw), { vars: { case_id: caseId } }).pass) { correct++; }
+         if (reasoningGrader(stripThink(raw), { vars: { case_id: caseId } }).pass) {
+            correct++;
+         }
       }
       const total = Object.keys(REASON_CASES).length;
       return {

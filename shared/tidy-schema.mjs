@@ -169,22 +169,37 @@ const SCORE_UNIT_BY_BENCH = [
 ];
 function unitFor(bench, field) {
    if (field === 'score') {
-      for (const [re, u] of SCORE_UNIT_BY_BENCH) { if (re.test(bench)) { return u; } }
+      for (const [re, u] of SCORE_UNIT_BY_BENCH) {
+         if (re.test(bench)) {
+            return u;
+         }
+      }
       return 'score';
    }
-   if (UNIT_EXACT[field]) { return UNIT_EXACT[field]; }
-   if (/^triage_[RC]\d+$/.test(field)) { return 'ratio'; // per-rule 0..1 rubric scores
-}
-   if (/_ms$/.test(field)) { return 'ms'; }
-   if (/_tps$|_tok_s$/.test(field)) { return 'tok_s'; }
-   if (/_mib$|_vram$/.test(field)) { return 'mib'; }
+   if (UNIT_EXACT[field]) {
+      return UNIT_EXACT[field];
+   }
+   if (/^triage_[RC]\d+$/.test(field)) {
+      return 'ratio'; // per-rule 0..1 rubric scores
+   }
+   if (/_ms$/.test(field)) {
+      return 'ms';
+   }
+   if (/_tps$|_tok_s$/.test(field)) {
+      return 'tok_s';
+   }
+   if (/_mib$|_vram$/.test(field)) {
+      return 'mib';
+   }
    return 'value';
 }
 
 const isNumeric = (v) => typeof v === 'number' && Number.isFinite(v);
 // run.json uses '-' / '?' / '' for "not measured". Coerce numeric strings, reject sentinels.
 function numOrNull(v) {
-   if (isNumeric(v)) { return v; }
+   if (isNumeric(v)) {
+      return v;
+   }
    if (typeof v === 'string' && v.trim() !== '' && v !== '-' && v !== '?') {
       const n = Number(v);
       return Number.isFinite(n) ? n : null;
@@ -215,10 +230,16 @@ export function metricRowsFromResult(rawRow, dims) {
    const think_mode = dims.think_mode ?? rawRow.think ?? null;
    const out = [];
    for (const [field, raw] of Object.entries(rawRow)) {
-      if (SPINE.has(field)) { continue; }
-      if (CARRIED.has(field) && !ownsCarried(bench)) { continue; }
+      if (SPINE.has(field)) {
+         continue;
+      }
+      if (CARRIED.has(field) && !ownsCarried(bench)) {
+         continue;
+      }
       const value = numOrNull(raw);
-      if (value === null) { continue; }
+      if (value === null) {
+         continue;
+      }
       const metric = field; // leaf = the raw field; composites are derived at scoring time
       const unit = unitFor(bench, field);
       const base = {
@@ -247,11 +268,15 @@ export function metricRowsFromResult(rawRow, dims) {
          spread: rawRow.__spread?.[field] ?? rawRow.spread ?? null,
          status: rawRow.status ?? 'ok',
       };
-      for (const d of DIM_COLUMNS) { base[d] = dims[d] ?? null; }
+      for (const d of DIM_COLUMNS) {
+         base[d] = dims[d] ?? null;
+      }
       base.think_mode = think_mode;
       // ensure full column set / column order
       const row = {};
-      for (const c of COLUMN_NAMES) { row[c] = base[c] ?? null; }
+      for (const c of COLUMN_NAMES) {
+         row[c] = base[c] ?? null;
+      }
       out.push(row);
    }
    return out;

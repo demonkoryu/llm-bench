@@ -33,7 +33,9 @@ export const bench = {
             continue;
          }
          const calls = completion.choices?.[0]?.message?.tool_calls ?? [];
-         if (toolGrader(JSON.stringify(calls), { vars: { case_id: caseId } }).pass) { pass++; }
+         if (toolGrader(JSON.stringify(calls), { vars: { case_id: caseId } }).pass) {
+            pass++;
+         }
       }
       return { bench: 'toolcalling', toolcall_pass: pass, toolcall_total: Object.keys(TOOL_CASES).length, status: 'ok' };
    },

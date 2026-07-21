@@ -45,7 +45,9 @@ export const bench = {
       }
       const cold = median(colds),
          warm = median(warms);
-      if (cold == null || warm == null) { return []; }
+      if (cold == null || warm == null) {
+         return [];
+      }
       return [
          { bench: 'prefix_cache_cold_ms', score: cold, status: 'ok' },
          { bench: 'prefix_cache_warm_ms', score: warm, status: 'ok' },

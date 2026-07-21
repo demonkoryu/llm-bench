@@ -48,11 +48,14 @@ const SYS = 'You output only valid JSON. No prose, no markdown fences — just t
 function extractJson(text) {
    const s = String(text).replace(/```(json)?/gi, '');
    const start = s.indexOf('{');
-   if (start < 0) { return null; }
+   if (start < 0) {
+      return null;
+   }
    let depth = 0;
    for (let i = start; i < s.length; i++) {
-      if (s[i] === '{') { depth++; }
-      else if (s[i] === '}' && --depth === 0) {
+      if (s[i] === '{') {
+         depth++;
+      } else if (s[i] === '}' && --depth === 0) {
          try {
             return JSON.parse(s.slice(start, i + 1));
          } catch {
@@ -89,7 +92,9 @@ export const bench = {
          const obj = extractJson(text);
          if (obj) {
             parseOk++;
-            if (Object.entries(t.req).every(([k, ty]) => k in obj && isType(obj[k], ty))) { schemaOk++; }
+            if (Object.entries(t.req).every(([k, ty]) => k in obj && isType(obj[k], ty))) {
+               schemaOk++;
+            }
          }
       }
       return { bench: 'struct_output', score: (schemaOk / TASKS.length) * 100, json_fail: TASKS.length - parseOk, status: 'ok' };

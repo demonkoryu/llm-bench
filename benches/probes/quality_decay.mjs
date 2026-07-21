@@ -49,13 +49,19 @@ export const bench = {
             } catch {
                continue;
             }
-            if (res.timings?.prompt_ms) { ttfts.push(res.timings.prompt_ms); }
+            if (res.timings?.prompt_ms) {
+               ttfts.push(res.timings.prompt_ms);
+            }
             n++;
             const msg = res.completion?.choices?.[0]?.message ?? {};
-            if (answersWith(`${msg.content ?? ''} ${msg.reasoning_content ?? ''}`, built.expectedAnswer)) { correct++; }
+            if (answersWith(`${msg.content ?? ''} ${msg.reasoning_content ?? ''}`, built.expectedAnswer)) {
+               correct++;
+            }
          }
          const k = Math.round(d / 1024);
-         if (n) { rows.push({ bench: `quality_decay-${k}k`, score: (correct / n) * 100, status: 'ok' }); }
+         if (n) {
+            rows.push({ bench: `quality_decay-${k}k`, score: (correct / n) * 100, status: 'ok' });
+         }
          if (ttfts.length) {
             rows.push({ bench: `ttft-${k}k`, score: ttfts.sort((a, b) => a - b)[Math.floor(ttfts.length / 2)], status: 'ok' });
          }

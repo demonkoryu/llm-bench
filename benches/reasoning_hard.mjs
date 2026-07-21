@@ -36,7 +36,9 @@ export const bench = {
             continue;
          }
          const raw = completion.choices?.[0]?.message?.content ?? '';
-         if (reasoningGrader(stripThink(raw), { vars: { case_id: caseId } }).pass) { correct++; }
+         if (reasoningGrader(stripThink(raw), { vars: { case_id: caseId } }).pass) {
+            correct++;
+         }
       }
       return {
          bench: 'reasoning_hard',
