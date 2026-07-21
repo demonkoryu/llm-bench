@@ -236,7 +236,10 @@ async function main() {
             n_parallel: ef.parallel ?? 1,
             batch: ef['batch-size'] ?? null,
             ubatch: ef['ubatch-size'] ?? null,
-            spec_decode: ef['spec-type'] ?? null,
+            // spec_decode: llama.cpp draft flag, else a model-declared override. The MLX entry sets
+            // `spec_decode: mtp` (omlx native multi-token prediction, enabled via model_settings.json
+            // on the Mac) so its rows record that decode was MTP-accelerated.
+            spec_decode: ef['spec-type'] ?? m.spec_decode ?? null,
          };
          const capKeyFields = {
             gguf_file: subject.gguf_file,
