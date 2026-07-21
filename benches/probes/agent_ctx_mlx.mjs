@@ -28,10 +28,15 @@ const round4k = (n) => Math.max(4096, Math.round(n / 4096) * 4096);
 
 // Per-request timeout scales with the TOTAL concurrent token load: under N-way concurrency the
 // device is shared, so each request's wall time tracks the aggregate prefill, not just its own
-// depth. Pessimistic ~150 tok/s shared prefill on M1; floor 5 min, cap 45 min so a hang still ends.
+// depth. On a memory-tight Mac (18 GB model in 32 GB) omlx's memory guard THROTTLES prefill hard
+// once KV nears the soft ceiling — measured ~30-65 tok/s, far below an unconstrained GPU. So the
+// estimate is deliberately pessimistic (~25 tok/s) with a generous 15-min floor and 45-min cap:
+// under-timing here aborts a slow-but-fine request mid-prefill (surfaces as a fetch "Body is
+// unusable" error) and false-fails the depth. A genuine over-capacity request either errors from
+// omlx or is caught by the cap.
 function fillTimeoutMs(totalTokens) {
-   const est = Math.round((totalTokens / 150) * 1000);
-   return Math.min(2_700_000, Math.max(300_000, est));
+   const est = Math.round((totalTokens / 25) * 1000);
+   return Math.min(2_700_000, Math.max(900_000, est));
 }
 
 // Fire one code-needle request per slot concurrently; return per-slot {ok, err}. Each slot gets a
