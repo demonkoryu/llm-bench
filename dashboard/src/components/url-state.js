@@ -8,7 +8,8 @@
 // default, keeping shared URLs minimal.
 import * as Inputs from 'npm:@observablehq/inputs';
 import { facetForm } from './facets.js';
-import { facetsEmpty, resolveInitial, sanitizeFacets, writeParam } from './url-params.js';
+import { facetsEmpty, resolveInitial, sanitizeFacets, sanitizeWeights, weightsEqual, writeParam } from './url-params.js';
+import { weightForm } from './weights.js';
 
 /**
  * Build an Observable input whose value is mirrored to the URL query param `key`.
@@ -49,5 +50,19 @@ export function linkedFacets(fv, dims) {
       decode: (s) => sanitizeFacets(JSON.parse(s), fv, dims),
       encode: (v) => JSON.stringify(v),
       isDefault: facetsEmpty,
+   });
+}
+
+/**
+ * URL-backed weight panel (key 'w'). Value is { dimKey: weight }; encoded as JSON (only weights > 0).
+ * `dims` is the X_DIMS list (each { key, label }); `defaults` is the initial weight map.
+ */
+export function linkedWeights(dims, defaults) {
+   const keys = dims.map((d) => d.key);
+   return linked('w', (init) => weightForm(dims, init), {
+      fallback: defaults,
+      decode: (s) => sanitizeWeights(JSON.parse(s), keys),
+      encode: (v) => JSON.stringify(sanitizeWeights(v, keys)),
+      isDefault: (v) => weightsEqual(v, defaults),
    });
 }

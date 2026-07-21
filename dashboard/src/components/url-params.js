@@ -48,3 +48,19 @@ export function sanitizeFacets(obj, fv, dims) {
 
 /** A facet selection is "default" (→ no URL param) when every dimension is unselected. */
 export const facetsEmpty = (v) => !v || Object.values(v).every((a) => !a?.length);
+
+/** Weight map { dimKey: weight } keeping only known keys with a finite weight > 0 (0 = excluded). */
+export function sanitizeWeights(obj, keys) {
+   const out = {};
+   for (const k of keys) {
+      const w = obj?.[k];
+      if (typeof w === 'number' && Number.isFinite(w) && w > 0) { out[k] = w; }
+   }
+   return out;
+}
+
+/** Two weight maps are equal ignoring zero/absent entries (order-independent). */
+export const weightsEqual = (a, b) => {
+   const norm = (w) => JSON.stringify(Object.entries(w || {}).filter(([, v]) => v > 0).sort());
+   return norm(a) === norm(b);
+};

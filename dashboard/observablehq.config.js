@@ -27,6 +27,7 @@ export default {
    pages: [
       { name: 'Leaderboard', path: '/' },
       { name: 'Pareto frontier', path: '/pareto' },
+      { name: 'Compromise', path: '/compromise' },
       { name: 'Pivot', path: '/pivot' },
       { name: 'Coverage', path: '/coverage' },
    ],
