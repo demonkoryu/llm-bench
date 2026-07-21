@@ -167,17 +167,22 @@ function wSum(pairs) {
    return W ? sum(p.map(([v, w]) => (w / W) * v)) : null;
 }
 
+// A composite is reported ONLY when its members are fully present. A missing bench must not be
+// treated as a perfect (neutral) score — otherwise a config that only ran a subset inflates to the
+// top of the board (e.g. a 4B model at capability 100 because it only ran toolcalling). So an
+// incomplete comprehension or coding is null → capability is null → the config shows "—" and ranks
+// last, instead of #1. Fully-covered configs are unaffected (identical scores to before).
 function capability(e, dials) {
-   const cw = dials.comprehension.weights,
-      comp = wGeomean(GROUPS.comprehension.members.map((m) => [e.norm[m], cw[m] ?? 0]));
-   const gates = geomean(GROUPS.coding.gates.map((m) => e.norm[m]).filter((v) => v != null)); // absent gate = neutral (skipped)
+   const cw = dials.comprehension.weights;
+   const compMembers = GROUPS.comprehension.members.filter((m) => (cw[m] ?? 0) > 0);
+   const comp = compMembers.every((m) => e.norm[m] != null) ? wGeomean(compMembers.map((m) => [e.norm[m], cw[m]])) : null;
+
    const competence = e.norm.coding_grade;
-   const coding = gates == null && competence == null ? null : (gates ?? 1) * (competence ?? 1);
-   const cS = dials.comprehension.strength,
-      kS = dials.coding.strength;
-   const compTerm = comp == null ? 1 : comp ** cS;
-   const codeTerm = coding == null ? 1 : coding ** kS;
-   const cap = comp == null && coding == null ? null : compTerm * codeTerm;
+   const gatesComplete = GROUPS.coding.gates.every((m) => e.norm[m] != null);
+   const gates = gatesComplete ? geomean(GROUPS.coding.gates.map((m) => e.norm[m])) : null;
+   const coding = gates == null || competence == null ? null : gates * competence;
+
+   const cap = comp == null || coding == null ? null : comp ** dials.comprehension.strength * coding ** dials.coding.strength;
    return { comprehension: comp, coding, capability: cap == null ? null : cap * 100 };
 }
 function speed(e, dials) {
