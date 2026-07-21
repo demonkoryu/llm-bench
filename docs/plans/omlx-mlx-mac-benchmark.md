@@ -234,6 +234,34 @@ triage pair actually differs (the template reads `enable_thinking`). If MLX/omlx
 standalone `.jinja` file, fall back to embedding the template string into the model's
 `tokenizer_config.json` `chat_template` field, then kickstart again.
 
+### B3b. Enable quantized KV (omlx TurboQuant 4-bit) — matches the `kv_quant: tq4` tag
+omlx serves **f16 KV by default** and has no serve-flag to change it, but it supports per-model
+**TurboQuant KV compression** via `~/.omlx/model_settings.json`. On a 32 GB Mac the 18 GB model
+leaves too little for an f16 KV pool (the first `agent_ctx` run got 1×32k planner + **0** coders,
+memory-throttled), so we quantize the KV to 4-bit (~4× smaller). The models.yaml entry tags these
+rows `kv_quant: tq4`; this file is what actually makes it true (keep them in sync, like the
+template drop-in). Write it, then restart omlx:
+```bash
+cat > ~/.omlx/model_settings.json <<'JSON'
+{
+  "version": 1,
+  "models": {
+    "Qwen3.6-27B-5bit": {
+      "turboquant_kv_enabled": true,
+      "turboquant_kv_bits": 4,
+      "turboquant_skip_last": true
+    }
+  }
+}
+JSON
+sudo launchctl kickstart -k system/com.omlx.server
+```
+Fields (from `omlx/model_settings.py`): `turboquant_kv_bits` ∈ {2, 2.5, 3, 3.5, 4, 6, 8};
+`turboquant_skip_last` (default true) skips the last KV layer to avoid corruption on sensitive
+models. **Verify**: after restart, `~/.omlx/server.err` should show much lower prefill memory at a
+given depth (no "process memory limit exceeded" at 2×32k), and a quick needle request must still
+cohere (quantized KV must not corrupt output). Lower bits (3/2) free more RAM at some quality risk.
+
 ### B4. Run (parallel to the rose bench)
 ```bash
 MLX_URL=http://127.0.0.1:8000 node runners/bench-run.mjs \

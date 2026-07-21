@@ -220,7 +220,11 @@ async function main() {
       for (const m of models) {
          const subject = deriveSubjectDims(m);
          const ef = typeof m.extra_flags === 'object' ? m.extra_flags : {};
-         const kv_quant = m.variant?.replace(/^kv/, '') ?? ef['cache-type-k'] ?? null;
+         // KV-quant tag: kv-variant tag, else a llama.cpp cache-type flag, else a model-declared
+         // override. The override is how a non-llama.cpp engine records its KV precision — the MLX
+         // entry sets `kv_quant: tq4` (omlx TurboQuant 4-bit, configured in ~/.omlx/model_settings.json
+         // on the Mac) so its rows are a distinct config from the default f16-KV MLX rows.
+         const kv_quant = m.variant?.replace(/^kv/, '') ?? ef['cache-type-k'] ?? m.kv_quant ?? null;
          // Per-model chat template: a model may pin one (the MLX entry pins `froggeric`, applied
          // server-side via omlx's on-disk chat_template.jinja). Falls back to the run-wide flag.
          const modelTemplate = m.chat_template ?? chatTemplate;

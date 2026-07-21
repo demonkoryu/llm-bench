@@ -248,11 +248,17 @@ models:
    # and the gguf_file column stay populated. Fixed Qwen chat template (froggeric) is applied
    # server-side by dropping chat_template.jinja into omlx's model dir (see the llm1 runbook);
    # `chat_template: froggeric` tags the rows to match the rose froggeric runs.
+   # KV quant: omlx serves f16 KV by default (no serve flag). We enable omlx TurboQuant KV
+   # compression at 4-bit via ~/.omlx/model_settings.json on the Mac (turboquant_kv_enabled:true,
+   # turboquant_kv_bits:4) — ~4× smaller KV than f16, which the 18 GB model needs to fit context
+   # in 32 GB unified RAM. `kv_quant: tq4` TAGS these rows as that distinct config (the Mac-side
+   # model_settings.json must match — like the chat_template drop-in). Omit it → default f16 KV.
    - hf_repo: mlx-community/Qwen3.6-27B-5bit
      hf_file: Qwen3.6-27B-5bit          # synthetic base id (no .gguf) → gguf_file column + modelBaseId
      engine: omlx                        # routes to omlx; excluded from llama.cpp/rose runs
      mlx_model: Qwen3.6-27B-5bit         # omlx request id (leaf folder name)
      chat_template: froggeric            # fixed Qwen template (dropped into the model dir on the Mac)
+     kv_quant: tq4                       # omlx TurboQuant 4-bit KV (set in ~/.omlx/model_settings.json)
      label: "Qwen3.6-27B 5bit (MLX)"
      family: qwen3.6
      type: dense
