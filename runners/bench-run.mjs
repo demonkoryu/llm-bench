@@ -163,17 +163,17 @@ async function main() {
    };
 
    // Resume: skip (config × bench × think) combos already in the store (incl. from prior
-   // runs / a crashed partial). Keyed on the full identity so a different build re-measures.
+   // runs / a crashed partial). Build-AGNOSTIC: scoring merges across llamacpp_build (build is not
+   // an entity dim), so a combo measured under ANY build counts as done — --resume fills genuine
+   // gaps without re-measuring the whole matrix after a llama.cpp upgrade.
    const SEP = '␟';
    const doneSet = new Set();
    if (flags.resume) {
       try {
          for (const r of await query(
-            `SELECT DISTINCT gguf_file, kv_quant, chat_template, backend, gpu, llamacpp_build, bench, think_mode FROM $TIDY`,
+            `SELECT DISTINCT gguf_file, kv_quant, chat_template, backend, gpu, bench, think_mode FROM $TIDY`,
          )) {
-            doneSet.add(
-               [r.gguf_file, r.kv_quant ?? '', r.chat_template, r.backend, r.gpu, r.llamacpp_build ?? '', r.bench, r.think_mode].join(SEP),
-            );
+            doneSet.add([r.gguf_file, r.kv_quant ?? '', r.chat_template, r.backend, r.gpu, r.bench, r.think_mode].join(SEP));
          }
       } catch {
          /* empty store */
@@ -182,9 +182,7 @@ async function main() {
    }
    const needed = (subject, kv_quant, bench, think_mode) =>
       !flags.resume ||
-      !doneSet.has(
-         [subject.gguf_file, kv_quant ?? '', chatTemplate, host.backend, host.gpu, llamacpp_build ?? '', bench, think_mode].join(SEP),
-      );
+      !doneSet.has([subject.gguf_file, kv_quant ?? '', chatTemplate, host.backend, host.gpu, bench, think_mode].join(SEP));
 
    try {
       for (const m of models) {
