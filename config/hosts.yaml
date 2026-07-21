@@ -29,9 +29,12 @@ rose:
 
 m1:
    label: "M1 Mac (32 GB unified)"
-   gpu: "M1"
-   llamacpp: null                    # no llama.cpp on M1; MLX runner only (not yet implemented)
-   ssh_host: "${SSH_HOST_M1:-m1}"
-   port: 8080
+   gpu: "M1"                                   # recorded as the `gpu` dim
+   engine: omlx                                # selects the omlx (MLX) server factory (vs llamacpp)
+   backend: mlx                                # recorded in the `backend` column
+   mlx: "${MLX_URL:-http://127.0.0.1:8000}"    # omlx OpenAI-compatible endpoint (LAN: http://192.168.1.150:8000)
+   ssh_host: "${SSH_HOST_M1:-llm1}"
+   port: 8000
    backends: {}
-   vram_cmd: "sudo powermetrics --samplers gpu_power -n 1 2>/dev/null | grep 'GPU HW'"
+   # Unified memory — no VRAM/GTT split, no rocm-smi. The MLX agent_ctx probe is
+   # coherence/success-gated (client-driven), so no vram_cmd is needed here.

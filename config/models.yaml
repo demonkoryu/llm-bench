@@ -241,6 +241,35 @@ models:
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
      kv_variants: [q5_0, q4_0]
 
+   # ── Qwen3.6-27B 5bit (MLX / omlx on the M1 Mac) ──────────────────────────────
+   # Served by omlx (NOT llama.cpp): `engine: omlx` routes it to runners/omlx-server.mjs
+   # and keeps it OUT of every rose/llama.cpp run (bench-run engine filter) — it only runs
+   # when `--target m1`. No GGUF: hf_file is a synthetic base id (no `.gguf`) so modelBaseId
+   # and the gguf_file column stay populated. Fixed Qwen chat template (froggeric) is applied
+   # server-side by dropping chat_template.jinja into omlx's model dir (see the llm1 runbook);
+   # `chat_template: froggeric` tags the rows to match the rose froggeric runs.
+   - hf_repo: mlx-community/Qwen3.6-27B-5bit
+     hf_file: Qwen3.6-27B-5bit          # synthetic base id (no .gguf) → gguf_file column + modelBaseId
+     engine: omlx                        # routes to omlx; excluded from llama.cpp/rose runs
+     mlx_model: Qwen3.6-27B-5bit         # omlx request id (leaf folder name)
+     chat_template: froggeric            # fixed Qwen template (dropped into the model dir on the Mac)
+     label: "Qwen3.6-27B 5bit (MLX)"
+     family: qwen3.6
+     type: dense
+     arch: gated-delta-dense
+     quant: "MLX-5bit"                   # override — the GGUF quant regex won't match "5bit"
+     effective_bpw: 5.0                  # override
+     total_params: 27
+     active_params: 27
+     think: optional
+     think_control: enable_thinking      # omlx supports chat_template_kwargs natively (verify honored)
+     tools: true
+     native_max_ctx: 262144
+     ctx_cap: 32768
+     kv_variants: []                     # do NOT fan out KV-quant variants (llama.cpp-only concept)
+     extra_flags: { batch-size: null, ubatch-size: null }   # neutralize llama.cpp batch defaults on MLX rows
+     benches: [agent_ctx, triage, reasoning, toolcalling, summarization, docqa]
+
    # ── Gemma4-E4B ───────────────────────────────────────────────────────────────
    # Hybrid: runs both nothi and think passes.
    # Google unified sampling: same params for ALL tasks and both think states.

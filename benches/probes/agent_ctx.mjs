@@ -26,6 +26,7 @@
 
 import { extraFlagsToString } from '../../runners/llamacpp-server.mjs';
 import { makeFillPrompt } from '../../shared/codebase.mjs';
+import { runMlx } from './agent_ctx_mlx.mjs';
 
 // Agent profile (mirrors the fleet dials in analysis/scoring-config.mjs: worker_ctx=65536,
 // ctx_tier=100000). Both are capped per-config at the model's coherent window.
@@ -98,180 +99,190 @@ async function runSlots(client, sizes, { think, thinkControl }) {
    return Promise.all(reqs);
 }
 
+// llama.cpp / amdgpu implementation — reloads llama-server across a shared-KV-pool sweep and
+// gates on rocm-smi VRAM+GTT spill. Selected for llama.cpp hosts (engine unset/llamacpp).
+async function runLlamacpp({ srv, client, model, caps }) {
+   const think = model.think === 'optional' ? false : null;
+   const thinkControl = model.think_control ?? 'enable_thinking';
+
+   // Per-sequence coherent window: reuse the measured ceiling if present, else the yaml
+   // caps. Planner/coder targets can never exceed it (RoPE breaks past the trained window).
+   const coherentWindow = caps?.coherence_ceiling ?? model.ctx_cap ?? model.native_max_ctx ?? PLANNER_TARGET;
+   const plannerCtx = round4k(Math.min(PLANNER_TARGET, coherentWindow));
+   const coderCtx = round4k(Math.min(CODER_TARGET, coherentWindow));
+
+   const kvQuant = model.variant?.replace(/^kv/, '') ?? model.extra_flags?.['cache-type-k'] ?? 'q8_0';
+   const kvBytesPerTok = (caps?.kv_bytes_per_token ?? model.kv_bytes_per_token ?? 24576) * (KV_QUANT_RATIO[kvQuant] ?? 1.0);
+
+   const fail = (notes) => [
+      {
+         bench: 'agent_ctx',
+         score: 0,
+         n_slots: 1,
+         n_coders: 0,
+         total_ctx: plannerCtx,
+         planner_ctx: plannerCtx,
+         coder_ctx: coderCtx,
+         verified: 0,
+         status: 'skip',
+         notes,
+      },
+   ];
+
+   // ── Phase 1a: load a single planner slot, measure the footprint (VRAM + GTT) ──────
+   await srv.killAll();
+   await srv.waitVramClear(30_000);
+   try {
+      await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx: plannerCtx, extraFlags: probeExtraFlags(model, 1) });
+      await srv.waitHealthy(360_000);
+   } catch (e) {
+      return fail(`planner load failed at ${plannerCtx}: ${(e.message ?? '').slice(0, 60)}`);
+   }
+   const memPlanner = await srv.snapshotMem();
+   const footPlanner = memPlanner.vram != null && memPlanner.gtt != null ? memPlanner.vram + memPlanner.gtt : null;
+   // Confirm the planner slot alone coheres at depth (sanity — also the deepest single fill).
+   const [plannerProbe] = await runSlots(client, [plannerCtx], { think, thinkControl });
+   console.log(
+      `  [agent_ctx] planner ${plannerCtx / 1024}k: ${plannerProbe.ok ? '✓' : '✗'} coherent  footprint=${footPlanner ?? '?'}MiB (v=${memPlanner.vram ?? '?'} g=${memPlanner.gtt ?? '?'})`,
+   );
+
+   // ── Phase 1b: estimate a STARTING coder count (only a hint; the search below is empirical) ─
+   // weights ≈ footprint(planner) − KV(planner); the rest of the card holds more KV pool. Just
+   // picks where the search starts — the down/up loop finds the true boundary regardless of
+   // estimate error (kv_bytes_per_token is often a rough yaml guess).
+   const weightsMib = footPlanner != null ? Math.max(0, footPlanner - kib(plannerCtx, kvBytesPerTok)) : null;
+   const kvBudgetMib = CARD_TOTAL_MIB - EST_COMPUTE_RESERVE_MIB - (weightsMib ?? CARD_TOTAL_MIB);
+   const poolTokens = weightsMib != null ? Math.floor((kvBudgetMib * 1024 * 1024) / kvBytesPerTok) : plannerCtx;
+   const nCodersEst = Math.max(0, Math.floor((poolTokens - plannerCtx) / coderCtx));
+   console.log(
+      `  [agent_ctx] kv≈${Math.round(kvBytesPerTok)}B/tok (${kvQuant})  weights≈${weightsMib ?? '?'}MiB  → est ${nCodersEst} coders`,
+   );
+
+   // loadAndCheck(nCoders, {fill}): load a TIGHT shared pool `-c (planner + nCoders·coder)
+   // --kv-unified -np (1+nCoders)`. The KV is PREALLOCATED at load, and critically amdgpu does
+   // NOT OOM when it overflows VRAM — it SPILLS the excess into GTT (system RAM). So the "fits in
+   // VRAM" signal is the TOTAL footprint (VRAM + GTT) ≤ card, since a fitting model still parks
+   // ~1 GB on GTT. A config over that runs partly PCIe-bound on system RAM (still loads/coheres),
+   // so without this check the search would over-count coders that don't truly fit.
+   const loadAndCheck = async (nCoders, { fill }) => {
+      const nSlots = 1 + nCoders;
+      const T = plannerCtx + nCoders * coderCtx;
+      const sizes = [plannerCtx, ...Array.from({ length: nCoders }, () => coderCtx)];
+      const shaped = (extra) => ({
+         total_ctx: T,
+         planner_ctx: plannerCtx,
+         coder_ctx: coderCtx,
+         n_coders: nCoders,
+         n_slots: nSlots,
+         ...extra,
+      });
+
+      await srv.killAll();
+      await srv.waitVramClear(30_000);
+      try {
+         await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx: T, extraFlags: probeExtraFlags(model, nSlots) });
+         await srv.waitHealthy(360_000);
+      } catch {
+         const crashed = await srv.hasCrashed();
+         console.log(
+            `  [agent_ctx] ${nCoders} coders (pool ${(T / 1024).toFixed(0)}k, np=${nSlots}) — load failed (${crashed ? 'OOM/crash' : 'timeout'})`,
+         );
+         return shaped({ servable: false, vram_mib: null, gtt_mib: null, coherent_slots: 0 });
+      }
+
+      const mem = await srv.snapshotMem(); // idle: weights + preallocated KV(T) — clean & monotonic
+      const total = mem.vram != null && mem.gtt != null ? mem.vram + mem.gtt : null;
+      // amdgpu parks a fixed ~1 GB on GTT even for a model that fits, so the gate is the TOTAL
+      // footprint (VRAM + GTT) fitting the card's VRAM — NOT gtt≈0. total > card ⇒ the config
+      // genuinely exceeds VRAM and the overflow runs PCIe-bound on system RAM. VRAM+GTT is clean
+      // and monotonic in the pool size (measured), so this boundary is deterministic.
+      const fits = total != null && total <= CARD_TOTAL_MIB;
+      let coherent = 0;
+      if (fill && fits) {
+         const results = await runSlots(client, sizes, { think, thinkControl });
+         coherent = results.filter((r) => r.ok).length;
+      }
+      console.log(
+         `  [agent_ctx] 1 planner@${plannerCtx / 1024}k + ${nCoders} coders@${coderCtx / 1024}k (pool ${(T / 1024).toFixed(0)}k)${fill ? `  → ${coherent}/${nSlots} coherent` : ''}  vram+gtt=${total ?? '?'}MiB (v=${mem.vram ?? '?'} g=${mem.gtt ?? '?'})  ${fits ? 'FITS' : 'SPILL→RAM'}`,
+      );
+      return shaped({ servable: fits, vram_mib: mem.vram, gtt_mib: mem.gtt, coherent_slots: coherent });
+   };
+
+   // ── Phase 2: bidirectional boundary search over the coder COUNT (load-only footprint gate) ──
+   // Descend from the estimate until a plan FITS (VRAM+GTT ≤ card), then ascend (+1 coder) while
+   // it still fits. Load-only (no fill) suffices because the KV is preallocated at load, so the
+   // idle footprint is the deterministic gate — each rung is just a fast load.
+   let best = null;
+   let loads = 0;
+   let k = nCodersEst;
+   while (k >= 0 && loads < MAX_LOADS) {
+      const r = await loadAndCheck(k, { fill: false });
+      loads++;
+      if (r.servable) {
+         best = r;
+         break;
+      }
+      k -= 1; // footprint exceeds VRAM → drop one coder
+   }
+   while (best && loads < MAX_LOADS) {
+      const r = await loadAndCheck(best.n_coders + 1, { fill: false });
+      loads++;
+      if (!r.servable) {
+         break; // one more coder exceeds VRAM → the last fitting plan is the answer
+      }
+      best = r;
+   }
+
+   // ── Phase 3: verify the winning plan WITH a concurrent fill (coherence) ────────────────────
+   // The capacity gate is the idle footprint above; this fill just records how many slots
+   // actually retrieve their own needle at depth (coherent_slots).
+   if (best) {
+      const v = await loadAndCheck(best.n_coders, { fill: true });
+      loads++;
+      if (v.servable) {
+         best = v;
+      }
+   }
+
+   await srv.stopServer().catch(() => {});
+   await srv.waitVramClear(20_000).catch(() => {});
+
+   if (!best || !best.servable) {
+      return fail(`no VRAM-resident plan ≥ planner ${plannerCtx / 1024}k (spills to system RAM)`);
+   }
+   const fullyCoherent = best.coherent_slots === best.n_slots;
+   console.log(
+      `  [agent_ctx] RESULT: 1×${best.planner_ctx / 1024}k planner + ${best.n_coders}×${best.coder_ctx / 1024}k coders  (pool ${(best.total_ctx / 1024).toFixed(0)}k, ${best.coherent_slots}/${best.n_slots} coherent, vram ${best.vram_mib ?? '?'}MiB)`,
+   );
+   return [
+      {
+         bench: 'agent_ctx',
+         score: best.n_coders, // headline: coder agents supported alongside the planner
+         n_slots: best.n_slots,
+         n_coders: best.n_coders,
+         coherent_slots: best.coherent_slots,
+         total_ctx: best.total_ctx,
+         planner_ctx: best.planner_ctx,
+         coder_ctx: best.coder_ctx,
+         vram_mib: best.vram_mib,
+         gtt_mib: best.gtt_mib,
+         verified: fullyCoherent ? 1 : 0,
+         status: 'ok',
+         notes: `1x${best.planner_ctx / 1024}k+${best.n_coders}x${best.coder_ctx / 1024}k kvunified ${kvQuant} ${best.coherent_slots}/${best.n_slots}coh`,
+      },
+   ];
+}
+
+// Single registry entry, dispatched by host engine: the omlx (MLX) host gets the client-driven
+// probe (agent_ctx_mlx.mjs), every other host keeps the exact current llama.cpp behavior. Same
+// `agent_ctx` name + row shape, so scoring/dashboard are unchanged. selfManagesServer stays true:
+// the omlx path needs no lifecycle (it just selects the served model + GET /v1/models at its start).
 export const bench = {
    name: 'agent_ctx',
    kind: 'probe',
    thinkDependent: false,
    selfManagesServer: true,
-   async run({ srv, client, model, caps }) {
-      const think = model.think === 'optional' ? false : null;
-      const thinkControl = model.think_control ?? 'enable_thinking';
-
-      // Per-sequence coherent window: reuse the measured ceiling if present, else the yaml
-      // caps. Planner/coder targets can never exceed it (RoPE breaks past the trained window).
-      const coherentWindow = caps?.coherence_ceiling ?? model.ctx_cap ?? model.native_max_ctx ?? PLANNER_TARGET;
-      const plannerCtx = round4k(Math.min(PLANNER_TARGET, coherentWindow));
-      const coderCtx = round4k(Math.min(CODER_TARGET, coherentWindow));
-
-      const kvQuant = model.variant?.replace(/^kv/, '') ?? model.extra_flags?.['cache-type-k'] ?? 'q8_0';
-      const kvBytesPerTok = (caps?.kv_bytes_per_token ?? model.kv_bytes_per_token ?? 24576) * (KV_QUANT_RATIO[kvQuant] ?? 1.0);
-
-      const fail = (notes) => [
-         {
-            bench: 'agent_ctx',
-            score: 0,
-            n_slots: 1,
-            n_coders: 0,
-            total_ctx: plannerCtx,
-            planner_ctx: plannerCtx,
-            coder_ctx: coderCtx,
-            verified: 0,
-            status: 'skip',
-            notes,
-         },
-      ];
-
-      // ── Phase 1a: load a single planner slot, measure the footprint (VRAM + GTT) ──────
-      await srv.killAll();
-      await srv.waitVramClear(30_000);
-      try {
-         await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx: plannerCtx, extraFlags: probeExtraFlags(model, 1) });
-         await srv.waitHealthy(360_000);
-      } catch (e) {
-         return fail(`planner load failed at ${plannerCtx}: ${(e.message ?? '').slice(0, 60)}`);
-      }
-      const memPlanner = await srv.snapshotMem();
-      const footPlanner = memPlanner.vram != null && memPlanner.gtt != null ? memPlanner.vram + memPlanner.gtt : null;
-      // Confirm the planner slot alone coheres at depth (sanity — also the deepest single fill).
-      const [plannerProbe] = await runSlots(client, [plannerCtx], { think, thinkControl });
-      console.log(
-         `  [agent_ctx] planner ${plannerCtx / 1024}k: ${plannerProbe.ok ? '✓' : '✗'} coherent  footprint=${footPlanner ?? '?'}MiB (v=${memPlanner.vram ?? '?'} g=${memPlanner.gtt ?? '?'})`,
-      );
-
-      // ── Phase 1b: estimate a STARTING coder count (only a hint; the search below is empirical) ─
-      // weights ≈ footprint(planner) − KV(planner); the rest of the card holds more KV pool. Just
-      // picks where the search starts — the down/up loop finds the true boundary regardless of
-      // estimate error (kv_bytes_per_token is often a rough yaml guess).
-      const weightsMib = footPlanner != null ? Math.max(0, footPlanner - kib(plannerCtx, kvBytesPerTok)) : null;
-      const kvBudgetMib = CARD_TOTAL_MIB - EST_COMPUTE_RESERVE_MIB - (weightsMib ?? CARD_TOTAL_MIB);
-      const poolTokens = weightsMib != null ? Math.floor((kvBudgetMib * 1024 * 1024) / kvBytesPerTok) : plannerCtx;
-      const nCodersEst = Math.max(0, Math.floor((poolTokens - plannerCtx) / coderCtx));
-      console.log(
-         `  [agent_ctx] kv≈${Math.round(kvBytesPerTok)}B/tok (${kvQuant})  weights≈${weightsMib ?? '?'}MiB  → est ${nCodersEst} coders`,
-      );
-
-      // loadAndCheck(nCoders, {fill}): load a TIGHT shared pool `-c (planner + nCoders·coder)
-      // --kv-unified -np (1+nCoders)`. The KV is PREALLOCATED at load, and critically amdgpu does
-      // NOT OOM when it overflows VRAM — it SPILLS the excess into GTT (system RAM). So the "fits in
-      // VRAM" signal is the TOTAL footprint (VRAM + GTT) ≤ card, since a fitting model still parks
-      // ~1 GB on GTT. A config over that runs partly PCIe-bound on system RAM (still loads/coheres),
-      // so without this check the search would over-count coders that don't truly fit.
-      const loadAndCheck = async (nCoders, { fill }) => {
-         const nSlots = 1 + nCoders;
-         const T = plannerCtx + nCoders * coderCtx;
-         const sizes = [plannerCtx, ...Array.from({ length: nCoders }, () => coderCtx)];
-         const shaped = (extra) => ({
-            total_ctx: T,
-            planner_ctx: plannerCtx,
-            coder_ctx: coderCtx,
-            n_coders: nCoders,
-            n_slots: nSlots,
-            ...extra,
-         });
-
-         await srv.killAll();
-         await srv.waitVramClear(30_000);
-         try {
-            await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx: T, extraFlags: probeExtraFlags(model, nSlots) });
-            await srv.waitHealthy(360_000);
-         } catch {
-            const crashed = await srv.hasCrashed();
-            console.log(
-               `  [agent_ctx] ${nCoders} coders (pool ${(T / 1024).toFixed(0)}k, np=${nSlots}) — load failed (${crashed ? 'OOM/crash' : 'timeout'})`,
-            );
-            return shaped({ servable: false, vram_mib: null, gtt_mib: null, coherent_slots: 0 });
-         }
-
-         const mem = await srv.snapshotMem(); // idle: weights + preallocated KV(T) — clean & monotonic
-         const total = mem.vram != null && mem.gtt != null ? mem.vram + mem.gtt : null;
-         // amdgpu parks a fixed ~1 GB on GTT even for a model that fits, so the gate is the TOTAL
-         // footprint (VRAM + GTT) fitting the card's VRAM — NOT gtt≈0. total > card ⇒ the config
-         // genuinely exceeds VRAM and the overflow runs PCIe-bound on system RAM. VRAM+GTT is clean
-         // and monotonic in the pool size (measured), so this boundary is deterministic.
-         const fits = total != null && total <= CARD_TOTAL_MIB;
-         let coherent = 0;
-         if (fill && fits) {
-            const results = await runSlots(client, sizes, { think, thinkControl });
-            coherent = results.filter((r) => r.ok).length;
-         }
-         console.log(
-            `  [agent_ctx] 1 planner@${plannerCtx / 1024}k + ${nCoders} coders@${coderCtx / 1024}k (pool ${(T / 1024).toFixed(0)}k)${fill ? `  → ${coherent}/${nSlots} coherent` : ''}  vram+gtt=${total ?? '?'}MiB (v=${mem.vram ?? '?'} g=${mem.gtt ?? '?'})  ${fits ? 'FITS' : 'SPILL→RAM'}`,
-         );
-         return shaped({ servable: fits, vram_mib: mem.vram, gtt_mib: mem.gtt, coherent_slots: coherent });
-      };
-
-      // ── Phase 2: bidirectional boundary search over the coder COUNT (load-only footprint gate) ──
-      // Descend from the estimate until a plan FITS (VRAM+GTT ≤ card), then ascend (+1 coder) while
-      // it still fits. Load-only (no fill) suffices because the KV is preallocated at load, so the
-      // idle footprint is the deterministic gate — each rung is just a fast load.
-      let best = null;
-      let loads = 0;
-      let k = nCodersEst;
-      while (k >= 0 && loads < MAX_LOADS) {
-         const r = await loadAndCheck(k, { fill: false });
-         loads++;
-         if (r.servable) {
-            best = r;
-            break;
-         }
-         k -= 1; // footprint exceeds VRAM → drop one coder
-      }
-      while (best && loads < MAX_LOADS) {
-         const r = await loadAndCheck(best.n_coders + 1, { fill: false });
-         loads++;
-         if (!r.servable) {
-            break; // one more coder exceeds VRAM → the last fitting plan is the answer
-         }
-         best = r;
-      }
-
-      // ── Phase 3: verify the winning plan WITH a concurrent fill (coherence) ────────────────────
-      // The capacity gate is the idle footprint above; this fill just records how many slots
-      // actually retrieve their own needle at depth (coherent_slots).
-      if (best) {
-         const v = await loadAndCheck(best.n_coders, { fill: true });
-         loads++;
-         if (v.servable) {
-            best = v;
-         }
-      }
-
-      await srv.stopServer().catch(() => {});
-      await srv.waitVramClear(20_000).catch(() => {});
-
-      if (!best || !best.servable) {
-         return fail(`no VRAM-resident plan ≥ planner ${plannerCtx / 1024}k (spills to system RAM)`);
-      }
-      const fullyCoherent = best.coherent_slots === best.n_slots;
-      console.log(
-         `  [agent_ctx] RESULT: 1×${best.planner_ctx / 1024}k planner + ${best.n_coders}×${best.coder_ctx / 1024}k coders  (pool ${(best.total_ctx / 1024).toFixed(0)}k, ${best.coherent_slots}/${best.n_slots} coherent, vram ${best.vram_mib ?? '?'}MiB)`,
-      );
-      return [
-         {
-            bench: 'agent_ctx',
-            score: best.n_coders, // headline: coder agents supported alongside the planner
-            n_slots: best.n_slots,
-            n_coders: best.n_coders,
-            coherent_slots: best.coherent_slots,
-            total_ctx: best.total_ctx,
-            planner_ctx: best.planner_ctx,
-            coder_ctx: best.coder_ctx,
-            vram_mib: best.vram_mib,
-            gtt_mib: best.gtt_mib,
-            verified: fullyCoherent ? 1 : 0,
-            status: 'ok',
-            notes: `1x${best.planner_ctx / 1024}k+${best.n_coders}x${best.coder_ctx / 1024}k kvunified ${kvQuant} ${best.coherent_slots}/${best.n_slots}coh`,
-         },
-      ];
+   run(ctx) {
+      return (ctx.model.engine === 'omlx' ? runMlx : runLlamacpp)(ctx);
    },
 };

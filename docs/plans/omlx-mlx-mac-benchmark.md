@@ -216,6 +216,24 @@ git clone https://git.xor0.de/demonkoryu/llm-bench.git ~/llm-bench && cd ~/llm-b
 Central-db (`192.168.1.120:5432`) is reachable from the Mac over the LAN. No DuckDB needed
 (PG-native path; pure-JS `postgres` + `openai` + `js-yaml`).
 
+### B3a. Apply the fixed Qwen chat template (froggeric) — REQUIRED for the run to be honest
+omlx applies the chat template **server-side from the model directory** (there is no per-request
+template flag). The MLX model entry pins `chat_template: froggeric`, so the harness tags every row
+`chat_template=froggeric` — that tag is only truthful if the fixed template is actually on disk.
+Drop the vendored template into the model dir (it ships in the cloned llm-bench repo) as
+`chat_template.jinja` (transformers/MLX tokenizers prefer a standalone `chat_template.jinja` over
+the one embedded in `tokenizer_config.json`), then restart omlx so it reloads the tokenizer:
+```bash
+cp ~/llm-bench/config/chat-templates/qwen3.6-froggeric.jinja \
+   ~/models/mlx-community/Qwen3.6-27B-5bit/chat_template.jinja
+sudo launchctl kickstart -k system/com.omlx.server
+```
+**Verify it's honored** (before trusting any row): send one tool-call request and confirm the reply
+comes back as parsed `tool_calls` in the froggeric XML style, and that a `think:true` vs `think:false`
+triage pair actually differs (the template reads `enable_thinking`). If MLX/omlx does NOT pick up the
+standalone `.jinja` file, fall back to embedding the template string into the model's
+`tokenizer_config.json` `chat_template` field, then kickstart again.
+
 ### B4. Run (parallel to the rose bench)
 ```bash
 MLX_URL=http://127.0.0.1:8000 node runners/bench-run.mjs \
