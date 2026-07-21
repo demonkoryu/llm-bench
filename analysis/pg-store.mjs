@@ -110,12 +110,19 @@ function conn() {
    return _sql;
 }
 
-/** Create the measurements table in Postgres if absent (idempotent). */
+// Columns added after the table's first creation. CREATE TABLE IF NOT EXISTS never alters an
+// existing table, so new COLUMNS entries need an explicit idempotent ADD COLUMN here.
+const ADDED_COLUMNS = ['scope'];
+
+/** Create the measurements table in Postgres if absent, and add any later columns (idempotent). */
 export async function ensureSchema() {
    const sql = conn();
    const { password } = pgConfig();
    try {
       await sql.unsafe(ddl());
+      for (const c of ADDED_COLUMNS) {
+         await sql.unsafe(`ALTER TABLE measurements ADD COLUMN IF NOT EXISTS "${c}" ${PG_TYPE[COLUMNS[c]]}`);
+      }
    } catch (e) {
       throw new Error(scrub(e.message || e, password));
    }

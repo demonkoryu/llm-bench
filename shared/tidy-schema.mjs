@@ -50,11 +50,28 @@ export const COLUMNS = {
    metric: 'VARCHAR',
    metric_value: 'DOUBLE',
    unit: 'VARCHAR',
+   // 'general' = template-independent (probe/serving metric: VRAM, throughput, KV, capacity —
+   // depends on model/quant/kv/backend/gpu, NOT chat_template); 'template' = varies by
+   // chat_template (all capability benches, plus quality_decay accuracy). Consumers merge
+   // 'general' rows across chat_template variants of the same config. See scopeFor().
+   scope: 'VARCHAR',
    n: 'BIGINT',
    spread: 'DOUBLE',
    status: 'VARCHAR',
 };
 export const COLUMN_NAMES = Object.keys(COLUMNS);
+
+// Metric template-dependence — an explicit, queryable enum value on every row (single source
+// of allowed values; no bare string literals). Same string-enum idiom as scoring-config's NORM.
+export const SCOPE = Object.freeze({ GENERAL: 'general', TEMPLATE: 'template' });
+
+// A metric is 'general' (template-independent) iff its EMITTED (sub-)bench name is a perf/serving
+// probe. Classified by the emitted bench string, not the registry bench: quality_decay is a probe
+// but its `quality_decay-*` accuracy rows are template-dependent, while the `ttft-*` timing rows it
+// also emits are general — so this keys on what actually landed in the row. Mirrors the
+// SCORE_UNIT_BY_BENCH structure below (same probe-name patterns).
+const GENERAL_BENCH = [/^agent_ctx$/, /^fit_ctx$/, /^kv_per_tok$/, /^power_eff$/, /^e2e-/, /^ttft-/, /^speed(_|$)/, /^prefix_cache_/];
+export const scopeFor = (bench) => (GENERAL_BENCH.some((re) => re.test(bench)) ? SCOPE.GENERAL : SCOPE.TEMPLATE);
 
 // Dimension columns the caller supplies via `dims` (everything except the measurement + provenance).
 export const DIM_COLUMNS = [
@@ -224,6 +241,7 @@ export function metricRowsFromResult(rawRow, dims) {
          metric,
          metric_value: value,
          unit,
+         scope: scopeFor(bench),
          // per-metric spread (from multi-sample aggregation) wins over a row-level spread
          n: rawRow.n ?? 1,
          spread: rawRow.__spread?.[field] ?? rawRow.spread ?? null,

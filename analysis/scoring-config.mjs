@@ -14,6 +14,13 @@ export const SCORING_VERSION = 3;
 // labels an entity. (caps-cache DOES key on build — ctx-ceiling memoization must invalidate.)
 export const ENTITY_DIMS = ['family', 'gguf_file', 'quant', 'kv_quant', 'chat_template', 'backend', 'gpu'];
 
+// The template-independent identity: ENTITY_DIMS minus chat_template. 'general'-scope metric rows
+// (perf/serving probes — see tidy-schema's scopeFor) are shared across every chat_template variant
+// of the same served config, so a config measured for capability under one template inherits the
+// probe metrics measured under another. Matches the key caps-cache already uses for these probes.
+export const GENERAL_KEY_DIMS = ENTITY_DIMS.filter((d) => d !== 'chat_template');
+export const reducedKey = (row) => GENERAL_KEY_DIMS.map((d) => row[d] ?? '').join('␟');
+
 // Normalization strategies (per metric). Applied across the entities in the current
 // selection → re-normalizes per filtered view (an A/B or a dense-vs-MoE slice answers
 // "best within this comparison"). `identity` = value already lives in 0..1.

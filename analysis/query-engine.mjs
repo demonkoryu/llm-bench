@@ -8,7 +8,11 @@
 // via analysis/pg-store.mjs. Scoring stays in analysis/score.mjs; this module only owns the
 // friendly-metric catalog and the tabular/scatter reshaping.
 import { entityKey, scoreSelection } from './score.mjs';
-import { DEFAULT_DIALS } from './scoring-config.mjs';
+import { DEFAULT_DIALS, reducedKey } from './scoring-config.mjs';
+
+// Metric scope values (mirrors shared/tidy-schema.mjs SCOPE; that module isn't client-mirrored,
+// so — like score.mjs comparing think_mode to 'n/a' — the read side compares the stored value).
+const GENERAL = 'general';
 
 export const FACET_DIMS = [
    'family',
@@ -162,6 +166,37 @@ const groupBy = (rows, keyFn) => {
    return m;
 };
 
+// Merge template-independent metrics across chat_template variants. 'general'-scope rows (perf/
+// serving probes — depend on model/quant/kv/backend/gpu, not chat_template) are backfilled onto
+// every chat_template variant of the same reduced-key config that lacks that (bench, metric, case),
+// so a config measured for capability under one template inherits probes measured under another.
+// Clones are tagged `_inherited` (coverage distinguishes them); a config's own real measurement is
+// never overwritten, and duplicate clones are guarded. Run BEFORE facet filtering so inheritance
+// still works when a single template is selected. Non-display views (coverage, facets) use raw rows.
+export function joinGeneral(rows) {
+   const templatesByRK = new Map(); // reducedKey → Set(chat_template)
+   const present = new Set(); // reducedKey|template|bench|metric|case for existing general rows
+   for (const r of rows) {
+      const rk = reducedKey(r);
+      if (!templatesByRK.has(rk)) { templatesByRK.set(rk, new Set()); }
+      templatesByRK.get(rk).add(r.chat_template ?? '');
+      if (r.scope === GENERAL) { present.add([rk, r.chat_template ?? '', r.bench, r.metric, r.case_id ?? ''].join(CELL_SEP)); }
+   }
+   const extra = [];
+   for (const r of rows) {
+      if (r.scope !== GENERAL) { continue; }
+      const rk = reducedKey(r);
+      for (const t of templatesByRK.get(rk)) {
+         if (t === (r.chat_template ?? '')) { continue; }
+         const k = [rk, t, r.bench, r.metric, r.case_id ?? ''].join(CELL_SEP);
+         if (present.has(k)) { continue; }
+         present.add(k);
+         extra.push({ ...r, chat_template: t || null, _inherited: true });
+      }
+   }
+   return extra.length ? rows.concat(extra) : rows;
+}
+
 export function meta() {
    return {
       metrics: Object.keys(M),
@@ -180,7 +215,7 @@ export function facets(rows) {
 }
 
 export function pivot(rows, b) {
-   const src = filt(rows, b.facets);
+   const src = filt(joinGeneral(rows), b.facets);
    const mfn = M[b.metric].fn;
    const rset = new Set(),
       cset = new Set(),
@@ -234,7 +269,7 @@ function paretoPts(rows, xf, yf, vf, think) {
 
 export function pareto(rows, b) {
    const think = b.think || 'both';
-   const src = filt(rows, b.facets);
+   const src = filt(joinGeneral(rows), b.facets);
    const xf = M[b.xMetric].fn,
       yf = M[b.yMetric].fn,
       vf = M['VRAM MiB'].fn;
@@ -245,7 +280,7 @@ export function pareto(rows, b) {
 
 export function leaderboard(rows, b) {
    const think = b.think || 'both';
-   const src = filt(rows, b.facets);
+   const src = filt(joinGeneral(rows), b.facets);
    const dials = b.dials || DEFAULT_DIALS;
    if (think !== 'both') {
       const { entities, denom } = scoreSelection(src, { think, dials });
@@ -278,11 +313,23 @@ export function leaderboard(rows, b) {
    return { entities, denom: noT.denom, count: src.length };
 }
 
+// Tri-state coverage: 'measured' (a real row for this config×bench), 'inherited' (a general/
+// probe bench this config didn't measure itself but a sibling chat_template of the same
+// reduced-key config did — so joinGeneral fills it on the display views), or 'none'. Raw rows,
+// NOT joinGeneral output — coverage must show what was measured vs merely inherited.
 export function coverage(rows, b) {
    const src = filt(rows, b.facets);
    const cfg = (r) => `${r.gguf_file.replace('.gguf', '')}|${r.kv_quant || ''}|${r.chat_template}`;
    const configs = [...new Set(src.map(cfg))].sort(),
       benches = [...new Set(src.map((r) => r.bench))].sort();
-   const have = new Set(src.map((r) => cfg(r) + CELL_SEP + r.bench));
-   return { configs, benches, cells: configs.map((c) => ({ cfg: c, has: benches.map((bn) => have.has(c + CELL_SEP + bn)) })) };
+   const measured = new Set(src.map((r) => cfg(r) + CELL_SEP + r.bench));
+   const cfgRK = new Map(src.map((r) => [cfg(r), reducedKey(r)]));
+   const generalBenches = new Set(src.filter((r) => r.scope === GENERAL).map((r) => r.bench));
+   const generalByRK = new Set(src.filter((r) => r.scope === GENERAL).map((r) => reducedKey(r) + CELL_SEP + r.bench));
+   const stateOf = (c, bn) => {
+      if (measured.has(c + CELL_SEP + bn)) { return 'measured'; }
+      if (generalBenches.has(bn) && generalByRK.has(cfgRK.get(c) + CELL_SEP + bn)) { return 'inherited'; }
+      return 'none';
+   };
+   return { configs, benches, cells: configs.map((c) => ({ cfg: c, states: benches.map((bn) => stateOf(c, bn)) })) };
 }

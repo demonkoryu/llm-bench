@@ -20,7 +20,8 @@ const facetsSel = view(facetForm(fv, m.dims));
 ```js
 const cov = coverage(rows, { facets: facetsSel });
 const cfg = (c) => c.replaceAll("|", " · ");
-const long = cov.cells.flatMap((row) => row.has.map((h, i) => ({ cfg: cfg(row.cfg), bench: cov.benches[i], has: h })));
+const long = cov.cells.flatMap((row) => row.states.map((s, i) => ({ cfg: cfg(row.cfg), bench: cov.benches[i], state: s })));
+const STATE_LABEL = { measured: "measured", inherited: "inherited (template-independent)", none: "missing" };
 ```
 
 ```js
@@ -37,10 +38,10 @@ if (cov.configs.length === 0) {
     height: Math.max(200, cov.configs.length * 22 + 120),
     x: { label: "bench", domain: cov.benches, tickRotate: -45 },
     y: { label: null, domain: cov.configs.map(cfg) },
-    color: { domain: [false, true], range: ["#262f34", "#0f8f82"], legend: true, tickFormat: (d) => (d ? "run" : "missing") },
-    marks: [Plot.cell(long, { x: "bench", y: "cfg", fill: "has", inset: 0.5 })],
+    color: { domain: ["none", "inherited", "measured"], range: ["#262f34", "#7a5a2e", "#0f8f82"], legend: true, tickFormat: (d) => STATE_LABEL[d] },
+    marks: [Plot.cell(long, { x: "bench", y: "cfg", fill: "state", inset: 0.5 })],
   })}</div>`);
 }
 ```
 
-<div class="muted">${cov.configs.length} configs · ${cov.benches.length} benches</div>
+<div class="muted">${cov.configs.length} configs · ${cov.benches.length} benches · <span style="color:#7a5a2e">inherited</span> = template-independent probe measured under a sibling template</div>

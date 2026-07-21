@@ -9,6 +9,7 @@
    "scripts": {
       "bench": "node runners/bench-run.mjs",
       "caps-seed": "node analysis/caps-cache.mjs seed",
+      "scope:backfill": "node analysis/backfill-scope.mjs",
       "smoke": "node runners/smoke.mjs",
       "coding-smoke": "node runners/coding-smoke.mjs",
       "deploy": "bash scripts/deploy.sh",
