@@ -73,9 +73,11 @@ export const METRIC_CATALOG = {
       },
    },
    docqa: {
+      // Components are additive (correctness 5 + coverage 3 + faithfulness 2 = 10); sum the
+      // per-component means, not their mean, else docqa is divided by 3 and caps at ~33/100.
       fn: (r) => {
-         const v = avgF(r, (x) => /^docqa_/.test(x.metric));
-         return v == null ? null : 10 * v;
+         const parts = ['docqa_correctness', 'docqa_coverage', 'docqa_faithfulness'].map((k) => avgF(r, (x) => x.metric === k));
+         return parts.every((v) => v == null) ? null : 10 * parts.reduce((s, v) => s + (v ?? 0), 0);
       },
    },
    'struct_output %': { fn: (r) => avgF(r, (x) => x.bench === 'struct_output' && x.metric === 'score') },

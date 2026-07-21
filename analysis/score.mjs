@@ -42,9 +42,12 @@ const METRIC_DEFS = {
    toolcalling: { raw: (r) => ratio(r, 'toolcall_pass', 'toolcall_total'), norm: 'identity' },
    summarization: { raw: (r) => mean(vals(r, (x) => /^summ_/.test(x.metric))), norm: 'identity' },
    docqa: {
+      // Grader components are ADDITIVE: correctness(5)+coverage(3)+faithfulness(2) = score/10.
+      // Sum the per-component means (mean handles duplicate runs), NOT the mean of the three
+      // (which would divide the 0–10 score by 3, capping docqa at ~3.3/10).
       raw: (r) => {
-         const m = mean(vals(r, (x) => /^docqa_/.test(x.metric)));
-         return m == null ? null : m / 10;
+         const parts = ['docqa_correctness', 'docqa_coverage', 'docqa_faithfulness'].map((k) => pickMean(r, k, 'docqa'));
+         return parts.every((v) => v == null) ? null : parts.reduce((s, v) => s + (v ?? 0), 0) / 10;
       },
       norm: 'identity',
    },
