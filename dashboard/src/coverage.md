@@ -6,7 +6,7 @@ Which benches have run for each served config — the run-vs-missing matrix.
 import * as Plot from "npm:@observablehq/plot";
 import * as Inputs from "npm:@observablehq/inputs";
 import { coverage, meta, facets as facetValues } from "./lib/query-engine.js";
-import { facetForm } from "./components/facets.js";
+import { linkedFacets } from "./components/url-state.js";
 
 const rows = await FileAttachment("data/measurements.json").json();
 const fv = facetValues(rows);
@@ -14,7 +14,7 @@ const m = meta();
 ```
 
 ```js
-const facetsSel = view(facetForm(fv, m.dims));
+const facetsSel = view(linkedFacets(fv, m.dims));
 ```
 
 ```js

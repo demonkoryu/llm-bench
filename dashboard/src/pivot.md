@@ -6,7 +6,7 @@ A metric across two dimensions as a heatmap. Set a **Δ baseline** column to col
 import * as Plot from "npm:@observablehq/plot";
 import * as Inputs from "npm:@observablehq/inputs";
 import { pivot, meta, facets as facetValues, METRIC_HELP } from "./lib/query-engine.js";
-import { facetForm } from "./components/facets.js";
+import { linkedSelect, linkedFacets } from "./components/url-state.js";
 import { metricHelp } from "./components/metric-help.js";
 
 const rows = await FileAttachment("data/measurements.json").json();
@@ -15,15 +15,15 @@ const m = meta();
 ```
 
 ```js
-const rowsDim = view(Inputs.select(m.pivotDims, { value: "gguf_file", label: "rows" }));
-const colsDim = view(Inputs.select(m.pivotDims, { value: "chat_template", label: "columns" }));
-const metric = view(Inputs.select(m.metrics, { value: "reasoning %", label: "metric" }));
-const facetsSel = view(facetForm(fv, m.dims));
+const rowsDim = view(linkedSelect("rows", m.pivotDims, { value: "gguf_file", label: "rows" }));
+const colsDim = view(linkedSelect("cols", m.pivotDims, { value: "chat_template", label: "columns" }));
+const metric = view(linkedSelect("metric", m.metrics, { value: "reasoning %", label: "metric" }));
+const facetsSel = view(linkedFacets(fv, m.dims));
 ```
 
 ```js
 const colVals = ["(none)", ...new Set(rows.map((r) => r[colsDim]).filter((v) => v != null))].sort();
-const baseline = view(Inputs.select(colVals, { value: "(none)", label: "Δ baseline" }));
+const baseline = view(linkedSelect("base", colVals, { value: "(none)", label: "Δ baseline" }));
 ```
 
 ```js

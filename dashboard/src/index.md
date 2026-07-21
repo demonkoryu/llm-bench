@@ -6,7 +6,7 @@ Composite **capability**, **speed** and **fleet** scores, normalized within the 
 import * as Plot from "npm:@observablehq/plot";
 import * as Inputs from "npm:@observablehq/inputs";
 import { leaderboard, meta, facets as facetValues, METRIC_HELP } from "./lib/query-engine.js";
-import { facetForm } from "./components/facets.js";
+import { linkedRadio, linkedFacets } from "./components/url-state.js";
 import { metricHelp } from "./components/metric-help.js";
 import { BOARD_COLUMNS, boardRows, boardFormat, boardLabel } from "./components/board.js";
 
@@ -16,8 +16,8 @@ const m = meta();
 ```
 
 ```js
-const think = view(Inputs.radio(["no_think", "think", "both"], { value: "both", label: "think" }));
-const facetsSel = view(facetForm(fv, m.dims));
+const think = view(linkedRadio("think", ["no_think", "think", "both"], { value: "both", label: "think" }));
+const facetsSel = view(linkedFacets(fv, m.dims));
 ```
 
 ```js

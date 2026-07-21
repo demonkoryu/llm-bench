@@ -8,7 +8,7 @@ import * as Inputs from "npm:@observablehq/inputs";
 import { scaleLinear } from "npm:d3-scale";
 import { forceSimulation, forceX, forceY, forceCollide } from "npm:d3-force";
 import { pareto, meta, facets as facetValues, METRIC_HELP } from "./lib/query-engine.js";
-import { facetForm } from "./components/facets.js";
+import { linkedSelect, linkedRadio, linkedFacets } from "./components/url-state.js";
 import { metricHelp } from "./components/metric-help.js";
 import * as palette from "./components/palette.js";
 
@@ -18,11 +18,11 @@ const m = meta();
 ```
 
 ```js
-const xMetric = view(Inputs.select(m.metrics, { value: "decode tok/s", label: "x axis" }));
-const yMetric = view(Inputs.select(m.metrics, { value: "reasoning %", label: "y axis" }));
-const think = view(Inputs.radio(["no_think", "think", "both"], { value: "both", label: "think" }));
-const colorBy = view(Inputs.radio(["arch", "kv_quant", "vram"], { value: "arch", label: "colour" }));
-const facetsSel = view(facetForm(fv, m.dims));
+const xMetric = view(linkedSelect("x", m.metrics, { value: "decode tok/s", label: "x axis" }));
+const yMetric = view(linkedSelect("y", m.metrics, { value: "reasoning %", label: "y axis" }));
+const think = view(linkedRadio("think", ["no_think", "think", "both"], { value: "both", label: "think" }));
+const colorBy = view(linkedRadio("color", ["arch", "kv_quant", "vram"], { value: "arch", label: "colour" }));
+const facetsSel = view(linkedFacets(fv, m.dims));
 ```
 
 ```js
