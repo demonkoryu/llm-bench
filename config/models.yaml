@@ -278,6 +278,90 @@ models:
      extra_flags: { batch-size: null, ubatch-size: null }   # neutralize llama.cpp batch defaults on MLX rows
      benches: [agent_ctx, triage, reasoning, toolcalling, summarization, docqa]
 
+   # ── Qwen3.6-27B MTP-4bit (MLX, kradih) — comparison to the Jundot oQ4 build ───
+   # Standard MLX 4-bit (~15 GB, ~1.7 GB lighter than oQ4) WITH the MTP head embedded
+   # (`language_model.mtp.*`). Loads via omlx's text BatchedEngine (not VLM). Native MTP +
+   # TurboQuant 4-bit KV both verified. Lighter weights → may keep the 32k prefill under the guard
+   # (the oQ4 fell to 16k). Same Mac-side model_settings toggles (turboquant_kv_bits:4, mtp_enabled).
+   - hf_repo: kradih/Qwen3.6-27B-MTP-4bit-MLX
+     hf_file: Qwen3.6-27B-MTP-4bit-MLX
+     engine: omlx
+     mlx_model: Qwen3.6-27B-MTP-4bit-MLX
+     chat_template: froggeric
+     kv_quant: tq4
+     spec_decode: mtp
+     label: "Qwen3.6-27B MTP-4bit (MLX)"
+     family: qwen3.6
+     type: dense
+     arch: gated-delta-dense
+     quant: "MLX-4bit"
+     effective_bpw: 4.5                  # ~15 GB / 27B
+     total_params: 27
+     active_params: 27
+     think: optional
+     think_control: enable_thinking
+     tools: true
+     native_max_ctx: 262144
+     ctx_cap: 32768
+     kv_variants: []
+     extra_flags: { batch-size: null, ubatch-size: null }
+     benches: [agent_ctx, triage, reasoning, toolcalling, summarization, docqa]
+
+   # ── Qwen3.6-35B-A3B UD-MLX-4bit (MoE) — TurboQuant KV tq4 & tq5 ───────────────
+   # 35B-A3B MoE (~21.6 GB, no MTP head). Two configs differing ONLY in TurboQuant KV bit depth
+   # (tq4 vs tq5), each a distinct row (kv_quant dim). They share ONE omlx model id, so the KV bits
+   # are NOT selectable per-request — set turboquant_kv_bits in model_settings.json to MATCH the tag
+   # and run ONE at a time (via --models on the distinct label). Parked (disabled) so an unfiltered
+   # m1 run never runs them with a mismatched KV setting. Heavy: 21.6 GB leaves little RAM for KV/
+   # prefill on 32 GB, so context is memory-tight (ctx_cap kept low; the probe descends if needed).
+   - hf_repo: unsloth/Qwen3.6-35B-A3B-UD-MLX-4bit
+     hf_file: Qwen3.6-35B-A3B-UD-MLX-4bit
+     engine: omlx
+     mlx_model: Qwen3.6-35B-A3B-UD-MLX-4bit
+     chat_template: froggeric
+     kv_quant: tq4                       # ← run with model_settings turboquant_kv_bits:4
+     disabled: true                      # run explicitly: --models "35B-A3B" after setting kv_bits:4
+     label: "Qwen3.6-35B-A3B MLX KV tq4"
+     family: qwen3.6
+     type: moe
+     arch: gated-delta-moe
+     quant: "MLX-4bit"
+     effective_bpw: 4.9                  # ~21.6 GB / 35B
+     total_params: 35
+     active_params: 3
+     think: optional
+     think_control: enable_thinking
+     tools: true
+     native_max_ctx: 262144
+     ctx_cap: 16384                      # heavy model on 32 GB; probe descends from here
+     kv_variants: []
+     extra_flags: { batch-size: null, ubatch-size: null }
+     benches: [agent_ctx, triage, reasoning, toolcalling, summarization, docqa]
+
+   - hf_repo: unsloth/Qwen3.6-35B-A3B-UD-MLX-4bit
+     hf_file: Qwen3.6-35B-A3B-UD-MLX-4bit
+     engine: omlx
+     mlx_model: Qwen3.6-35B-A3B-UD-MLX-4bit
+     chat_template: froggeric
+     kv_quant: tq5                       # ← run with model_settings turboquant_kv_bits:5
+     disabled: true                      # run explicitly: --models "KV tq5" after setting kv_bits:5
+     label: "Qwen3.6-35B-A3B MLX KV tq5"
+     family: qwen3.6
+     type: moe
+     arch: gated-delta-moe
+     quant: "MLX-4bit"
+     effective_bpw: 4.9
+     total_params: 35
+     active_params: 3
+     think: optional
+     think_control: enable_thinking
+     tools: true
+     native_max_ctx: 262144
+     ctx_cap: 16384
+     kv_variants: []
+     extra_flags: { batch-size: null, ubatch-size: null }
+     benches: [agent_ctx, triage, reasoning, toolcalling, summarization, docqa]
+
    # ── Gemma4-E4B ───────────────────────────────────────────────────────────────
    # Hybrid: runs both nothi and think passes.
    # Google unified sampling: same params for ALL tasks and both think states.
