@@ -21,7 +21,9 @@ export const FACET_DIMS = [
    'think_mode',
    'backend',
    'gpu',
-   'llamacpp_build',
+   // llamacpp_build intentionally omitted: builds are merged, not discriminated. The
+   // build is retained in the DB (and in the caps-cache key) but is not an entity axis
+   // nor a dashboard facet — think@newer-build pairs with no_think@older-build as one config.
    'sampling_profile',
 ];
 export const PIVOT_DIMS = ['gguf_file', ...FACET_DIMS];
@@ -154,7 +156,7 @@ const groupBy = (rows, keyFn) => {
    const m = new Map();
    for (const r of rows) {
       const k = keyFn(r);
-      if (!m.has(k)) m.set(k, []);
+      if (!m.has(k)) { m.set(k, []); }
       m.get(k).push(r);
    }
    return m;
@@ -173,7 +175,7 @@ export function meta() {
 
 export function facets(rows) {
    const o = {};
-   for (const d of FACET_DIMS) o[d] = [...new Set(rows.map((r) => r[d]).filter((v) => v != null))].sort();
+   for (const d of FACET_DIMS) { o[d] = [...new Set(rows.map((r) => r[d]).filter((v) => v != null))].sort(); }
    return o;
 }
 
@@ -185,7 +187,7 @@ export function pivot(rows, b) {
       cm = new Map();
    for (const [k, grp] of groupBy(src, (r) => JSON.stringify([r[b.rowsDim], r[b.colsDim]]))) {
       const [rr, cc] = JSON.parse(k);
-      if (cc == null) continue;
+      if (cc == null) { continue; }
       rset.add(rr);
       cset.add(cc);
       cm.set(rr + CELL_SEP + cc, mfn(grp));
@@ -215,7 +217,7 @@ function paretoPts(rows, xf, yf, vf, think) {
       const [g, q, kv, ct, arch, ap, tp] = JSON.parse(k);
       const x = xf(grp),
          y = yf(grp);
-      if (x == null || y == null) continue;
+      if (x == null || y == null) { continue; }
       out.push({
          x,
          y,
@@ -255,8 +257,8 @@ export function leaderboard(rows, b) {
    for (const r of src) {
       const k = entityKey(r);
       const tm = r.think_mode || 'n/a';
-      if (!variants.has(k)) variants.set(k, new Set());
-      if (tm !== 'n/a') variants.get(k).add(tm);
+      if (!variants.has(k)) { variants.set(k, new Set()); }
+      if (tm !== 'n/a') { variants.get(k).add(tm); }
    }
    const noT = scoreSelection(src, { think: 'no_think', dials });
    const yesT = scoreSelection(src, { think: 'think', dials });
@@ -271,7 +273,7 @@ export function leaderboard(rows, b) {
       }
    }
    for (const e of yesT.entities) {
-      if ((variants.get(e.key) || new Set()).has('think')) entities.push(e);
+      if ((variants.get(e.key) || new Set()).has('think')) { entities.push(e); }
    }
    return { entities, denom: noT.denom, count: src.length };
 }

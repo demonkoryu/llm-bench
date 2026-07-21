@@ -8,7 +8,11 @@ export const SCORING_VERSION = 3;
 
 // Which dimension columns identify one rankable entity (a "served configuration").
 // think_mode is handled separately (per-think rows + a synthesized best-of).
-export const ENTITY_DIMS = ['family', 'gguf_file', 'quant', 'kv_quant', 'chat_template', 'backend', 'gpu', 'llamacpp_build'];
+// NOTE: llamacpp_build is deliberately NOT an entity dim — builds are merged so that
+// metrics measured across a llama.cpp upgrade (e.g. no_think@10050 + think@10064) group
+// into ONE served config. The build stays in the DB for provenance but never splits or
+// labels an entity. (caps-cache DOES key on build — ctx-ceiling memoization must invalidate.)
+export const ENTITY_DIMS = ['family', 'gguf_file', 'quant', 'kv_quant', 'chat_template', 'backend', 'gpu'];
 
 // Normalization strategies (per metric). Applied across the entities in the current
 // selection → re-normalizes per filtered view (an A/B or a dense-vs-MoE slice answers
