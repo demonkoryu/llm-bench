@@ -76,15 +76,22 @@ export function rapidmlxServer({ inferenceUrl = 'http://127.0.0.1:8000', debug =
       if (!served.length) {
          throw new Error(`rapidmlx: not reachable at ${inferenceUrl} (GET /v1/models empty — is 'rapid-mlx serve' up?)`);
       }
-      // RapidMLX may report the alias, the served-model-name, or the org-prefixed repo id; accept any.
-      const ok = served.includes(wanted) || served.includes(hf_repo) || served.some((id) => leafModelId(id) === wanted);
-      if (!ok) {
+      // Resolve to the ACTUAL served id, case-insensitively. RapidMLX serves under
+      // `--served-model-name` (typically a lowercased alias, e.g. `qwen3.6-27b-4bit`), while probes
+      // that don't pass `mlxModel` fall back to the HF leaf (`Qwen3.6-27B-4bit`) — same model, only
+      // differing in case. Match the alias, the org-prefixed repo id, or the leaf, ignoring case, then
+      // send the CANONICAL served id in every request: a wrong-case id would 422 at completion time
+      // even though the model exists. (Only the four self-managing depth probes hit this path.)
+      const lc = (s) => String(s).toLowerCase();
+      const wantLeaf = lc(leafModelId(wanted));
+      const resolved = served.find((id) => lc(id) === lc(wanted) || lc(id) === lc(hf_repo) || lc(leafModelId(id)) === wantLeaf);
+      if (!resolved) {
          throw new Error(
             `rapidmlx: model '${wanted}' not served at ${inferenceUrl}. Served: [${served.join(', ')}]. ` +
                `Pull it (rapid-mlx pull ${wanted}) and (re)start the daemon (scripts/llm1/serve.sh ${wanted}).`,
          );
       }
-      currentModel = wanted;
+      currentModel = resolved;
       console.log(`[rapidmlx] serving model=${currentModel} @ ${inferenceUrl}`);
       return currentModel; // no PID — mirrors the llamacpp return contract loosely
    }
