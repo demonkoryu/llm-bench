@@ -72,7 +72,12 @@ export async function runMlx({ srv, client, model, caps, upsertCap }) {
    // climb START (a conservative seed). The whole point of this probe is to discover the real ceiling
    // ABOVE that seed, so the climb must be free to reach native_max_ctx.
    const coherentWindow = caps?.coherence_ceiling ?? model.native_max_ctx ?? model.ctx_cap ?? PLANNER_TARGET;
-   const hardCap = round4k(Math.min(model.native_max_ctx ?? PLANNER_TARGET, coherentWindow));
+   // `probe_max_ctx` (optional) caps how deep this probe is allowed to CLIMB, independent of the
+   // model's real trained window (native_max_ctx, kept factually correct for the rest of the fleet).
+   // The M1/OptiQ config sets it to 131072 per the operator's "128k is enough — don't check 256k"
+   // instruction: the climb tests up to 128k and records that as the ceiling without a 256k prefill.
+   const probeCeiling = model.probe_max_ctx ?? model.native_max_ctx ?? PLANNER_TARGET;
+   const hardCap = round4k(Math.min(probeCeiling, coherentWindow));
    const startDepth = round4k(Math.min(model.ctx_cap ?? 32768, hardCap));
 
    let requests = 0;

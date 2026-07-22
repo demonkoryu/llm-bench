@@ -281,7 +281,8 @@ models:
      think: optional
      think_control: enable_thinking
      tools: true
-     native_max_ctx: 262144              # config.json max_position_embeddings
+     native_max_ctx: 262144              # config.json max_position_embeddings (real trained window — kept truthful)
+     probe_max_ctx: 131072               # agent_ctx climb cap: "128k is enough — don't run the 256k check" (operator)
      ctx_cap: 65536                      # FRESH seed for OptiQ int4 KV; agent_ctx (run first) writes measured coherence_ceiling
      kv_variants: []
      extra_flags: { batch-size: null, ubatch-size: null }
