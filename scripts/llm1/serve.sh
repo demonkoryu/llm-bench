@@ -1,103 +1,89 @@
 #!/usr/bin/env bash
-# Start the RapidMLX daemon on the M1 Mac (llm1) for the llm-bench harness.
+# Start the OptiQ (mlx-optiq) daemon on the M1 Mac (llm1) for the llm-bench harness.
 #
-# The harness treats RapidMLX as a persistent, no-lifecycle daemon: runners/rapidmlx-server.mjs
-# never launches or kills it — it only health-checks and selects the served model. So THIS script
-# is the launcher, invoked manually at phase boundaries (primary run, then the --pflash A/B).
+# The harness treats OptiQ as a persistent, no-lifecycle daemon: runners/optiq-server.mjs never
+# launches or kills it — it only health-checks and selects the served model via GET /v1/models.
+# So THIS script is the launcher, invoked manually at phase boundaries.
 #
 # Usage:
-#   scripts/llm1/serve.sh                 # primary config (kv int4, pflash off, 1 client)
-#   PFLASH=always scripts/llm1/serve.sh   # Phase 5 pflash A/B
-#   scripts/llm1/serve.sh --enable-mtp    # any extra flags pass through to `rapid-mlx serve`
+#   scripts/llm1/serve.sh                          # primary: uniform 4-bit KV, 1 client, no-auth
+#   KV_CONFIG=path/kv.json scripts/llm1/serve.sh   # mixed-precision KV A/B (overrides --kv-bits)
+#   scripts/llm1/serve.sh --mtp                    # extra flags pass through to `optiq serve`
 #
-# Env overrides: MODEL, PORT, HOST, PFLASH, KV_DTYPE, WIRED_MIN_MB, RAPID_MLX.
-# Prints the daemon PID on success; exits 1 on failure. Logs to /tmp/rapidmlx.log.
+# Env overrides: MODEL, HOST, PORT, KV_BITS, KV_CONFIG, MAX_CONCURRENT, MAX_CONTEXT,
+#                WIRED_MIN_MB, OPTIQ, LOG. Prints the daemon PID on success; exits 1 on failure.
+#
+# OptiQ notes (why the flags are what they are):
+#   --no-auth  MANDATORY. Auth is ON by default (Bearer sk-optiq-… on POST). The OpenAI SDK sends
+#              `Bearer EMPTY`, which OptiQ REJECTS as malformed — only a MISSING header is tolerated.
+#              So the harness client can only talk to a --no-auth daemon over loopback.
+#   --max-concurrent 1   single client (agent_ctx MAX_CODERS=0; priority: max ctx > perf > quality).
+#   --kv-bits 4          uniform 4-bit KV (primary). OptiQ has NO cloud fallback — all local.
+#   single-model mode (default): the request `model` field is just a label; any value serves --model.
 set -euo pipefail
 
-MODEL="${MODEL:-qwen3.6-27b-4bit}"
-# Loopback bind: bench-run.mjs runs ON this machine (from the ~/llm-bench git checkout) and hits the
-# daemon at 127.0.0.1:8000 — no LAN exposure, no auth surface. Override HOST=0.0.0.0 only if you need
-# to drive it from another box (RapidMLX warns wildcard bind is LAN-reachable with no auth).
-HOST="${HOST:-127.0.0.1}"
-PORT="${PORT:-8000}"
-PFLASH="${PFLASH:-off}"               # primary=off (honest long ctx); Phase 5 A/B=always
-KV_DTYPE="${KV_DTYPE:-int4}"          # plain 4-bit KV (no turboquant) — closest to fleet KV q4_0
-WIRED_MIN_MB="${WIRED_MIN_MB:-28672}" # expect ≥28 GB wired; user sets via sysctl (see below)
-RAPID_MLX="${RAPID_MLX:-rapid-mlx}"
-LOG="${LOG:-/tmp/rapidmlx.log}"
-PIDFILE=/tmp/rapidmlx.pid
+MODEL="${MODEL:-mlx-community/Qwen3.6-27B-OptiQ-4bit}"
+HOST="${HOST:-127.0.0.1}"                 # loopback: bench-run runs ON llm1; no LAN/auth surface
+PORT="${PORT:-8080}"
+KV_BITS="${KV_BITS:-4}"                    # uniform 4-bit KV (primary). Ignored if KV_CONFIG is set.
+KV_CONFIG="${KV_CONFIG:-}"                 # OptiQ per-layer mixed-precision KV json; overrides --kv-bits
+MAX_CONCURRENT="${MAX_CONCURRENT:-1}"      # single client
+MAX_CONTEXT="${MAX_CONTEXT:-auto}"         # 'auto' caps only if native ctx won't fit RAM
+WIRED_MIN_MB="${WIRED_MIN_MB:-28672}"      # Metal wired-memory floor (assert only — user manages it)
+OPTIQ="${OPTIQ:-optiq}"
+LOG="${LOG:-/tmp/optiq.log}"
+PIDFILE=/tmp/optiq.pid
 
-# ── Cloud fallback: INERT unless --cloud-model is set (verified via `serve --help`, v0.10.12):
-#    "When set, large-context requests are routed to the cloud." --cloud-threshold (default 20000)
-#    only matters once a cloud model is configured. We never pass --cloud-model, so every token is
-#    generated locally — nothing to disable. (Env hook kept empty for belt-and-suspenders.)
-CLOUD_DISABLE="${CLOUD_DISABLE:-}"
+export PATH="$HOME/.local/bin:$PATH"       # pipx installs the `optiq` entrypoint here
 
-# Request timeout: server default is 1800s (30 min). Deep-context prefill (64k–128k) on the M1 is
-# slow; a long agent_ctx / quality_decay request must not be killed server-side before the client
-# gives up. Match the agent_ctx client cap (60 min).
-TIMEOUT="${TIMEOUT:-3600}"
-
-# ── Assert Metal wired-memory limit (assert only — do NOT set; the user manages this) ────────────
-# Set on the Mac by the user with:  sudo sysctl iogpu.wired_limit_mb=28672   (value in MiB → 28 GB)
-# NOTE: the effective key on this macOS (26.x) is `iogpu.wired_limit_mb`, NOT `iogpu.wired_mem_limit`.
-# Resets on reboot. We only READ it and warn if it is lower than expected — never write it.
-wired="$(sysctl -n iogpu.wired_limit_mb 2>/dev/null || echo 0)"
-wired="${wired:-0}"
-if [[ "$wired" -lt "$WIRED_MIN_MB" ]]; then
-   echo "WARN: iogpu.wired_limit_mb=${wired} MiB < expected ${WIRED_MIN_MB} MiB." >&2
-   echo "      Long-context KV may hit the wired ceiling and throttle/abort. To raise it:" >&2
-   echo "      sudo sysctl iogpu.wired_limit_mb=${WIRED_MIN_MB}" >&2
+# KV mode: uniform --kv-bits (primary) OR --kv-config mixed-precision (A/B). KV_CONFIG wins.
+if [[ -n "$KV_CONFIG" ]]; then
+   KV_ARGS=(--kv-config "$KV_CONFIG"); KV_DESC="kv-config=$KV_CONFIG"
 else
-   echo "iogpu.wired_limit_mb=${wired} MiB (>= ${WIRED_MIN_MB} MiB expected) OK"
+   KV_ARGS=(--kv-bits "$KV_BITS");     KV_DESC="kv-bits=$KV_BITS"
 fi
 
-# ── Kill any existing daemon ─────────────────────────────────────────────────────────────────────
-if [[ -f "$PIDFILE" ]] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
-   echo "Stopping existing RapidMLX daemon (PID $(cat "$PIDFILE"))..."
-   kill "$(cat "$PIDFILE")" 2>/dev/null || true
-   sleep 2
+# ── Assert Metal wired-memory limit (assert only — do NOT set; the user manages this) ──
+wired="$(sysctl -n iogpu.wired_limit_mb 2>/dev/null || echo 0)"; wired="${wired:-0}"
+if [[ "$wired" -lt "$WIRED_MIN_MB" ]]; then
+   echo "WARN: iogpu.wired_limit_mb=${wired} MiB < expected ${WIRED_MIN_MB} MiB — raise via: sudo sysctl iogpu.wired_limit_mb=${WIRED_MIN_MB}" >&2
+else
+   echo "iogpu.wired_limit_mb=${wired} MiB (>= ${WIRED_MIN_MB}) OK"
 fi
-pkill -f "rapid-mlx serve" 2>/dev/null || true
+
+# ── Kill any existing daemon ──
+if [[ -f "$PIDFILE" ]] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+   echo "Stopping existing OptiQ daemon (PID $(cat "$PIDFILE"))..."
+   kill "$(cat "$PIDFILE")" 2>/dev/null || true; sleep 2
+fi
+pkill -f "optiq serve" 2>/dev/null || true
 sleep 1
 
-# ── Launch ───────────────────────────────────────────────────────────────────────────────────────
-# Constraints (user, priority: max context > performance > quality; ≤1 concurrent client):
-#   --kv-cache-dtype int4 --kv-cache-turboquant none  plain 4-bit KV
-#   --max-num-seqs 1                                   single client (no coder sub-agents)
-#   --pflash off (primary)                             honest long-context retrieval
-#   --no-spec-decode                                   clean baseline (MTP A/B is separate, Phase 6)
-echo "Launching: $RAPID_MLX serve $MODEL (kv=$KV_DTYPE pflash=$PFLASH 1-seq) → $HOST:$PORT"
-nohup "$RAPID_MLX" serve "$MODEL" \
+# ── Launch ──
+echo "Launching: optiq serve $MODEL ($KV_DESC max-concurrent=$MAX_CONCURRENT no-auth) → $HOST:$PORT"
+nohup "$OPTIQ" serve \
+   --model "$MODEL" \
    --host "$HOST" --port "$PORT" \
-   --served-model-name "$MODEL" \
-   --kv-cache-dtype "$KV_DTYPE" \
-   --kv-cache-turboquant=none \
-   --pflash "$PFLASH" \
-   --max-num-seqs 1 \
-   --no-spec-decode \
-   --timeout "$TIMEOUT" \
-   $CLOUD_DISABLE \
+   "${KV_ARGS[@]}" \
+   --max-concurrent "$MAX_CONCURRENT" \
+   --max-context "$MAX_CONTEXT" \
+   --no-auth \
    "$@" \
    >"$LOG" 2>&1 &
 pid=$!
 echo "$pid" >"$PIDFILE"
 
-# ── Health check ─────────────────────────────────────────────────────────────────────────────────
-echo "Waiting for RapidMLX to become healthy (PID $pid)..."
-for i in $(seq 1 120); do
+# ── Health check (first launch may download weights ~15 GB → up to 20 min) ──
+echo "Waiting for OptiQ to become healthy (PID $pid)..."
+for _ in $(seq 1 300); do
    if ! kill -0 "$pid" 2>/dev/null; then
-      echo "ERROR: daemon exited early — see $LOG" >&2
-      tail -20 "$LOG" >&2 || true
-      exit 1
+      echo "ERROR: daemon exited early — see $LOG" >&2; tail -20 "$LOG" >&2 || true; exit 1
    fi
    if curl -fsS "http://127.0.0.1:${PORT}/v1/models" >/dev/null 2>&1; then
-      echo "RapidMLX healthy on port ${PORT} (PID $pid). Model: ${MODEL}"
-      curl -fsS "http://127.0.0.1:${PORT}/v1/models" 2>/dev/null || true
+      echo "OptiQ healthy on port ${PORT} (PID $pid). Model: ${MODEL}"
+      curl -fsS "http://127.0.0.1:${PORT}/v1/models" 2>/dev/null || true; echo
       exit 0
    fi
-   sleep 2
+   sleep 4
 done
-echo "ERROR: RapidMLX did not become healthy within ~240s — see $LOG" >&2
-tail -20 "$LOG" >&2 || true
-exit 1
+echo "ERROR: OptiQ did not become healthy in time — see $LOG" >&2; tail -20 "$LOG" >&2 || true; exit 1

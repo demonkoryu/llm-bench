@@ -273,16 +273,17 @@ async function runLlamacpp({ srv, client, model, caps }) {
    ];
 }
 
-// Single registry entry, dispatched by host engine: the rapidmlx (MLX) host gets the client-driven
+// Single registry entry, dispatched by host engine: an MLX host (engine: optiq) gets the client-driven
 // probe (agent_ctx_mlx.mjs), every other host keeps the exact llama.cpp behavior. Same `agent_ctx`
 // name + row shape, so scoring/dashboard are unchanged. selfManagesServer stays true: the MLX path
 // needs no lifecycle (it just selects the served model + GET /v1/models at its start).
+const MLX_ENGINES = new Set(['optiq', 'rapidmlx']); // rapidmlx archived, kept here so old rows still route
 export const bench = {
    name: 'agent_ctx',
    kind: 'probe',
    thinkDependent: false,
    selfManagesServer: true,
    run(ctx) {
-      return (ctx.model.engine === 'rapidmlx' ? runMlx : runLlamacpp)(ctx);
+      return (MLX_ENGINES.has(ctx.model.engine) ? runMlx : runLlamacpp)(ctx);
    },
 };

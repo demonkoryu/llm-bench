@@ -26,10 +26,11 @@ export function resolveEnv(s) {
  * descriptor. Throws on an unknown target (the inline call sites would otherwise
  * crash on the first `host.llamacpp` access anyway).
  *
- * The host may declare an `engine` (`llamacpp` | `rapidmlx`). llama.cpp hosts leave it unset
- * and behave exactly as before. A `rapidmlx` host serves an MLX model over an OpenAI-compatible
- * HTTP endpoint (`host.mlx`) — no SSH scripts, no VRAM tooling — so the inference URL is taken
- * from `host.mlx` when present and `backend` defaults to `mlx`. The returned key names are
+ * The host may declare an `engine` (`llamacpp` | `optiq` | `rapidmlx`). llama.cpp hosts leave it
+ * unset and behave exactly as before. An MLX host (`optiq`, or the archived `rapidmlx`) serves an
+ * MLX model over an OpenAI-compatible HTTP endpoint (`host.mlx`) — no SSH scripts, no VRAM tooling —
+ * so the inference URL is taken from `host.mlx` when present and `backend` defaults to the engine
+ * name (hosts.yaml sets it explicitly regardless). The returned key names are
  * unchanged (`llamaUrl` still carries the inference URL) so existing llama.cpp call sites are
  * untouched.
  *
@@ -47,10 +48,10 @@ export function loadHostConfig(path, target, { backend } = {}) {
    const engine = host.engine ?? 'llamacpp';
    return {
       engine,
-      // rapidmlx hosts carry the inference URL in `mlx`; llama.cpp hosts in `llamacpp`.
+      // MLX hosts (optiq/rapidmlx) carry the inference URL in `mlx`; llama.cpp hosts in `llamacpp`.
       llamaUrl: resolveEnv(host.mlx ?? host.llamacpp),
       sshHost: resolveEnv(host.ssh_host),
-      backend: backend ?? host.backend ?? (engine === 'rapidmlx' ? 'mlx' : 'vulkan'),
+      backend: backend ?? host.backend ?? (engine === 'llamacpp' ? 'vulkan' : engine),
       gpu: host.gpu ?? target,
       vramTotalMib: host.vram_total_mib ?? null,
       port: host.port ?? null,

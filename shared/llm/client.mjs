@@ -48,9 +48,10 @@ const inferenceDispatcher = new Agent({ headersTimeout: 0, bodyTimeout: 0 });
  *   debug    {boolean}  emit request/response detail to stderr
  *   timeout  {number}   default request timeout ms
  *   model    {string|function}  request `model` field. llama-server ignores it (alias set
- *                        at server start), so the default 'local' is fine there. RapidMLX
- *                        REQUIRES the real served id (missing/wrong → 422); pass a getter
- *                        (`() => currentModel`) so rapidmlxServer can switch it at startServer.
+ *                        at server start), so the default 'local' is fine there. MLX engines
+ *                        echo it back, so pass a getter (`() => currentModel`) that optiqServer
+ *                        sets to the resolved served id at startServer (OptiQ single-model mode
+ *                        serves any label, but a truthful id keeps the response echo honest).
  */
 export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = DEFAULT_TIMEOUT_MS, model = 'local' } = {}) {
    const resolveModel = () => (typeof model === 'function' ? model() : model);
@@ -123,7 +124,7 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
       _lastTimings = null;
 
       const reqParams = {
-         model: resolveModel(), // llama-server ignores this; RapidMLX requires the real served id
+         model: resolveModel(), // llama-server ignores this; MLX engines echo it back (OptiQ serves any label)
          messages: resolvedMessages,
          stream: false,
          ...sampling,

@@ -27,4 +27,4 @@ ssh -o BatchMode=yes -o ConnectTimeout=10 "$HOST" \
 echo "Deploy complete."
 echo "Then, ON $HOST, run the benchmarks from $REMOTE_DIR (e.g. node runners/bench-run.mjs --target <host> …)."
 echo "  llama.cpp hosts (rose/llm2): readiness check → ssh $HOST '$REMOTE_DIR/scripts/llm2/ready.sh'"
-echo "  RapidMLX hosts (m1/llm1):    launch daemon  → ssh $HOST '$REMOTE_DIR/scripts/llm1/serve.sh'"
+echo "  OptiQ hosts (m1/llm1):       launch daemon  → ssh $HOST '$REMOTE_DIR/scripts/llm1/serve.sh'"

@@ -1,14 +1,14 @@
-// Probe: max coherent context — RapidMLX (MLX / Apple Silicon) variant, single-client.
+// Probe: max coherent context — MLX (OptiQ / Apple Silicon) variant, single-client.
 //
 // The llama.cpp agent_ctx probe (agent_ctx.mjs) reloads llama-server across a shared-KV-pool
 // sweep and gates on rocm-smi VRAM+GTT spill against the RX 7900 XT's physical VRAM. NONE of that
-// exists on Apple Silicon + RapidMLX: unified memory has no VRAM/GTT split, there is no rocm-smi,
-// and RapidMLX is a persistent daemon that has no server-reload context flag to sweep. So this
+// exists on Apple Silicon + MLX: unified memory has no VRAM/GTT split, there is no rocm-smi,
+// and the OptiQ daemon is persistent with no server-reload context flag to sweep. So this
 // variant is PURELY CLIENT-DRIVEN (plain HTTP, no reloads, no memory snapshots), reusing the SAME
 // needle-in-haystack fills and the SAME "does the slot retrieve ITS OWN needle" coherence gate.
 //
 // SINGLE-CLIENT constraint: this deployment serves at most ONE concurrent request (the daemon runs
-// `--max-num-seqs 1`; no coder sub-agents). So `MAX_CODERS = 0` — the probe measures the deepest
+// `--max-concurrent 1`; no coder sub-agents). So `MAX_CODERS = 0` — the probe measures the deepest
 // coherent SINGLE-sequence context and stops. That single-slot ceiling IS a real coherence ceiling
 // (unlike the llama.cpp shared-pool total), so we write it to the caps cache via `upsertCap` so the
 // downstream depth probes (quality_decay / throughput / speed) load at the MEASURED depth instead
@@ -16,7 +16,7 @@
 //
 // It emits `bench: 'agent_ctx'` with the identical row shape, so it feeds the existing fleet score
 // (analysis/score.mjs) with NO schema/scoring change. The gate is coherence + request success
-// (memory pressure surfaces as a RapidMLX error or an incoherent slot), not a VRAM formula. Total
+// (memory pressure surfaces as an OptiQ error or an incoherent slot), not a VRAM formula. Total
 // requests are bounded (REQUEST_BUDGET), mirroring how the llama.cpp probe bounds its reloads.
 
 import { makeFillPrompt } from '../../shared/codebase.mjs';
@@ -35,10 +35,10 @@ const round4k = (n) => Math.max(4096, Math.round(n / 4096) * 4096);
 
 // Per-request timeout for a SINGLE sequence (no concurrency — only one request is ever in flight,
 // so we can afford a long ceiling). The M1 (original, 32 GB) prefills a 27B-4bit slowly, and once
-// KV nears the wired-memory ceiling RapidMLX throttles prefill hard — measured tens of tok/s. So
-// the estimate is deliberately pessimistic (~25 tok/s) with a 15-min floor and a 60-min cap:
+// KV nears the wired-memory ceiling the MLX runtime throttles prefill hard — measured tens of tok/s.
+// So the estimate is deliberately pessimistic (~25 tok/s) with a 15-min floor and a 60-min cap:
 // under-timing here aborts a slow-but-fine request mid-prefill (surfaces as a fetch error) and
-// false-fails the depth. A genuine over-capacity request either errors from RapidMLX or hits the cap.
+// false-fails the depth. A genuine over-capacity request either errors from OptiQ or hits the cap.
 function fillTimeoutMs(totalTokens) {
    const est = Math.round((totalTokens / 25) * 1000);
    return Math.min(3_600_000, Math.max(900_000, est));
@@ -83,12 +83,12 @@ export async function runMlx({ srv, client, model, caps, upsertCap }) {
       return r.ok;
    };
 
-   // Select the served model + confirm RapidMLX is reachable (no lifecycle — just sets the request id).
+   // Select the served model + confirm the MLX daemon is reachable (no lifecycle — just sets the request id).
    try {
       await srv.startServer({ hf_repo: model.hf_repo, mlxModel: model.mlx_model });
       await srv.waitHealthy(120_000);
    } catch (e) {
-      return fail(model, `rapidmlx not ready: ${(e.message ?? '').slice(0, 80)}`);
+      return fail(model, `optiq not ready: ${(e.message ?? '').slice(0, 80)}`);
    }
 
    // ── Phase 1: deepest single-sequence coherent context (planner_ctx) ─────────────────────────

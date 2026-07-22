@@ -23,7 +23,7 @@ import { resolveSampling } from '../shared/llm/index.mjs';
 import { deriveSubjectDims, loadModelsConfig } from '../shared/models-config.mjs';
 import { metricRowsFromResult } from '../shared/tidy-schema.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
-import { rapidmlxServer } from './rapidmlx-server.mjs';
+import { optiqServer } from './optiq-server.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RESULTS = join(ROOT, 'results');
@@ -46,7 +46,7 @@ const { values: flags } = parseArgs({
 
 const SSH = process.env.SSH_HOST || null;
 const host = loadHostConfig(join(ROOT, 'config/hosts.yaml'), flags.target);
-const ENGINE = host.engine ?? 'llamacpp'; // 'llamacpp' (rose/llama-server) | 'rapidmlx' (M1 Mac/MLX)
+const ENGINE = host.engine ?? 'llamacpp'; // 'llamacpp' (rose/llama-server) | 'optiq' (M1 Mac/MLX)
 const SSH_HOST = SSH || host.sshHost;
 const LOCAL = flags.local || LOCAL_HOST; // run host scripts locally vs over SSH
 const SUDO = LOCAL ? 'sudo -n' : 'sudo'; // non-interactive sudo when on-host
@@ -120,7 +120,7 @@ async function main() {
    // matching the "runners never see disabled" contract in shared/models-config.mjs).
    const cfg = loadModelsConfig(join(ROOT, 'config/models.yaml'), { includeDisabled: true });
    // Engine filter (always applied): a model only runs on a host of its own engine. This keeps
-   // the MLX entry (engine: rapidmlx) OUT of every rose/llama.cpp run — and llama.cpp models out
+   // the MLX entry (engine: optiq) OUT of every rose/llama.cpp run — and llama.cpp models out
    // of an m1 run — even when --models names it, since it couldn't serve on the wrong engine anyway.
    const models = cfg.models.filter(
       (m) =>
@@ -139,7 +139,7 @@ async function main() {
       .slice(0, 14)
       .replace(/(\d{8})(\d{6})/, '$1-$2');
    const run_id = `${slug(host.gpu)}-${host.backend}-${stamp}-benchrun`;
-   // The llama.cpp build/driver probe SSHes to the host and runs `llama-server --version`. RapidMLX
+   // The llama.cpp build/driver probe SSHes to the host and runs `llama-server --version`. OptiQ
    // has no such binary — leave llamacpp_build null (nullable in the schema) on non-llamacpp engines.
    const { llamacpp_build } =
       ENGINE === 'llamacpp'
@@ -149,8 +149,8 @@ async function main() {
       `[bench-run] ${models.length} models · benches=[${benchNames}] · think=${flags.think} · samples=${SAMPLES} · build=${llamacpp_build} · template=${chatTemplate} · exec=${LOCAL ? 'local' : 'ssh'}`,
    );
 
-   // The systemd llama-server router only exists on the llama.cpp host (llm2). RapidMLX serves via
-   // its own persistent `rapid-mlx serve` daemon on the Mac — nothing for us to stop/restart there.
+   // The systemd llama-server router only exists on the llama.cpp host (llm2). OptiQ serves via
+   // its own persistent `optiq serve` daemon on the Mac — nothing for us to stop/restart there.
    if (ENGINE === 'llamacpp' && !flags['keep-router']) {
       const r = await ssh(`${SUDO} systemctl stop llama-server 2>&1 && echo stopped`);
       console.error(`[bench-run] router: ${r || 'n/a'}`);
@@ -167,8 +167,8 @@ async function main() {
    });
 
    const srv =
-      ENGINE === 'rapidmlx'
-         ? rapidmlxServer({ inferenceUrl: host.llamaUrl, debug: !!process.env.BENCH_DEBUG })
+      ENGINE === 'optiq'
+         ? optiqServer({ inferenceUrl: host.llamaUrl, debug: !!process.env.BENCH_DEBUG })
          : llamacppServer({
               sshHost: SSH_HOST,
               llamaUrl: host.llamaUrl,
@@ -222,7 +222,7 @@ async function main() {
          const ef = typeof m.extra_flags === 'object' ? m.extra_flags : {};
          // KV-quant tag: kv-variant tag, else a llama.cpp cache-type flag, else a model-declared
          // override. The override is how a non-llama.cpp engine records its KV precision — the MLX
-         // entry sets `kv_quant: int4` (RapidMLX `--kv-cache-dtype int4`, a serve-time flag) so its
+         // entry sets `kv_quant: int4` (OptiQ `--kv-bits 4`, a serve-time flag) so its
          // rows are a distinct config dim, not a null-KV placeholder.
          const kv_quant = m.variant?.replace(/^kv/, '') ?? ef['cache-type-k'] ?? m.kv_quant ?? null;
          // Per-model chat template: a model may pin one; falls back to the run-wide flag.

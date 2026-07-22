@@ -11,9 +11,10 @@ and renders an interactive **Observable Framework** dashboard.
   performance/capacity **probes** (`benches/probes/`) self-manage the server.
 - **Inference** — two engines, selected per host by `engine:` in `config/hosts.yaml`:
   a `llama.cpp` server on a GPU host (`engine: llamacpp`, default; lifecycle/VRAM/health/
-  systemd-router in `runners/llamacpp-server.mjs` + `scripts/llm2/`), or a **RapidMLX**
-  daemon on Apple Silicon (`engine: rapidmlx`; persistent daemon launched by
-  `scripts/llm1/serve.sh`, no-op lifecycle + no VRAM readout in `runners/rapidmlx-server.mjs`).
+  systemd-router in `runners/llamacpp-server.mjs` + `scripts/llm2/`), or an **OptiQ** (MLX)
+  daemon on Apple Silicon (`engine: optiq`; persistent `optiq serve` daemon launched by
+  `scripts/llm1/serve.sh`, no-op lifecycle + no VRAM readout in `runners/optiq-server.mjs`).
+  (RapidMLX was the prior Apple-Silicon engine; retired 2026-07-22 → `archive/rapidmlx/`.)
 - **Store** — a **central Postgres** table, `llmbench.measurements` (central-db @
   192.168.1.120), one row per measured metric with every config axis (chat_template, kv_quant,
   quant, arch, finetune, llamacpp_build, sampling, think…) as a queryable column. `bench-run`
@@ -143,14 +144,17 @@ The two host types differ only in how inference is served:
   coexists with the host's systemd `llama-server` router. Run with `--local` (env
   `BENCH_LOCAL=1`) so the host scripts + router `systemctl` execute locally instead of over
   SSH. Readiness: `scripts/llm2/ready.sh`.
-- **RapidMLX hosts (m1 / llm1).** RapidMLX is a **persistent daemon**, launched separately by
-  [`scripts/llm1/serve.sh`](scripts/llm1/serve.sh) (installs via `brew install rapid-mlx`).
-  For `engine: rapidmlx` the harness server-lifecycle is a **no-op** — it never starts/stops/
-  reloads the daemon, has no VRAM readout, and talks to it over **loopback** (`127.0.0.1:8000`),
-  so there is no `systemctl` and no SSH server-management (no `--local` needed). Launch (or
-  relaunch — e.g. for the `--pflash always` A/B) the daemon with `serve.sh`, then run
-  `bench-run --target m1` from the checkout. `serve.sh` also asserts the Metal wired-memory
-  limit (`sysctl iogpu.wired_limit_mb`, set by the operator; it warns but never writes it).
+- **OptiQ (MLX) hosts (m1 / llm1).** OptiQ is a **persistent daemon** (`optiq serve`), launched
+  separately by [`scripts/llm1/serve.sh`](scripts/llm1/serve.sh) (installs via `pipx install
+  mlx-optiq`). For `engine: optiq` the harness server-lifecycle is a **no-op** — it never starts/
+  stops/reloads the daemon, has no VRAM readout, and talks to it over **loopback**
+  (`127.0.0.1:8080`), so there is no `systemctl` and no SSH server-management (no `--local` needed).
+  Launch (or relaunch — e.g. for the mixed-precision `--kv-config` KV A/B) the daemon with
+  `serve.sh`, then run `bench-run --target m1` from the checkout. `serve.sh` also asserts the Metal
+  wired-memory limit (`sysctl iogpu.wired_limit_mb`, set by the operator; it warns but never writes
+  it). **Auth caveat:** OptiQ requires `Authorization` on POST by default and rejects the SDK's
+  `Bearer EMPTY`, so the daemon must run `--no-auth` (serve.sh does). The prior RapidMLX engine is
+  retired → [`archive/rapidmlx/`](archive/rapidmlx/).
 
 ---
 
