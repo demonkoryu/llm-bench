@@ -26,3 +26,24 @@ rose:
    remote_dir: "~/llm-bench"
    # VRAM monitoring command (works regardless of inference backend)
    vram_cmd: "rocm-smi --showmeminfo vram --json"
+
+# ── m1 / Apple M1 Mac — RapidMLX (MLX) ───────────────────────────────────────────
+# A persistent RapidMLX daemon (`rapid-mlx serve`) on the M1 Mac. Selected only with
+# `--target m1`; the bench-run engine filter keeps MLX models off rose and vice-versa.
+# engine: rapidmlx routes the model server to runners/rapidmlx-server.mjs (no-op lifecycle:
+# the daemon is long-lived and has no server-reload context flag — it is NOT launched or
+# killed by the harness, only health-checked + model-selected via GET /v1/models).
+# Unified memory: NO VRAM readout (no rocm-smi), so vram_cmd is intentionally absent —
+# kv_per_tok / fit_ctx skip cleanly and agent_ctx uses the client-driven MLX probe.
+# DEPLOYMENT: bench-run runs ON llm1 from the ~/llm-bench git checkout (deploy via commit→push→
+# `scripts/deploy.sh --host llm1`), talking to the local RapidMLX daemon — hence the loopback URL.
+# The daemon is launched separately on llm1 by scripts/llm1/serve.sh. See README §4a.
+m1:
+   label: "m1 / Apple M1 (32 GB unified)"
+   gpu: "M1"
+   engine: rapidmlx
+   backend: rapidmlx                  # distinct from purged omlx rows (backend: mlx)
+   mlx: "${MLX_URL:-http://127.0.0.1:8000}"   # bench-run runs locally on llm1 → loopback
+   ssh_host: "${SSH_HOST_M1:-llm1}"
+   port: 8000
+   remote_dir: "~/llm-bench"

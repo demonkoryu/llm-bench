@@ -50,7 +50,7 @@ function stripThink(content) {
 /**
  * Acceptance normalization — mirrors src/server/wispTools.ts so grading reflects
  * what production actually accepts. Handles summary/tags/content_type aliases
- * emitted by unconstrained runners (llama.cpp) that don't enforce `format`.
+ * emitted by unconstrained runners (MLX, llama.cpp) that don't enforce `format`.
  */
 function normalizeAcceptance(parsed, item) {
    if (parsed.suggested_summary == null && typeof parsed.summary === 'string') {

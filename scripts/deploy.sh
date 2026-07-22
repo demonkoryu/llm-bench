@@ -20,8 +20,11 @@ done
 
 echo "Deploying llm-bench to $HOST:$REMOTE_DIR ..."
 
+# Pull the tracked branch and mark every host script executable (scripts/llm1/*, scripts/llm2/*, …).
 ssh -o BatchMode=yes -o ConnectTimeout=10 "$HOST" \
-   "cd $REMOTE_DIR && git fetch && git pull --ff-only && chmod +x scripts/llm2/*.sh"
+   "cd $REMOTE_DIR && git fetch && git pull --ff-only && find scripts -name '*.sh' -exec chmod +x {} +"
 
 echo "Deploy complete."
-echo "Run readiness check with: ssh $HOST '$REMOTE_DIR/scripts/llm2/ready.sh'"
+echo "Then, ON $HOST, run the benchmarks from $REMOTE_DIR (e.g. node runners/bench-run.mjs --target <host> …)."
+echo "  llama.cpp hosts (rose/llm2): readiness check → ssh $HOST '$REMOTE_DIR/scripts/llm2/ready.sh'"
+echo "  RapidMLX hosts (m1/llm1):    launch daemon  → ssh $HOST '$REMOTE_DIR/scripts/llm1/serve.sh'"

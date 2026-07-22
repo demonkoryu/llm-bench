@@ -5,12 +5,15 @@ each model on document comprehension, coding/tool-use, speed, context length and
 footprint, then ranks them by a **capability** score and a **fleet-suitability** score,
 and renders an interactive **Observable Framework** dashboard.
 
-- **Orchestrator** — `runners/bench-run.mjs` (Node, dev host): the model × think × bench
-  matrix loop. Bench modules live in `benches/` (reuse the graders in `benchmarks/*`);
+- **Orchestrator** — `runners/bench-run.mjs` (Node): the model × think × bench matrix loop.
+  Runs **on the benchmarking host** from a git checkout (see §4); the dev box is only for
+  editing. Bench modules live in `benches/` (reuse the graders in `benchmarks/*`);
   performance/capacity **probes** (`benches/probes/`) self-manage the server.
-- **Inference** — a `llama.cpp` server on a GPU host, driven over SSH; system concerns
-  (start/stop, VRAM, health, systemd-router coexistence) are in `runners/llamacpp-server.mjs`
-  + `scripts/llm2/`.
+- **Inference** — two engines, selected per host by `engine:` in `config/hosts.yaml`:
+  a `llama.cpp` server on a GPU host (`engine: llamacpp`, default; lifecycle/VRAM/health/
+  systemd-router in `runners/llamacpp-server.mjs` + `scripts/llm2/`), or a **RapidMLX**
+  daemon on Apple Silicon (`engine: rapidmlx`; persistent daemon launched by
+  `scripts/llm1/serve.sh`, no-op lifecycle + no VRAM readout in `runners/rapidmlx-server.mjs`).
 - **Store** — a **central Postgres** table, `llmbench.measurements` (central-db @
   192.168.1.120), one row per measured metric with every config axis (chat_template, kv_quant,
   quant, arch, finetune, llamacpp_build, sampling, think…) as a queryable column. `bench-run`
@@ -115,11 +118,39 @@ Published to **<https://pages.xor0.de/llm-bench/>** (mobile-friendly). A push to
 on the Forgejo runner and deploys it via the `pages` branch → Caddy. CI needs the
 `LLMBENCH_DB_PASSWORD` Actions secret.
 
-## 4. Local-exec mode (run on the GPU host)
+## 4. Deployment & running on a benchmarking host
 
-`bench-run.mjs --local` (env `BENCH_LOCAL=1`) runs the host scripts + router `systemctl`
-locally instead of over SSH — handy for driving the pipeline directly on the GPU host
-rather than from the dev PC. The default SSH mode is unchanged.
+**The matrix runs *on* the benchmarking host, from a git checkout — not from the dev box.**
+Each benchmarking machine holds a checkout of this repo at `~/llm-bench` and runs `bench-run`
+there; the dev box (where you edit) never drives the matrix. The single source of truth is the
+Forgejo remote `origin` (`git.xor0.de/demonkoryu/llm-bench`); the Postgres store is central
+(on llm2) and reachable from every host (needs `LLMBENCH_DB_PASSWORD`).
+
+**Update loop (edit here → run there):**
+
+```bash
+# 1. On the dev box: edit, then commit + push to origin (Forgejo).
+git commit -am "…" && git push origin main
+# 2. Pull the change onto the benchmarking host (SSHes in, git pull --ff-only, chmods scripts).
+scripts/deploy.sh --host <llm1|llm2>
+# 3. Run the matrix ON that host, from the checkout; observe over SSH.
+ssh <host> 'cd ~/llm-bench && node runners/bench-run.mjs --target <host> --benches … '
+```
+
+The two host types differ only in how inference is served:
+
+- **llama.cpp hosts (rose / llm2).** `bench-run` owns the `llama-server` lifecycle and
+  coexists with the host's systemd `llama-server` router. Run with `--local` (env
+  `BENCH_LOCAL=1`) so the host scripts + router `systemctl` execute locally instead of over
+  SSH. Readiness: `scripts/llm2/ready.sh`.
+- **RapidMLX hosts (m1 / llm1).** RapidMLX is a **persistent daemon**, launched separately by
+  [`scripts/llm1/serve.sh`](scripts/llm1/serve.sh) (installs via `brew install rapid-mlx`).
+  For `engine: rapidmlx` the harness server-lifecycle is a **no-op** — it never starts/stops/
+  reloads the daemon, has no VRAM readout, and talks to it over **loopback** (`127.0.0.1:8000`),
+  so there is no `systemctl` and no SSH server-management (no `--local` needed). Launch (or
+  relaunch — e.g. for the `--pflash always` A/B) the daemon with `serve.sh`, then run
+  `bench-run --target m1` from the checkout. `serve.sh` also asserts the Metal wired-memory
+  limit (`sysctl iogpu.wired_limit_mb`, set by the operator; it warns but never writes it).
 
 ---
 

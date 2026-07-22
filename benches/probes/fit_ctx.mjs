@@ -17,6 +17,11 @@ export const bench = {
    // slow and hangs past the health timeout on cold non-QAT models).
    selfManagesServer: true,
    async run({ srv, model }) {
+      // llama-fit-params is a llama.cpp-only binary — there is no analytic fit tool on MLX.
+      // Skip cleanly (no row) on non-llamacpp engines rather than emitting a spurious error row.
+      if ((model.engine ?? 'llamacpp') !== 'llamacpp') {
+         return [];
+      }
       const r = await srv.probeFitCtx(model);
       if (r?.fitCtx == null) {
          return [{ bench: 'fit_ctx', status: 'error' }];

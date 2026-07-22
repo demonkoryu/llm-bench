@@ -10,6 +10,11 @@ export const bench = {
    kind: 'probe',
    thinkDependent: false,
    async run({ srv, model, maxctx, upsertCap }) {
+      // KV footprint is derived from board VRAM deltas (rocm-smi). Apple Silicon has unified
+      // memory with no VRAM readout — skip cleanly on non-llamacpp engines.
+      if ((model.engine ?? 'llamacpp') !== 'llamacpp') {
+         return [];
+      }
       const cHigh = maxctx;
       if (!cHigh || cHigh <= C_LOW) {
          return [];

@@ -23,6 +23,7 @@ import { resolveSampling } from '../shared/llm/index.mjs';
 import { deriveSubjectDims, loadModelsConfig } from '../shared/models-config.mjs';
 import { metricRowsFromResult } from '../shared/tidy-schema.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
+import { rapidmlxServer } from './rapidmlx-server.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RESULTS = join(ROOT, 'results');
@@ -45,6 +46,7 @@ const { values: flags } = parseArgs({
 
 const SSH = process.env.SSH_HOST || null;
 const host = loadHostConfig(join(ROOT, 'config/hosts.yaml'), flags.target);
+const ENGINE = host.engine ?? 'llamacpp'; // 'llamacpp' (rose/llama-server) | 'rapidmlx' (M1 Mac/MLX)
 const SSH_HOST = SSH || host.sshHost;
 const LOCAL = flags.local || LOCAL_HOST; // run host scripts locally vs over SSH
 const SUDO = LOCAL ? 'sudo -n' : 'sudo'; // non-interactive sudo when on-host
@@ -117,8 +119,13 @@ async function main() {
    // but an UNfiltered run is active-only (parked models never reach the runner by default,
    // matching the "runners never see disabled" contract in shared/models-config.mjs).
    const cfg = loadModelsConfig(join(ROOT, 'config/models.yaml'), { includeDisabled: true });
-   const models = cfg.models.filter((m) =>
-      modelFilter.length ? modelFilter.some((f) => (m.label ?? '').includes(f) || m.hf_file.includes(f)) : m.disabled !== true,
+   // Engine filter (always applied): a model only runs on a host of its own engine. This keeps
+   // the MLX entry (engine: rapidmlx) OUT of every rose/llama.cpp run — and llama.cpp models out
+   // of an m1 run — even when --models names it, since it couldn't serve on the wrong engine anyway.
+   const models = cfg.models.filter(
+      (m) =>
+         (m.engine ?? 'llamacpp') === ENGINE &&
+         (modelFilter.length ? modelFilter.some((f) => (m.label ?? '').includes(f) || m.hf_file.includes(f)) : m.disabled !== true),
    );
    if (!models.length) {
       console.error('no models matched');
@@ -132,17 +139,24 @@ async function main() {
       .slice(0, 14)
       .replace(/(\d{8})(\d{6})/, '$1-$2');
    const run_id = `${slug(host.gpu)}-${host.backend}-${stamp}-benchrun`;
-   const { llamacpp_build } = await probeHostBuild({ sshHost: SSH_HOST, binPath: host.backends?.[host.backend]?.bin, local: LOCAL });
+   // The llama.cpp build/driver probe SSHes to the host and runs `llama-server --version`. RapidMLX
+   // has no such binary — leave llamacpp_build null (nullable in the schema) on non-llamacpp engines.
+   const { llamacpp_build } =
+      ENGINE === 'llamacpp'
+         ? await probeHostBuild({ sshHost: SSH_HOST, binPath: host.backends?.[host.backend]?.bin, local: LOCAL })
+         : { llamacpp_build: null };
    console.error(
       `[bench-run] ${models.length} models · benches=[${benchNames}] · think=${flags.think} · samples=${SAMPLES} · build=${llamacpp_build} · template=${chatTemplate} · exec=${LOCAL ? 'local' : 'ssh'}`,
    );
 
-   if (!flags['keep-router']) {
+   // The systemd llama-server router only exists on the llama.cpp host (llm2). RapidMLX serves via
+   // its own persistent `rapid-mlx serve` daemon on the Mac — nothing for us to stop/restart there.
+   if (ENGINE === 'llamacpp' && !flags['keep-router']) {
       const r = await ssh(`${SUDO} systemctl stop llama-server 2>&1 && echo stopped`);
       console.error(`[bench-run] router: ${r || 'n/a'}`);
    }
    const restore = async () => {
-      if (!flags['no-router-restart'] && !flags['keep-router']) {
+      if (ENGINE === 'llamacpp' && !flags['no-router-restart'] && !flags['keep-router']) {
          await ssh(`${SUDO} systemctl start llama-server`);
          console.error('[bench-run] router restarted');
       }
@@ -152,13 +166,16 @@ async function main() {
       process.exit(130);
    });
 
-   const srv = llamacppServer({
-      sshHost: SSH_HOST,
-      llamaUrl: host.llamaUrl,
-      backend: host.backend,
-      debug: !!process.env.BENCH_DEBUG,
-      local: LOCAL,
-   });
+   const srv =
+      ENGINE === 'rapidmlx'
+         ? rapidmlxServer({ inferenceUrl: host.llamaUrl, debug: !!process.env.BENCH_DEBUG })
+         : llamacppServer({
+              sshHost: SSH_HOST,
+              llamaUrl: host.llamaUrl,
+              backend: host.backend,
+              debug: !!process.env.BENCH_DEBUG,
+              local: LOCAL,
+           });
    const client = srv.client;
    // Incremental persistence: each bench/probe result is inserted into Postgres immediately, so
    // a crash or kill never loses completed work (--resume re-reads what's already in the store).
@@ -203,17 +220,24 @@ async function main() {
       for (const m of models) {
          const subject = deriveSubjectDims(m);
          const ef = typeof m.extra_flags === 'object' ? m.extra_flags : {};
-         // KV-quant tag: kv-variant tag, else the llama.cpp cache-type flag.
-         const kv_quant = m.variant?.replace(/^kv/, '') ?? ef['cache-type-k'] ?? null;
+         // KV-quant tag: kv-variant tag, else a llama.cpp cache-type flag, else a model-declared
+         // override. The override is how a non-llama.cpp engine records its KV precision — the MLX
+         // entry sets `kv_quant: int4` (RapidMLX `--kv-cache-dtype int4`, a serve-time flag) so its
+         // rows are a distinct config dim, not a null-KV placeholder.
+         const kv_quant = m.variant?.replace(/^kv/, '') ?? ef['cache-type-k'] ?? m.kv_quant ?? null;
+         // Per-model chat template: a model may pin one; falls back to the run-wide flag.
+         const modelTemplate = m.chat_template ?? chatTemplate;
          const serving = {
-            chat_template: chatTemplate,
+            chat_template: modelTemplate,
             kv_quant,
             flash_attn: true,
             ctx: CTX,
             n_parallel: ef.parallel ?? 1,
             batch: ef['batch-size'] ?? null,
             ubatch: ef['ubatch-size'] ?? null,
-            spec_decode: ef['spec-type'] ?? null,
+            // spec_decode: llama.cpp draft flag, else a model-declared override. The MLX entry can
+            // set `spec_decode: mtp` (RapidMLX `--enable-mtp`) so its rows record MTP-accelerated decode.
+            spec_decode: ef['spec-type'] ?? m.spec_decode ?? null,
          };
          const capKeyFields = {
             gguf_file: subject.gguf_file,
@@ -224,7 +248,7 @@ async function main() {
             llamacpp_build,
          };
          const wantBenches = benchNames.filter((b) => BENCHES[b]);
-         const need = (benchName, think_mode) => needed(subject, kv_quant, benchName, think_mode, chatTemplate);
+         const need = (benchName, think_mode) => needed(subject, kv_quant, benchName, think_mode, modelTemplate);
          // Nothing pending for this model? Skip it entirely (no server load).
          const anyNeeded = wantBenches.some((b) =>
             BENCHES[b].kind === 'probe'
@@ -253,7 +277,7 @@ async function main() {
                .filter(Boolean)
                .join(' ');
             try {
-               await srv.startServer({ hf_repo: m.hf_repo, hf_file: m.hf_file, ctx: CTX, extraFlags });
+               await srv.startServer({ hf_repo: m.hf_repo, hf_file: m.hf_file, mlxModel: m.mlx_model, ctx: CTX, extraFlags });
                await srv.waitHealthy(360000);
             } catch (e) {
                console.error(`  load failed: ${(e.message ?? '').slice(0, 80)} — skipping`);

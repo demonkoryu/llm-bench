@@ -241,6 +241,76 @@ models:
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
      kv_variants: [q5_0, q4_0]
 
+   # ── Qwen3.6-27B MLX 4-bit (RapidMLX on the M1 Mac) ───────────────────────────
+   # Served by RapidMLX (NOT llama.cpp): `engine: rapidmlx` routes it to runners/rapidmlx-server.mjs
+   # and keeps it OUT of every rose/llama.cpp run (bench-run engine filter) — it only runs with
+   # `--target m1`. No GGUF: hf_file is a synthetic base id (no `.gguf`) so modelBaseId and the
+   # gguf_file column stay populated. Standard MLX community 4-bit (~15.6 GB), loaded by the daemon.
+   #
+   # Constraints (user, priority order: max context > performance > quality; ≤1 concurrent client):
+   #   --kv-cache-dtype int4 --kv-cache-turboquant none  → kv_quant: int4 (plain 4-bit, ≈ KV q4_0)
+   #   --max-num-seqs 1                                   → single client (agent_ctx MAX_CODERS=0)
+   #   --pflash off (primary)                             → honest long-context retrieval
+   #   --think no_think (harness)                         → hybrid tested no-think-only (standing rule)
+   # Architecture (confirmed from config.json 2026-07-22): model_type qwen3_5_text, 64 layers =
+   # 48 linear_attention + 16 full_attention (full_attention_interval 4) → GatedDeltaNet hybrid, so
+   # arch: gated-delta-dense is correct. (`rapid-mlx info` labels it "pure attention" — that's its
+   # spec-decode-eligibility class, not the literal arch.) Only 16/64 layers hold a GROWING KV cache,
+   # so deep context is far cheaper in memory than a pure-attention 27B → native 262k is plausible.
+   # native_max_ctx confirmed 262144 (max_position_embeddings). ctx_cap is a SEED climb-start; agent_ctx
+   # (run FIRST) writes the measured coherence_ceiling to the caps cache for the depth probes.
+   # extra_flags null the inherited llama.cpp batch/ubatch defaults (no meaning on MLX).
+   # Excludes kv_per_tok/fit_ctx (VRAM/llama.cpp-only) and parallel_gen (violates 1-client).
+   - hf_repo: mlx-community/Qwen3.6-27B-4bit
+     hf_file: Qwen3.6-27B-4bit
+     engine: rapidmlx
+     mlx_model: qwen3.6-27b-4bit
+     kv_quant: int4
+     label: "Qwen3.6-27B MLX 4bit [kv int4]"
+     family: qwen3.6
+     type: dense
+     arch: gated-delta-dense
+     quant: "MLX-4bit"
+     effective_bpw: 4.5                  # ~15.6 GB / 27B
+     total_params: 27
+     active_params: 27
+     think: optional
+     think_control: enable_thinking
+     tools: true
+     native_max_ctx: 262144              # confirmed: config.json max_position_embeddings
+     ctx_cap: 131072                     # SEED climb-start; agent_ctx refines via coherence_ceiling
+     kv_variants: []
+     extra_flags: { batch-size: null, ubatch-size: null }
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, agent_ctx, quality_decay, throughput, speed, prefix_cache]
+
+   # pflash A/B (Phase 5): identical serve config but `--pflash always` (RapidMLX compresses prompts
+   # >32k to ~20% of tokens). Disabled so an unfiltered m1 run never touches it; enable + serve with
+   # --pflash always, then run only agent_ctx + quality_decay. Distinct label/id → its own caps row,
+   # so it never overwrites the primary entry's coherence_ceiling.
+   - hf_repo: mlx-community/Qwen3.6-27B-4bit
+     hf_file: Qwen3.6-27B-4bit
+     engine: rapidmlx
+     mlx_model: qwen3.6-27b-4bit
+     kv_quant: int4
+     variant_tag: pflash
+     label: "Qwen3.6-27B MLX 4bit [pflash]"
+     disabled: true
+     family: qwen3.6
+     type: dense
+     arch: gated-delta-dense
+     quant: "MLX-4bit"
+     effective_bpw: 4.5
+     total_params: 27
+     active_params: 27
+     think: optional
+     think_control: enable_thinking
+     tools: true
+     native_max_ctx: 262144
+     ctx_cap: 131072
+     kv_variants: []
+     extra_flags: { batch-size: null, ubatch-size: null }
+     benches: [agent_ctx, quality_decay]
+
    # ── Gemma4-E4B ───────────────────────────────────────────────────────────────
    # Hybrid: runs both nothi and think passes.
    # Google unified sampling: same params for ALL tasks and both think states.
