@@ -39,6 +39,17 @@ export function leafModelId(hf_repo = '') {
 // cap, letting the probe's per-request signal be the sole binding constraint. Fast benches unaffected.
 const OPTIQ_TIMEOUT_MS = 3_600_000; // 60 min — matches agent_ctx fillTimeoutMs cap
 
+// Every request MUST carry a `seed` so mlx_lm.server routes it to the single-stream path instead of
+// its continuous-batching path. mlx_lm.server decides via `_is_batchable = model.is_batchable and
+// args.seed is None` (server.py:686): this hybrid IS batchable (its ArraysCache + KVCache both define
+// merge), so a seed-less request goes to BatchGenerator — which NEVER quantizes the KV cache (KV-quant
+// on the batched path is unimplemented upstream, open PR ml-explore/mlx-lm#1584). That keeps KV in
+// fp16 (~4× int4) and OOM-crashes the 28GB M1 at the first decode step on deep context. OptiQ's int4
+// KV-quant only patches the single-stream `stream_generate`, reached via `_serve_single` only when a
+// seed is present. A fixed seed also makes generation deterministic (good for a benchmark). Override
+// with OPTIQ_SEED if a specific value is ever needed; batching buys nothing at --max-concurrent 1.
+const OPTIQ_SEED = Number.parseInt(process.env.OPTIQ_SEED ?? '0', 10);
+
 /**
  * Create an OptiQ server manager for one OpenAI-compatible endpoint.
  *
@@ -49,7 +60,7 @@ const OPTIQ_TIMEOUT_MS = 3_600_000; // 60 min — matches agent_ctx fillTimeoutM
  */
 export function optiqServer({ inferenceUrl = 'http://127.0.0.1:8080', debug = false, timeoutMs = OPTIQ_TIMEOUT_MS }) {
    let currentModel = null; // the id sent in every chat request; set by startServer()
-   const client = createClient(inferenceUrl, { debug, model: () => currentModel, timeout: timeoutMs });
+   const client = createClient(inferenceUrl, { debug, model: () => currentModel, timeout: timeoutMs, seed: OPTIQ_SEED });
 
    /** GET /v1/models → array of served ids ([] on any failure). */
    async function listModels() {

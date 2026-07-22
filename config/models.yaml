@@ -282,8 +282,8 @@ models:
      think_control: enable_thinking
      tools: true
      native_max_ctx: 262144              # config.json max_position_embeddings (real trained window — kept truthful)
-     probe_max_ctx: 65536                # agent_ctx climb cap: operator LOCKED deploy at 1×64k slot (2026-07-22); 128k OOMs on the 28GB card (prod-server overhead), so cap the probe at 64k — no wasted/wedging 128k rung. native_max_ctx stays truthful.
-     ctx_cap: 65536                      # FRESH seed for OptiQ int4 KV; agent_ctx (run first) writes measured coherence_ceiling
+     probe_max_ctx: 131072               # agent_ctx climb cap: "128k is enough". The earlier 64k 'OOM' was mis-diagnosed — it was the un-quantized continuous-batching path (fp16 KV), forced because requests carried no seed. With the harness now sending a seed (runners/optiq-server.mjs OPTIQ_SEED → single-stream → OptiQ int4 KV), single-stream int4 fits ~25GB @128k on the 28GB card, so let the probe climb 64k→128k. native_max_ctx (262144) stays truthful.
+     ctx_cap: 65536                      # FRESH seed / conservative start rung for OptiQ int4 KV; agent_ctx (run first) climbs from here toward probe_max_ctx and writes measured coherence_ceiling
      kv_variants: []
      extra_flags: { batch-size: null, ubatch-size: null }
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, agent_ctx, quality_decay, throughput, speed, prefix_cache]

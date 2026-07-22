@@ -52,8 +52,16 @@ const inferenceDispatcher = new Agent({ headersTimeout: 0, bodyTimeout: 0 });
  *                        echo it back, so pass a getter (`() => currentModel`) that optiqServer
  *                        sets to the resolved served id at startServer (OptiQ single-model mode
  *                        serves any label, but a truthful id keeps the response echo honest).
+ *   seed     {number|null}  when an integer, sent as the request-body `seed` on every completion
+ *                        (per-call opts.seed still overrides). llama.cpp uses it only for sampler
+ *                        determinism. The OptiQ/mlx path REQUIRES it: mlx_lm.server routes a request
+ *                        to the un-quantized continuous-batching path unless `seed` is set
+ *                        (`_is_batchable = is_batchable and seed is None`), so a seed forces the
+ *                        single-stream path where OptiQ's int4 KV-quant patch applies — without it a
+ *                        deep-context request keeps KV in fp16 (~4×) and OOM-crashes the M1. Default
+ *                        null (omit) preserves llama.cpp's prior random-seed behavior.
  */
-export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = DEFAULT_TIMEOUT_MS, model = 'local' } = {}) {
+export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = DEFAULT_TIMEOUT_MS, model = 'local', seed = null } = {}) {
    const resolveModel = () => (typeof model === 'function' ? model() : model);
    // Side-channel for timings from the last intercepted response.
    // The openai SDK parses responses into typed objects and drops unknown fields.
@@ -127,6 +135,9 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
          model: resolveModel(), // llama-server ignores this; MLX engines echo it back (OptiQ serves any label)
          messages: resolvedMessages,
          stream: false,
+         // Client-level seed default (OptiQ needs it to force the single-stream, int4-KV path — see
+         // createClient docs). Placed before the sampling spread so a per-call opts.seed still wins.
+         ...(Number.isInteger(seed) ? { seed } : {}),
          ...sampling,
          ...extra,
       };
