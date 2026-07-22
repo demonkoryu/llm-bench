@@ -22,7 +22,9 @@ export function capKey({ gguf_file, quant, kv_quant, backend, gpu, llamacpp_buil
 }
 function load(resultsDir) {
    const p = capsPath(resultsDir);
-   if (!existsSync(p)) { return {}; }
+   if (!existsSync(p)) {
+      return {};
+   }
    try {
       return JSON.parse(readFileSync(p, 'utf8'));
    } catch {
@@ -61,7 +63,9 @@ export function upsertCap(resultsDir, keyFields, values) {
 export async function seedFromTidy(resultsDir = join(ROOT, 'results')) {
    const nativeByGguf = new Map();
    for (const m of loadModelsConfig(join(ROOT, 'config/models.yaml'), { includeDisabled: true }).models) {
-      if (m.hf_file && m.native_max_ctx) { nativeByGguf.set(m.hf_file, m.native_max_ctx); }
+      if (m.hf_file && m.native_max_ctx) {
+         nativeByGguf.set(m.hf_file, m.native_max_ctx);
+      }
    }
    const ceil = await query(
       `

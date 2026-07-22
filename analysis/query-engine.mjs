@@ -162,7 +162,9 @@ const groupBy = (rows, keyFn) => {
    const m = new Map();
    for (const r of rows) {
       const k = keyFn(r);
-      if (!m.has(k)) { m.set(k, []); }
+      if (!m.has(k)) {
+         m.set(k, []);
+      }
       m.get(k).push(r);
    }
    return m;
@@ -180,18 +182,28 @@ export function joinGeneral(rows) {
    const present = new Set(); // reducedKey|template|bench|metric|case for existing general rows
    for (const r of rows) {
       const rk = reducedKey(r);
-      if (!templatesByRK.has(rk)) { templatesByRK.set(rk, new Set()); }
+      if (!templatesByRK.has(rk)) {
+         templatesByRK.set(rk, new Set());
+      }
       templatesByRK.get(rk).add(r.chat_template ?? '');
-      if (r.scope === GENERAL) { present.add([rk, r.chat_template ?? '', r.bench, r.metric, r.case_id ?? ''].join(CELL_SEP)); }
+      if (r.scope === GENERAL) {
+         present.add([rk, r.chat_template ?? '', r.bench, r.metric, r.case_id ?? ''].join(CELL_SEP));
+      }
    }
    const extra = [];
    for (const r of rows) {
-      if (r.scope !== GENERAL) { continue; }
+      if (r.scope !== GENERAL) {
+         continue;
+      }
       const rk = reducedKey(r);
       for (const t of templatesByRK.get(rk)) {
-         if (t === (r.chat_template ?? '')) { continue; }
+         if (t === (r.chat_template ?? '')) {
+            continue;
+         }
          const k = [rk, t, r.bench, r.metric, r.case_id ?? ''].join(CELL_SEP);
-         if (present.has(k)) { continue; }
+         if (present.has(k)) {
+            continue;
+         }
          present.add(k);
          extra.push({ ...r, chat_template: t || null, _inherited: true });
       }
@@ -212,7 +224,9 @@ export function meta() {
 
 export function facets(rows) {
    const o = {};
-   for (const d of FACET_DIMS) { o[d] = [...new Set(rows.map((r) => r[d]).filter((v) => v != null))].sort(); }
+   for (const d of FACET_DIMS) {
+      o[d] = [...new Set(rows.map((r) => r[d]).filter((v) => v != null))].sort();
+   }
    return o;
 }
 
@@ -224,7 +238,9 @@ export function pivot(rows, b) {
       cm = new Map();
    for (const [k, grp] of groupBy(src, (r) => JSON.stringify([r[b.rowsDim], r[b.colsDim]]))) {
       const [rr, cc] = JSON.parse(k);
-      if (cc == null) { continue; }
+      if (cc == null) {
+         continue;
+      }
       rset.add(rr);
       cset.add(cc);
       cm.set(rr + CELL_SEP + cc, mfn(grp));
@@ -254,7 +270,9 @@ function paretoPts(rows, xf, yf, vf, think) {
       const [g, q, kv, ct, arch, ap, tp] = JSON.parse(k);
       const x = xf(grp),
          y = yf(grp);
-      if (x == null || y == null) { continue; }
+      if (x == null || y == null) {
+         continue;
+      }
       out.push({
          x,
          y,
@@ -294,8 +312,12 @@ export function leaderboard(rows, b) {
    for (const r of src) {
       const k = entityKey(r);
       const tm = r.think_mode || 'n/a';
-      if (!variants.has(k)) { variants.set(k, new Set()); }
-      if (tm !== 'n/a') { variants.get(k).add(tm); }
+      if (!variants.has(k)) {
+         variants.set(k, new Set());
+      }
+      if (tm !== 'n/a') {
+         variants.get(k).add(tm);
+      }
    }
    const noT = scoreSelection(src, { think: 'no_think', dials });
    const yesT = scoreSelection(src, { think: 'think', dials });
@@ -310,7 +332,9 @@ export function leaderboard(rows, b) {
       }
    }
    for (const e of yesT.entities) {
-      if ((variants.get(e.key) || new Set()).has('think')) { entities.push(e); }
+      if ((variants.get(e.key) || new Set()).has('think')) {
+         entities.push(e);
+      }
    }
    return { entities, denom: noT.denom, count: src.length };
 }
@@ -329,8 +353,12 @@ export function coverage(rows, b) {
    const generalBenches = new Set(src.filter((r) => r.scope === GENERAL).map((r) => r.bench));
    const generalByRK = new Set(src.filter((r) => r.scope === GENERAL).map((r) => reducedKey(r) + CELL_SEP + r.bench));
    const stateOf = (c, bn) => {
-      if (measured.has(c + CELL_SEP + bn)) { return 'measured'; }
-      if (generalBenches.has(bn) && generalByRK.has(cfgRK.get(c) + CELL_SEP + bn)) { return 'inherited'; }
+      if (measured.has(c + CELL_SEP + bn)) {
+         return 'measured';
+      }
+      if (generalBenches.has(bn) && generalByRK.has(cfgRK.get(c) + CELL_SEP + bn)) {
+         return 'inherited';
+      }
       return 'none';
    };
    return { configs, benches, cells: configs.map((c) => ({ cfg: c, states: benches.map((bn) => stateOf(c, bn)) })) };

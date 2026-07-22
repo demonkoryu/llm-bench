@@ -32,19 +32,31 @@ const PG_TYPE = { VARCHAR: 'TEXT', DOUBLE: 'DOUBLE PRECISION', TIMESTAMP: 'TIMES
 // of surrounding quotes). Never logs values.
 let _envLoaded = false;
 function loadDotEnv() {
-   if (_envLoaded) { return; }
+   if (_envLoaded) {
+      return;
+   }
    _envLoaded = true;
    const path = join(ROOT, '.env');
-   if (!existsSync(path)) { return; }
+   if (!existsSync(path)) {
+      return;
+   }
    for (const line of readFileSync(path, 'utf8').split('\n')) {
       const t = line.trim();
-      if (!t || t.startsWith('#')) { continue; }
+      if (!t || t.startsWith('#')) {
+         continue;
+      }
       const eq = t.indexOf('=');
-      if (eq < 0) { continue; }
+      if (eq < 0) {
+         continue;
+      }
       const key = t.slice(0, eq).trim();
-      if (key in process.env) { continue; }
+      if (key in process.env) {
+         continue;
+      }
       let val = t.slice(eq + 1).trim();
-      if (val.length >= 2 && ((val[0] === '"' && val.at(-1) === '"') || (val[0] === "'" && val.at(-1) === "'"))) { val = val.slice(1, -1); }
+      if (val.length >= 2 && ((val[0] === '"' && val.at(-1) === '"') || (val[0] === "'" && val.at(-1) === "'"))) {
+         val = val.slice(1, -1);
+      }
       process.env[key] = val;
    }
 }
@@ -74,7 +86,9 @@ export function pgInfo() {
 function ddl() {
    const cols = COLUMN_NAMES.map((c) => {
       const t = PG_TYPE[COLUMNS[c]];
-      if (!t) { throw new Error(`no PG type mapping for ${c} (${COLUMNS[c]})`); }
+      if (!t) {
+         throw new Error(`no PG type mapping for ${c} (${COLUMNS[c]})`);
+      }
       return `"${c}" ${t}`;
    });
    return `CREATE TABLE IF NOT EXISTS measurements (${cols.join(', ')})`;
@@ -93,7 +107,9 @@ const NUMERIC_OIDS = new Set([20, 21, 23, 700, 701, 1700]);
 
 let _sql = null;
 function conn() {
-   if (_sql) { return _sql; }
+   if (_sql) {
+      return _sql;
+   }
    const cfg = pgConfig();
    _sql = postgres({
       host: cfg.host,
@@ -137,7 +153,9 @@ export async function ensureSchema() {
  * @returns {{ rows: number }}
  */
 export async function insertRows(rows) {
-   if (!rows.length) { return { rows: 0 }; }
+   if (!rows.length) {
+      return { rows: 0 };
+   }
    await ensureSchema();
    const sql = conn();
    const { password } = pgConfig();
@@ -163,7 +181,11 @@ export async function query(text) {
       const numCols = (rows.columns || []).filter((c) => NUMERIC_OIDS.has(c.type)).map((c) => c.name);
       return rows.map((r) => {
          const o = { ...r };
-         for (const c of numCols) { if (o[c] != null) { o[c] = Number(o[c]); } }
+         for (const c of numCols) {
+            if (o[c] != null) {
+               o[c] = Number(o[c]);
+            }
+         }
          return o;
       });
    } catch (e) {

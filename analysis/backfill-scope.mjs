@@ -20,5 +20,7 @@ for (const bench of benches) {
 }
 const dist = await query('SELECT scope, count(*) AS n FROM measurements GROUP BY scope ORDER BY scope');
 console.error(`[backfill-scope] updated ${updated} rows across ${benches.length} distinct benches`);
-for (const r of dist) { console.error(`  scope=${r.scope ?? 'NULL'}: ${r.n}`); }
+for (const r of dist) {
+   console.error(`  scope=${r.scope ?? 'NULL'}: ${r.n}`);
+}
 process.exit(0);
