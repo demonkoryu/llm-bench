@@ -30,10 +30,19 @@ export function leafModelId(hf_repo = '') {
  * @param {object} opts
  *   inferenceUrl {string}   RapidMLX base URL (e.g. http://llm1:8000)
  *   debug        {boolean}  verbose logging
+ *   timeoutMs    {number}   SDK request-timeout ceiling (default 60 min)
  */
-export function rapidmlxServer({ inferenceUrl = 'http://127.0.0.1:8000', debug = false }) {
+// Deep-context prefill on the M1 (slowest fleet member, 27B-4bit) is SLOW — the agent_ctx probe
+// budgets up to 60 min per request (fillTimeoutMs) precisely so a slow-but-fine 64k–128k fill is
+// not false-failed. The openai SDK applies its OWN per-request timeout (createClient default 10 min)
+// that RACES the probe's AbortSignal — whichever fires first wins — so a 10-min SDK ceiling would
+// silently cap every deep rung and under-report the max-context ceiling (the #1-priority metric).
+// Match the SDK ceiling to the probe's cap AND the daemon's `--timeout 3600`, letting the probe's
+// per-request signal be the sole binding constraint. Normal (fast) benches are unaffected.
+const RAPIDMLX_TIMEOUT_MS = 3_600_000; // 60 min — matches agent_ctx fillTimeoutMs cap + serve.sh --timeout
+export function rapidmlxServer({ inferenceUrl = 'http://127.0.0.1:8000', debug = false, timeoutMs = RAPIDMLX_TIMEOUT_MS }) {
    let currentModel = null; // the id sent in every chat request; set by startServer()
-   const client = createClient(inferenceUrl, { debug, model: () => currentModel });
+   const client = createClient(inferenceUrl, { debug, model: () => currentModel, timeout: timeoutMs });
 
    /** GET /v1/models → array of served ids ([] on any failure). */
    async function listModels() {
