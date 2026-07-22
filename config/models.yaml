@@ -241,48 +241,18 @@ models:
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
      kv_variants: [q5_0, q4_0]
 
-   # ── Qwen3.6-27B oQ4 + MTP (MLX / omlx on the M1 Mac) ─────────────────────────
-   # Served by omlx (NOT llama.cpp): `engine: omlx` routes it to runners/omlx-server.mjs
-   # and keeps it OUT of every rose/llama.cpp run (bench-run engine filter) — it only runs
-   # when `--target m1`. No GGUF: hf_file is a synthetic base id (no `.gguf`) so modelBaseId
-   # and the gguf_file column stay populated. Fixed Qwen chat template (froggeric) is applied
-   # server-side by dropping chat_template.jinja into omlx's model dir (see the llm1 runbook);
-   # `chat_template: froggeric` tags the rows to match the rose froggeric runs.
-   # Weights: Jundot/Qwen3.6-27B-oQ4-mtp (~17 GB) — the omlx author's oQ4 build WITH the MTP draft
-   # head embedded (`language_model.mtp.*`), needed for omlx NATIVE MTP. Native MTP (mtp_enabled) is
-   # the only speculative path compatible with TurboQuant KV (vlm_mtp's external drafter conflicts).
-   # Three Mac-side model_settings.json toggles must MATCH these tags (like the chat_template drop-in):
-   #   turboquant_kv_enabled:true, turboquant_kv_bits:4   → kv_quant: tq4 (~4× smaller KV than f16)
-   #   mtp_enabled:true                                    → spec_decode: mtp (faster decode, same output)
-   - hf_repo: Jundot/Qwen3.6-27B-oQ4-mtp
-     hf_file: Qwen3.6-27B-oQ4-mtp       # synthetic base id (no .gguf) → gguf_file column + modelBaseId
-     engine: omlx                        # routes to omlx; excluded from llama.cpp/rose runs
-     mlx_model: Qwen3.6-27B-oQ4-mtp      # omlx request id (leaf folder name)
-     chat_template: froggeric            # fixed Qwen template (dropped into the model dir on the Mac)
-     kv_quant: tq4                       # omlx TurboQuant 4-bit KV (set in ~/.omlx/model_settings.json)
-     spec_decode: mtp                    # omlx NATIVE multi-token prediction (mtp_enabled in model_settings.json)
-     label: "Qwen3.6-27B oQ4 MTP (MLX)"  # omlx-author oQ4 (~17 GB) with embedded MTP head; native MTP + TurboQuant KV
-     family: qwen3.6
-     type: dense
-     arch: gated-delta-dense
-     quant: "MLX-oQ4"                    # override — omlx oQ4 mixed-precision (the GGUF quant regex won't match)
-     effective_bpw: 4.8                  # override — ~17 GB / 27B incl. MTP head
-     total_params: 27
-     active_params: 27
-     think: optional
-     think_control: enable_thinking      # omlx supports chat_template_kwargs natively (verify honored)
-     tools: true
-     native_max_ctx: 262144
-     ctx_cap: 32768
-     kv_variants: []                     # do NOT fan out KV-quant variants (llama.cpp-only concept)
-     extra_flags: { batch-size: null, ubatch-size: null }   # neutralize llama.cpp batch defaults on MLX rows
-     benches: [agent_ctx, triage, reasoning, toolcalling, summarization, docqa]
-
-   # ── Qwen3.6-27B MTP-4bit (MLX, kradih) — comparison to the Jundot oQ4 build ───
-   # Standard MLX 4-bit (~15 GB, ~1.7 GB lighter than oQ4) WITH the MTP head embedded
-   # (`language_model.mtp.*`). Loads via omlx's text BatchedEngine (not VLM). Native MTP +
-   # TurboQuant 4-bit KV both verified. Lighter weights → may keep the 32k prefill under the guard
-   # (the oQ4 fell to 16k). Same Mac-side model_settings toggles (turboquant_kv_bits:4, mtp_enabled).
+   # ── Qwen3.6-27B MTP-4bit (MLX / omlx on the M1 Mac) ──────────────────────────
+   # Served by omlx (NOT llama.cpp): `engine: omlx` routes it to runners/omlx-server.mjs and keeps
+   # it OUT of every rose/llama.cpp run (bench-run engine filter) — it only runs when `--target m1`.
+   # No GGUF: hf_file is a synthetic base id (no `.gguf`) so modelBaseId and the gguf_file column
+   # stay populated. Standard MLX 4-bit (~15 GB) WITH the MTP head embedded (`language_model.mtp.*`),
+   # loaded via omlx's text BatchedEngine. Three things are applied SERVER-SIDE on the Mac and TAGGED
+   # here (each must match — like the chat_template drop-in):
+   #   froggeric chat_template.jinja in the model dir            → chat_template: froggeric
+   #   turboquant_kv_enabled:true, turboquant_kv_bits:4          → kv_quant: tq4 (~4× smaller than f16)
+   #   mtp_enabled:true (native MTP; the only path TurboQuant-KV-compatible) → spec_decode: mtp
+   # (The heavier Jundot oQ4 build was evaluated then dropped: at ~17 GB its 32k prefill aborted and
+   #  fell to 16k, vs this lighter build's full 32k — see git history.)
    - hf_repo: kradih/Qwen3.6-27B-MTP-4bit-MLX
      hf_file: Qwen3.6-27B-MTP-4bit-MLX
      engine: omlx
@@ -302,7 +272,7 @@ models:
      think_control: enable_thinking
      tools: true
      native_max_ctx: 262144
-     ctx_cap: 32768
+     ctx_cap: 131072                     # agent_ctx targets the rose fleet shape: 128k planner + 64k coders
      kv_variants: []
      extra_flags: { batch-size: null, ubatch-size: null }
      benches: [agent_ctx, triage, reasoning, toolcalling, summarization, docqa]
