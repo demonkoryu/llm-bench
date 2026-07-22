@@ -22,11 +22,23 @@
  */
 
 import OpenAI from 'openai';
+import { Agent } from 'undici';
 import { parseToolArgs } from './repair.mjs';
 import { applyThinkControl } from './think.mjs';
 
 const DEFAULT_URL = process.env.LLAMA_URL ?? 'http://192.168.1.120:8090';
 const DEFAULT_TIMEOUT_MS = 600_000;
+
+// Node's global fetch is undici, whose headersTimeout/bodyTimeout DEFAULT to 300s (5 min). For a
+// NON-STREAMING completion the server sends no response headers until prefill+generation finishes,
+// so a deep-context request whose prefill exceeds 5 min is killed at the socket layer with
+// "Request timed out." — BEFORE the openai SDK timeout or our per-request AbortSignal. That silently
+// false-fails deep agent_ctx / quality_decay rungs on the slow M1 (a 128k prefill of the 27B takes
+// well over 5 min) and would under-report the max coherent context (the #1-priority metric). We
+// disable both socket timeouts (0 = off) so the per-request AbortSignal is the SOLE deadline. This
+// only REMOVES a premature abort — the AbortSignal.timeout(timeoutMs) in chat() still bounds every
+// request — so fast llama.cpp/rose requests are unaffected. connectTimeout stays at its 10s default.
+const inferenceDispatcher = new Agent({ headersTimeout: 0, bodyTimeout: 0 });
 
 /**
  * Create a llama.cpp client instance.
@@ -52,7 +64,9 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
     * Returns a re-serialized Response so the SDK parses our modified body.
     */
    async function customFetch(url, init) {
-      const resp = await globalThis.fetch(url, init);
+      // Attach the no-socket-timeout dispatcher so long non-streaming prefills aren't cut at undici's
+      // 5-min default; the SDK/AbortSignal deadlines still apply. (Node fetch honors init.dispatcher.)
+      const resp = await globalThis.fetch(url, { ...init, dispatcher: inferenceDispatcher });
       const urlStr = typeof url === 'string' ? url : (url?.href ?? '');
       if (resp.ok && urlStr.includes('chat/completions')) {
          try {
