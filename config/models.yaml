@@ -278,7 +278,7 @@ models:
      think_control: enable_thinking
      tools: true
      native_max_ctx: 262144              # confirmed: config.json max_position_embeddings
-     ctx_cap: 131072                     # SEED climb-start; agent_ctx refines via coherence_ceiling
+     ctx_cap: 65536                      # measured: 128k incoherent, 64k coheres (agent_ctx 2026-07-22, int4 KV + no_think); caps.coherence_ceiling drives depth probes
      kv_variants: []
      extra_flags: { batch-size: null, ubatch-size: null }
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, agent_ctx, quality_decay, throughput, speed, prefix_cache]
@@ -306,7 +306,7 @@ models:
      think_control: enable_thinking
      tools: true
      native_max_ctx: 262144
-     ctx_cap: 131072
+     ctx_cap: 65536                      # measured coherent ceiling (int4 KV); pflash A/B may shift it — this variant re-probes agent_ctx
      kv_variants: []
      extra_flags: { batch-size: null, ubatch-size: null }
      benches: [agent_ctx, quality_decay]
