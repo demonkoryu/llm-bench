@@ -26,17 +26,10 @@ export function resolveEnv(s) {
  * descriptor. Throws on an unknown target (the inline call sites would otherwise
  * crash on the first `host.llamacpp` access anyway).
  *
- * The host may declare an `engine` (`llamacpp` | `omlx`). llama.cpp hosts leave it
- * unset and behave exactly as before. An `omlx` host serves an MLX model over an
- * OpenAI-compatible HTTP endpoint (`host.mlx`) — no SSH scripts, no VRAM tooling — so
- * the inference URL is taken from `host.mlx` when present and `backend` defaults to
- * `mlx`. The returned key names are unchanged (`llamaUrl` still carries the inference
- * URL) so existing llama.cpp call sites are untouched.
- *
  * @param {string} path   path to hosts.yaml
  * @param {string} target host key (e.g. 'rose')
  * @param {{ backend?: string }} [opts] override the recorded inference backend
- * @returns {{ engine, llamaUrl, sshHost, backend, gpu, vramTotalMib, port, vramCmd, backends, raw }}
+ * @returns {{ llamaUrl, sshHost, backend, gpu, vramTotalMib, port, vramCmd, backends, raw }}
  */
 export function loadHostConfig(path, target, { backend } = {}) {
    const hosts = yaml.load(readFileSync(path, 'utf8')) ?? {};
@@ -44,13 +37,10 @@ export function loadHostConfig(path, target, { backend } = {}) {
    if (!host) {
       throw new Error(`Unknown target: ${target}`);
    }
-   const engine = host.engine ?? 'llamacpp';
    return {
-      engine,
-      // omlx hosts carry the inference URL in `mlx`; llama.cpp hosts in `llamacpp`.
-      llamaUrl: resolveEnv(host.mlx ?? host.llamacpp),
+      llamaUrl: resolveEnv(host.llamacpp),
       sshHost: resolveEnv(host.ssh_host),
-      backend: backend ?? host.backend ?? (engine === 'omlx' ? 'mlx' : 'vulkan'),
+      backend: backend ?? host.backend ?? 'vulkan',
       gpu: host.gpu ?? target,
       vramTotalMib: host.vram_total_mib ?? null,
       port: host.port ?? null,

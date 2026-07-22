@@ -26,7 +26,6 @@
 
 import { extraFlagsToString } from '../../runners/llamacpp-server.mjs';
 import { makeFillPrompt } from '../../shared/codebase.mjs';
-import { runMlx } from './agent_ctx_mlx.mjs';
 
 // Agent profile (mirrors the fleet dials in analysis/scoring-config.mjs: worker_ctx=65536,
 // ctx_tier=100000). Both are capped per-config at the model's coherent window.
@@ -99,8 +98,7 @@ async function runSlots(client, sizes, { think, thinkControl }) {
    return Promise.all(reqs);
 }
 
-// llama.cpp / amdgpu implementation — reloads llama-server across a shared-KV-pool sweep and
-// gates on rocm-smi VRAM+GTT spill. Selected for llama.cpp hosts (engine unset/llamacpp).
+// Reloads llama-server across a shared-KV-pool sweep and gates on rocm-smi VRAM+GTT spill.
 async function runLlamacpp({ srv, client, model, caps }) {
    const think = model.think === 'optional' ? false : null;
    const thinkControl = model.think_control ?? 'enable_thinking';
@@ -273,16 +271,10 @@ async function runLlamacpp({ srv, client, model, caps }) {
    ];
 }
 
-// Single registry entry, dispatched by host engine: the omlx (MLX) host gets the client-driven
-// probe (agent_ctx_mlx.mjs), every other host keeps the exact current llama.cpp behavior. Same
-// `agent_ctx` name + row shape, so scoring/dashboard are unchanged. selfManagesServer stays true:
-// the omlx path needs no lifecycle (it just selects the served model + GET /v1/models at its start).
 export const bench = {
    name: 'agent_ctx',
    kind: 'probe',
    thinkDependent: false,
    selfManagesServer: true,
-   run(ctx) {
-      return (ctx.model.engine === 'omlx' ? runMlx : runLlamacpp)(ctx);
-   },
+   run: runLlamacpp,
 };

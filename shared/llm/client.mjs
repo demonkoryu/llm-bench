@@ -35,13 +35,8 @@ const DEFAULT_TIMEOUT_MS = 600_000;
  * @param {object}  options
  *   debug    {boolean}  emit request/response detail to stderr
  *   timeout  {number}   default request timeout ms
- *   model    {string|function}  request `model` field. llama-server ignores it (alias set
- *                        at server start), so the default 'local' is fine there. omlx
- *                        REQUIRES the real served id (missing/wrong → 422); pass a getter
- *                        (`() => currentModel`) so omlxServer can switch it at startServer.
  */
-export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = DEFAULT_TIMEOUT_MS, model = 'local' } = {}) {
-   const resolveModel = () => (typeof model === 'function' ? model() : model);
+export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = DEFAULT_TIMEOUT_MS } = {}) {
    // Side-channel for timings from the last intercepted response.
    // The openai SDK parses responses into typed objects and drops unknown fields.
    // We save timings here during the custom fetch interception.
@@ -109,7 +104,7 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
       _lastTimings = null;
 
       const reqParams = {
-         model: resolveModel(), // llama-server ignores this; omlx requires the real served id
+         model: 'local', // llama-server ignores this (alias set at server start)
          messages: resolvedMessages,
          stream: false,
          ...sampling,
