@@ -51,13 +51,21 @@ export const bench = {
                pm = t?.prompt_ms,
                gn = t?.predicted_n,
                gm = t?.predicted_ms;
-            if (![pn, pm, gn, gm].every(Number.isFinite) || pm + gm <= 0) {
-               continue;
+            if ([pn, pm, gn, gm].every(Number.isFinite) && pm + gm > 0) {
+               // llama.cpp server timings → full prefill/decode/ttft split.
+               ttfts.push(pm);
+               e2es.push(((pn + gn) / (pm + gm)) * 1000);
+               decs.push(gn / (gm / 1000));
+               prefs.push(pn / (pm / 1000));
+            } else {
+               // MLX/OptiQ: no server timings → wall-clock end-to-end tok/s only. A prefill/decode/ttft
+               // split would need streaming (TTFT boundary); the e2e-<k>k row still carries a real
+               // throughput-at-depth number, and the decode/prefill/ttft rows are simply omitted.
+               const e2e = client.e2eTokPerSec();
+               if (Number.isFinite(e2e)) {
+                  e2es.push(e2e);
+               }
             }
-            ttfts.push(pm);
-            e2es.push(((pn + gn) / (pm + gm)) * 1000);
-            decs.push(gn / (gm / 1000));
-            prefs.push(pn / (pm / 1000));
          }
          const k = Math.round(d / 1024);
          if (e2es.length) {

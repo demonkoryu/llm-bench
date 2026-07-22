@@ -27,7 +27,10 @@ export const bench = {
       await srv.waitHealthy(360000);
       const ttftOf = async (messages) => {
          const { timings } = await client.chat(messages, { think: null, max_tokens: 4, temperature: 0.0 }, 900000);
-         return timings?.prompt_ms;
+         // llama.cpp reports server-side prefill ms directly; MLX/OptiQ emits no timings, so fall back
+         // to the client wall-clock — with max_tokens:4 the 4-token decode is negligible, so total
+         // request wall ≈ prefill time, and it cancels near-identically in the cold/warm ratio.
+         return timings?.prompt_ms ?? client.lastWallMs();
       };
       let nonce = 0;
       const colds = [],

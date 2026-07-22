@@ -28,13 +28,13 @@ export const bench = {
       ]) {
          try {
             await client.chat([{ role: 'user', content: prompt }], { think: null, max_tokens: 512, temperature: 0.7 });
-            rows.push({
-               bench: `speed_${label}`,
-               score: client.tokPerSec(),
-               tok_s: client.tokPerSec(),
-               prefill_tps: client.prefillTokPerSec(),
-               status: 'ok',
-            });
+            // llama.cpp: server timings. MLX/OptiQ: no timings → wall-clock e2e. These prompts are
+            // decode-dominated (512 gen, tiny prompt) so e2e ≈ decode tok/s. Skip the row if neither
+            // source yields a value (avoids banking null-scored rows the store would drop anyway).
+            const dec = client.tokPerSec() ?? client.e2eTokPerSec();
+            if (Number.isFinite(dec)) {
+               rows.push({ bench: `speed_${label}`, score: dec, tok_s: dec, prefill_tps: client.prefillTokPerSec(), status: 'ok' });
+            }
          } catch {
             /* skip */
          }
@@ -49,12 +49,11 @@ export const bench = {
          um.content = `// speed prefill ${++nonce}\n${um.content}`;
          try {
             await client.chat(built.messages, { think: null, max_tokens: 8, temperature: 0.0, ignore_eos: true }, 900000);
-            rows.push({
-               bench: `speed_prefill-${Math.round(promptTokens / 1024)}k`,
-               score: client.prefillTokPerSec(),
-               prefill_tps: client.prefillTokPerSec(),
-               status: 'ok',
-            });
+            // Prefill-dominated (big prompt, 8 gen) → server prefill tps, else wall-clock e2e ≈ prefill tps.
+            const pre = client.prefillTokPerSec() ?? client.e2eTokPerSec();
+            if (Number.isFinite(pre)) {
+               rows.push({ bench: `speed_prefill-${Math.round(promptTokens / 1024)}k`, score: pre, prefill_tps: pre, status: 'ok' });
+            }
          } catch {
             /* skip */
          }

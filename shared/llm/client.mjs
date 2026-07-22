@@ -67,6 +67,13 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
    // The openai SDK parses responses into typed objects and drops unknown fields.
    // We save timings here during the custom fetch interception.
    let _lastTimings = null;
+   // Wall-clock fallback for engines that don't emit a llama.cpp `timings` object (e.g. mlx_lm /
+   // OptiQ, whose OpenAI response carries only `usage` token counts). chat() records the request
+   // round-trip wall time and usage so the speed/throughput/prefix_cache probes can derive real
+   // end-to-end tok/s and a prefill-ms proxy where server timings are unavailable. llama.cpp is
+   // unaffected — its probes read `timings` first and only fall back to these when it's null.
+   let _lastWallMs = null;
+   let _lastUsage = null;
 
    /**
     * Custom fetch interceptor: saves timings.
@@ -130,6 +137,8 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
       }
 
       _lastTimings = null;
+      _lastWallMs = null;
+      _lastUsage = null;
 
       const reqParams = {
          model: resolveModel(), // llama-server ignores this; MLX engines echo it back (OptiQ serves any label)
@@ -153,7 +162,10 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
       }
 
       const signal = AbortSignal.timeout(timeoutMs);
+      const _t0 = Date.now();
       const completion = await sdk.chat.completions.create(reqParams, { signal });
+      _lastWallMs = Date.now() - _t0;
+      _lastUsage = completion?.usage ?? null;
 
       if (debug) {
          const c = completion.choices?.[0];
@@ -332,7 +344,31 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
       return _lastTimings?.prompt_per_second ?? null;
    }
 
-   return { chat, toolsLoop, waitHealthy, getServerProps, tokPerSec, prefillTokPerSec, baseUrl };
+   /**
+    * Total request wall-clock (ms) of the last chat(), measured client-side around the SDK call.
+    * Engine-agnostic fallback where the server emits no `timings`. For a tiny-generation request
+    * (e.g. prefix_cache's max_tokens:4) this is ≈ prefill time; use as a prompt_ms proxy.
+    */
+   function lastWallMs() {
+      return _lastWallMs;
+   }
+
+   /**
+    * End-to-end tokens/sec of the last chat() from usage token counts ÷ wall-clock — a real,
+    * engine-agnostic throughput number for MLX/OptiQ (no server `timings`). Returns null when
+    * usage or wall time is unavailable. Note: e2e (prompt+completion)/wall, not a decode/prefill
+    * split; the speed probe isolates the regimes by prompt shape (short-gen ≈ decode, big-prefill ≈
+    * prefill), so per-row it approximates the intended metric.
+    */
+   function e2eTokPerSec() {
+      if (!Number.isFinite(_lastWallMs) || _lastWallMs <= 0 || !_lastUsage) {
+         return null;
+      }
+      const toks = (_lastUsage.prompt_tokens ?? 0) + (_lastUsage.completion_tokens ?? 0);
+      return toks > 0 ? toks / (_lastWallMs / 1000) : null;
+   }
+
+   return { chat, toolsLoop, waitHealthy, getServerProps, tokPerSec, prefillTokPerSec, lastWallMs, e2eTokPerSec, baseUrl };
 }
 
 /** Convenience: create a client from the default env URL. */
