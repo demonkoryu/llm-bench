@@ -34,9 +34,14 @@ const top = [...data].sort((a, b) => (b.capability ?? -1) - (a.capability ?? -1)
 
 ```js
 // Fill on desktop; on a phone keep a readable min width and scroll inside the card.
+// Size the left margin to the longest label so model names aren't clipped at the SVG edge
+// (y tick labels are right-anchored at the axis and extend leftward). ~6.6px/char at the 10px
+// axis font, plus padding; capped so a stray long label can't eat the whole chart.
+const labelChars = top.length ? Math.max(...top.map((d) => d.label.length)) : 0;
+const marginLeft = Math.min(460, Math.max(250, Math.round(labelChars * 6.6) + 14));
 display(html`<div class="scroll-x">${Plot.plot({
-  marginLeft: 250,
-  width: Math.max(560, width),
+  marginLeft,
+  width: Math.max(marginLeft + 340, width),
   height: Math.max(160, top.length * 24 + 40),
   x: { label: "capability →", grid: true, domain: [0, 100] },
   y: { label: null },
