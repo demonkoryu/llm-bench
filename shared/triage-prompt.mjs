@@ -1,8 +1,11 @@
 /**
- * Real triage prompt, schema, and vault context — copied verbatim from
+ * Real triage prompt, schema, and vault context — copied from
  * src/server/wispTools.ts (TRIAGE_STATIC_PROMPT, TRIAGE_SCHEMA, buildVaultContext).
  *
- * Keep in sync with wispTools.ts if the production prompt changes.
+ * Keep in sync with wispTools.ts if the production prompt changes — EXCEPT the schema's
+ * nullable fields, which intentionally DIVERGE (enum-with-null → anyOf[{enum},{null}]) to work
+ * around an Outlines/mlx_lm constraint bug; see the note on TRIAGE_SCHEMA below. wispTools.ts
+ * should adopt the same encoding (it is a latent portability bug there too).
  * The vault context below reflects live state as of 2026-05-29.
  */
 
@@ -71,12 +74,17 @@ export const TRIAGE_SCHEMA = {
    ],
    properties: {
       proposed_action: { type: 'string', enum: ['promote_resource', 'promote_project', 'spawn_task', 'dismiss', 'skip'] },
-      suggested_type: { type: 'string', enum: ['resource', 'project', 'task', null], nullable: true },
+      // NOTE: nullability is expressed as anyOf[{enum},{null}] — NOT `enum:[...,null]` — deliberately.
+      // mlx_lm constrains output via Outlines, whose FSM compiler mis-handles `null` AS AN ENUM MEMBER:
+      // it permits EOS right after the key, truncating the JSON (all triage items fail on OptiQ/mlx).
+      // anyOf[{enum},{null}] is semantically identical and compiles on BOTH Outlines and llama.cpp's
+      // GBNF converter. Do not "simplify" this back to enum-with-null. See results/optiq-schema-outlines.md.
+      suggested_type: { anyOf: [{ type: 'string', enum: ['resource', 'project', 'task'] }, { type: 'null' }] },
       suggested_title: { type: 'string' },
       suggested_summary: { type: 'string' },
       suggested_tags: { type: 'array', items: { type: 'string' } },
-      target_area: { type: 'string', enum: ['craft', 'finance', 'music', 'work', null], nullable: true },
-      target_anchor: { type: 'string', nullable: true },
+      target_area: { anyOf: [{ type: 'string', enum: ['craft', 'finance', 'music', 'work'] }, { type: 'null' }] },
+      target_anchor: { type: ['string', 'null'] },
       propose_new_anchor: {
          anyOf: [
             {
