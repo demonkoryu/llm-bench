@@ -239,7 +239,10 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
          const choice = chunk.choices?.[0];
          const delta = choice?.delta ?? {};
          const piece = delta.content ?? '';
-         const rpiece = delta.reasoning_content ?? '';
+         // Reasoning-trace field varies by server: llama.cpp/OpenAI use `reasoning_content`; mlx_lm /
+         // OptiQ stream the thinking trace under `reasoning`. Accept both so TTFT fires on the first
+         // token even when the model opens with a reasoning trace (its default here).
+         const rpiece = delta.reasoning_content ?? delta.reasoning ?? '';
          // TTFT = time to the FIRST emitted token, whether reasoning trace or answer content.
          if (ttftMs == null && (piece.length || rpiece.length)) {
             ttftMs = Date.now() - t0;
