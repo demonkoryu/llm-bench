@@ -85,6 +85,12 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
       const resp = await globalThis.fetch(url, { ...init, dispatcher: inferenceDispatcher });
       const urlStr = typeof url === 'string' ? url : (url?.href ?? '');
       if (resp.ok && urlStr.includes('chat/completions')) {
+         // Streaming (SSE) responses MUST pass through untouched: buffering the body with .text() here
+         // would defeat streaming and destroy the time-to-first-token signal chatStream() relies on.
+         // Only the non-streaming JSON path is intercepted (to salvage llama.cpp's `timings` field).
+         if ((resp.headers.get('content-type') || '').includes('text/event-stream')) {
+            return resp;
+         }
          try {
             const text = await resp.text();
             const data = JSON.parse(text);
@@ -176,6 +182,89 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
       }
 
       return { completion, timings: _lastTimings };
+   }
+
+   /**
+    * POST /v1/chat/completions with `stream: true` — Server-Sent-Events completion.
+    *
+    * The reason this exists separately from chat(): engines that emit no llama.cpp `timings` object
+    * (mlx_lm / OptiQ) give no server-side prefill/TTFT split, so the ONLY way to measure time-to-first-
+    * token is to stream and clock the wall time from request-send to the first delta carrying generated
+    * text. On localhost (--local runs) the network RTT is negligible, so this wall-clock TTFT ≈ prefill
+    * time + one decode step — a fair, engine-agnostic counterpart to llama.cpp's server `prompt_ms`.
+    *
+    * Requests `stream_options.include_usage` so the terminal chunk carries prompt/completion token
+    * counts (when the server supports it) for e2e/decode/prefill derivation; `usage` is null otherwise.
+    *
+    * @returns {{ content, reasoning, ttftMs, wallMs, usage, finishReason }}
+    *   ttftMs  wall-ms to the first delta with content|reasoning_content (null if nothing streamed)
+    *   wallMs  total request wall-ms (also mirrored into lastWallMs()/e2eTokPerSec())
+    *   usage   { prompt_tokens, completion_tokens, ... } or null
+    */
+   async function chatStream(messages, opts = {}, timeoutMs = timeout) {
+      const { think = null, thinkControl = 'enable_thinking', responseFormat = null, tools = null, ...sampling } = opts;
+      const { messages: resolvedMessages, extraBody } = applyThinkControl(messages, think, thinkControl);
+      const extra = { ...extraBody };
+
+      _lastTimings = null;
+      _lastWallMs = null;
+      _lastUsage = null;
+
+      const reqParams = {
+         model: resolveModel(),
+         messages: resolvedMessages,
+         stream: true,
+         stream_options: { include_usage: true },
+         ...(Number.isInteger(seed) ? { seed } : {}),
+         ...sampling,
+         ...extra,
+      };
+      if (responseFormat) {
+         reqParams.response_format = { type: 'json_schema', json_schema: { name: 'output', schema: responseFormat } };
+      }
+      if (tools?.length) {
+         reqParams.tools = tools;
+      }
+
+      const signal = AbortSignal.timeout(timeoutMs);
+      const t0 = Date.now();
+      let ttftMs = null;
+      let content = '';
+      let reasoning = '';
+      let usage = null;
+      let finishReason = null;
+
+      const stream = await sdk.chat.completions.create(reqParams, { signal });
+      for await (const chunk of stream) {
+         const choice = chunk.choices?.[0];
+         const delta = choice?.delta ?? {};
+         const piece = delta.content ?? '';
+         const rpiece = delta.reasoning_content ?? '';
+         // TTFT = time to the FIRST emitted token, whether reasoning trace or answer content.
+         if (ttftMs == null && (piece.length || rpiece.length)) {
+            ttftMs = Date.now() - t0;
+         }
+         if (piece) {
+            content += piece;
+         }
+         if (rpiece) {
+            reasoning += rpiece;
+         }
+         if (choice?.finish_reason) {
+            finishReason = choice.finish_reason;
+         }
+         if (chunk.usage) {
+            usage = chunk.usage; // terminal include_usage chunk (may be null if unsupported)
+         }
+      }
+      _lastWallMs = Date.now() - t0;
+      _lastUsage = usage;
+
+      if (debug) {
+         process.stderr.write(`[llm:stream] finish=${finishReason} ttft=${ttftMs ?? 'n/a'}ms wall=${_lastWallMs}ms\n`);
+      }
+
+      return { content, reasoning, ttftMs, wallMs: _lastWallMs, usage, finishReason };
    }
 
    /**
@@ -368,7 +457,7 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
       return toks > 0 ? toks / (_lastWallMs / 1000) : null;
    }
 
-   return { chat, toolsLoop, waitHealthy, getServerProps, tokPerSec, prefillTokPerSec, lastWallMs, e2eTokPerSec, baseUrl };
+   return { chat, chatStream, toolsLoop, waitHealthy, getServerProps, tokPerSec, prefillTokPerSec, lastWallMs, e2eTokPerSec, baseUrl };
 }
 
 /** Convenience: create a client from the default env URL. */
