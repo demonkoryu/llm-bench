@@ -290,7 +290,7 @@ models:
      # (cold 119694ms ≈ warm 119542ms). OptiQ's int4-KV requant defeats mlx_lm's prompt-cache, so every
      # multi-turn request re-prefills the full context (~18min per 64k turn at ~60 tok/s prefill).
      capability_note: "prefix-cache reuse nil on int4-KV path (speedup≈1.0): every turn re-prefills the full context; also perf probes report wall-clock e2e tok/s only (mlx_lm emits no server timings, so no prefill/decode split). triage JSON now healthy: mlx_lm constrains via Outlines, which mis-compiles null-as-enum-member (truncated JSON, 18/18 fail) — fixed 2026-07-23 by the shared anyOf[{enum},{null}] schema encoding (see results/optiq-schema-outlines.md)"
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, agent_ctx, quality_decay, throughput, speed, prefix_cache]
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, agent_ctx, quality_decay, throughput, speed, prefix_cache]
 
    # ── Gemma4-E4B ───────────────────────────────────────────────────────────────
    # Hybrid: runs both nothi and think passes.
