@@ -45,7 +45,7 @@ const pts = lb.entities
       y: yGet(e),
       arch: archByGguf.get(e.dims.gguf_file) ?? "—",
       kv_quant: e.dims.kv_quant ?? "—",
-      label: boardLabel({ model: e.dims.gguf_file.replace(".gguf", ""), kv: e.dims.kv_quant ?? "—", think: e.think ?? "—" }),
+      label: boardLabel({ model: e.dims.gguf_file.replace(".gguf", ""), kv: e.dims.kv_quant ?? "—", think: e.think ?? "—", template: e.dims.chat_template }),
       parts,
     };
   })

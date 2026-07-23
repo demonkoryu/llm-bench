@@ -33,10 +33,18 @@ export function boardRows(entities) {
          think: e.think ?? '—',
          family: e.dims.family,
       };
-      for (const c of BOARD_COLUMNS) { row[c.key] = c.get(e); }
+      for (const c of BOARD_COLUMNS) {
+         row[c.key] = c.get(e);
+      }
       return row;
    });
 }
 
-// A short "model kv [think]" label for the ranking chart.
-export const boardLabel = (r) => `${r.model} ${r.kv === '—' ? '' : r.kv} [${r.think}]`.replace(/\s+/g, ' ').trim();
+// A short "model kv [think]" label for the ranking chart. chat_template is an entity dimension, so
+// two configs that differ ONLY by template are distinct rows; without the template in the label they
+// collapse onto one bar (two values, one row). Append the template when it isn't the default 'builtin'
+// so those variants are visually distinct. ('—'/missing template is treated as default → no suffix.)
+export const boardLabel = (r) => {
+   const tpl = r.template && r.template !== 'builtin' && r.template !== '—' ? ` ·${r.template}` : '';
+   return `${r.model} ${r.kv === '—' ? '' : r.kv} [${r.think}]${tpl}`.replace(/\s+/g, ' ').trim();
+};
