@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="generator" content="Observable Framework v1.13.4">
+<title>Pareto frontier | llm-bench</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&amp;display=swap" crossorigin>
+<link rel="preload" as="style" href="./_observablehq/theme-near-midnight,near-midnight.07766c04.css">
+<link rel="preload" as="style" href="./_observablehq/stdlib/inputs.f7bf0e12.css">
+<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&amp;display=swap" crossorigin>
+<link rel="stylesheet" type="text/css" href="./_observablehq/theme-near-midnight,near-midnight.07766c04.css">
+<link rel="stylesheet" type="text/css" href="./_observablehq/stdlib/inputs.f7bf0e12.css">
+<link rel="modulepreload" href="./_observablehq/client.d794a43e.js">
+<link rel="modulepreload" href="./_observablehq/runtime.607a8173.js">
+<link rel="modulepreload" href="./_observablehq/stdlib.81cd90e3.js">
+<link rel="modulepreload" href="./_npm/@observablehq/plot@0.6.17/93ce672e.js">
+<link rel="modulepreload" href="./_observablehq/stdlib/inputs.8ddbf299.js">
+<link rel="modulepreload" href="./_npm/d3-scale@4.0.2/c9f2571b.js">
+<link rel="modulepreload" href="./_npm/d3-force@3.0.0/33924f3e.js">
+<link rel="modulepreload" href="./_import/lib/query-engine.95c1a573.js">
+<link rel="modulepreload" href="./_import/components/url-state.014f9d61.js">
+<link rel="modulepreload" href="./_import/components/metric-help.9005a181.js">
+<link rel="modulepreload" href="./_import/components/palette.bceda384.js">
+<link rel="modulepreload" href="./_npm/htl@1.0.0/11521f02.js">
+<link rel="modulepreload" href="./_import/lib/score.e164aff7.js">
+<link rel="modulepreload" href="./_import/lib/scoring-config.f255673a.js">
+<link rel="modulepreload" href="./_import/components/facets.0481cd58.js">
+<link rel="modulepreload" href="./_import/components/url-params.66eb7c67.js">
+<link rel="modulepreload" href="./_import/components/weights.0411b2c4.js">
+<link rel="modulepreload" href="./_npm/isoformat@0.2.1/604cb63b.js">
+<link rel="modulepreload" href="./_npm/d3@7.9.0/080cf928.js">
+<link rel="modulepreload" href="./_npm/interval-tree-1d@1.0.4/f53f17b2.js">
+<link rel="modulepreload" href="./_npm/d3-array@3.2.4/b8e751b6.js">
+<link rel="modulepreload" href="./_npm/d3-interpolate@3.0.1/e0a47f97.js">
+<link rel="modulepreload" href="./_npm/d3-format@3.1.2/8d67a1ae.js">
+<link rel="modulepreload" href="./_npm/d3-time@3.1.0/3d1d57c6.js">
+<link rel="modulepreload" href="./_npm/d3-time-format@4.1.0/643581a8.js">
+<link rel="modulepreload" href="./_npm/d3-quadtree@3.0.1/09002e01.js">
+<link rel="modulepreload" href="./_npm/d3-dispatch@3.0.1/3fb06f14.js">
+<link rel="modulepreload" href="./_npm/d3-timer@3.0.1/e99232db.js">
+<link rel="modulepreload" href="./_npm/d3-axis@3.0.0/c662ea05.js">
+<link rel="modulepreload" href="./_npm/d3-brush@3.0.0/d162d8c6.js">
+<link rel="modulepreload" href="./_npm/d3-chord@3.0.1/5cedd0be.js">
+<link rel="modulepreload" href="./_npm/d3-color@3.1.0/65d51007.js">
+<link rel="modulepreload" href="./_npm/d3-contour@4.0.2/c576a91a.js">
+<link rel="modulepreload" href="./_npm/d3-delaunay@6.0.4/8b43826d.js">
+<link rel="modulepreload" href="./_npm/d3-drag@3.0.0/20b76948.js">
+<link rel="modulepreload" href="./_npm/d3-dsv@3.0.1/097745a2.js">
+<link rel="modulepreload" href="./_npm/d3-ease@3.0.1/8683b012.js">
+<link rel="modulepreload" href="./_npm/d3-fetch@3.0.1/5c319046.js">
+<link rel="modulepreload" href="./_npm/d3-geo@3.1.1/8037bd0b.js">
+<link rel="modulepreload" href="./_npm/d3-hierarchy@3.1.2/a9ba0229.js">
+<link rel="modulepreload" href="./_npm/d3-path@3.1.0/f9e9e0ab.js">
+<link rel="modulepreload" href="./_npm/d3-polygon@3.0.1/2da8eb3b.js">
+<link rel="modulepreload" href="./_npm/d3-random@3.0.1/5108797c.js">
+<link rel="modulepreload" href="./_npm/d3-scale-chromatic@3.1.0/f3c78e0d.js">
+<link rel="modulepreload" href="./_npm/d3-selection@3.0.0/28717d05.js">
+<link rel="modulepreload" href="./_npm/d3-shape@3.2.0/7c6e2a50.js">
+<link rel="modulepreload" href="./_npm/d3-transition@3.0.1/bd07fd9a.js">
+<link rel="modulepreload" href="./_npm/d3-zoom@3.0.0/d09f7cc9.js">
+<link rel="modulepreload" href="./_npm/binary-search-bounds@2.0.5/5f640032.js">
+<link rel="modulepreload" href="./_npm/internmap@2.0.3/af036d7e.js">
+<link rel="modulepreload" href="./_npm/delaunator@5.1.0/7b06abe7.js">
+<link rel="modulepreload" href="./_npm/robust-predicates@3.0.3/b42f30a7.js">
+<style>:root{--observablehq-max-width:2000px}#observablehq-center{margin-left:1rem;margin-right:1rem}.scroll-x{overflow-x:auto}.scroll-x svg{max-width:none;height:auto}.metric-help{margin:.6rem 0;font-size:13px;border-left:2px solid var(--theme-foreground-faint,#3a3a3a);padding-left:.7rem}.metric-help-title{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--theme-foreground-muted)}.metric-help dl{margin:.25rem 0 0;display:grid;grid-template-columns:max-content 1fr;gap:2px 12px}.metric-help dt{font-family:var(--monospace,ui-monospace,monospace);white-space:nowrap;color:var(--theme-foreground)}.metric-help dd{margin:0;color:var(--theme-foreground-muted)}</style>
+<script type="module">
+
+import {define} from "./_observablehq/client.d794a43e.js";
+import {registerFile} from "./_observablehq/stdlib.81cd90e3.js";
+
+registerFile("./data/measurements.json", {"name":"./data/measurements.json","mimeType":"application/json","path":"./_file/data/measurements.ddf7fec1.json","lastModified":1784809193300,"size":2410282});
+
+define({id: "e7257955", inputs: ["FileAttachment"], outputs: ["Plot","Inputs","scaleLinear","forceSimulation","forceX","forceY","forceCollide","pareto","meta","facetValues","METRIC_HELP","linkedSelect","linkedRadio","linkedFacets","metricHelp","palette","rows","fv","m"], body: async (FileAttachment) => {
+const [Plot, Inputs, {scaleLinear}, {forceSimulation, forceX, forceY, forceCollide}, {pareto, meta, facets: facetValues, METRIC_HELP}, {linkedSelect, linkedRadio, linkedFacets}, {metricHelp}, palette] = await Promise.all([import("./_npm/@observablehq/plot@0.6.17/93ce672e.js"), import("./_observablehq/stdlib/inputs.8ddbf299.js"), import("./_npm/d3-scale@4.0.2/c9f2571b.js"), import("./_npm/d3-force@3.0.0/33924f3e.js"), import("./_import/lib/query-engine.95c1a573.js"), import("./_import/components/url-state.014f9d61.js"), import("./_import/components/metric-help.9005a181.js"), import("./_import/components/palette.bceda384.js")]);
+
+const rows = await FileAttachment("./data/measurements.json").json();
+const fv = facetValues(rows);
+const m = meta();
+return {Plot,Inputs,scaleLinear,forceSimulation,forceX,forceY,forceCollide,pareto,meta,facetValues,METRIC_HELP,linkedSelect,linkedRadio,linkedFacets,metricHelp,palette,rows,fv,m};
+}});
+
+define({id: "cf51e2af", inputs: ["view","linkedSelect","m","linkedRadio","linkedFacets","fv"], outputs: ["xMetric","yMetric","think","colorBy","facetsSel"], body: (view,linkedSelect,m,linkedRadio,linkedFacets,fv) => {
+const xMetric = view(linkedSelect("x", m.metrics, { value: "decode tok/s", label: "x axis" }));
+const yMetric = view(linkedSelect("y", m.metrics, { value: "reasoning %", label: "y axis" }));
+const think = view(linkedRadio("think", ["no_think", "think", "both"], { value: "both", label: "think" }));
+const colorBy = view(linkedRadio("color", ["arch", "kv_quant", "vram"], { value: "arch", label: "colour" }));
+const facetsSel = view(linkedFacets(fv, m.dims));
+return {xMetric,yMetric,think,colorBy,facetsSel};
+}});
+
+define({id: "08328e03", inputs: ["display","metricHelp","METRIC_HELP","xMetric","yMetric","colorBy"], body: (display,metricHelp,METRIC_HELP,xMetric,yMetric,colorBy) => {
+display(metricHelp(METRIC_HELP, [xMetric, yMetric, ...(colorBy === "vram" ? ["VRAM MiB"] : [])], { title: "current axes" }));
+}});
+
+define({id: "f7290761", inputs: ["Mutable"], outputs: ["zoomView","setZoom","resetZoom"], body: (Mutable) => {
+// `zoomView` = the visible {x,y} domain, or null for full extent. A Framework Mutable can only be
+// read as a plain value in OTHER cells (see `dom`) and written via setters defined alongside it.
+const zoomView = Mutable(null);
+const setZoom = (v) => (zoomView.value = v);
+const resetZoom = () => (zoomView.value = null);
+return {zoomView,setZoom,resetZoom};
+}});
+
+define({id: "91f63df9", inputs: ["pareto","rows","xMetric","yMetric","think","facetsSel"], outputs: ["pr","pts"], body: (pareto,rows,xMetric,yMetric,think,facetsSel) => {
+const pr = pareto(rows, { xMetric, yMetric, think, facets: facetsSel });
+const pts = pr.points.filter((p) => p.x != null && p.y != null);
+return {pr,pts};
+}});
+
+define({id: "e2702bfa", inputs: ["pts","scaleLinear","forceSimulation","forceX","forceY","forceCollide","width"], outputs: ["layout"], body: (pts,scaleLinear,forceSimulation,forceX,forceY,forceCollide,width) => {
+// Layout computed ONCE per data/axis change (NOT per zoom): full-extent scales, the collision
+// nudge, and each cross's nudged (px,py) in data space. Zooming then only re-renders the domain.
+const layout = ((width) => {
+  if (!pts.length) return null;
+  const W = Math.max(360, Math.min(width, 1100));
+  const H = 540;
+  const mg = { left: 54, right: 20, top: 20, bottom: 44 };
+  const fullXDom = [0, Math.max(...pts.map((p) => p.x)) * 1.05];
+  const fullYDom = [0, Math.max(...pts.map((p) => p.y)) * 1.05];
+  const xs = scaleLinear(fullXDom, [mg.left, W - mg.right]);
+  const ys = scaleLinear(fullYDom, [H - mg.bottom, mg.top]);
+  const vram = pts.filter((p) => p.vram > 0).map((p) => p.vram);
+  const vramDomain = vram.length ? [Math.min(...vram), Math.max(...vram)] : [0, 1];
+  const fmtVram = (v) => (v != null && v > 0 ? `${(v / 1024).toFixed(1)} GiB` : "n/a");
+  const nodes = pts.map((p) => ({ ...p, x_true: p.x, y_true: p.y, ax: xs(p.x), ay: ys(p.y), vramLabel: fmtVram(p.vram) }));
+  for (const n of nodes) {
+    n.x = n.ax;
+    n.y = n.ay;
+  }
+  forceSimulation(nodes)
+    .force("x", forceX((d) => d.ax).strength(0.6))
+    .force("y", forceY((d) => d.ay).strength(0.6))
+    .force("collide", forceCollide(4).strength(0.5))
+    .stop()
+    .tick(200);
+  for (const n of nodes) {
+    n.px = xs.invert(n.x);
+    n.py = ys.invert(n.y);
+  }
+  return { W, H, mg, fullXDom, fullYDom, vramDomain, nodes };
+})(width);
+return {layout};
+}});
+
+define({id: "778c0e78", inputs: ["layout","zoomView"], outputs: ["dom"], body: (layout,zoomView) => {
+// The visible domain: the zoom override if still within the current full extent, else full (a
+// stored zoom goes stale after an axis change). Reads `zoomView` as a plain value; only the render
+// cell's handlers write it (via setters), so no cell both reads and writes the mutable.
+const dom = (() => {
+  if (!layout) return null;
+  const full = { x: layout.fullXDom, y: layout.fullYDom };
+  const z = zoomView;
+  const ok = (d, f) => Array.isArray(d) && d[1] > d[0] && d[0] >= f[0] - 1e-6 && d[1] <= f[1] + 1e-6;
+  return z && ok(z.x, full.x) && ok(z.y, full.y) ? z : full;
+})();
+return {dom};
+}});
+
+define({id: "061206b6", inputs: ["layout","display","html","dom","colorBy","palette","xMetric","yMetric","Plot","scaleLinear","setZoom","resetZoom"], body: (layout,display,html,dom,colorBy,palette,xMetric,yMetric,Plot,scaleLinear,setZoom,resetZoom) => {
+if (!layout) {
+  display(html`<div class="muted">No configs have both axes measured in this selection (need overlapping benches).</div>`);
+} else {
+  const { W, H, mg, fullXDom, fullYDom, vramDomain, nodes } = layout;
+  const xd = dom.x;
+  const yd = dom.y;
+  const pal = colorBy === "kv_quant" ? palette.KV_COLORS : palette.ARCH_COLORS;
+  const catOf = (d) => (colorBy === "kv_quant" ? (d.cfg?.kv_quant ?? "—") : d.arch);
+  const measured = nodes.filter((p) => p.vram > 0);
+  const kX = nodes.filter((p) => !(p.vram > 0));
+  const tipText = (d) => `${d.label}\n${xMetric}: ${d.x_true.toFixed(1)} · ${yMetric}: ${d.y_true.toFixed(1)}\nVRAM: ${d.vramLabel}`;
+
+  const chart = Plot.plot({
+    width: W,
+    height: H,
+    marginLeft: mg.left,
+    marginRight: mg.right,
+    marginTop: mg.top,
+    marginBottom: mg.bottom,
+    grid: true,
+    x: { label: `${xMetric} →`, domain: xd },
+    y: { label: `↑ ${yMetric}`, domain: yd },
+    color:
+      colorBy === "vram"
+        ? { type: "linear", scheme: "YlOrRd", domain: vramDomain, legend: true, label: "VRAM MiB" }
+        : { ...palette.colorScale(nodes.map(catOf), pal), legend: true },
+    marks: [
+      // Small uniform stroke-only ✕ at the exact (x,y). Colour = arch / KV / VRAM; grey ✕ = no VRAM.
+      // clip so crosses outside the zoomed domain don't spill over the axes.
+      Plot.dot(measured, { x: "px", y: "py", r: 7, symbol: "times", stroke: colorBy === "vram" ? "vram" : catOf, fill: "none", strokeWidth: 2.4, clip: true }),
+      Plot.dot(kX, { x: "px", y: "py", r: 7, symbol: "times", stroke: "#8a949b", fill: "none", strokeWidth: 2, clip: true }),
+      // Styled tooltip: the pointer transform picks the nearest cross by distance (works even for
+      // stroke-only crosses) and shows its exact metrics.
+      Plot.tip(nodes, Plot.pointer({ x: "px", y: "py", maxRadius: 30, title: tipText })),
+    ],
+  });
+
+  // Zoom = re-render at a smaller domain (so the axes re-tick and the styled tooltip keeps working).
+  // Wheel zooms toward the cursor, drag pans, double-click resets — all by updating `zoomView`.
+  const svgs = chart.tagName?.toLowerCase() === "svg" ? [chart] : [...chart.querySelectorAll("svg")];
+  const svgEl = svgs.find((s) => s.querySelector('g[aria-label*="dot"]')) ?? svgs[0];
+  svgEl.style.cursor = "grab";
+  const plotW = W - mg.left - mg.right;
+  const plotH = H - mg.top - mg.bottom;
+  const uPt = (ev) => {
+    const rect = svgEl.getBoundingClientRect();
+    return [(ev.clientX - rect.left) * (W / rect.width), (ev.clientY - rect.top) * (H / rect.height)];
+  };
+  const clampZoom = (d, full) => {
+    let [a, b] = d[0] <= d[1] ? d : [d[1], d[0]];
+    const fs = full[1] - full[0];
+    const minS = fs / 30;
+    if (b - a < minS) {
+      const c = (a + b) / 2;
+      a = c - minS / 2;
+      b = c + minS / 2;
+    }
+    if (b - a >= fs) return [...full];
+    if (a < full[0]) {
+      b += full[0] - a;
+      a = full[0];
+    }
+    if (b > full[1]) {
+      a -= b - full[1];
+      b = full[1];
+    }
+    return [Math.max(a, full[0]), Math.min(b, full[1])];
+  };
+  const clampPan = (d, full) => {
+    let [a, b] = d;
+    const span = b - a;
+    if (a < full[0]) {
+      a = full[0];
+      b = a + span;
+    }
+    if (b > full[1]) {
+      b = full[1];
+      a = b - span;
+    }
+    return [a, b];
+  };
+  svgEl.addEventListener(
+    "wheel",
+    (e) => {
+      e.preventDefault();
+      const [ux, uy] = uPt(e);
+      const dataX = scaleLinear(xd, [mg.left, W - mg.right]).invert(ux);
+      const dataY = scaleLinear(yd, [H - mg.bottom, mg.top]).invert(uy);
+      const f = e.deltaY < 0 ? 1 / 1.2 : 1.2;
+      setZoom({
+        x: clampZoom([dataX + (xd[0] - dataX) * f, dataX + (xd[1] - dataX) * f], fullXDom),
+        y: clampZoom([dataY + (yd[0] - dataY) * f, dataY + (yd[1] - dataY) * f], fullYDom),
+      });
+    },
+    { passive: false },
+  );
+  svgEl.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0) return;
+    const rect = svgEl.getBoundingClientRect();
+    const sx = e.clientX;
+    const sy = e.clientY;
+    const x0 = [...xd];
+    const y0 = [...yd];
+    svgEl.style.cursor = "grabbing";
+    const move = (me) => {
+      const dxData = ((me.clientX - sx) * (W / rect.width) * (x0[1] - x0[0])) / plotW;
+      const dyData = ((me.clientY - sy) * (H / rect.height) * (y0[1] - y0[0])) / plotH;
+      setZoom({
+        x: clampPan([x0[0] - dxData, x0[1] - dxData], fullXDom),
+        y: clampPan([y0[0] + dyData, y0[1] + dyData], fullYDom),
+      });
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      svgEl.style.cursor = "grab";
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  });
+  svgEl.addEventListener("dblclick", () => {
+    resetZoom();
+  });
+  display(html`<div class="scroll-x">${chart}</div>`);
+}
+}});
+
+define({id: "d938e637", mode: "inline", inputs: ["pts","display"], body: async (pts,display) => {
+display(await(
+pts.length
+))
+}});
+
+define({id: "123a2c23", mode: "inline", inputs: ["colorBy","display"], body: async (colorBy,display) => {
+display(await(
+colorBy === "vram" ? "VRAM" : colorBy
+))
+}});
+
+</script>
+</head>
+<body>
+<input id="observablehq-sidebar-toggle" type="checkbox" title="Toggle sidebar">
+<label id="observablehq-sidebar-backdrop" for="observablehq-sidebar-toggle"></label>
+<nav id="observablehq-sidebar">
+  <ol>
+    <label id="observablehq-sidebar-close" for="observablehq-sidebar-toggle"></label>
+    <li class="observablehq-link"><a href="./">llm-bench</a></li>
+  </ol>
+  <ol>
+    <li class="observablehq-link"><a href="./">Leaderboard</a></li>
+    <li class="observablehq-link observablehq-link-active"><a href="./pareto.html">Pareto frontier</a></li>
+    <li class="observablehq-link"><a href="./compromise.html">Compromise</a></li>
+    <li class="observablehq-link"><a href="./pivot.html">Pivot</a></li>
+    <li class="observablehq-link"><a href="./coverage.html">Coverage</a></li>
+  </ol>
+</nav>
+<script>{const e=document.querySelector("#observablehq-sidebar"),o=document.querySelector("#observablehq-sidebar-toggle"),r=sessionStorage.getItem("observablehq-sidebar");r?o.checked=r==="true":o.indeterminate=!0;for(const t of document.querySelectorAll("#observablehq-sidebar summary")){const s=t.parentElement;switch(sessionStorage.getItem(`observablehq-sidebar:${t.textContent}`)){case"true":s.open=!0;break;case"false":s.classList.contains("observablehq-section-active")||(s.open=!1);break}}addEventListener("beforeunload",()=>sessionStorage.setItem("observablehq-sidebar-scrolly",`${e.scrollTop}`));const a=sessionStorage.getItem("observablehq-sidebar-scrolly");a!=null&&(e.style.cssText="overflow: hidden;",e.scrollTop=+a,e.style.cssText="");}</script>
+<div id="observablehq-center">
+<main id="observablehq-main" class="observablehq">
+<h1 id="pareto-frontier" tabindex="-1"><a class="observablehq-header-anchor" href="#pareto-frontier">Pareto frontier</a></h1>
+<p>Every served config is a small <strong>✕</strong> at its exact (speed, quality). <strong>Up-and-left is smarter + faster.</strong> Colour by arch, KV-quant, or VRAM; hover any cross for details. <strong>Scroll to zoom, drag to pan, double-click to reset.</strong></p>
+<div class="observablehq observablehq--block"><!--:e7257955:--></div>
+<div class="observablehq observablehq--block"><!--:cf51e2af:--></div>
+<div class="observablehq observablehq--block"><!--:08328e03:--></div>
+<div class="observablehq observablehq--block"><!--:f7290761:--></div>
+<div class="observablehq observablehq--block"><!--:91f63df9:--></div>
+<div class="observablehq observablehq--block"><!--:e2702bfa:--></div>
+<div class="observablehq observablehq--block"><!--:778c0e78:--></div>
+<div class="observablehq observablehq--block"><!--:061206b6:--></div>
+<div class="muted"><observablehq-loading></observablehq-loading><!--:d938e637:--> configs plotted · each ✕ = one config at its exact position · colour = <observablehq-loading></observablehq-loading><!--:123a2c23:--> · grey ✕ = VRAM not measured · near-identical configs sit close together (hover for think + exact values)</div>
+</main>
+<footer id="observablehq-footer">
+<nav><a rel="prev" href="./"><span>llm-bench</span></a><a rel="next" href="./compromise.html"><span>Compromise</span></a></nav>
+<div>llm-bench · reads central-db (llmbench.measurements) at build time</div>
+</footer>
+</div>
+</body>
+</html>

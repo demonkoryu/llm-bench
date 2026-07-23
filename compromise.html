@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="generator" content="Observable Framework v1.13.4">
+<title>Compromise finder | llm-bench</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&amp;display=swap" crossorigin>
+<link rel="preload" as="style" href="./_observablehq/theme-near-midnight,near-midnight.07766c04.css">
+<link rel="preload" as="style" href="./_observablehq/stdlib/inputs.f7bf0e12.css">
+<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&amp;display=swap" crossorigin>
+<link rel="stylesheet" type="text/css" href="./_observablehq/theme-near-midnight,near-midnight.07766c04.css">
+<link rel="stylesheet" type="text/css" href="./_observablehq/stdlib/inputs.f7bf0e12.css">
+<link rel="modulepreload" href="./_observablehq/client.d794a43e.js">
+<link rel="modulepreload" href="./_observablehq/runtime.607a8173.js">
+<link rel="modulepreload" href="./_observablehq/stdlib.81cd90e3.js">
+<link rel="modulepreload" href="./_npm/@observablehq/plot@0.6.17/93ce672e.js">
+<link rel="modulepreload" href="./_observablehq/stdlib/inputs.8ddbf299.js">
+<link rel="modulepreload" href="./_import/lib/query-engine.95c1a573.js">
+<link rel="modulepreload" href="./_import/components/url-state.014f9d61.js">
+<link rel="modulepreload" href="./_import/components/combine.e4aa17aa.js">
+<link rel="modulepreload" href="./_import/components/board.4e93ddbb.js">
+<link rel="modulepreload" href="./_import/components/palette.bceda384.js">
+<link rel="modulepreload" href="./_npm/htl@1.0.0/11521f02.js">
+<link rel="modulepreload" href="./_import/lib/score.e164aff7.js">
+<link rel="modulepreload" href="./_import/lib/scoring-config.f255673a.js">
+<link rel="modulepreload" href="./_import/components/facets.0481cd58.js">
+<link rel="modulepreload" href="./_import/components/url-params.66eb7c67.js">
+<link rel="modulepreload" href="./_import/components/weights.0411b2c4.js">
+<link rel="modulepreload" href="./_npm/isoformat@0.2.1/604cb63b.js">
+<link rel="modulepreload" href="./_npm/d3@7.9.0/080cf928.js">
+<link rel="modulepreload" href="./_npm/interval-tree-1d@1.0.4/f53f17b2.js">
+<link rel="modulepreload" href="./_npm/d3-array@3.2.4/b8e751b6.js">
+<link rel="modulepreload" href="./_npm/d3-axis@3.0.0/c662ea05.js">
+<link rel="modulepreload" href="./_npm/d3-brush@3.0.0/d162d8c6.js">
+<link rel="modulepreload" href="./_npm/d3-chord@3.0.1/5cedd0be.js">
+<link rel="modulepreload" href="./_npm/d3-color@3.1.0/65d51007.js">
+<link rel="modulepreload" href="./_npm/d3-contour@4.0.2/c576a91a.js">
+<link rel="modulepreload" href="./_npm/d3-delaunay@6.0.4/8b43826d.js">
+<link rel="modulepreload" href="./_npm/d3-dispatch@3.0.1/3fb06f14.js">
+<link rel="modulepreload" href="./_npm/d3-drag@3.0.0/20b76948.js">
+<link rel="modulepreload" href="./_npm/d3-dsv@3.0.1/097745a2.js">
+<link rel="modulepreload" href="./_npm/d3-ease@3.0.1/8683b012.js">
+<link rel="modulepreload" href="./_npm/d3-fetch@3.0.1/5c319046.js">
+<link rel="modulepreload" href="./_npm/d3-force@3.0.0/33924f3e.js">
+<link rel="modulepreload" href="./_npm/d3-format@3.1.2/8d67a1ae.js">
+<link rel="modulepreload" href="./_npm/d3-geo@3.1.1/8037bd0b.js">
+<link rel="modulepreload" href="./_npm/d3-hierarchy@3.1.2/a9ba0229.js">
+<link rel="modulepreload" href="./_npm/d3-interpolate@3.0.1/e0a47f97.js">
+<link rel="modulepreload" href="./_npm/d3-path@3.1.0/f9e9e0ab.js">
+<link rel="modulepreload" href="./_npm/d3-polygon@3.0.1/2da8eb3b.js">
+<link rel="modulepreload" href="./_npm/d3-quadtree@3.0.1/09002e01.js">
+<link rel="modulepreload" href="./_npm/d3-random@3.0.1/5108797c.js">
+<link rel="modulepreload" href="./_npm/d3-scale@4.0.2/c9f2571b.js">
+<link rel="modulepreload" href="./_npm/d3-scale-chromatic@3.1.0/f3c78e0d.js">
+<link rel="modulepreload" href="./_npm/d3-selection@3.0.0/28717d05.js">
+<link rel="modulepreload" href="./_npm/d3-shape@3.2.0/7c6e2a50.js">
+<link rel="modulepreload" href="./_npm/d3-time@3.1.0/3d1d57c6.js">
+<link rel="modulepreload" href="./_npm/d3-time-format@4.1.0/643581a8.js">
+<link rel="modulepreload" href="./_npm/d3-timer@3.0.1/e99232db.js">
+<link rel="modulepreload" href="./_npm/d3-transition@3.0.1/bd07fd9a.js">
+<link rel="modulepreload" href="./_npm/d3-zoom@3.0.0/d09f7cc9.js">
+<link rel="modulepreload" href="./_npm/binary-search-bounds@2.0.5/5f640032.js">
+<link rel="modulepreload" href="./_npm/internmap@2.0.3/af036d7e.js">
+<link rel="modulepreload" href="./_npm/delaunator@5.1.0/7b06abe7.js">
+<link rel="modulepreload" href="./_npm/robust-predicates@3.0.3/b42f30a7.js">
+<style>:root{--observablehq-max-width:2000px}#observablehq-center{margin-left:1rem;margin-right:1rem}.scroll-x{overflow-x:auto}.scroll-x svg{max-width:none;height:auto}.metric-help{margin:.6rem 0;font-size:13px;border-left:2px solid var(--theme-foreground-faint,#3a3a3a);padding-left:.7rem}.metric-help-title{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--theme-foreground-muted)}.metric-help dl{margin:.25rem 0 0;display:grid;grid-template-columns:max-content 1fr;gap:2px 12px}.metric-help dt{font-family:var(--monospace,ui-monospace,monospace);white-space:nowrap;color:var(--theme-foreground)}.metric-help dd{margin:0;color:var(--theme-foreground-muted)}</style>
+<script type="module">
+
+import {define} from "./_observablehq/client.d794a43e.js";
+import {registerFile} from "./_observablehq/stdlib.81cd90e3.js";
+
+registerFile("./data/measurements.json", {"name":"./data/measurements.json","mimeType":"application/json","path":"./_file/data/measurements.ddf7fec1.json","lastModified":1784809193300,"size":2410282});
+
+define({id: "189719bb", inputs: ["FileAttachment"], outputs: ["Plot","Inputs","leaderboard","meta","facetValues","linkedSelect","linkedRadio","linkedFacets","linkedWeights","X_DIMS","capabilityScores","combine","frontier","boardLabel","palette","rows","fv","m","archByGguf","DEFAULT_WEIGHTS","Y_METRICS"], body: async (FileAttachment) => {
+const [Plot, Inputs, {leaderboard, meta, facets: facetValues}, {linkedSelect, linkedRadio, linkedFacets, linkedWeights}, {X_DIMS, capabilityScores, combine, frontier}, {boardLabel}, palette] = await Promise.all([import("./_npm/@observablehq/plot@0.6.17/93ce672e.js"), import("./_observablehq/stdlib/inputs.8ddbf299.js"), import("./_import/lib/query-engine.95c1a573.js"), import("./_import/components/url-state.014f9d61.js"), import("./_import/components/combine.e4aa17aa.js"), import("./_import/components/board.4e93ddbb.js"), import("./_import/components/palette.bceda384.js")]);
+
+const rows = await FileAttachment("./data/measurements.json").json();
+const fv = facetValues(rows);
+const m = meta();
+const archByGguf = new Map(rows.map((r) => [r.gguf_file, r.arch]));
+
+// x defaults to the standard capability composite; re-weigh toward specific skills below.
+const DEFAULT_WEIGHTS = { capability: 1 };
+// y = agent capacity (how many sub-agents / how much shared context a config serves).
+const Y_METRICS = {
+  "coder slots": (e) => e.fleet_slots,
+  "agent pool k": (e) => (e.raw?.agent_ctx == null ? null : e.raw.agent_ctx / 1000),
+  "planner ctx k": (e) => (e.raw?._agent_planner_ctx == null ? null : e.raw._agent_planner_ctx / 1000),
+};
+return {Plot,Inputs,leaderboard,meta,facetValues,linkedSelect,linkedRadio,linkedFacets,linkedWeights,X_DIMS,capabilityScores,combine,frontier,boardLabel,palette,rows,fv,m,archByGguf,DEFAULT_WEIGHTS,Y_METRICS};
+}});
+
+define({id: "3f12ad00", inputs: ["view","linkedWeights","X_DIMS","DEFAULT_WEIGHTS","linkedSelect","Y_METRICS","linkedRadio","linkedFacets","fv","m"], outputs: ["weights","yKey","colorBy","think","facetsSel"], body: (view,linkedWeights,X_DIMS,DEFAULT_WEIGHTS,linkedSelect,Y_METRICS,linkedRadio,linkedFacets,fv,m) => {
+const weights = view(linkedWeights(X_DIMS, DEFAULT_WEIGHTS));
+const yKey = view(linkedSelect("y", Object.keys(Y_METRICS), { value: "coder slots", label: "y: agent capacity" }));
+const colorBy = view(linkedRadio("color", ["arch", "kv_quant"], { value: "arch", label: "colour" }));
+const think = view(linkedRadio("think", ["no_think", "think", "both"], { value: "both", label: "think" }));
+const facetsSel = view(linkedFacets(fv, m.dims));
+return {weights,yKey,colorBy,think,facetsSel};
+}});
+
+define({id: "d75925d9", inputs: ["leaderboard","rows","think","facetsSel","Y_METRICS","yKey","combine","capabilityScores","weights","archByGguf","boardLabel","frontier"], outputs: ["lb","yGet","pts","fIdx","frontPts","backPts","frontLine"], body: (leaderboard,rows,think,facetsSel,Y_METRICS,yKey,combine,capabilityScores,weights,archByGguf,boardLabel,frontier) => {
+const lb = leaderboard(rows, { think, facets: facetsSel });
+const yGet = Y_METRICS[yKey];
+const pts = lb.entities
+  .map((e) => {
+    const { combined, parts } = combine(capabilityScores(e), weights);
+    return {
+      x: combined,
+      y: yGet(e),
+      arch: archByGguf.get(e.dims.gguf_file) ?? "—",
+      kv_quant: e.dims.kv_quant ?? "—",
+      label: boardLabel({ model: e.dims.gguf_file.replace(".gguf", ""), kv: e.dims.kv_quant ?? "—", think: e.think ?? "—", template: e.dims.chat_template }),
+      parts,
+    };
+  })
+  .filter((p) => p.x != null && p.y != null);
+const fIdx = new Set(frontier(pts));
+const frontPts = pts.filter((_, i) => fIdx.has(i));
+const backPts = pts.filter((_, i) => !fIdx.has(i));
+const frontLine = [...frontPts].sort((a, b) => a.x - b.x);
+return {lb,yGet,pts,fIdx,frontPts,backPts,frontLine};
+}});
+
+define({id: "24b4cba3", inputs: ["Mutable"], outputs: ["selected","setSelected"], body: (Mutable) => {
+// Pinned selection, keyed by config label so it survives re-renders (weight/filter changes).
+const selected = Mutable(null);
+const setSelected = (v) => (selected.value = v);
+return {selected,setSelected};
+}});
+
+define({id: "67081c71", inputs: ["pts","selected"], outputs: ["shortLbl","selPt"], body: (pts,selected) => {
+// short frontier label: drop "-it" and spell the think mode compactly
+const shortLbl = (d) => d.label.replace(/-it\b/g, "").replace(" [no_think]", " ·nt").replace(" [think]", " ·t").replace(" [n/a]", "");
+// Derived selection (read `selected` HERE; the chart cell reads this + writes `selected`, so no
+// single cell both reads and writes the mutable — mirrors pareto.md's zoomView/dom split).
+const selPt = pts.find((p) => p.label === selected) ?? null;
+return {shortLbl,selPt};
+}});
+
+define({id: "1ef2d21f", inputs: ["pts","display","html","yKey","width","colorBy","palette","Plot","frontLine","backPts","frontPts","shortLbl","selPt","setSelected"], body: (pts,display,html,yKey,width,colorBy,palette,Plot,frontLine,backPts,frontPts,shortLbl,selPt,setSelected) => {
+if (!pts.length) {
+  display(html`<div class="muted">No configs have both a weighted-capability value and ${yKey} in this selection. Give at least one weight a value, or widen the filters.</div>`);
+} else {
+  const W = Math.max(360, Math.min(width, 1000));
+  const H = 540;
+  const catOf = (d) => (colorBy === "kv_quant" ? d.kv_quant : d.arch);
+  const pal = colorBy === "kv_quant" ? palette.KV_COLORS : palette.ARCH_COLORS;
+  const xs = pts.map((p) => p.x);
+  const xdom = [Math.max(0, Math.min(...xs) - 4), Math.min(100, Math.max(...xs) + 4)];
+  const fmtParts = (d) =>
+    d.parts.length ? d.parts.map((p) => `  ${p.key} ${p.score.toFixed(0)} ×${p.weight}`).join("\n") : "  (no weighted dims)";
+  const tipText = (d) => `${d.label}\n${yKey}: ${(+d.y).toFixed(1)} · combined: ${(+d.x).toFixed(1)}\nbreakdown:\n${fmtParts(d)}`;
+
+  const chart = Plot.plot({
+    width: W,
+    height: H,
+    marginLeft: 56,
+    marginRight: 150,
+    marginBottom: 46,
+    grid: true,
+    x: { label: "weighted capability →", domain: xdom },
+    y: { label: `↑ ${yKey}`, nice: true, zero: true },
+    color: { ...palette.colorScale(pts.map(catOf), pal), legend: true },
+    marks: [
+      Plot.line(frontLine, { x: "x", y: "y", stroke: "#c8ccd0", strokeOpacity: 0.6, strokeWidth: 1.5 }),
+      Plot.dot(backPts, { x: "x", y: "y", r: 4, fill: catOf, fillOpacity: 0.45, stroke: "none" }),
+      Plot.dot(frontPts, { x: "x", y: "y", r: 7, fill: catOf, stroke: "white", strokeWidth: 1.2 }),
+      // always-on labels for the frontier (the compromise picks)
+      Plot.text(frontPts, { x: "x", y: "y", text: shortLbl, dx: 10, textAnchor: "start", fontSize: 11, fill: "currentColor", stroke: "var(--theme-background, #1b1e23)", strokeWidth: 3, paintOrder: "stroke" }),
+      // pinned-selection highlight ring
+      selPt ? Plot.dot([selPt], { x: "x", y: "y", r: 11, fill: "none", stroke: "#fbbf24", strokeWidth: 2.5 }) : null,
+      Plot.tip(pts, Plot.pointer({ x: "x", y: "y", maxRadius: 30, title: tipText })),
+    ].filter(Boolean),
+  });
+
+  // click-to-pin: pick the nearest point (in pixel space) via the plot's own scales
+  const svgs = chart.tagName?.toLowerCase() === "svg" ? [chart] : [...chart.querySelectorAll("svg")];
+  const svgEl = svgs.find((s) => s.querySelector('g[aria-label*="dot"]')) ?? svgs[svgs.length - 1];
+  const sx = chart.scale("x"), sy = chart.scale("y");
+  svgEl.style.cursor = "pointer";
+  svgEl.addEventListener("click", (ev) => {
+    const rect = svgEl.getBoundingClientRect();
+    const px = (ev.clientX - rect.left) * (W / rect.width);
+    const py = (ev.clientY - rect.top) * (H / rect.height);
+    let best = null, bd = Infinity;
+    for (const p of pts) { const dx = sx.apply(p.x) - px, dy = sy.apply(p.y) - py, d = dx * dx + dy * dy; if (d < bd) { bd = d; best = p; } }
+    setSelected(bd <= 26 * 26 ? best.label : null); // click empty space to clear
+  });
+  display(html`<div class="scroll-x">${chart}</div>`);
+}
+}});
+
+define({id: "61ee317d", inputs: ["selPt","display","html","setSelected","yKey"], body: (selPt,display,html,setSelected,yKey) => {
+// pinned detail card (click a dot to fill it)
+{
+  const p = selPt;
+  if (!p) {
+    display(html`<div class="muted" style="min-height:1.5em">Click a dot to pin its details here.</div>`);
+  } else {
+    display(html`<div style="border-left:3px solid #fbbf24;padding:.4rem .7rem;margin:.3rem 0;background:var(--theme-background-alt,#1f2329);border-radius:3px">
+      <button style="float:right;border:0;background:none;color:var(--theme-foreground-muted);cursor:pointer;font-size:14px" onclick=${() => setSelected(null)}>✕</button>
+      <strong>${p.label}</strong> — combined <strong>${(+p.x).toFixed(1)}</strong> · ${yKey} <strong>${(+p.y).toFixed(1)}</strong>
+      <div style="margin-top:.3rem;display:flex;flex-wrap:wrap;gap:.35rem .8rem;font-size:12px;color:var(--theme-foreground-muted)">
+        ${p.parts.length ? p.parts.map((pt) => html`<span><span style="font-family:var(--monospace,monospace);color:var(--theme-foreground)">${pt.key}</span> ${pt.score.toFixed(0)}<small style="opacity:.7">×${pt.weight}</small></span>`) : html`<span>no weighted dimensions</span>`}
+      </div>
+    </div>`);
+  }
+}
+}});
+
+define({id: "d938e637", mode: "inline", inputs: ["pts","display"], body: async (pts,display) => {
+display(await(
+pts.length
+))
+}});
+
+define({id: "d20c5ecd", inputs: ["display","Inputs","pts","fIdx","yKey"], body: (display,Inputs,pts,fIdx,yKey) => {
+// companion table: every config sorted by combined score (★ = on the frontier)
+display(
+  Inputs.table(
+    pts
+      .map((p, i) => ({ config: p.label, "": fIdx.has(i) ? "★" : "", combined: +(+p.x).toFixed(1), [yKey]: +(+p.y).toFixed(1) }))
+      .sort((a, b) => b.combined - a.combined),
+    { rows: 14, sort: "combined", reverse: true, layout: "auto" },
+  ),
+);
+}});
+
+</script>
+</head>
+<body>
+<input id="observablehq-sidebar-toggle" type="checkbox" title="Toggle sidebar">
+<label id="observablehq-sidebar-backdrop" for="observablehq-sidebar-toggle"></label>
+<nav id="observablehq-sidebar">
+  <ol>
+    <label id="observablehq-sidebar-close" for="observablehq-sidebar-toggle"></label>
+    <li class="observablehq-link"><a href="./">llm-bench</a></li>
+  </ol>
+  <ol>
+    <li class="observablehq-link"><a href="./">Leaderboard</a></li>
+    <li class="observablehq-link"><a href="./pareto.html">Pareto frontier</a></li>
+    <li class="observablehq-link observablehq-link-active"><a href="./compromise.html">Compromise</a></li>
+    <li class="observablehq-link"><a href="./pivot.html">Pivot</a></li>
+    <li class="observablehq-link"><a href="./coverage.html">Coverage</a></li>
+  </ol>
+</nav>
+<script>{const e=document.querySelector("#observablehq-sidebar"),o=document.querySelector("#observablehq-sidebar-toggle"),r=sessionStorage.getItem("observablehq-sidebar");r?o.checked=r==="true":o.indeterminate=!0;for(const t of document.querySelectorAll("#observablehq-sidebar summary")){const s=t.parentElement;switch(sessionStorage.getItem(`observablehq-sidebar:${t.textContent}`)){case"true":s.open=!0;break;case"false":s.classList.contains("observablehq-section-active")||(s.open=!1);break}}addEventListener("beforeunload",()=>sessionStorage.setItem("observablehq-sidebar-scrolly",`${e.scrollTop}`));const a=sessionStorage.getItem("observablehq-sidebar-scrolly");a!=null&&(e.style.cssText="overflow: hidden;",e.scrollTop=+a,e.style.cssText="");}</script>
+<div id="observablehq-center">
+<main id="observablehq-main" class="observablehq">
+<h1 id="compromise-finder" tabindex="-1"><a class="observablehq-header-anchor" href="#compromise-finder">Compromise finder</a></h1>
+<p>Each config is a point: <strong>x = weighted capability</strong> (tune the weights below), <strong>y = agent capacity</strong>. Points on the <strong>frontier</strong> (up-and-right, emphasised, labelled, connected) are the best capability/capacity compromises — nothing beats them on both axes. <strong>Hover</strong> any point for its breakdown, <strong>click</strong> to pin it, or read the table below.</p>
+<div class="observablehq observablehq--block"><!--:189719bb:--></div>
+<div class="observablehq observablehq--block"><!--:3f12ad00:--></div>
+<div class="observablehq observablehq--block"><!--:d75925d9:--></div>
+<div class="observablehq observablehq--block"><!--:24b4cba3:--></div>
+<div class="observablehq observablehq--block"><!--:67081c71:--></div>
+<div class="observablehq observablehq--block"><!--:1ef2d21f:--></div>
+<div class="observablehq observablehq--block"><!--:61ee317d:--></div>
+<div class="muted"><observablehq-loading></observablehq-loading><!--:d938e637:--> configs · ● frontier = best compromise (nothing beats it on both axes) · quality dims are absolute, perf/capacity dims normalise within this selection, so the combined score is comparative within the current filters</div>
+<div class="observablehq observablehq--block"><!--:d20c5ecd:--></div>
+</main>
+<footer id="observablehq-footer">
+<nav><a rel="prev" href="./pareto.html"><span>Pareto frontier</span></a><a rel="next" href="./pivot.html"><span>Pivot</span></a></nav>
+<div>llm-bench · reads central-db (llmbench.measurements) at build time</div>
+</footer>
+</div>
+</body>
+</html>
