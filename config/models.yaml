@@ -282,10 +282,14 @@ models:
      think_control: enable_thinking
      tools: true
      native_max_ctx: 262144              # config.json max_position_embeddings (real trained window — kept truthful)
-     probe_max_ctx: 131072               # agent_ctx climb cap: "128k is enough". The earlier 64k 'OOM' was mis-diagnosed — it was the un-quantized continuous-batching path (fp16 KV), forced because requests carried no seed. With the harness now sending a seed (runners/optiq-server.mjs OPTIQ_SEED → single-stream → OptiQ int4 KV), single-stream int4 fits ~25GB @128k on the 28GB card, so let the probe climb 64k→128k. native_max_ctx (262144) stays truthful.
+     probe_max_ctx: 65536                # agent_ctx climb cap: operator LOCKED deploy at 1×64k slot (2026-07-22) and explicitly abandoned 128k ("128k is just too slow" — user). Single-stream int4 KV does fit ~25GB @128k, but 128k decode is prohibitively slow at ~13 tok/s and provides no operational benefit over the locked 64k slot, so cap the probe at 64k. native_max_ctx (262144) stays truthful.
      ctx_cap: 65536                      # FRESH seed / conservative start rung for OptiQ int4 KV; agent_ctx (run first) climbs from here toward probe_max_ctx and writes measured coherence_ceiling
      kv_variants: []
      extra_flags: { batch-size: null, ubatch-size: null }
+     # Operational caveat (measured 2026-07-22): prefix-cache reuse is NIL — prefix_cache_speedup ≈ 1.0
+     # (cold 119694ms ≈ warm 119542ms). OptiQ's int4-KV requant defeats mlx_lm's prompt-cache, so every
+     # multi-turn request re-prefills the full context (~18min per 64k turn at ~60 tok/s prefill).
+     capability_note: "prefix-cache reuse nil on int4-KV path (speedup≈1.0): every turn re-prefills the full context; also perf probes report wall-clock e2e tok/s only (mlx_lm emits no server timings, so no prefill/decode split)"
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, agent_ctx, quality_decay, throughput, speed, prefix_cache]
 
    # ── Gemma4-E4B ───────────────────────────────────────────────────────────────
