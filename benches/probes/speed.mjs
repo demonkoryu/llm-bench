@@ -14,6 +14,9 @@ export const bench = {
    name: 'speed',
    kind: 'probe',
    thinkDependent: false,
+   // Loads its own server at maxctx (killAll + startServer below), so a bench-run
+   // prestart would only be torn down again — one wasted model load per model.
+   selfManagesServer: true,
    resumeBench: 'speed_short',
    async run({ srv, client, model, maxctx }) {
       const ctx = Math.max(maxctx, 16384);

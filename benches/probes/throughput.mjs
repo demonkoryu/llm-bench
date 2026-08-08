@@ -27,6 +27,8 @@ export const bench = {
    name: 'throughput',
    kind: 'probe',
    thinkDependent: false,
+   // Self-manages the server (see killAll + startServer below); skip the prestart.
+   selfManagesServer: true,
    resumeBench: 'e2e-32k',
    async run({ srv, client, model, maxctx }) {
       const ctx = Math.max(maxctx, 8192);
