@@ -28,7 +28,9 @@ export const X_DIM_KEYS = X_DIMS.map((d) => d.key);
 /** Per-entity 0–100 score for every x dimension (null where the config lacks that metric). */
 export function capabilityScores(entity) {
    const out = {};
-   for (const d of X_DIMS) { out[d.key] = d.get(entity); }
+   for (const d of X_DIMS) {
+      out[d.key] = d.get(entity);
+   }
    return out;
 }
 
@@ -44,9 +46,13 @@ export function combine(scores, weights) {
    let acc = 0;
    const parts = [];
    for (const [key, w] of Object.entries(weights || {})) {
-      if (!(w > 0)) { continue; }
+      if (!(w > 0)) {
+         continue;
+      }
       const s = scores?.[key];
-      if (s == null || Number.isNaN(s)) { continue; }
+      if (s == null || Number.isNaN(s)) {
+         continue;
+      }
       wsum += w;
       acc += w * s;
       parts.push({ key, score: s, weight: w });
@@ -65,15 +71,26 @@ export function frontier(points) {
    const out = [];
    for (let i = 0; i < points.length; i++) {
       const pi = points[i];
-      if (pi?.x == null || pi?.y == null) { continue; }
+      if (pi?.x == null || pi?.y == null) {
+         continue;
+      }
       let dominated = false;
       for (let j = 0; j < points.length; j++) {
-         if (j === i) { continue; }
+         if (j === i) {
+            continue;
+         }
          const pj = points[j];
-         if (pj?.x == null || pj?.y == null) { continue; }
-         if (pj.x >= pi.x && pj.y >= pi.y && (pj.x > pi.x || pj.y > pi.y)) { dominated = true; break; }
+         if (pj?.x == null || pj?.y == null) {
+            continue;
+         }
+         if (pj.x >= pi.x && pj.y >= pi.y && (pj.x > pi.x || pj.y > pi.y)) {
+            dominated = true;
+            break;
+         }
       }
-      if (!dominated) { out.push(i); }
+      if (!dominated) {
+         out.push(i);
+      }
    }
    return out;
 }

@@ -7,7 +7,9 @@ export function facetForm(facetValues, dims, initial) {
    const inputs = {};
    for (const d of dims) {
       const vals = facetValues[d];
-      if (!vals?.length) { continue; }
+      if (!vals?.length) {
+         continue;
+      }
       inputs[d] = Inputs.select(vals, { multiple: Math.min(vals.length, 5), label: d, value: initial?.[d] });
    }
    const form = Inputs.form(inputs);

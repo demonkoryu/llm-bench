@@ -12,9 +12,15 @@ export const readParam = (key) => (hasUrl() ? new URLSearchParams(location.searc
  * preserving the hash. Uses replaceState so per-keystroke changes don't spam browser history.
  */
 export function writeParam(key, val) {
-   if (!hasUrl()) { return; }
+   if (!hasUrl()) {
+      return;
+   }
    const p = new URLSearchParams(location.search);
-   if (val == null || val === '') { p.delete(key); } else { p.set(key, val); }
+   if (val == null || val === '') {
+      p.delete(key);
+   } else {
+      p.set(key, val);
+   }
    const qs = p.toString();
    history.replaceState(null, '', (qs ? `?${qs}` : location.pathname) + location.hash);
 }
@@ -25,10 +31,14 @@ export function writeParam(key, val) {
  */
 export function resolveInitial(key, { fallback, valid, decode = (s) => s } = {}) {
    const raw = readParam(key);
-   if (raw == null) { return fallback; }
+   if (raw == null) {
+      return fallback;
+   }
    try {
       const v = decode(raw);
-      if (v != null && (!valid || valid(v))) { return v; }
+      if (v != null && (!valid || valid(v))) {
+         return v;
+      }
    } catch {
       /* malformed param → fall back */
    }
@@ -41,7 +51,9 @@ export function sanitizeFacets(obj, fv, dims) {
    for (const d of dims) {
       const allowed = fv[d];
       const keep = (obj?.[d] ?? []).filter((v) => allowed?.includes(v));
-      if (keep.length) { out[d] = keep; }
+      if (keep.length) {
+         out[d] = keep;
+      }
    }
    return out;
 }
@@ -54,13 +66,20 @@ export function sanitizeWeights(obj, keys) {
    const out = {};
    for (const k of keys) {
       const w = obj?.[k];
-      if (typeof w === 'number' && Number.isFinite(w) && w > 0) { out[k] = w; }
+      if (typeof w === 'number' && Number.isFinite(w) && w > 0) {
+         out[k] = w;
+      }
    }
    return out;
 }
 
 /** Two weight maps are equal ignoring zero/absent entries (order-independent). */
 export const weightsEqual = (a, b) => {
-   const norm = (w) => JSON.stringify(Object.entries(w || {}).filter(([, v]) => v > 0).sort());
+   const norm = (w) =>
+      JSON.stringify(
+         Object.entries(w || {})
+            .filter(([, v]) => v > 0)
+            .sort(),
+      );
    return norm(a) === norm(b);
 };
