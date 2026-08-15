@@ -12,6 +12,7 @@ const ANSWER_SCHEMA = { type: 'object', properties: { answer: { type: 'string' }
 
 export const bench = {
    name: 'reasoning_expert',
+   // No samplingProfile — see the note on reasoning_hard; the same pending decision applies.
    thinkDependent: true,
    async run(client, { think, sampling, thinkControl, model }) {
       let correct = 0,

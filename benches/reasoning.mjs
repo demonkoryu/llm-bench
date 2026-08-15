@@ -10,6 +10,7 @@ const SYSTEM =
 
 export const bench = {
    name: 'reasoning',
+   samplingProfile: 'reasoning',
    thinkDependent: true,
    async run(client, { think, sampling, thinkControl, model }) {
       let correct = 0,

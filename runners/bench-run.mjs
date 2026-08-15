@@ -25,7 +25,7 @@ import { BENCHES } from '../benches/index.mjs';
 import { LOCAL_HOST, runHostCmd } from '../shared/host-exec.mjs';
 import { probeHostBuild } from '../shared/host-probe.mjs';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
-import { resolveSampling, samplingHash } from '../shared/llm/index.mjs';
+import { resolveSampling, samplingHash, validateSamplingMatrix } from '../shared/llm/index.mjs';
 import { deriveSubjectDims, loadModelsConfig } from '../shared/models-config.mjs';
 import { metricRowsFromResult } from '../shared/tidy-schema.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
@@ -144,6 +144,16 @@ async function main() {
       process.exit(1);
    }
    const matrix = cfg.sampling_matrix ?? {};
+   // Sampling overrides key on a bench's declared samplingProfile. Validate the matrix against the
+   // profiles the registry actually declares, so a stale or misspelled key fails the run instead of
+   // resolving to nothing (which is how the `coding` override stayed dead for months).
+   const declaredProfiles = new Set(
+      Object.values(BENCHES)
+         .map((b) => b.samplingProfile)
+         .filter(Boolean),
+   );
+   validateSamplingMatrix(matrix, declaredProfiles);
+   const profileOf = (benchName) => BENCHES[benchName]?.samplingProfile ?? null;
 
    const stamp = new Date()
       .toISOString()
@@ -329,9 +339,9 @@ async function main() {
          // The resume key's non-bench half, fixed for this model on this host.
          const resumeDims = { ...subject, ...serving, ...platformBase };
          const need = (benchName, think_mode, sampling_hash) => needed({ ...resumeDims, sampling_hash, bench: benchName, think_mode });
-         // Sampling is resolved per (think state, bench) — the use-case override means toolcalling
-         // and coding can carry different params for the same model — so the hash is too.
-         const hashFor = (think, benchName) => samplingHash(resolveSampling(m, think, benchName, matrix));
+         // Sampling is resolved per (think state, sampling profile) — the profile override means
+         // toolcalling and coding can carry different params for the same model — so the hash is too.
+         const hashFor = (think, benchName) => samplingHash(resolveSampling(m, think, profileOf(benchName), matrix));
          // Nothing pending for this model? Skip it entirely (no server load). Probes resolve their
          // own sampling, so they key on a null hash — matching what they persist.
          const anyNeeded = wantBenches.some((b) =>
@@ -375,7 +385,7 @@ async function main() {
             const states = bench.thinkDependent ? thinkStatesFor(m) : [m.think === 'optional' ? false : null];
             for (const think of states) {
                const think_mode = bench.thinkDependent ? thinkModeOf(think) : 'n/a';
-               const sampling = resolveSampling(m, think, benchName, matrix);
+               const sampling = resolveSampling(m, think, profileOf(benchName), matrix);
                const sampling_hash = samplingHash(sampling);
                if (!need(benchName, think_mode, sampling_hash)) {
                   console.error(`  ${benchName.padEnd(14)} ${think_mode.padEnd(8)} — done (resume)`);

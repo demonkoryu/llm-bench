@@ -10,6 +10,7 @@ const docqaCases = JSON.parse(readFileSync(join(ROOT, 'benchmarks/docqa/cases.js
 
 export const bench = {
    name: 'docqa',
+   samplingProfile: 'docqa',
    thinkDependent: true,
    async run(client, { think, sampling, thinkControl }) {
       const { docs, questions } = docqaCases;

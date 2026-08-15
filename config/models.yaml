@@ -644,77 +644,90 @@ models:
 
 sampling_matrix:
 
+   # Overrides live under `per_profile:` and key on a bench's declared samplingProfile, never on a
+   # bench name — see shared/llm/sampling.mjs. Unknown profiles fail the run at startup.
+   #
    # ── Qwen3 (30B-2507 non-thinking; 14B hybrid) ─────────────────────────────
    # default = no_think base; think delta overrides temp/top_p only.
-   # reasoning bench: even in no_think, use higher temp for chain-of-thought prompts.
+   # reasoning profile: even in no_think, use higher temp for chain-of-thought prompts. This reaches
+   # the `reasoning` bench only — reasoning_hard/reasoning_expert deliberately declare no profile
+   # (see benches/reasoning_hard.mjs), which is what they have always effectively done.
+   #
+   # Dropped 2026-08-16, both dead under the old bench-name lookup and neither ever applied:
+   #   longctx — no bench routes through it; benchmarks/longctx/*.mjs never call resolveSampling.
+   #   coding  — held pending the qwen3.6 A/B below; re-add here only once that returns.
    qwen3:
       default:
          temperature: 0.7
          top_p: 0.8
          top_k: 20
          min_p: 0
-         reasoning:
-            temperature: 0.6
-            top_p: 0.95
-         longctx:
-            temperature: 0.1
-            top_p: 0.9
-         coding:
-            temperature: 0.2
-            top_p: 0.9
+         per_profile:
+            reasoning:
+               temperature: 0.6
+               top_p: 0.95
       think:
          temperature: 0.6
          top_p: 0.95
 
    # ── Qwen3.5 (9B hybrid GatedDeltaNet + sparse MoE) ─────────────────────────
    # Published params mirror Qwen3.6's shape: presence_penalty 1.5 shared; think
-   # temp 1.0, no_think temp 0.7 (HF model card). Keep a low-temp coding override
-   # as a guard against the Qwen reasoning-loop-on-coding failure mode (see qwen3.6).
+   # temp 1.0, no_think temp 0.7 (HF model card). The shared pp 1.5 is the loop guard —
+   # canonical rationale in the qwen3.6 block below.
+   # No coding profile: the low-temp coding override is held pending the qwen3.6 A/B (see there).
    qwen3.5:
       default:
          top_k: 20
          min_p: 0
          presence_penalty: 1.5
-         coding:
-            temperature: 0.2
-            top_p: 0.9
       think:
          temperature: 1.0
          top_p: 0.95
-         docqa:
-            temperature: 0.6
-            top_p: 0.95
+         per_profile:
+            docqa:
+               temperature: 0.6
+               top_p: 0.95
       no_think:
          temperature: 0.7
          top_p: 0.8
 
    # ── Qwen3.6 (35B-A3B MoE) ─────────────────────────────────────────────────
+   # CANONICAL presence-penalty rationale for the Qwen3.x families — qwen3.5 and qwen3.8 reference
+   # this block rather than restating it (they drifted apart once already).
+   #
    # presence_penalty=1.5 shared; think uses temp=1.0, no_think uses temp=0.7.
    # docqa in think mode: lower temp for precise arithmetic.
+   #
+   # DO NOT set presence_penalty 0.0. Qwen's published coding preset (temp 0.6 / pp 0.0) is exactly
+   # the config that triggers Qwen3.6-A3B's documented infinite-reasoning-loop bug on coding — the
+   # model repeats phrases through the whole think budget and never emits code (QwenLM/Qwen3.6
+   # issues #88, #145; HF discussions #19/#20: 17.4% of outputs truncated, 84% of those >30%
+   # repetition). Qwen's own mitigation is to RAISE presence_penalty (0–2) to suppress the loop,
+   # plus an optional reasoning-budget cap. We keep pp 1.5 AND cap think at 12288
+   # (MAX_TOKENS.coding_hard_think).
+   #
+   # VALIDATED:  pp 1.5 → 100% on all coding passes; pp 0.0 (vendor preset) regressed think →
+   #             RUNAWAY. presence_penalty is the variable that A/B actually moved.
+   # UNTESTED:   temp 0.2 on coding. An earlier version of this comment read "Verified: pp 1.5 +
+   #             temp 0.2 → 100%", but temp 0.2 was NEVER in effect when that ran — the override
+   #             keyed on a bench named `coding`, which has not existed since the bench was split
+   #             into coding_hard/coding_practical/coding_bugfix. Those passes ran at the family
+   #             defaults (no_think 0.7, think 1.0). Corrected 2026-08-16.
+   #
+   # No coding profile yet: temp 0.2 has never actually run, so it is an experiment to schedule,
+   # not a setting to restore. See the UNTESTED note above.
    qwen3.6:
       default:
          top_k: 20
          min_p: 0
          presence_penalty: 1.5
-         # DO NOT set presence_penalty 0.0 here. Qwen's published coding preset
-         # (temp 0.6 / pp 0.0) is exactly the config that triggers Qwen3.6-A3B's
-         # documented infinite-reasoning-loop bug on coding — the model repeats
-         # phrases through the whole think budget and never emits code (QwenLM/
-         # Qwen3.6 issues #88, #145; HF discussions #19/#20: 17.4% of outputs
-         # truncated, 84% of those >30% repetition). Qwen's own mitigation is to
-         # RAISE presence_penalty (0–2) to suppress the loop, plus an optional
-         # reasoning-budget cap. We keep the shared pp 1.5 AND cap think at 12288
-         # (MAX_TOKENS.coding_hard_think). Verified: pp 1.5 + temp 0.2 → 100% on
-         # all coding passes; pp 0.0 (vendor preset) regressed think → RUNAWAY.
-         coding:
-            temperature: 0.2
-            top_p: 0.9
       think:
          temperature: 1.0
          top_p: 0.95
-         docqa:
-            temperature: 0.6
-            top_p: 0.95
+         per_profile:
+            docqa:
+               temperature: 0.6
+               top_p: 0.95
       no_think:
          temperature: 0.7
          top_p: 0.8
@@ -724,19 +737,13 @@ sampling_matrix:
    #   think    temp 1.0 / top_p 0.95 / top_k 20 / min_p 0 / presence_penalty 0.0
    #   no_think temp 0.7 / top_p 0.80 / top_k 20 / min_p 0 / presence_penalty 1.5
    # We deliberately DIVERGE from the vendor think-mode presence_penalty 0.0 and keep the shared
-   # pp 1.5, exactly as on qwen3.6 — see the long rationale in that block: pp 0.0 is the config that
-   # triggered the documented infinite-reasoning-loop on coding, and our own A/B found pp 1.5 + temp 0.2
-   # → 100% on all coding passes while pp 0.0 regressed to RUNAWAY. Qwen's own card still names raising
-   # presence_penalty (0–2) as the mitigation for endless repetition, so this is consistent with vendor
-   # guidance, not against it.
+   # pp 1.5, exactly as on qwen3.6 — canonical rationale in that block. Qwen's own card names raising
+   # presence_penalty (0–2) as the mitigation for endless repetition, so this follows vendor guidance
+   # rather than contradicting it.
    #
-   # The `coding:` override below is DEAD CONFIG and never fires — kept only to stay identical to the
-   # qwen3.5/qwen3.6 blocks so the 3.8-vs-3.6 comparison is apples-to-apples. resolveSampling() does an
-   # exact useCase-key lookup and the actual bench names are coding_hard / coding_practical /
-   # coding_bugfix, so `coding` matches nothing (verified 2026-08-15). Every coding pass therefore runs
-   # at the no_think default temp 0.7 / top_p 0.8, NOT the temp 0.2 the A/B validated. Do not "fix" this
-   # in isolation: activating it changes qwen3.5/qwen3.6 sampling too and invalidates comparison against
-   # already-recorded results. Fix it as a deliberate re-baseline across all three families.
+   # No coding profile: temp 0.2 on coding is running as an experiment on qwen3.6 first (see there).
+   # Keeping 3.8 on family defaults for now is what preserves the 3.8-vs-3.6 comparison — both were
+   # equally unaffected before, so 3.8 joins only when the rollout does.
    #
    # Also NOT re-verified on 3.8 — if 3.8 fixed the loop bug, the pp 1.5 default is now a needless
    # quality tax and this block should be re-A/B'd against the vendor preset.
@@ -745,20 +752,20 @@ sampling_matrix:
          top_k: 20
          min_p: 0
          presence_penalty: 1.5
-         coding:
-            temperature: 0.2
-            top_p: 0.9
       think:
          temperature: 1.0
          top_p: 0.95
-         docqa:
-            temperature: 0.6
-            top_p: 0.95
+         per_profile:
+            docqa:
+               temperature: 0.6
+               top_p: 0.95
       no_think:
          temperature: 0.7
          top_p: 0.8
 
    # ── Qwen3-Coder (30B-A3B — non-thinking) ──────────────────────────────────
+   # Dropped 2026-08-16, both dead under the old bench-name lookup: `longctx` (no bench routes
+   # through it) and `coding` (held pending the qwen3.6 A/B — see that block).
    qwen3-coder:
       default:
          temperature: 0.7
@@ -766,12 +773,6 @@ sampling_matrix:
          top_k: 20
          min_p: 0
          repeat_penalty: 1.05
-         longctx:
-            temperature: 0.1
-            top_p: 0.9
-         coding:
-            temperature: 0.2
-            top_p: 0.9
 
    # ── Gemma 4 (E4B and 26B-A4B) ─────────────────────────────────────────────
    # Google recommends identical params for all tasks and both think states:

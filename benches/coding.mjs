@@ -17,6 +17,9 @@ const bugfixSystem = (c) =>
 function codingBench(name, cases, buildSystem, maxTok, thinkTok) {
    return {
       name,
+      // All three coding benches share one sampling profile: declared here, in the factory, so a
+      // fourth coding bench inherits it instead of silently falling back to family defaults.
+      samplingProfile: 'coding',
       thinkDependent: true,
       async run(client, { think, sampling, thinkControl }) {
          let passAt1 = 0,

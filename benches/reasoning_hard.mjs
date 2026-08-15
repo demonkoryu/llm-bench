@@ -13,6 +13,10 @@ const ANSWER_SCHEMA = { type: 'object', properties: { answer: { type: 'string' }
 
 export const bench = {
    name: 'reasoning_hard',
+   // No samplingProfile — deliberately unresolved, not an oversight. Under the old bench-name
+   // lookup only `reasoning` matched, so this bench has always run at family defaults; declaring
+   // 'reasoning' here would change qwen3 no_think sampling (0.7/0.8 → 0.6/0.95) and re-baseline
+   // its rows. Worth deciding on purpose — same question applies to reasoning_expert.
    thinkDependent: true,
    async run(client, { think, sampling, thinkControl, model }) {
       let correct = 0,
