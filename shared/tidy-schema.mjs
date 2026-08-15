@@ -148,7 +148,10 @@ const UNIT_EXACT = {
    toolcall_total: 'count',
    reasoning_correct: 'count',
    reasoning_total: 'count',
-   coding_pass_at_1: 'ratio',
+   // Despite the name, this is the COUNT of cases that fully passed (benches/coding.mjs emits
+   // counts; consumers derive the rate as coding_pass_at_1/coding_total). It was labelled 'ratio',
+   // which is a lie the value never satisfied — it ranges 0..coding_total, not 0..1.
+   coding_pass_at_1: 'count',
    coding_total: 'count',
    coding_tests_passed: 'count',
    coding_tests_total: 'count',
