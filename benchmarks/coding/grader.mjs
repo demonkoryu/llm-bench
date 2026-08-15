@@ -7,6 +7,11 @@
  *   - score (partial credit) = passed tests / total tests for the problem
  *   - pass (pass@1)           = every test passed
  *
+ * Per-case only: aggregation is benches/coding.mjs's job, and it aggregates as COUNTS
+ * (coding_pass_at_1 = #cases passing, not a rate). A gradeAll() here once returned a
+ * `pass_at_1` PERCENT — same name, different scale, no callers — and that ambiguity is
+ * how the store came to label the count metric `unit: 'ratio'`. Don't reintroduce it.
+ *
  * Execution is async (it spawns a process per case), so run-suite awaits
  * gradeCase. The parent enforces a wall-clock timeout — a model that emits
  * `while(true){}` is killed and scored 0 rather than hanging the suite.
@@ -77,30 +82,4 @@ export async function gradeCase(caseObj, output, { timeoutMs = 5000 } = {}) {
       reason = `wrong: ${passed}/${total} ${detail}`.trim();
    }
    return { pass, score, passed, total, reason };
-}
-
-/**
- * Aggregate over a {caseId: caseObj} map and a {caseId: output} map.
- * Returns { pass_at_1, test_pass_rate, per_case }.
- */
-export async function gradeAll(cases, outputs, opts = {}) {
-   const per_case = [];
-   let passAt1 = 0;
-   let testsPassed = 0;
-   let testsTotal = 0;
-   for (const [id, caseObj] of Object.entries(cases)) {
-      const r = await gradeCase(caseObj, outputs[id] ?? '', opts);
-      if (r.pass) {
-         passAt1++;
-      }
-      testsPassed += r.passed;
-      testsTotal += r.total;
-      per_case.push({ id, category: caseObj.category, difficulty: caseObj.difficulty, ...r });
-   }
-   const n = Object.keys(cases).length;
-   return {
-      pass_at_1: n ? (passAt1 / n) * 100 : 0,
-      test_pass_rate: testsTotal ? (testsPassed / testsTotal) * 100 : 0,
-      per_case,
-   };
 }
