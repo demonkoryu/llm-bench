@@ -13,6 +13,7 @@
  *   applyThinkControl(...)        — apply think-control mechanism to messages
  *   resolveSampling(...)          — config-driven sampling param resolver
  *   samplingHash(params)          — stable digest of resolved sampling params (a measurement dim)
+ *   validateSamplingMatrix(...)   — reject sampling_matrix keys that can never fire
  *   stripThink(s)                 — strip <think>...</think> from output (defensive)
  *   extractJson(s)                — tolerant first-JSON-object extraction
  *   parseToolArgs(raw)            — parse tool-call arguments string tolerantly
@@ -20,5 +21,5 @@
 
 export { createClient, defaultClient } from './client.mjs';
 export { extractCode, extractJson, parseToolArgs, sanitizeJson, stripThink } from './repair.mjs';
-export { resolveSampling, samplingHash } from './sampling.mjs';
+export { resolveSampling, samplingHash, validateSamplingMatrix } from './sampling.mjs';
 export { applyThinkControl, CAPABILITY, capabilityClass, thinkStates } from './think.mjs';
