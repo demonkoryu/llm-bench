@@ -292,6 +292,85 @@ models:
      capability_note: "prefix-cache reuse nil on int4-KV path (speedup≈1.0): every turn re-prefills the full context; also perf probes report wall-clock e2e tok/s only (mlx_lm emits no server timings, so no prefill/decode split). triage JSON now healthy: mlx_lm constrains via Outlines, which mis-compiles null-as-enum-member (truncated JSON, 18/18 fail) — fixed 2026-07-23 by the shared anyOf[{enum},{null}] schema encoding (see results/optiq-schema-outlines.md)"
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, agent_ctx, quality_decay, throughput, speed, prefix_cache]
 
+   # ── Qwen3.8-27B MLX 4-bit (stock uniform quant on the M1 Mac) ────────────────
+   # Successor generation to the Qwen3.6-27B OptiQ entry above. Same serving stack (`engine: optiq`
+   # → runners/optiq-server.mjs, `optiq serve` wrapping mlx_lm.server, --kv-bits 4), so every
+   # operational note on that entry applies here unless contradicted below.
+   #
+   # QUANT IS NOT COMPARABLE TO THE 3.6 OptiQ ENTRY. There is no OptiQ quant for 3.8 yet (checked
+   # 2026-08-15: mlx-community publishes only stock 4bit + an MTP drafter). This is mlx-community's
+   # uniform affine 4-bit — OptiQ's sensitivity-aware mixed precision is a per-layer 2/4/6-bit assign,
+   # and on 3.5-27B it beat stock uniform 4-bit on every Capability-Score metric. So a 3.8-vs-3.6 diff
+   # measured against the OptiQ row conflates GENERATION with QUANT. The `Qwen3.6-27B MLX 4bit` entry
+   # below is the matched-quant control that isolates the generation delta; run it alongside.
+   # Swap to mlx-community/Qwen3.8-27B-OptiQ-4bit when it lands (they shipped one for 3.5 and 3.6).
+   #
+   # UNVERIFIED — SMOKE BEFORE TRUSTING A FULL RUN:
+   #   - 3.8-27B is a native VISION-language model and these weights were converted with `mlx_vlm`
+   #     (mlx-vlm 0.6.8), not `mlx_lm`. OptiQ wraps mlx_lm.server. Whether mlx_lm loads a VLM-converted
+   #     checkpoint text-only, or llm1 needs mlx-vlm installed / a different serve path, is untested.
+   #     This is the single biggest risk on this entry — smoke `MODEL=… scripts/llm1/serve.sh` first.
+   #   - native_max_ctx copied from the 3.6 arch (config.json max_position_embeddings). The card
+   #     advertises 1M on the HOSTED variant; confirm the local config.json before trusting 262144.
+   #   - effective_bpw 4.0 is nominal for stock 4-bit; refine from on-disk size (~16.1 GB).
+   # probe_max_ctx/ctx_cap inherit the operator's LOCKED 1×64k deploy slot (2026-07-22, "128k is just
+   # too slow") — not a fresh measurement. agent_ctx (run FIRST) re-measures coherence_ceiling.
+   - hf_repo: mlx-community/Qwen3.8-27B-4bit
+     hf_file: Qwen3.8-27B-4bit
+     engine: optiq
+     mlx_model: mlx-community/Qwen3.8-27B-4bit
+     kv_quant: int4
+     label: "Qwen3.8-27B MLX 4bit [kv int4]"
+     family: qwen3.8
+     type: dense
+     arch: gated-delta-dense           # 64 layers = 48 linear_attention + 16 full_attention (as 3.5/3.6)
+     quant: "MLX-4bit"
+     effective_bpw: 4.0                # nominal stock uniform 4-bit — refine from on-disk size
+     total_params: 27
+     active_params: 27
+     think: optional
+     think_control: enable_thinking    # card: thinking mode is the DEFAULT — harness forces no_think (standing rule)
+     tools: true
+     native_max_ctx: 262144            # UNVERIFIED for 3.8 — confirm from the local config.json
+     probe_max_ctx: 65536
+     ctx_cap: 65536
+     kv_variants: []
+     extra_flags: { batch-size: null, ubatch-size: null }
+     capability_note: "vision-language model served text-only; weights converted with mlx_vlm, not mlx_lm — serve path UNVERIFIED. Expect the 3.6-OptiQ operational caveats to carry over: prefix-cache reuse nil on the int4-KV path (every turn re-prefills), and wall-clock e2e tok/s only (mlx_lm emits no server timings, so no prefill/decode split)."
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, agent_ctx, quality_decay, throughput, speed, prefix_cache]
+
+   # ── Qwen3.6-27B MLX 4-bit (matched-quant CONTROL for the 3.8 entry) ──────────
+   # Exists ONLY to isolate generation from quant: identical stock uniform 4-bit conversion of the
+   # same base model whose OptiQ quant we already benchmarked. Three-way read:
+   #   3.8 MLX-4bit  vs  3.6 MLX-4bit   → generation delta   (quant held constant)  ← the real question
+   #   3.6 MLX-4bit  vs  3.6 OptiQ-4bit → quant delta        (generation held constant)
+   # Park this once mlx-community ships a 3.8 OptiQ quant and the comparison goes OptiQ-to-OptiQ.
+   # Same mlx_vlm caveat as above (3.6-27B is also a VLM) — if this one serves cleanly under mlx_lm,
+   # that is evidence the 3.8 entry will too.
+   - hf_repo: mlx-community/Qwen3.6-27B-4bit
+     hf_file: Qwen3.6-27B-4bit
+     engine: optiq
+     mlx_model: mlx-community/Qwen3.6-27B-4bit
+     kv_quant: int4
+     label: "Qwen3.6-27B MLX 4bit [kv int4]"
+     family: qwen3.6
+     type: dense
+     arch: gated-delta-dense
+     quant: "MLX-4bit"
+     effective_bpw: 4.0
+     total_params: 27
+     active_params: 27
+     think: optional
+     think_control: enable_thinking
+     tools: true
+     native_max_ctx: 262144
+     probe_max_ctx: 65536
+     ctx_cap: 65536
+     kv_variants: []
+     extra_flags: { batch-size: null, ubatch-size: null }
+     capability_note: "matched-quant control for the Qwen3.8-27B MLX 4bit entry — stock uniform 4-bit counterpart to the OptiQ-4bit row. Same OptiQ serving caveats (nil prefix-cache reuse on int4 KV; e2e tok/s only)."
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, agent_ctx, quality_decay, throughput, speed, prefix_cache]
+
    # ── Gemma4-E4B ───────────────────────────────────────────────────────────────
    # Hybrid: runs both nothi and think passes.
    # Google unified sampling: same params for ALL tasks and both think states.
@@ -627,6 +706,45 @@ sampling_matrix:
          # reasoning-budget cap. We keep the shared pp 1.5 AND cap think at 12288
          # (MAX_TOKENS.coding_hard_think). Verified: pp 1.5 + temp 0.2 → 100% on
          # all coding passes; pp 0.0 (vendor preset) regressed think → RUNAWAY.
+         coding:
+            temperature: 0.2
+            top_p: 0.9
+      think:
+         temperature: 1.0
+         top_p: 0.95
+         docqa:
+            temperature: 0.6
+            top_p: 0.95
+      no_think:
+         temperature: 0.7
+         top_p: 0.8
+
+   # ── Qwen3.8 (27B dense VLM) ───────────────────────────────────────────────
+   # Vendor-published params (HF card, verified 2026-08-15) are IDENTICAL in shape to Qwen3.6's:
+   #   think    temp 1.0 / top_p 0.95 / top_k 20 / min_p 0 / presence_penalty 0.0
+   #   no_think temp 0.7 / top_p 0.80 / top_k 20 / min_p 0 / presence_penalty 1.5
+   # We deliberately DIVERGE from the vendor think-mode presence_penalty 0.0 and keep the shared
+   # pp 1.5, exactly as on qwen3.6 — see the long rationale in that block: pp 0.0 is the config that
+   # triggered the documented infinite-reasoning-loop on coding, and our own A/B found pp 1.5 + temp 0.2
+   # → 100% on all coding passes while pp 0.0 regressed to RUNAWAY. Qwen's own card still names raising
+   # presence_penalty (0–2) as the mitigation for endless repetition, so this is consistent with vendor
+   # guidance, not against it.
+   #
+   # The `coding:` override below is DEAD CONFIG and never fires — kept only to stay identical to the
+   # qwen3.5/qwen3.6 blocks so the 3.8-vs-3.6 comparison is apples-to-apples. resolveSampling() does an
+   # exact useCase-key lookup and the actual bench names are coding_hard / coding_practical /
+   # coding_bugfix, so `coding` matches nothing (verified 2026-08-15). Every coding pass therefore runs
+   # at the no_think default temp 0.7 / top_p 0.8, NOT the temp 0.2 the A/B validated. Do not "fix" this
+   # in isolation: activating it changes qwen3.5/qwen3.6 sampling too and invalidates comparison against
+   # already-recorded results. Fix it as a deliberate re-baseline across all three families.
+   #
+   # Also NOT re-verified on 3.8 — if 3.8 fixed the loop bug, the pp 1.5 default is now a needless
+   # quality tax and this block should be re-A/B'd against the vendor preset.
+   qwen3.8:
+      default:
+         top_k: 20
+         min_p: 0
+         presence_penalty: 1.5
          coding:
             temperature: 0.2
             top_p: 0.9
