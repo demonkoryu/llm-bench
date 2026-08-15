@@ -36,6 +36,11 @@ export const COLUMNS = {
    ubatch: 'BIGINT',
    spec_decode: 'VARCHAR',
    sampling_profile: 'VARCHAR',
+   // Digest of the RESOLVED sampling params (temp/top_p/penalties/…) for this (model, think, bench).
+   // sampling_profile is only `family/think_mode` — a function of dims already present — so it cannot
+   // distinguish a re-baseline that changed nothing but temperature. This can, and it is what
+   // bench-run's resume key uses. Null on probes (they set their own sampling) and on legacy rows.
+   sampling_hash: 'VARCHAR',
    think_mode: 'VARCHAR',
    // platform
    host: 'VARCHAR',
@@ -43,6 +48,11 @@ export const COLUMNS = {
    vram_total: 'BIGINT',
    backend: 'VARCHAR',
    llamacpp_build: 'VARCHAR',
+   // Engine version for ANY engine — llamacpp_build is llama.cpp-specific (parsed from
+   // `llama-server --version`) and was null for the entire OptiQ run, leaving MLX rows with no
+   // engine provenance at all. For llamacpp this mirrors llamacpp_build; for OptiQ it is the
+   // `system_fingerprint` every response carries (mlx-lm ver, mlx ver, OS, arch, GPU).
+   engine_version: 'VARCHAR',
    driver: 'VARCHAR',
    // the measurement
    bench: 'VARCHAR',
@@ -94,12 +104,14 @@ export const DIM_COLUMNS = [
    'ubatch',
    'spec_decode',
    'sampling_profile',
+   'sampling_hash',
    'think_mode',
    'host',
    'gpu',
    'vram_total',
    'backend',
    'llamacpp_build',
+   'engine_version',
    'driver',
 ];
 

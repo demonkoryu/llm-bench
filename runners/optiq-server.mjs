@@ -139,6 +139,40 @@ export function optiqServer({ inferenceUrl = 'http://127.0.0.1:8080', debug = fa
       throw new Error(`optiq not ready within ${Math.round(timeoutMs / 1000)}s at ${inferenceUrl}`);
    }
 
+   /**
+    * Engine version string for the `engine_version` measurement dim. OptiQ returns it on every
+    * chat response as `system_fingerprint`, e.g.
+    *   "0.31.3-0.32.0-macOS-26.5.2-arm64-arm-64bit-Mach-O-applegpu_g13s"
+    * (mlx-lm 0.31.3, mlx 0.32.0, OS, arch, GPU). There is no version endpoint, so the cheapest way
+    * to read it is a 1-token completion against the already-loaded model.
+    *
+    * Deliberately a raw fetch rather than the SDK client: this must not inherit the 60-min
+    * OPTIQ_TIMEOUT_MS ceiling, and it must work before startServer() has selected a model (a
+    * probe-only run may skip the pre-start entirely) — hence the listModels() fallback. Best-effort
+    * throughout: engine_version is nullable, and failing to read it must never fail a benchmark.
+    * @returns {Promise<string|null>}
+    */
+   async function engineVersion() {
+      const id = currentModel ?? (await listModels())[0];
+      if (!id) {
+         return null;
+      }
+      try {
+         const res = await globalThis.fetch(`${inferenceUrl}/v1/chat/completions`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ model: id, messages: [{ role: 'user', content: 'hi' }], max_tokens: 1, seed: OPTIQ_SEED }),
+            signal: AbortSignal.timeout(180_000),
+         });
+         if (!res.ok) {
+            return null;
+         }
+         return (await res.json())?.system_fingerprint ?? null;
+      } catch {
+         return null;
+      }
+   }
+
    // ── Lifecycle no-ops ────────────────────────────────────────────────────────────
    // OptiQ is a persistent daemon we never stop or reload; there is no VRAM to clear.
    // These resolve immediately so shared orchestration/probe code runs unchanged.
@@ -175,5 +209,6 @@ export function optiqServer({ inferenceUrl = 'http://127.0.0.1:8080', debug = fa
       hasCrashed,
       probeFitCtx,
       listModels,
+      engineVersion,
    };
 }

@@ -9,17 +9,23 @@
 //   SSH_HOST=192.168.1.120 node runners/bench-run.mjs --models Qwen3.6-35B \
 //       --benches toolcalling,reasoning --think both --samples 1 --ctx 16384 \
 //       [--chat-template /path/to/tmpl.jinja] [--no-router-restart]
+//
+// Resume is ON BY DEFAULT: a (config × bench) combo already measured successfully is skipped, so
+// re-invoking after a crash fills only the genuine gaps. Pass --no-resume (or --force) to
+// re-measure everything regardless. NOTE the one case where the default bites: the resume key
+// deliberately excludes llamacpp_build, so after a llama.cpp upgrade a plain re-run will NOT
+// re-measure the perf probes — use --no-resume for that.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { readCap, upsertCap } from '../analysis/caps-cache.mjs';
-import { ensureSchema, insertRows, query } from '../analysis/pg-store.mjs';
+import { ensureSchema, insertRows, markBenchesComplete, query } from '../analysis/pg-store.mjs';
 import { BENCHES } from '../benches/index.mjs';
 import { LOCAL_HOST, runHostCmd } from '../shared/host-exec.mjs';
 import { probeHostBuild } from '../shared/host-probe.mjs';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
-import { resolveSampling } from '../shared/llm/index.mjs';
+import { resolveSampling, samplingHash } from '../shared/llm/index.mjs';
 import { deriveSubjectDims, loadModelsConfig } from '../shared/models-config.mjs';
 import { metricRowsFromResult } from '../shared/tidy-schema.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
@@ -38,7 +44,12 @@ const { values: flags } = parseArgs({
       'chat-template': { type: 'string' }, // path on host → chat_template='froggeric-…' unless --template-name
       'template-name': { type: 'string' },
       'no-router-restart': { type: 'boolean', default: false },
-      resume: { type: 'boolean', default: false }, // skip (config × bench × think) combos already in the store
+      // Resume defaults ON. Node's parseArgs has no negatable-boolean support — a
+      // { type:'boolean', default:true } option cannot be switched off — so the opt-out is its own
+      // explicit flag. --force is an alias for operators who think in terms of "redo it".
+      resume: { type: 'boolean', default: true }, // skip (config × bench) combos already measured OK
+      'no-resume': { type: 'boolean', default: false }, // re-measure everything, ignoring the store
+      force: { type: 'boolean', default: false }, // alias for --no-resume
       'keep-router': { type: 'boolean', default: false }, // don't stop the systemd router (assume host already free)
       local: { type: 'boolean', default: false }, // run host scripts locally (Node is ON the test host); default SSH
    },
@@ -52,6 +63,7 @@ const LOCAL = flags.local || LOCAL_HOST; // run host scripts locally vs over SSH
 const SUDO = LOCAL ? 'sudo -n' : 'sudo'; // non-interactive sudo when on-host
 const CTX = Number(flags.ctx);
 const SAMPLES = Math.max(1, Number(flags.samples));
+const RESUME = flags.resume && !flags['no-resume'] && !flags.force;
 const modelFilter = flags.models ? flags.models.split(',').map((s) => s.trim()) : [];
 const benchNames = flags.benches
    .split(',')
@@ -181,9 +193,18 @@ async function main() {
    // a crash or kill never loses completed work (--resume re-reads what's already in the store).
    await ensureSchema();
    let writtenTotal = 0;
+   // Rows land as 'partial' and are promoted to 'ok' by markBenchesComplete() once their bench
+   // finishes. That keeps the incremental persistence above (nothing measured is ever lost) while
+   // making an interrupted bench distinguishable from a finished one — which is what lets resume
+   // retry it. Statuses a bench sets deliberately (e.g. agent_ctx's 'skip') are left alone.
    const flush = async (rows) => {
       if (!rows.length) {
          return;
+      }
+      for (const r of rows) {
+         if (r.status === 'ok') {
+            r.status = 'partial';
+         }
       }
       const r = await insertRows(rows);
       writtenTotal += r.rows;
@@ -194,27 +215,84 @@ async function main() {
       vram_total: host.vramTotalMib,
       backend: host.backend,
       llamacpp_build,
+      // Mutated once below, after the first server is up: on llama.cpp the build probe already
+      // answered this, but OptiQ only reveals its version in a response's system_fingerprint.
+      // common() reads platformBase at row-build time, so the later fill-in reaches every row.
+      engine_version: llamacpp_build,
       driver: null,
    };
+   // OptiQ is a persistent daemon that is already serving, so its version can be read now — one
+   // 1-token completion, best-effort. Doing it here (rather than per model) keeps it off the
+   // measured path entirely. Null stays null if the daemon is unreachable; the run then fails on
+   // its own in startServer with a much better message than a version probe would give.
+   if (ENGINE === 'optiq') {
+      platformBase.engine_version = await srv.engineVersion();
+      console.error(`[bench-run] engine_version: ${platformBase.engine_version ?? 'unknown'}`);
+   }
 
-   // Resume: skip (config × bench × think) combos already in the store (incl. from prior
-   // runs / a crashed partial). Build-AGNOSTIC: scoring merges across llamacpp_build (build is not
-   // an entity dim), so a combo measured under ANY build counts as done — --resume fills genuine
-   // gaps without re-measuring the whole matrix after a llama.cpp upgrade.
+   // ── Resume (default ON) ────────────────────────────────────────────────────────────────────
+   // Skip (config × bench) combos already measured successfully, including from prior runs and
+   // crashed partials, so a re-invocation fills only genuine gaps.
+   //
+   // Every dim the dashboard compares along must be in the key, or a run differing ONLY in that dim
+   // is silently skipped and the store quietly answers the wrong question. In particular `ctx`: the
+   // Qwen3.6-27B-4bit control ran at 16384, and without ctx here a 65536 re-run would be dropped as
+   // already-done.
+   //
+   // Two deliberate EXCLUSIONS:
+   //  · llamacpp_build — scoring merges across build (build is not an entity dim), so a combo
+   //    measured under any build counts as done. Trade-off, now sharper because resume is the
+   //    default: a llama.cpp upgrade will NOT re-measure the perf probes, where build genuinely
+   //    moves the numbers. Use --no-resume after a build bump.
+   //  · n (sample count) — not an equality dim but a threshold one; handled below via max(n), so
+   //    `--samples 5` after a samples=1 run re-measures while `--samples 1` after samples=5 skips.
    const SEP = '␟';
-   const doneSet = new Set();
-   if (flags.resume) {
+   const RESUME_KEY = [
+      'gguf_file',
+      'kv_quant',
+      'chat_template',
+      'sampling_hash', // real sampling identity; sampling_profile is only family/think_mode
+      'ctx',
+      'n_parallel',
+      'batch',
+      'ubatch',
+      'spec_decode',
+      'host', // two hosts with the same GPU are otherwise indistinguishable
+      'backend',
+      'gpu',
+      'bench',
+      'think_mode',
+   ];
+   // ONE key builder for both the store side and the candidate side, so the two cannot drift.
+   const keyOf = (d) => RESUME_KEY.map((c) => (d[c] == null ? '' : String(d[c]))).join(SEP);
+
+   // key → highest sample count recorded for it.
+   const doneSet = new Map();
+   if (RESUME) {
+      // status='ok' is essential: rows are written 'partial' and only promoted once the bench
+      // completes, so without this filter a combo whose every row is a crashed partial (or a 'skip')
+      // would count as done and never be retried.
+      const cols = RESUME_KEY.map((c) => `"${c}"`).join(', ');
       try {
-         for (const r of await query(`SELECT DISTINCT gguf_file, kv_quant, chat_template, backend, gpu, bench, think_mode FROM $TIDY`)) {
-            doneSet.add([r.gguf_file, r.kv_quant ?? '', r.chat_template, r.backend, r.gpu, r.bench, r.think_mode].join(SEP));
+         for (const r of await query(`SELECT ${cols}, max(n) AS samples FROM $TIDY WHERE status = 'ok' GROUP BY ${cols}`)) {
+            doneSet.set(keyOf(r), r.samples ?? 1);
          }
       } catch {
          /* empty store */
       }
-      console.error(`[bench-run] --resume: ${doneSet.size} (config×bench×think) combos already measured — will skip them`);
+      console.error(
+         `[bench-run] resume ON: ${doneSet.size} (config×bench) combos already complete — skipping them (--no-resume/--force to re-measure)`,
+      );
+   } else {
+      console.error(`[bench-run] resume OFF (${flags.force ? '--force' : '--no-resume'}): every requested combo will be re-measured`);
    }
-   const needed = (subject, kv_quant, bench, think_mode, template) =>
-      !flags.resume || !doneSet.has([subject.gguf_file, kv_quant ?? '', template, host.backend, host.gpu, bench, think_mode].join(SEP));
+   const needed = (dims) => {
+      if (!RESUME) {
+         return true;
+      }
+      const have = doneSet.get(keyOf(dims));
+      return have == null || have < SAMPLES;
+   };
 
    try {
       for (const m of models) {
@@ -248,13 +326,19 @@ async function main() {
             llamacpp_build,
          };
          const wantBenches = benchNames.filter((b) => BENCHES[b]);
-         const need = (benchName, think_mode) => needed(subject, kv_quant, benchName, think_mode, modelTemplate);
-         // Nothing pending for this model? Skip it entirely (no server load).
+         // The resume key's non-bench half, fixed for this model on this host.
+         const resumeDims = { ...subject, ...serving, ...platformBase };
+         const need = (benchName, think_mode, sampling_hash) => needed({ ...resumeDims, sampling_hash, bench: benchName, think_mode });
+         // Sampling is resolved per (think state, bench) — the use-case override means toolcalling
+         // and coding can carry different params for the same model — so the hash is too.
+         const hashFor = (think, benchName) => samplingHash(resolveSampling(m, think, benchName, matrix));
+         // Nothing pending for this model? Skip it entirely (no server load). Probes resolve their
+         // own sampling, so they key on a null hash — matching what they persist.
          const anyNeeded = wantBenches.some((b) =>
             BENCHES[b].kind === 'probe'
-               ? need(BENCHES[b].resumeBench ?? b, 'n/a')
-               : (BENCHES[b].thinkDependent ? thinkStatesFor(m) : [null]).some((t) =>
-                    need(b, BENCHES[b].thinkDependent ? thinkModeOf(t) : 'n/a'),
+               ? need(BENCHES[b].resumeBench ?? b, 'n/a', null)
+               : (BENCHES[b].thinkDependent ? thinkStatesFor(m) : [m.think === 'optional' ? false : null]).some((t) =>
+                    need(b, BENCHES[b].thinkDependent ? thinkModeOf(t) : 'n/a', hashFor(t, b)),
                  ),
          );
          if (!anyNeeded) {
@@ -291,11 +375,12 @@ async function main() {
             const states = bench.thinkDependent ? thinkStatesFor(m) : [m.think === 'optional' ? false : null];
             for (const think of states) {
                const think_mode = bench.thinkDependent ? thinkModeOf(think) : 'n/a';
-               if (!need(benchName, think_mode)) {
+               const sampling = resolveSampling(m, think, benchName, matrix);
+               const sampling_hash = samplingHash(sampling);
+               if (!need(benchName, think_mode, sampling_hash)) {
                   console.error(`  ${benchName.padEnd(14)} ${think_mode.padEnd(8)} — done (resume)`);
                   continue;
                }
-               const sampling = resolveSampling(m, think, benchName, matrix);
                const thinkControl = m.think_control ?? 'enable_thinking';
                const runs = [];
                for (let i = 0; i < SAMPLES; i++) {
@@ -314,8 +399,13 @@ async function main() {
                   think_mode,
                   ts: nowTs(),
                   sampling_profile: subject.family ? `${subject.family}/${think_mode}` : null,
+                  sampling_hash,
                };
                await flush(metricRowsFromResult(raw, dims));
+               // Every sample that survived is a valid measurement, so promote even when some
+               // samples threw — the recorded n is what it is, and the max(n) >= SAMPLES check
+               // brings this combo back on a later run if the shortfall matters.
+               await markBenchesComplete(run_id, [raw.bench ?? benchName]);
                const summary =
                   raw.toolcall_pass != null
                      ? `${raw.toolcall_pass}/${raw.toolcall_total}`
@@ -329,7 +419,7 @@ async function main() {
          // Re-read caps PER PROBE so a capacity probe (if run first) populates the ceiling
          // that the depth probes (throughput/quality_decay) then load at.
          for (const benchName of wantBenches.filter((b) => BENCHES[b].kind === 'probe')) {
-            if (!need(BENCHES[benchName].resumeBench ?? benchName, 'n/a')) {
+            if (!need(BENCHES[benchName].resumeBench ?? benchName, 'n/a', null)) {
                console.error(`  ${benchName.padEnd(14)} probe    — done (resume)`);
                continue;
             }
@@ -348,15 +438,32 @@ async function main() {
                caps,
                upsertCap: (v) => upsertCap(RESULTS, capKeyFields, { ...v, source_run_id: run_id }),
             };
+            // A probe emits MANY sub-bench rows (speed → speed_short, speed_prefill-4k,
+            // speed_long-32k, …). If it throws partway we keep the rows it did produce — they cost
+            // real GPU time — but leave them 'partial' so resume retries the probe instead of
+            // treating a third of a probe as a finished one.
             let rawRows = [];
+            let completed = true;
             try {
                rawRows = (await BENCHES[benchName].run(probeCtx)) || [];
             } catch (e) {
+               completed = false;
                console.error(`  ${benchName}: ${(e.message ?? '').slice(0, 70)}`);
             }
-            const dims = { ...common(run_id, subject, serving, platformBase), think_mode: 'n/a', ts: nowTs(), sampling_profile: null };
+            const dims = {
+               ...common(run_id, subject, serving, platformBase),
+               think_mode: 'n/a',
+               ts: nowTs(),
+               // Probes resolve their own sampling internally, so there is no run-level profile or
+               // hash to record. Null here matches what the resume key looks up for them.
+               sampling_profile: null,
+               sampling_hash: null,
+            };
             await flush(rawRows.flatMap((raw) => metricRowsFromResult(raw, dims)));
-            console.error(`  ${benchName.padEnd(14)} probe    → ${rawRows.length} rows`);
+            if (completed) {
+               await markBenchesComplete(run_id, [...new Set(rawRows.map((r) => r.bench).filter(Boolean))]);
+            }
+            console.error(`  ${benchName.padEnd(14)} probe    → ${rawRows.length} rows${completed ? '' : ' (PARTIAL — will retry)'}`);
          }
          await srv.stopServer().catch(() => {});
       }
@@ -378,7 +485,9 @@ async function main() {
             gpu: host.gpu,
             backend: host.backend,
             llamacpp_build,
+            engine_version: platformBase.engine_version,
             chat_template: chatTemplate,
+            resume: RESUME,
             benches: benchNames,
             samples: SAMPLES,
             ctx: CTX,

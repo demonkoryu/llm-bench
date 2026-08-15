@@ -128,7 +128,7 @@ function conn() {
 
 // Columns added after the table's first creation. CREATE TABLE IF NOT EXISTS never alters an
 // existing table, so new COLUMNS entries need an explicit idempotent ADD COLUMN here.
-const ADDED_COLUMNS = ['scope'];
+const ADDED_COLUMNS = ['scope', 'sampling_hash', 'engine_version'];
 
 /** Create the measurements table in Postgres if absent, and add any later columns (idempotent). */
 export async function ensureSchema() {
@@ -170,6 +170,34 @@ export async function insertRows(rows) {
       throw new Error(scrub(e.message || e, password));
    }
    return { rows: rows.length };
+}
+
+/**
+ * Promote a run's `partial` rows for the named benches to `status='ok'` — the completion marker
+ * bench-run writes once a bench's run() returns without throwing.
+ *
+ * Rows are inserted as 'partial' the moment they are measured (so a crash never loses work) and
+ * only become 'ok' here. That makes a half-finished bench VISIBLY half-finished: resume counts a
+ * combo done only when it has 'ok' rows, so a probe that died after 3 of its 12 rungs is retried
+ * instead of being treated as complete forever.
+ *
+ * Deliberately narrow: scoped to ONE run_id, touches ONLY the `status` column, and only ever
+ * 'partial' → 'ok'. It can never alter a measurement value or another run's rows.
+ * @returns {{ rows: number }} rows promoted
+ */
+export async function markBenchesComplete(run_id, benches) {
+   if (!run_id || !benches?.length) {
+      return { rows: 0 };
+   }
+   const sql = conn();
+   const { password } = pgConfig();
+   try {
+      const r = await sql`UPDATE measurements SET status = 'ok'
+         WHERE run_id = ${run_id} AND status = 'partial' AND bench IN ${sql(benches)}`;
+      return { rows: r.count ?? 0 };
+   } catch (e) {
+      throw new Error(scrub(e.message || e, password));
+   }
 }
 
 /** Run engine SQL against Postgres. `$TIDY` expands to the `measurements` table. */
