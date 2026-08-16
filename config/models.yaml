@@ -384,6 +384,12 @@ models:
                                        # which is bit-width agnostic — the packed uint32 weight shapes are not, since
                                        # OptiQ varies bits per layer. Reproduce on llm1:
                                        #   python3 scripts/llm1/bpw.py Qwen3.8-27B-OptiQ-4bit Qwen3.6-27B-OptiQ-4bit
+                                       # CAVEAT on OptiQ-vs-STOCK: the two cover slightly different tensor sets.
+                                       # Stock shards carry a quantized vision tower (27.36B logical params); the
+                                       # OptiQ index excludes it (26.90B — vision is bf16 in the sidecar). So the
+                                       # ~0.46B difference is vision, and the QUANT delta (4.69 vs 5.58/5.78) is not
+                                       # strictly like-for-like. Cross-generation comparisons within one recipe
+                                       # (stock-vs-stock, OptiQ-vs-OptiQ) are unaffected.
      total_params: 27
      active_params: 27
      think: optional
