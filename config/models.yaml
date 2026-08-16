@@ -297,13 +297,14 @@ models:
    # → runners/optiq-server.mjs, `optiq serve` wrapping mlx_lm.server, --kv-bits 4), so every
    # operational note on that entry applies here unless contradicted below.
    #
-   # QUANT IS NOT COMPARABLE TO THE 3.6 OptiQ ENTRY. There is no OptiQ quant for 3.8 yet (checked
-   # 2026-08-15: mlx-community publishes only stock 4bit + an MTP drafter). This is mlx-community's
-   # uniform affine 4-bit — OptiQ's sensitivity-aware mixed precision is a per-layer 2/4/6-bit assign,
-   # and on 3.5-27B it beat stock uniform 4-bit on every Capability-Score metric. So a 3.8-vs-3.6 diff
-   # measured against the OptiQ row conflates GENERATION with QUANT. The `Qwen3.6-27B MLX 4bit` entry
-   # below is the matched-quant control that isolates the generation delta; run it alongside.
-   # Swap to mlx-community/Qwen3.8-27B-OptiQ-4bit when it lands (they shipped one for 3.5 and 3.6).
+   # QUANT IS NOT COMPARABLE TO THE 3.6 OptiQ ENTRY. This is mlx-community's uniform affine 4-bit —
+   # OptiQ's sensitivity-aware mixed precision is a per-layer bit assign, and on 3.5-27B it beat stock
+   # uniform 4-bit on every Capability-Score metric. So a 3.8-vs-3.6 diff measured against the OptiQ
+   # row conflates GENERATION with QUANT. The `Qwen3.6-27B MLX 4bit` entry below is the matched-quant
+   # control that isolates the generation delta; run it alongside.
+   # This entry is NOT superseded by the 3.8 OptiQ entry that follows — keep both: stock-vs-stock is
+   # one matched pair (with the 3.6 control below) and OptiQ-vs-OptiQ is the other (with the 3.6 OptiQ
+   # entry above). Together they also give the quant delta within each generation.
    #
    # UNVERIFIED — SMOKE BEFORE TRUSTING A FULL RUN:
    #   - 3.8-27B is a native VISION-language model and these weights were converted with `mlx_vlm`
@@ -336,7 +337,50 @@ models:
      ctx_cap: 65536
      kv_variants: []
      extra_flags: { batch-size: null, ubatch-size: null }
-     capability_note: "vision-language model served text-only; weights converted with mlx_vlm, not mlx_lm — serve path UNVERIFIED. Expect the 3.6-OptiQ operational caveats to carry over: prefix-cache reuse nil on the int4-KV path (every turn re-prefills), and wall-clock e2e tok/s only (mlx_lm emits no server timings, so no prefill/decode split)."
+     capability_note: "vision-language model served text-only (mlx_vlm-converted weights load fine under OptiQ/mlx_lm — VERIFIED by the 2026-08-15 run, 28/28 benches ok). Same OptiQ operational caveats as the 3.6 OptiQ entry: prefix-cache reuse nil on the int4-KV path (every turn re-prefills), and wall-clock e2e tok/s only (mlx_lm emits no server timings, so no prefill/decode split)."
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, agent_ctx, quality_decay, throughput, speed, prefix_cache]
+
+   # ── Qwen3.8-27B OptiQ 4-bit (matched-QUANT counterpart to the 3.6 OptiQ entry) ──
+   # Landed 2026-08-15 (repo created 03:39Z, card finalised 08-16). This is the row that closes the
+   # comparison the stock-4bit entry above could not: 3.8 OptiQ vs 3.6 OptiQ holds the quant recipe
+   # constant across generations, exactly as the 3.6/3.8 stock-4bit pair holds the stock recipe.
+   # Card facts (2026-08-16): 498 quantized tensors — 261 at 8-bit (sensitive) / 237 at 4-bit (robust),
+   # group size 64, 19.0 GB on disk, per-layer bits chosen by a KL sensitivity sweep against a
+   # uniform-4-bit reference (bf16 does not fit 36 GB, so the reference is itself quantized — the
+   # sensitivity ranking is therefore relative, not absolute). Tensor count is high because 48 of the
+   # 64 blocks are linear-attention with five projections each.
+   # Vision tower stays bf16 in optiq/optiq_vision.safetensors (0.9 GB) → the repo loads TEXT-ONLY
+   # under stock mlx_lm, image+text only under OptiQ. We serve text-only, same as every other M1 row.
+   # SIDECAR LAYOUT: this repo uses the newer optiq/ subfolder (optiq/metadata.json,
+   # optiq/optiq_vision.safetensors). Verified 2026-08-16 that the installed mlx-optiq 0.4.2 resolves
+   # both layouts (optiq/sidecar_layout.py checks the subfolder first, then the legacy root), so no
+   # toolchain upgrade is required to serve it — and deliberately none was done, because bumping
+   # mlx-optiq would change the serving stack under the already-recorded 3.6 OptiQ rows and confound
+   # the generation comparison this entry exists to make.
+   # NO PUBLISHED NUMBERS: the card's Capability Score table is explicitly unfilled ("No numbers are
+   # quoted until that run completes"), so there is nothing upstream to sanity-check our results against.
+   - hf_repo: mlx-community/Qwen3.8-27B-OptiQ-4bit
+     hf_file: Qwen3.8-27B-OptiQ-4bit
+     engine: optiq
+     mlx_model: mlx-community/Qwen3.8-27B-OptiQ-4bit
+     kv_quant: int4
+     label: "Qwen3.8-27B OptiQ 4bit [kv int4]"
+     family: qwen3.8
+     type: dense
+     arch: gated-delta-dense           # 64 layers = 48 linear_attention + 16 full_attention (as 3.5/3.6)
+     quant: "OptiQ-4bit"
+     effective_bpw: 4.5                # mixed 4/8-bit; same nominal figure the 3.6 OptiQ entry carries so the two stay comparable
+     total_params: 27
+     active_params: 27
+     think: optional
+     think_control: enable_thinking    # card default is thinking — harness forces no_think (standing rule)
+     tools: true
+     native_max_ctx: 262144            # UNVERIFIED for 3.8 — confirm from the local config.json
+     probe_max_ctx: 65536
+     ctx_cap: 65536
+     kv_variants: []
+     extra_flags: { batch-size: null, ubatch-size: null }
+     capability_note: "vision-language model served text-only (bf16 vision tower left in the optiq/ sidecar). Same OptiQ caveats as the other M1 rows: prefix-cache reuse nil on the int4-KV path (every turn re-prefills), wall-clock e2e tok/s only."
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, agent_ctx, quality_decay, throughput, speed, prefix_cache]
 
    # ── Qwen3.6-27B MLX 4-bit (matched-quant CONTROL for the 3.8 entry) ──────────
