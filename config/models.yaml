@@ -655,7 +655,7 @@ sampling_matrix:
    #
    # Dropped 2026-08-16, both dead under the old bench-name lookup and neither ever applied:
    #   longctx — no bench routes through it; benchmarks/longctx/*.mjs never call resolveSampling.
-   #   coding  — held pending the qwen3.6 A/B below; re-add here only once that returns.
+   #   coding  — not re-added: the qwen3.6 A/B below ran 2026-08-16 and came back neutral.
    qwen3:
       default:
          temperature: 0.7
@@ -674,7 +674,7 @@ sampling_matrix:
    # Published params mirror Qwen3.6's shape: presence_penalty 1.5 shared; think
    # temp 1.0, no_think temp 0.7 (HF model card). The shared pp 1.5 is the loop guard —
    # canonical rationale in the qwen3.6 block below.
-   # No coding profile: the low-temp coding override is held pending the qwen3.6 A/B (see there).
+   # No coding profile: the low-temp coding override measured neutral on qwen3.6 (see there).
    qwen3.5:
       default:
          top_k: 20
@@ -708,27 +708,31 @@ sampling_matrix:
    #
    # VALIDATED:  pp 1.5 → 100% on all coding passes; pp 0.0 (vendor preset) regressed think →
    #             RUNAWAY. presence_penalty is the variable that A/B actually moved.
-   # UNTESTED:   temp 0.2 on coding. An earlier version of this comment read "Verified: pp 1.5 +
-   #             temp 0.2 → 100%", but temp 0.2 was NEVER in effect when that ran — the override
-   #             keyed on a bench named `coding`, which has not existed since the bench was split
-   #             into coding_hard/coding_practical/coding_bugfix. Those passes ran at the family
-   #             defaults (no_think 0.7, think 1.0). Corrected 2026-08-16.
+   # TESTED, NEUTRAL — do not re-add a coding profile here without new evidence. temp 0.2 / top_p
+   #             0.9 was measured against these defaults on 2026-08-16 and made no difference.
+   #             An earlier version of this comment read "Verified: pp 1.5 + temp 0.2 → 100%", but
+   #             temp 0.2 was NEVER in effect when that ran — the override keyed on a bench named
+   #             `coding`, which has not existed since the bench was split into coding_hard/
+   #             coding_practical/coding_bugfix. Those passes ran at the family defaults, so the
+   #             100% was pp 1.5 plus coding_bugfix sitting at ceiling.
    #
-   # The coding profile below is an EXPERIMENT, live on qwen3.6 only: the first run that actually
-   # applies temp 0.2, including the think-mode 1.0 → 0.2 cut, where a low-temp coding override has
-   # previously caused degenerate repetition that runs away to the token ceiling (see gemma4).
-   # sampling_hash is part of bench-run's resume key, so these rows land under a new hash and the
-   # existing ones stay intact and comparable — reverting is deleting this block, with no data loss.
-   # Roll out to qwen3 / qwen3.5 / qwen3.8 / qwen3-coder only once this comes back non-catastrophic.
+   #             The measurement: Qwen3.6-35B, 4 configs (IQ4_XS + APEX I-Compact × KV q4_0/q5_0).
+   #             At n=1 all 24 coding combos moved by −3 net, with bugfix and hard bit-identical in
+   #             both arms and every swing confined to coding_practical. Re-run matched at n=5 on
+   #             coding_practical (96 cases/arm): 81.2 → 81.8, Δ+0.6, six of eight combos inside
+   #             their spread and the two that separate cancelling out. no_code 1.4 → 0.4, think
+   #             mode only, ≤0.8 of 12 with ±0.4–0.8 spread — directionally fine, not separable.
+   #             Notably the gemma4 failure mode (low-temp coding override → degenerate repetition
+   #             running away to the token ceiling) does NOT reproduce on qwen3.6 in think mode.
+   #
+   #             Both arms are in the store under real sampling hashes: 17886c8e for the profile,
+   #             8f2303d0 / 93f3f5ce for these defaults. The pre-2026-08-16 coding rows carry a
+   #             NULL sampling_hash and are n=1.
    qwen3.6:
       default:
          top_k: 20
          min_p: 0
          presence_penalty: 1.5
-         per_profile:
-            coding:
-               temperature: 0.2
-               top_p: 0.9
       think:
          temperature: 1.0
          top_p: 0.95
@@ -773,7 +777,7 @@ sampling_matrix:
 
    # ── Qwen3-Coder (30B-A3B — non-thinking) ──────────────────────────────────
    # Dropped 2026-08-16, both dead under the old bench-name lookup: `longctx` (no bench routes
-   # through it) and `coding` (held pending the qwen3.6 A/B — see that block).
+   # through it) and `coding` (measured neutral on qwen3.6, not re-added — see that block).
    qwen3-coder:
       default:
          temperature: 0.7
