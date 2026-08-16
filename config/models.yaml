@@ -275,7 +275,9 @@ models:
      type: dense
      arch: gated-delta-dense
      quant: "OptiQ-4bit"
-     effective_bpw: 4.5                  # OptiQ mixed-precision ~4-bit (approx; refine from on-disk size)
+     effective_bpw: 5.58                 # MEASURED 2026-08-16 from the safetensors headers, not nominal: 17875 MB
+                                         # of served text weights over 26.90B logical params. See the 3.8 OptiQ
+                                         # entry for how this is derived and why the old 4.5 was wrong.
      total_params: 27
      active_params: 27
      think: optional
@@ -306,14 +308,12 @@ models:
    # one matched pair (with the 3.6 control below) and OptiQ-vs-OptiQ is the other (with the 3.6 OptiQ
    # entry above). Together they also give the quant delta within each generation.
    #
-   # UNVERIFIED — SMOKE BEFORE TRUSTING A FULL RUN:
+   # ALL THREE OPEN RISKS ON THIS ENTRY ARE NOW CLOSED (was "UNVERIFIED — smoke before trusting a run"):
    #   - 3.8-27B is a native VISION-language model and these weights were converted with `mlx_vlm`
-   #     (mlx-vlm 0.6.8), not `mlx_lm`. OptiQ wraps mlx_lm.server. Whether mlx_lm loads a VLM-converted
-   #     checkpoint text-only, or llm1 needs mlx-vlm installed / a different serve path, is untested.
-   #     This is the single biggest risk on this entry — smoke `MODEL=… scripts/llm1/serve.sh` first.
-   #   - native_max_ctx copied from the 3.6 arch (config.json max_position_embeddings). The card
-   #     advertises 1M on the HOSTED variant; confirm the local config.json before trusting 262144.
-   #   - effective_bpw 4.0 is nominal for stock 4-bit; refine from on-disk size (~16.1 GB).
+   #     (mlx-vlm 0.6.8), not `mlx_lm`, which OptiQ wraps. mlx_lm DOES load the checkpoint text-only —
+   #     verified by the 2026-08-15 run, 28/28 benches ok. No mlx-vlm install or alternate serve path.
+   #   - native_max_ctx 262144 verified 2026-08-16 against the local config.json, not copied from 3.6.
+   #   - effective_bpw measured 2026-08-16 (4.69, not the nominal 4.0) — see the note on the field.
    # probe_max_ctx/ctx_cap inherit the operator's LOCKED 1×64k deploy slot (2026-07-22, "128k is just
    # too slow") — not a fresh measurement. agent_ctx (run FIRST) re-measures coherence_ceiling.
    - hf_repo: mlx-community/Qwen3.8-27B-4bit
@@ -326,13 +326,17 @@ models:
      type: dense
      arch: gated-delta-dense           # 64 layers = 48 linear_attention + 16 full_attention (as 3.5/3.6)
      quant: "MLX-4bit"
-     effective_bpw: 4.0                # nominal stock uniform 4-bit — refine from on-disk size
+     effective_bpw: 4.69               # MEASURED 2026-08-16: 15310 MB over 27.36B logical params. "4-bit" is the
+                                       # nominal weight width; the real figure carries the group-64 affine
+                                       # scales+biases (fp16 pair per 64 weights = +0.5 bpw) plus the tensors left
+                                       # unquantized. Identical byte-for-byte to the 3.6 stock entry below.
      total_params: 27
      active_params: 27
      think: optional
      think_control: enable_thinking    # card: thinking mode is the DEFAULT — harness forces no_think (standing rule)
      tools: true
-     native_max_ctx: 262144            # UNVERIFIED for 3.8 — confirm from the local config.json
+     native_max_ctx: 262144            # VERIFIED 2026-08-16 from the local config.json (max_position_embeddings).
+                                       # The card's 1M figure applies to the HOSTED variant only.
      probe_max_ctx: 65536
      ctx_cap: 65536
      kv_variants: []
@@ -369,13 +373,24 @@ models:
      type: dense
      arch: gated-delta-dense           # 64 layers = 48 linear_attention + 16 full_attention (as 3.5/3.6)
      quant: "OptiQ-4bit"
-     effective_bpw: 4.5                # mixed 4/8-bit; same nominal figure the 3.6 OptiQ entry carries so the two stay comparable
+     effective_bpw: 5.78               # MEASURED 2026-08-16: 18525 MB over 26.90B logical params.
+                                       # NOT equal to the 3.6 OptiQ figure (5.58) — the two OptiQ quants differ by
+                                       # ~3.6%, so this axis is NOT symmetric and does not cancel in a 3.8-vs-3.6
+                                       # OptiQ comparison: the 3.8 quant is genuinely fatter, and any quality edge
+                                       # it shows is bought with bits. Bytes are the safetensors index total_size
+                                       # (sharded text tower only); the optiq/ sidecars are excluded because they
+                                       # are on disk but never loaded on the text-only path we serve. Logical param
+                                       # count comes from each tensor's .scales shape ([out, n_groups] × group_size),
+                                       # which is bit-width agnostic — the packed uint32 weight shapes are not, since
+                                       # OptiQ varies bits per layer. Reproduce on llm1:
+                                       #   python3 scripts/llm1/bpw.py Qwen3.8-27B-OptiQ-4bit Qwen3.6-27B-OptiQ-4bit
      total_params: 27
      active_params: 27
      think: optional
      think_control: enable_thinking    # card default is thinking — harness forces no_think (standing rule)
      tools: true
-     native_max_ctx: 262144            # UNVERIFIED for 3.8 — confirm from the local config.json
+     native_max_ctx: 262144            # VERIFIED 2026-08-16 from the local config.json (max_position_embeddings).
+                                       # The card's 1M figure applies to the HOSTED variant only.
      probe_max_ctx: 65536
      ctx_cap: 65536
      kv_variants: []
@@ -388,9 +403,12 @@ models:
    # same base model whose OptiQ quant we already benchmarked. Three-way read:
    #   3.8 MLX-4bit  vs  3.6 MLX-4bit   → generation delta   (quant held constant)  ← the real question
    #   3.6 MLX-4bit  vs  3.6 OptiQ-4bit → quant delta        (generation held constant)
-   # Park this once mlx-community ships a 3.8 OptiQ quant and the comparison goes OptiQ-to-OptiQ.
-   # Same mlx_vlm caveat as above (3.6-27B is also a VLM) — if this one serves cleanly under mlx_lm,
-   # that is evidence the 3.8 entry will too.
+   # The 3.8 OptiQ quant HAS since shipped (2026-08-15) and is benchmarked, so the OptiQ-to-OptiQ
+   # comparison now exists — but do NOT park this entry on that basis. It is what makes the quant axis
+   # readable at all: with both stock rows and both OptiQ rows complete, the 2×2 separates generation
+   # from quant, and the measured bpw (stock 4.69 both generations; OptiQ 5.58 → 5.78) shows the OptiQ
+   # pair is NOT bit-matched across generations, so OptiQ-vs-OptiQ alone would not isolate generation.
+   # mlx_vlm caveat resolved: both 3.6-27B and 3.8-27B are VLMs and both serve text-only under mlx_lm.
    - hf_repo: mlx-community/Qwen3.6-27B-4bit
      hf_file: Qwen3.6-27B-4bit
      engine: optiq
@@ -401,7 +419,7 @@ models:
      type: dense
      arch: gated-delta-dense
      quant: "MLX-4bit"
-     effective_bpw: 4.0
+     effective_bpw: 4.69               # MEASURED 2026-08-16; identical bytes and params to the 3.8 stock entry
      total_params: 27
      active_params: 27
      think: optional
