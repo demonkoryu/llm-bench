@@ -1,0 +1,68 @@
+[Sun Aug 23 07:47:31 PM UTC 2026] Starting full Qwen3.8-27B benchmark with MTP
+[bench-run] 2 models · benches=[triage,reasoning,toolcalling,summarization,docqa,coding_hard,coding_practical,coding_bugfix,speed,agent_ctx,fit_ctx] · think=both · samples=1 · build=null · template=builtin · exec=local
+[bench-run] production server: stopped
+[bench-run] resume OFF (--force): every requested combo will be re-measured
+
+══ Qwen3.8-27B Q6_K · KV q8_0
+[llamacpp] started PID=df6e48aa3dab8a1a5ca75d5cb68e71539b8fe5d1b3c5a3d0fec3ec032350a56d backend=cuda ctx=16384 Qwen3.8-27B-UD-Q6_K.gguf
+  triage         no_think → ok
+  triage         think    → ok
+  reasoning      no_think → 11/12
+  reasoning      think    → 12/12
+  toolcalling    no_think → 10/10
+  toolcalling    think    → 10/10
+  summarization  no_think → ok
+  summarization  think    → ok
+  docqa          no_think → ok
+  docqa          think    → ok
+  coding_hard    no_think → ok
+  coding_hard    think    → ok
+  coding_practical no_think → ok
+  coding_practical think    → ok
+  coding_bugfix  no_think → ok
+  coding_bugfix  think    → ok
+[llamacpp] started PID=c89af130da8e90f270317de3bbf163023820823db39486349f557df0effc2789 backend=cuda ctx=16384 Qwen3.8-27B-UD-Q6_K.gguf
+  speed          probe    → 4 rows
+[llamacpp] started PID=02809f1629dbff740f697c08020fd9c86cf781e068708652967dc7ccc4ce6507 backend=cuda ctx=131072 Qwen3.8-27B-UD-Q6_K.gguf
+  [agent_ctx] planner 128k: ✓ coherent  footprint=35126MiB (v=35126 g=0)
+  [agent_ctx] kv≈16384B/tok (q8_0)  weights≈33078MiB  → est 0 coders
+[llamacpp] started PID=c1df7146f0c90a9d8e1d837f3975c9f29f614cb0d167dfba5ecd9a2353556e88 backend=cuda ctx=131072 Qwen3.8-27B-UD-Q6_K.gguf
+  [agent_ctx] 1 planner@128k + 0 coders@64k (pool 128k)  vram+gtt=35126MiB (v=35126 g=0)  SPILL→RAM
+  agent_ctx      probe    → 1 rows
+  [fit_ctx] fitted=262144
+  fit_ctx        probe    → 1 rows
+
+══ Qwen3.8-27B Q6_K · KV k8v4
+[llamacpp] started PID=b5039cdd37cb477386d075828365c90931b18d508cebada612290907cba78e2d backend=cuda ctx=16384 Qwen3.8-27B-UD-Q6_K.gguf
+  triage         no_think → ok
+  triage         think    → ok
+  reasoning      no_think → 10/12
+  reasoning      think    → 12/12
+  toolcalling    no_think → 10/10
+  toolcalling    think    → 9/10
+  summarization  no_think → ok
+  summarization  think    → ok
+  docqa          no_think → ok
+  docqa          think    → ok
+  coding_hard    no_think → ok
+  coding_hard    think    → ok
+  coding_practical no_think → ok
+  coding_practical think    → ok
+  coding_bugfix  no_think → ok
+  coding_bugfix  think    → ok
+[llamacpp] started PID=d30b6d9e0284a364a7e2cbd0ddb8a7da2b63155896a11d31c9e0bce3e321ed3b backend=cuda ctx=16384 Qwen3.8-27B-UD-Q6_K.gguf
+  speed          probe    → 4 rows
+[llamacpp] started PID=1e6cc5eedb130b3dbdb5c9c05021f67bfc10dc7f34ff303f2c953277343a5c97 backend=cuda ctx=131072 Qwen3.8-27B-UD-Q6_K.gguf
+[llm] waiting for model load... 11s
+  [agent_ctx] planner 128k: ✗ coherent  footprint=32450MiB (v=32450 g=0)
+  [agent_ctx] kv≈12288B/tok (q8_0)  weights≈30914MiB  → est 0 coders
+[llamacpp] started PID=f604b0af50fc637d2ead4d2af079c042f212b028f97fcc963b7961dbf76d50be backend=cuda ctx=131072 Qwen3.8-27B-UD-Q6_K.gguf
+[llm] waiting for model load... 11s
+  [agent_ctx] 1 planner@128k + 0 coders@64k (pool 128k)  vram+gtt=32450MiB (v=32450 g=0)  SPILL→RAM
+  agent_ctx      probe    → 1 rows
+  [fit_ctx] fitted=262144
+  fit_ctx        probe    → 1 rows
+[bench-run] production server not auto-restarted (container lifecycle — start manually if needed)
+
+[bench-run] wrote 196 measurement rows → Postgres · run v100-cuda-20260823-194731-benchrun
+[Sun Aug 23 11:06:16 PM UTC 2026] Benchmark complete

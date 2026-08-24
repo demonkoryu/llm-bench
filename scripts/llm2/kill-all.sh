@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Aggressive cleanup: kill all llama-server processes, release lockfile, clear PID.
+# Aggressive cleanup: kill llama-server container, release lockfile.
 # Usage: kill-all.sh [--port <N>]
-PIDFILE=/tmp/llama-server.pid
+CONTAINER="${LLAMA_CONTAINER:-llama-server}"
 LOCKFILE=/tmp/llama-server.lock
 port=8090
 
@@ -12,9 +12,9 @@ while [[ $# -gt 0 ]]; do
    esac
 done
 
-[ -f "$PIDFILE" ] && { pid=$(cat "$PIDFILE"); kill -9 "$pid" 2>/dev/null || true; rm -f "$PIDFILE"; }
+docker kill "$CONTAINER" 2>/dev/null || true
+docker rm -f "$CONTAINER" 2>/dev/null || true
 fuser -k "$port/tcp" 2>/dev/null || true
-pkill -9 -f llama-server 2>/dev/null || true
 rm -f "$LOCKFILE"
 
 echo "  [kill-all] done" >&2

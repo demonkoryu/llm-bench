@@ -165,22 +165,21 @@ async function main() {
    // has no such binary — leave llamacpp_build null (nullable in the schema) on non-llamacpp engines.
    const { llamacpp_build } =
       ENGINE === 'llamacpp'
-         ? await probeHostBuild({ sshHost: SSH_HOST, binPath: host.backends?.[host.backend]?.bin, local: LOCAL })
+         ? await probeHostBuild({ sshHost: SSH_HOST, binPath: host.backends?.[host.backend]?.bin ?? (host.backends?.[host.backend]?.image ? `docker:${host.backends[host.backend].image}` : null), local: LOCAL })
          : { llamacpp_build: null };
    console.error(
       `[bench-run] ${models.length} models · benches=[${benchNames}] · think=${flags.think} · samples=${SAMPLES} · build=${llamacpp_build} · template=${chatTemplate} · exec=${LOCAL ? 'local' : 'ssh'}`,
    );
 
-   // The systemd llama-server router only exists on the llama.cpp host (llm2). OptiQ serves via
-   // its own persistent `optiq serve` daemon on the Mac — nothing for us to stop/restart there.
+   // Stop the production llama-server container to free GPU VRAM for the bench run.
+   // OptiQ runs its own persistent daemon — nothing for us to stop there.
    if (ENGINE === 'llamacpp' && !flags['keep-router']) {
-      const r = await ssh(`${SUDO} systemctl stop llama-server 2>&1 && echo stopped`);
-      console.error(`[bench-run] router: ${r || 'n/a'}`);
+      const r = await ssh(`docker stop llama-server 2>/dev/null; docker rm -f llama-server 2>/dev/null; echo stopped`);
+      console.error(`[bench-run] production server: ${r || 'n/a'}`);
    }
    const restore = async () => {
       if (ENGINE === 'llamacpp' && !flags['no-router-restart'] && !flags['keep-router']) {
-         await ssh(`${SUDO} systemctl start llama-server`);
-         console.error('[bench-run] router restarted');
+         console.error('[bench-run] production server not auto-restarted (container lifecycle — start manually if needed)');
       }
    };
    process.on('SIGINT', async () => {
@@ -312,7 +311,7 @@ async function main() {
          // override. The override is how a non-llama.cpp engine records its KV precision — the MLX
          // entry sets `kv_quant: int4` (OptiQ `--kv-bits 4`, a serve-time flag) so its
          // rows are a distinct config dim, not a null-KV placeholder.
-         const kv_quant = m.variant?.replace(/^kv/, '') ?? ef['cache-type-k'] ?? m.kv_quant ?? null;
+         const kv_quant = m.variant?.replace(/^kv/, '') ?? m.kv_quant ?? ef['cache-type-k'] ?? null;
          // Per-model chat template: a model may pin one; falls back to the run-wide flag.
          const modelTemplate = m.chat_template ?? chatTemplate;
          const serving = {

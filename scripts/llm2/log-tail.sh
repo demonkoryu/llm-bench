@@ -3,7 +3,9 @@
 # Usage:  log-tail.sh [--lines <N>]
 # Exits:  0 = no crash detected, 2 = crash pattern found
 
+CONTAINER="${LLAMA_CONTAINER:-llama-server}"
 lines=30
+
 while [[ $# -gt 0 ]]; do
    case "$1" in
       --lines) lines="$2"; shift 2 ;;
@@ -11,13 +13,14 @@ while [[ $# -gt 0 ]]; do
    esac
 done
 
-LOG=/tmp/llamasrv.log
-if [ ! -f "$LOG" ]; then exit 0; fi
+if ! docker ps -a -q -f "name=^${CONTAINER}$" 2>/dev/null | grep -q .; then
+   exit 0
+fi
 
-tail -n "$lines" "$LOG"
+docker logs --tail "$lines" "$CONTAINER" 2>&1
 
-# Check for crash/OOM patterns
-if grep -qiE 'out of memory|GGML_ASSERT|HIP error|vulkan.*error|failed to load|segmentation fault|Segmentation fault|killed|SIGABRT' "$LOG" 2>/dev/null; then
+if docker logs --tail 100 "$CONTAINER" 2>&1 | \
+   grep -qiE 'out of memory|GGML_ASSERT|CUDA error|CUBLAS error|failed to load|segmentation fault|Segmentation fault|killed|SIGABRT|cudaMalloc failed'; then
    echo "  [log-tail] CRASH PATTERN detected" >&2
    exit 2
 fi

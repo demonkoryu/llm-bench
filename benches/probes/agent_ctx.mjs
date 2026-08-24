@@ -99,8 +99,8 @@ async function runSlots(client, sizes, { think, thinkControl }) {
    return Promise.all(reqs);
 }
 
-// llama.cpp / amdgpu implementation — reloads llama-server across a shared-KV-pool sweep and
-// gates on rocm-smi VRAM+GTT spill. Selected for llama.cpp hosts (engine unset/llamacpp).
+// llama.cpp implementation — reloads llama-server across a shared-KV-pool sweep and
+// gates on nvidia-smi VRAM usage. Selected for llama.cpp hosts (engine unset/llamacpp).
 async function runLlamacpp({ srv, client, model, caps }) {
    const think = model.think === 'optional' ? false : null;
    const thinkControl = model.think_control ?? 'enable_thinking';

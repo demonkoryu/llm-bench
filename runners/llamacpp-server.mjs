@@ -2,7 +2,7 @@
  * Remote llama-server lifecycle manager.
  *
  * Orchestrates the llm2 shell scripts over SSH to:
- *   - Detect available backends (vulkan | rocm)
+ *   - Detect available backends (cuda)
  *   - Start / stop llama-server with a lockfile + VRAM-clear wait
  *   - Estimate the analytic memory-fit context via llama-fit-params (probeFitCtx)
  *
@@ -58,7 +58,7 @@ const DEFAULT_PORT = 8090;
  * @param {object} opts
  *   sshHost   {string}   SSH alias for llm2 (e.g. 'llm2')
  *   llamaUrl  {string}   HTTP endpoint for the OpenAI-compat API
- *   backend   {string}   'vulkan' | 'rocm' (default: 'vulkan')
+ *   backend   {string}   'cuda' (default: 'cuda')
  *   port      {number}   llama-server port (default: 8090)
  *   debug     {boolean}  verbose logging
  *   local     {boolean}  run the llm2 scripts locally (Node is ON the test host)
@@ -67,7 +67,7 @@ const DEFAULT_PORT = 8090;
 export function llamacppServer({
    sshHost,
    llamaUrl = 'http://192.168.1.120:8090',
-   backend = 'vulkan',
+   backend = 'cuda',
    port = DEFAULT_PORT,
    debug = false,
    local = LOCAL_HOST,
@@ -162,7 +162,7 @@ export function llamacppServer({
       await runScript('kill-all.sh', `--port ${port}`, { tolerant: true, timeout: 30_000 });
    }
 
-   /** VRAM used in MiB (reads rocm-smi on llm2). */
+   /** VRAM used in MiB (reads nvidia-smi on llm2, summed across GPUs). */
    async function snapshotVram() {
       const out = await runScript('vram.sh', '', { tolerant: true, timeout: 30_000 });
       const n = parseInt(out, 10);
@@ -170,10 +170,10 @@ export function llamacppServer({
    }
 
    /**
-    * GPU memory used in MiB as { vram, gtt } (reads rocm-smi on llm2).
-    * GTT = system RAM the amdgpu driver mapped for the GPU. amdgpu spills allocations that don't
-    * fit VRAM into GTT transparently (no OOM), so a large GTT means the model/KV is running partly
-    * on slow system RAM — i.e. it does NOT truly fit in VRAM. Returns nulls on parse failure.
+    * GPU memory used in MiB as { vram, gtt } (reads nvidia-smi on llm2).
+    * vram = total used across all GPUs. gtt = always 0 on NVIDIA (no transparent
+    * spill to system RAM — CUDA OOM is a hard failure, unlike amdgpu/GTT).
+    * Returns nulls on parse failure.
     */
    async function snapshotMem() {
       const out = await runScript('meminfo.sh', '', { tolerant: true, timeout: 30_000 });

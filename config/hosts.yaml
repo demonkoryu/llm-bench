@@ -2,30 +2,21 @@
 # Override via env: LLAMA_URL, SSH_HOST, BACKEND
 #
 # Backend:
-#   Vulkan is the sole production backend. ROCm was DISABLED 2026-06-07 (see below).
-#   The harness auto-detects builds via scripts/llm2/backends.sh (now vulkan-only).
+#   CUDA via containerized llama.cpp (Docker + nvidia-container-toolkit).
+#   The harness auto-detects via scripts/llm2/backends.sh.
 
 rose:
-   label: "rose / RX 7900 XT (20 GiB)"
-   gpu: "RX 7900 XT"                  # slugged into result CSV filenames (→ rx7900xt)
-   vram_total_mib: 20464              # usable VRAM (rocm-reported 21458059264 B); free-at-maxctx baseline
+   label: "rose / 2x Tesla V100 PCIe 32GB"
+   gpu: "V100"                         # slugged into result CSV filenames (→ v100)
+   vram_total_mib: 65536               # 2x 32768 MiB
    llamacpp: "${LLAMA_URL:-http://192.168.1.120:8090}"
    ssh_host: "${SSH_HOST:-llm2}"
    port: 8090
-   # llama.cpp backend binaries on llm2:
    backends:
-      vulkan:
-         bin: "~/llama.cpp/build-vulkan/bin/llama-server"
-      # rocm: DISABLED 2026-06-07 — Vulkan is the sole production backend. Build retained
-      #   on llm2 (~/llama.cpp/build-rocm, ~301M) but no longer offered as selectable.
-      #   To re-enable, restore this entry + start-server.sh rocm case + backends.sh.
-      #   (ROCm q8_0 KV is +22% at depth for Qwen3.6-35B — see results/kv-quant-sweep-rocm.md.)
-      #   rocm:
-      #      bin: "~/llama.cpp/build-rocm/bin/llama-server"
-   # Remote benchmark deploy path (git pull target)
+      cuda:
+         image: "llama-server-cuda"
    remote_dir: "~/llm-bench"
-   # VRAM monitoring command (works regardless of inference backend)
-   vram_cmd: "rocm-smi --showmeminfo vram --json"
+   vram_cmd: "nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits"
 
 # ── m1 / Apple M1 Mac — OptiQ (MLX) ──────────────────────────────────────────────
 # A persistent OptiQ daemon (`optiq serve`) on the M1 Mac. Selected only with `--target m1`;

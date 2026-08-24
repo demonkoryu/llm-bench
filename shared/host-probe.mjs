@@ -31,10 +31,22 @@ export function parseLlamacppBuild(versionText) {
 export async function probeHostBuild({ sshHost, binPath, local = LOCAL_HOST }) {
    const o = { local, sshHost };
    // --version prints to stderr; redirect so we capture it.
-   const verOut = binPath ? await hostCmd(`${binPath} --version 2>&1 | head -3`, o) : '';
+   // For containerized builds, run via docker; for bare-metal binPath, run directly.
+   let verOut = '';
+   if (binPath && binPath.startsWith('docker:')) {
+      const image = binPath.slice('docker:'.length);
+      verOut = await hostCmd(`docker run --rm ${image} --version 2>&1 | head -3`, o);
+   } else if (binPath) {
+      verOut = await hostCmd(`${binPath} --version 2>&1 | head -3`, o);
+   }
    const llamacpp_build = parseLlamacppBuild(verOut);
-   // Driver is best-effort (nullable in the schema). Try ROCm first, then any Mesa/DRM hint.
-   const drvOut = await hostCmd(`rocm-smi --version 2>/dev/null | grep -iE "driver" | head -1`, o);
+   // Driver: try nvidia-smi first (NVIDIA), then rocm-smi (AMD), then Mesa/DRM.
+   let drvOut = await hostCmd(`nvidia-smi --query-gpu=driver_version --format=csv,noheader 2>/dev/null | head -1`, o);
+   if (drvOut) {
+      drvOut = `NVIDIA ${drvOut.trim()}`;
+   } else {
+      drvOut = await hostCmd(`rocm-smi --version 2>/dev/null | grep -iE "driver" | head -1`, o);
+   }
    const driver = drvOut ? drvOut.replace(/\s+/g, ' ').trim() : null;
    return { llamacpp_build, driver };
 }

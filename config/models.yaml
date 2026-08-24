@@ -685,6 +685,41 @@ models:
      kv_bytes_per_token: 16384
      benches: [triage, reasoning, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
 
+   # ── Qwen3.8-27B Q6_K ─────────────────────────────────────────────────────────
+   # Qwen3.8-27B: model_type=qwen3_5 (GatedDeltaNet dense hybrid, same arch as
+   # Qwen3.5/3.6-27B). Q6_K ≈ 22 GB → fits in 64 GB (2x V100) with room for
+   # large KV. Primary production model. Apache 2.0.
+   - hf_repo: unsloth/Qwen3.8-27B-GGUF
+     hf_file: Qwen3.8-27B-UD-Q6_K.gguf
+     label: "Qwen3.8-27B Q6_K"
+     family: qwen3.8
+     type: dense
+     think: optional
+     tools: true
+     native_max_ctx: 262144
+     kv_bytes_per_token: 16384
+     spec_decode: draft-mtp
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
+     kv_variants: [q8_0]
+
+   # ── Qwen3.8-27B Q6_K · asymmetric KV (k=q8_0, v=q4_0) ───────────────────────
+   # Asymmetric KV experiment: q8 keys preserve attention precision, q4 values
+   # halve V-cache VRAM. Tests whether the asymmetric penalty (FA kernel de-fuse)
+   # is offset by the VRAM savings (larger context at same footprint).
+   - hf_repo: unsloth/Qwen3.8-27B-GGUF
+     hf_file: Qwen3.8-27B-UD-Q6_K.gguf
+     label: "Qwen3.8-27B Q6_K · KV k8v4"
+     family: qwen3.8
+     type: dense
+     think: optional
+     tools: true
+     native_max_ctx: 262144
+     kv_bytes_per_token: 12288
+     kv_quant: k8v4
+     spec_decode: draft-mtp
+     extra_flags: { cache-type-k: q8_0, cache-type-v: q4_0 }
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
+
 
 # ── Sampling matrix ───────────────────────────────────────────────────────────────
 # Read by shared/llm/sampling.mjs. Authoritative source for ALL per-request sampling.
@@ -908,4 +943,4 @@ sampling_matrix:
 
 # ── Host configuration ───────────────────────────────────────────────────────────
 # Defined separately in config/hosts.yaml.
-# Models run on: rose (llm2) — RX 7900 XT 20 GiB
+# Models run on: rose (llm2) — 2x Tesla V100 PCIe 32GB (64 GiB total)

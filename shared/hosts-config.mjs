@@ -51,7 +51,7 @@ export function loadHostConfig(path, target, { backend } = {}) {
       // MLX hosts (optiq/rapidmlx) carry the inference URL in `mlx`; llama.cpp hosts in `llamacpp`.
       llamaUrl: resolveEnv(host.mlx ?? host.llamacpp),
       sshHost: resolveEnv(host.ssh_host),
-      backend: backend ?? host.backend ?? (engine === 'llamacpp' ? 'vulkan' : engine),
+      backend: backend ?? host.backend ?? (engine === 'llamacpp' ? 'cuda' : engine),
       gpu: host.gpu ?? target,
       vramTotalMib: host.vram_total_mib ?? null,
       port: host.port ?? null,

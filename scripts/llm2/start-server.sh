@@ -1,25 +1,21 @@
 #!/usr/bin/env bash
-# Start one llama-server instance.
-# Acquires a lockfile, kills any orphans, waits for VRAM to clear, then launches.
+# Start one llama-server instance inside a Docker container with GPU passthrough.
 #
 # Usage:
-#   start-server.sh --backend vulkan --ctx <N> \   # rocm DISABLED 2026-06-07
+#   start-server.sh --backend cuda --ctx <N> \
 #                   [--hf-repo <repo> --hf-file <file> | --model <path>] \
 #                   [--port <N>] [--ngl <N>] [extra flags...]
 #
-# Prints the PID to stdout on success.
-# Sets LLAMA_SERVER_PID env file at /tmp/llama-server.pid.
+# Prints the container ID to stdout on success.
 # Exits 1 on failure (with reason to stderr).
 set -e
 
-# ROCM_BIN disabled 2026-06-07 — rocm backend rejected below; build retained on disk.
-VK_BIN="${VK_BIN:-$HOME/llama.cpp/build-vulkan/bin/llama-server}"
+IMAGE="${LLAMA_IMAGE:-llama-server-cuda}"
+CONTAINER="${LLAMA_CONTAINER:-llama-server}"
 LOCKFILE=/tmp/llama-server.lock
-PIDFILE=/tmp/llama-server.pid
-LOG=/tmp/llamasrv.log
-VRAM_CLEAR_TIMEOUT=60  # seconds to wait for VRAM to drop below threshold after kill
+VRAM_CLEAR_TIMEOUT=60
 
-backend=vulkan
+backend=cuda
 ctx=8192
 port=8090
 ngl=99
@@ -41,26 +37,13 @@ while [[ $# -gt 0 ]]; do
    esac
 done
 
-# Select binary
 case "$backend" in
-   rocm)   echo "ERROR: rocm backend is DISABLED (2026-06-07) — Vulkan is the sole production backend." >&2
-           echo "       Re-enable here + in config/hosts.yaml + scripts/llm2/backends.sh if revisited." >&2
-           echo "       (Note: ROCm q8_0 KV is +22% at depth for Qwen3.6-35B — see results/kv-quant-sweep-rocm.md.)" >&2
-           exit 1 ;;
-   vulkan) BIN="$VK_BIN"    ;;
-   *)      echo "ERROR: unknown backend '$backend'" >&2; exit 1 ;;
+   cuda) ;;
+   *)    echo "ERROR: unknown backend '$backend' — only cuda is supported" >&2; exit 1 ;;
 esac
 
-# Vulkan int8 dot-product: measured neutral-to-NEGATIVE for decode on this host
-# (RX 7900 XT / RADV / KHR_coopmat) — 0%…−7.4% tg, prefill unaffected. Disable it at
-# runtime to recover up to ~7% decode on the MoE models. Override with LLAMA_VK_INT_DOT=1
-# to A/B. See results/int-dot-impact.md.
-vk_env=""
-if [ "$backend" = vulkan ] && [ "${LLAMA_VK_INT_DOT:-0}" != "1" ]; then
-   vk_env="env GGML_VK_DISABLE_INTEGER_DOT_PRODUCT=1 "
-fi
-if [ ! -f "$BIN" ]; then
-   echo "ERROR: backend binary not found: $BIN" >&2
+if ! docker image inspect "$IMAGE" &>/dev/null; then
+   echo "ERROR: Docker image not found: $IMAGE" >&2
    exit 1
 fi
 
@@ -72,27 +55,17 @@ if ! ( set -C; echo $$ > "$LOCKFILE" ) 2>/dev/null; then
 fi
 trap 'rm -f "$LOCKFILE"' EXIT
 
-# Kill any existing llama-server processes + wait for VRAM to clear
-echo "  [start-server] killing any existing llama-server..." >&2
-if [ -f "$PIDFILE" ]; then
-   old_pid=$(cat "$PIDFILE" 2>/dev/null || echo "")
-   if [ -n "$old_pid" ]; then
-      kill "$old_pid" 2>/dev/null || true
-      sleep 1
-      kill -9 "$old_pid" 2>/dev/null || true
-   fi
-fi
+# Kill any existing container + wait for VRAM to clear
+echo "  [start-server] killing any existing container..." >&2
+docker kill "$CONTAINER" 2>/dev/null || true
+docker rm -f "$CONTAINER" 2>/dev/null || true
 fuser -k "$port/tcp" 2>/dev/null || true
-pkill -9 -f llama-server 2>/dev/null || true
-rm -f "$PIDFILE"
 
-# Wait for VRAM to clear (prevents OOM from leftover allocations)
 echo "  [start-server] waiting for VRAM to clear..." >&2
 deadline=$((SECONDS + VRAM_CLEAR_TIMEOUT))
 while [ $SECONDS -lt $deadline ]; do
-   used=$(rocm-smi --showmeminfo vram --json 2>/dev/null | \
-      python3 -c "import sys,json; d=json.load(sys.stdin); print(list(d.values())[0].get('VRAM Total Used Memory (B)','0'))" 2>/dev/null || echo "0")
-   used_mib=$(( used / 1048576 ))
+   used_mib=$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits 2>/dev/null \
+      | awk '{s+=$1} END {print int(s)}' || echo "0")
    if [ "$used_mib" -lt 512 ]; then
       echo "  [start-server] VRAM clear (${used_mib} MiB)" >&2
       break
@@ -101,14 +74,7 @@ while [ $SECONDS -lt $deadline ]; do
    sleep 2
 done
 
-# Ensure headless (no compositor eating RAM/VRAM) and THP=always for large-page allocs
-active_target=$(systemctl get-default 2>/dev/null || true)
-current_target=$(systemctl list-units --type=target --state=active 2>/dev/null | grep -oP 'graphical\.target' || true)
-if [ -n "$current_target" ]; then
-   echo "  [start-server] switching to multi-user.target (headless)..." >&2
-   sudo systemctl isolate multi-user.target 2>/dev/null || true
-   sleep 1
-fi
+# Ensure THP=always for large-page allocs
 thp=$(cat /sys/kernel/mm/transparent_hugepage/enabled 2>/dev/null || true)
 if [[ "$thp" != *"[always]"* ]]; then
    echo "  [start-server] enabling transparent huge pages..." >&2
@@ -119,64 +85,51 @@ fi
 if [ -n "$model_path" ]; then
    model_args="--model $model_path"
 elif [ -n "$hf_repo" ] && [ -n "$hf_file" ]; then
-   model_args="--hf-repo '$hf_repo' --hf-file '$hf_file'"
+   model_args="--hf-repo $hf_repo --hf-file $hf_file"
 else
    echo "ERROR: must supply --hf-repo + --hf-file or --model <path>" >&2
    exit 1
 fi
 
-# Default reasoning-format is 'auto' (parses <think>, Gemma channel markers, [THINK]),
-# but a model may override it via extra_flags (e.g. Nemotron Nano v2 needs 'none' —
-# 'auto' can't parse its <SPECIAL_NN> delimiters and 500s). Only inject the default
-# when the model hasn't supplied its own, since llama.cpp honors the first occurrence.
 rf_flag="--reasoning-format auto"
 if [[ "$extra_flags" == *"--reasoning-format"* ]]; then
    rf_flag=""
 fi
 
-# KV cache type defaults to q8_0 (production), but a model may override it via
-# extra_flags (the KV-quant variant sweep injects --cache-type-k/v q4_0). llama-server
-# honors the FIRST occurrence of a flag, so suppress our default when extra_flags
-# already sets it — otherwise the override would be silently ignored. Mirrors rf_flag.
 ctk_flag="--cache-type-k q8_0 --cache-type-v q8_0"
 if [[ "$extra_flags" == *"--cache-type-k"* ]]; then
    ctk_flag=""
 fi
 
-# Slot count defaults to a single server slot, but a multi-agent probe overrides it via
-# extra_flags (--parallel K, usually with --kv-unified for a shared KV pool). Same
-# first-occurrence rule as ctk_flag/rf_flag: suppress the hardcoded -np 1 when extra_flags
-# already sets --parallel / -np, otherwise our default would win and silently pin 1 slot
-# (this previously no-op'd parallel_gen's --parallel too).
 np_flag="-np 1"
 if [[ "$extra_flags" == *"--parallel"* || "$extra_flags" == *"-np "* ]]; then
    np_flag=""
 fi
 
-# Launch llama-server.
-# NOTE: batch sizing (-b / -ub) is intentionally NOT set here — it comes per-model
-# from config/models.yaml extra_flags (every entry carries batch-size:2048
-# ubatch-size:2048). Without it llama.cpp defaults to -ub 512, which throttles Vulkan
-# prefill ~6x. See models.yaml.
-cmd="nohup ${vk_env}$BIN $model_args \
-   -c $ctx \
-   -ngl $ngl \
+# Launch container
+echo "  [start-server] launching cuda ctx=$ctx port=$port" >&2
+CID=$(docker run -d \
+   --name "$CONTAINER" \
+   --gpus all \
+   -p "$port:8090" \
+   -v "$HOME/.cache/huggingface:/root/.cache/huggingface" \
+   "$IMAGE" \
+   $model_args \
+   -c "$ctx" \
+   -ngl "$ngl" \
    $ctk_flag \
    -fa on \
    $np_flag \
+   --split-mode layer \
    --no-mmap --mlock \
    --prio 2 \
    --jinja \
    $rf_flag \
-   --host 0.0.0.0 --port $port \
-   $extra_flags \
-   > $LOG 2>&1 & echo \$!"
+   --host 0.0.0.0 --port 8090 \
+   $extra_flags)
 
-echo "  [start-server] launching $backend ctx=$ctx port=$port" >&2
-PID=$(eval "$cmd")
-echo "$PID" > "$PIDFILE"
-# Release lockfile (server is running; main lock released, PID file is the new guard)
+# Release lockfile
 rm -f "$LOCKFILE"
 trap - EXIT
 
-echo "$PID"
+echo "$CID"
