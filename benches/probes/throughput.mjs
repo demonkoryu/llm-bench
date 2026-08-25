@@ -6,9 +6,12 @@
 // Two measurement paths by engine:
 //   • llama.cpp — one non-streaming request per rep; the server's `timings` object gives the
 //     authoritative prefill/decode split and TTFT = prompt_ms (server-measured).
-//   • MLX/OptiQ — no server `timings`, so we STREAM (SSE) and clock wall-time to the first emitted
-//     token for a real TTFT (≈ prefill + 1 decode; localhost RTT negligible), deriving e2e/decode/
-//     prefill from the terminal include_usage chunk. This is the only way to fill ttft on Apple Silicon.
+//   • MLX/OptiQ and NInfer — no server `timings`, so we STREAM (SSE) and clock wall-time to the first
+//     emitted token for a real TTFT (≈ prefill + 1 decode; localhost RTT negligible), deriving
+//     e2e/decode/prefill from the terminal include_usage chunk. This is the only way to fill ttft
+//     on Apple Silicon, and the only way to get a prefill/decode SPLIT out of NInfer at all —
+//     ninfer-serve returns a standard `usage` block and nothing else, so the non-streaming path
+//     below would silently degrade it to the wall-clock e2e fallback and leave ttft/prefill null.
 
 import { extraFlagsToString } from '../../runners/llamacpp-server.mjs';
 import { makeFillPrompt } from '../../shared/codebase.mjs';
@@ -18,7 +21,9 @@ const median = (xs) => {
    const n = s.length;
    return n ? (n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2) : null;
 };
-const MLX_ENGINES = new Set(['optiq', 'rapidmlx']);
+// Engines whose server response carries NO llama.cpp `timings` object, so the split has to be
+// clocked client-side from an SSE stream. Membership is about the response shape, not the vendor.
+const NO_SERVER_TIMINGS = new Set(['optiq', 'rapidmlx', 'ninfer']);
 const DEPTHS = [2048, 8192, 32768];
 const GEN = 128,
    REPS = 2;
@@ -32,7 +37,7 @@ export const bench = {
    resumeBench: 'e2e-32k',
    async run({ srv, client, model, maxctx }) {
       const ctx = Math.max(maxctx, 8192);
-      const isMlx = MLX_ENGINES.has(model.engine ?? 'llamacpp');
+      const streamForTimings = NO_SERVER_TIMINGS.has(model.engine ?? 'llamacpp');
       await srv.killAll();
       await srv.waitVramClear(30000);
       await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx, extraFlags: extraFlagsToString(model.extra_flags) });
@@ -48,8 +53,8 @@ export const bench = {
             const built = makeFillPrompt(d);
             const um = built.messages[built.messages.length - 1];
             um.content = `// throughput probe ${++nonce}\n${um.content}`;
-            if (isMlx) {
-               // MLX/OptiQ: no server timings. Stream to clock a real TTFT (wall-ms to the first token)
+            if (streamForTimings) {
+               // No server timings. Stream to clock a real TTFT (wall-ms to the first token)
                // and derive e2e/decode/prefill from the include_usage token counts. TTFT ≈ prefill + 1
                // decode; e2e = (prompt+completion)/wall; decode ≈ tokens-after-first ÷ (wall − ttft).
                let s;

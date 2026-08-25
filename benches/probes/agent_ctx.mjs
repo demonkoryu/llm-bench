@@ -52,6 +52,13 @@ const MAX_LOADS = 9; // bound the total reloads across the down-then-up boundary
 // ~200 tok/s shared-prefill rate fillTimeoutMs() assumes.
 const MAX_FILL_TOKENS = 540_672; // 528k, 4k-aligned
 
+// NInfer's `--max-concurrency` is a startup-fixed 1..8 (docs/serving.md: "one resident Engine with
+// a startup-fixed capacity of 1..8 active generation requests"). So on that engine the fleet is
+// hard-capped at 8 lanes = 1 planner + 7 coders NO MATTER how much KV pool fits — a ceiling the
+// llama.cpp path does not have, and the reason a ninfer row can read "7 coders" while the pool
+// would hold more.
+const NINFER_MAX_LANES = 8;
+
 // KV-cache element size relative to q8_0 (the reference kv_bytes_per_token in models.yaml),
 // from GGML type sizes (bytes/32 elems): q8_0=34, q5_0=22, q5_1=24, q4_0=18, q4_1=20, f16=64.
 const KV_QUANT_RATIO = { q8_0: 1.0, q5_0: 0.647, q5_1: 0.706, q4_0: 0.529, q4_1: 0.588, f16: 1.882 };
@@ -314,6 +321,197 @@ async function runLlamacpp({ srv, client, model, caps, vramTotalMib }) {
    ];
 }
 
+// NInfer implementation — reloads ninfer-serve across a lane sweep and gates on the pool capacity
+// the ENGINE ITSELF REPORTS, not on a VRAM reading.
+//
+// Why the llama.cpp gate cannot be reused here. That path searches for the largest `-c T` whose
+// preallocated KV still fits the card, reading the boundary off nvidia-smi. On NInfer the
+// equivalent pool is sized by `--kv-capacity auto`, which by definition "chooses the largest legal
+// capacity that fits the memory remaining after weights are loaded while keeping 1 GiB of sizing
+// headroom" — so the idle footprint is ~constant across every lane count and carries no boundary
+// to find. Worse, a fill cannot substitute: admission "reserves the full prompt-plus-effective-
+// output page entitlement" and an unsatisfiable request "waits in FIFO order", so an
+// over-subscribed fleet does not fail, it silently SERIALIZES — which would look like success.
+//
+// What is measurable is the resolved pool: ninfer-serve reports `resolved=N tokens` at startup, and
+// admission is entitlement-based, so k coders genuinely coexist iff the pool covers the whole
+// entitlement of planner + k coders. That is the gate. The concurrent fill still runs, but as
+// verification of coherence (each slot retrieves its OWN needle), not as the capacity test.
+//
+// Two engine facts shape the search: `auto` is additionally capped at what the configured lanes
+// could use (lanes x --max-context), and the lane count itself is capped at 8. Both are honoured
+// below rather than discovered, because both are startup-rejected rather than degraded.
+async function runNinfer({ srv, client, model, caps }) {
+   const think = model.think === 'optional' ? false : null;
+   const thinkControl = model.think_control ?? 'enable_thinking';
+
+   const coherentWindow = caps?.coherence_ceiling ?? model.ctx_cap ?? model.native_max_ctx ?? PLANNER_TARGET;
+   const plannerCtx = round4k(Math.min(PLANNER_TARGET, coherentWindow));
+   const coderCtx = round4k(Math.min(CODER_TARGET, coherentWindow));
+   // Admission reserves prompt PLUS the request's effective output limit, so a slot's entitlement is
+   // depth + max_tokens. Crucially those output pages come OUT OF the lane's window, not on top of
+   // it: `--max-context` is the per-sequence ceiling, so a request at depth `plannerCtx` asking for
+   // 256 more tokens is refused on the ceiling alone, pool or no pool. Which is also why the
+   // entitlement below must NOT add the output on top — `--kv-capacity auto` is itself capped at
+   // lanes x --max-context, so an entitlement of (1+k)(ctx + 256) would exceed the largest pool the
+   // engine can ever resolve and would reject EVERY rung, reporting 0 coders on a healthy card.
+   // So: a lane is `ctx` tokens in total, and the fill prompts are sized to leave room to answer.
+   const OUT_ENTITLEMENT = 256; // must match runSlots' max_tokens
+   const entitlement = (k) => plannerCtx + k * coderCtx;
+
+   const fail = (notes) => [
+      {
+         bench: 'agent_ctx',
+         score: 0,
+         n_slots: 1,
+         n_coders: 0,
+         total_ctx: plannerCtx,
+         planner_ctx: plannerCtx,
+         coder_ctx: coderCtx,
+         verified: 0,
+         status: 'skip',
+         notes,
+      },
+   ];
+
+   // Strip the harness's llama.cpp-only extra_flags: on this engine they are not merely ignored,
+   // ninfer-serve rejects unknown flags at startup. A ninfer model entry carries ninfer flags, so
+   // the only thing to add here is the lane count and the per-sequence ceiling, both of ours.
+   const launch = async (nSlots, ctx) => {
+      const ef = extraFlagsToString(model.extra_flags);
+      // `--max-concurrency` is ours to sweep, so it can never come from the model config; likewise
+      // `--kv-capacity`, since auto-sizing IS the measurement.
+      const cleaned = ef
+         .replace(/--max-concurrency\s+\S+/g, '')
+         .replace(/--kv-capacity\s+\S+/g, '')
+         .replace(/\s+/g, ' ')
+         .trim();
+      await srv.killAll();
+      await srv.waitVramClear(60_000);
+      await srv.startServer({
+         hf_file: model.hf_file,
+         ctx,
+         extraFlags: `--max-concurrency ${nSlots} --kv-capacity auto ${cleaned}`.trim(),
+      });
+      await srv.waitHealthy(600_000);
+   };
+
+   // One load per rung: configure 1+k lanes, read the pool the engine resolved, compare against the
+   // entitlement of the plan. Capacity only — the coherence fill runs once, in phase 2, on whatever
+   // rung wins, so no rung pays for a fill it is about to be rejected for.
+   const loadAndCheck = async (nCoders) => {
+      const nSlots = 1 + nCoders;
+      const T = plannerCtx + nCoders * coderCtx;
+      const shaped = (extra) => ({ total_ctx: T, planner_ctx: plannerCtx, coder_ctx: coderCtx, n_coders: nCoders, n_slots: nSlots, ...extra });
+
+      try {
+         await launch(nSlots, plannerCtx);
+      } catch (e) {
+         const crashed = await srv.hasCrashed();
+         console.log(`  [agent_ctx] ${nCoders} coders (${nSlots} lanes) — load failed (${crashed ? 'crash' : 'timeout'}): ${(e.message ?? '').slice(0, 60)}`);
+         return shaped({ servable: false, capacity: null, vram_mib: null, gtt_mib: null, coherent_slots: 0 });
+      }
+
+      const capacity = await srv.kvCapacity();
+      const mem = await srv.snapshotMem();
+      // capacity === null means the startup line scrolled out of the log window — genuinely unknown,
+      // so refuse the rung rather than reading it as a zero-token pool (which would fail every rung
+      // and report "0 coders" from a logging accident).
+      const fits = capacity != null && capacity >= entitlement(nCoders);
+      console.log(
+         `  [agent_ctx] 1 planner@${plannerCtx / 1024}k + ${nCoders} coders@${coderCtx / 1024}k (${nSlots} lanes) → pool ${capacity ?? '?'} tok vs entitlement ${entitlement(nCoders)}  vram=${mem.vram ?? '?'}MiB  ${fits ? 'FITS' : 'OVER'}`,
+      );
+      return shaped({ servable: fits, capacity, vram_mib: mem.vram, gtt_mib: mem.gtt, coherent_slots: 0 });
+   };
+
+   // ── Phase 1: one load at the engine's maximum lane count to read the memory-bound pool ──────
+   // At 8 lanes the lane cap (lanes x --max-context) is far above anything that fits, so the
+   // resolved capacity here IS the memory limit — which turns the search below into one arithmetic
+   // step plus a confirmation, instead of a descent through every rung.
+   const first = await loadAndCheck(NINFER_MAX_LANES - 1);
+   let loads = 1;
+   let best = first.servable ? first : null;
+   // capacity == null means the 8-lane rung told us nothing — either it never came up (a wide
+   // fleet raises the per-lane runtime reservation, so the widest rung is the likeliest to OOM) or
+   // its startup line had scrolled out of the log window. Either way the arithmetic shortcut has
+   // no input, so fall back to a plain descent from the top instead of abandoning the probe: the
+   // answer is still reachable, it just costs one load per rung.
+   let k =
+      best || first.capacity == null
+         ? NINFER_MAX_LANES - 2
+         : Math.max(0, Math.min(NINFER_MAX_LANES - 1, Math.floor((first.capacity - plannerCtx) / coderCtx)));
+   while (!best && k >= 0 && loads < MAX_LOADS) {
+      const r = await loadAndCheck(k);
+      loads++;
+      if (r.servable) {
+         best = r;
+         break;
+      }
+      // Fewer lanes means a smaller per-lane runtime reservation, so the pool can only grow as k
+      // drops — one step down is always progress, never a plateau.
+      k -= 1;
+   }
+   if (!best) {
+      await srv.stopServer().catch(() => {});
+      const why =
+         k < 0
+            ? `not even a bare ${plannerCtx / 1024}k planner fits (needs ${entitlement(0)} tok)`
+            : `gave up after ${loads} loads with ${k + 1} coders still untested`;
+      return fail(`no lane count serves a ${plannerCtx / 1024}k planner — ${why}`);
+   }
+
+   // ── Phase 2: verify the winning plan with a concurrent fill ─────────────────────────────────
+   // No reload: the last rung the loop launched IS the winner, and it is still serving. Reloading
+   // just to fill would cost another multi-minute artifact load for an identical configuration.
+   const fillSkipped = best.total_ctx > MAX_FILL_TOKENS;
+   if (!fillSkipped) {
+      // Depth is the lane window MINUS the answer budget — see OUT_ENTITLEMENT above. Filling to the
+      // full window would be refused on --max-context and misread as an incoherence failure.
+      const sizes = [
+         best.planner_ctx - OUT_ENTITLEMENT,
+         ...Array.from({ length: best.n_coders }, () => best.coder_ctx - OUT_ENTITLEMENT),
+      ];
+      const results = await runSlots(client, sizes, { think, thinkControl });
+      best = { ...best, coherent_slots: results.filter((r) => r.ok).length };
+      const failed = results.filter((r) => !r.ok);
+      console.log(
+         `  [agent_ctx] coherence fill: ${best.coherent_slots}/${best.n_slots} slots retrieved their own needle${failed.length ? ` — first failure: ${failed[0].err ?? `wanted ${failed[0].expected}, got "${failed[0].got}"`}` : ''}`,
+      );
+   } else {
+      console.log(
+         `  [agent_ctx] coherence fill SKIPPED — pool ${(best.total_ctx / 1024).toFixed(0)}k > ${(MAX_FILL_TOKENS / 1024).toFixed(0)}k budget; capacity stands, coherent_slots not measured`,
+      );
+   }
+
+   await srv.stopServer().catch(() => {});
+   await srv.waitVramClear(30_000).catch(() => {});
+
+   const laneCapped = best.n_coders === NINFER_MAX_LANES - 1;
+   const fullyCoherent = !fillSkipped && best.coherent_slots === best.n_slots;
+   console.log(
+      `  [agent_ctx] RESULT: 1x${best.planner_ctx / 1024}k planner + ${best.n_coders}x${best.coder_ctx / 1024}k coders (pool ${best.capacity} tok, ${best.coherent_slots}/${best.n_slots} coherent, vram ${best.vram_mib ?? '?'}MiB)${laneCapped ? ' — AT THE 8-LANE ENGINE CAP' : ''}`,
+   );
+   return [
+      {
+         bench: 'agent_ctx',
+         score: best.n_coders,
+         n_slots: best.n_slots,
+         n_coders: best.n_coders,
+         coherent_slots: fillSkipped ? null : best.coherent_slots,
+         total_ctx: best.total_ctx,
+         planner_ctx: best.planner_ctx,
+         coder_ctx: best.coder_ctx,
+         vram_mib: best.vram_mib,
+         gtt_mib: best.gtt_mib,
+         verified: fillSkipped ? null : fullyCoherent ? 1 : 0,
+         status: 'ok',
+         // laneCapped is the difference between "this is what the GPU holds" and "this is what the
+         // engine admits"; without it a reader would take 7 for a memory result.
+         notes: `1x${best.planner_ctx / 1024}k+${best.n_coders}x${best.coder_ctx / 1024}k pool=${best.capacity}tok kv=${model.extra_flags?.['kv-dtype'] ?? 'int8'} ${laneCapped ? 'AT 8-lane engine cap (--max-concurrency 1..8): pool may hold more' : 'pool-bound'} ${fillSkipped ? 'fill-skipped' : `${best.coherent_slots}/${best.n_slots}coh`}`,
+      },
+   ];
+}
+
 // Single registry entry, dispatched by host engine: an MLX host (engine: optiq) gets the client-driven
 // probe (agent_ctx_mlx.mjs), every other host keeps the exact llama.cpp behavior. Same `agent_ctx`
 // name + row shape, so scoring/dashboard are unchanged. selfManagesServer stays true: the MLX path
@@ -325,6 +523,12 @@ export const bench = {
    thinkDependent: false,
    selfManagesServer: true,
    run(ctx) {
-      return (MLX_ENGINES.has(ctx.model.engine) ? runMlx : runLlamacpp)(ctx);
+      if (MLX_ENGINES.has(ctx.model.engine)) {
+         return runMlx(ctx);
+      }
+      if (ctx.model.engine === 'ninfer') {
+         return runNinfer(ctx);
+      }
+      return runLlamacpp(ctx);
    },
 };

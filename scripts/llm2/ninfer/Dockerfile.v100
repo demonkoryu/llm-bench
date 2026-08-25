@@ -1,0 +1,74 @@
+# syntax=docker/dockerfile:1
+#
+# NInfer (github.com/geoffwatts/ninfer-v100) built for Tesla V100 / sm_70.
+#
+# WHY THIS FILE EXISTS: the Dockerfile shipped in the ninfer-v100 repo is inherited from
+# upstream's Blackwell build -- it uses a CUDA 13.1 base and passes no architecture flag, so
+# it cannot produce a V100 binary at all. CUDA 13.x removed offline Volta (sm_70) assembly,
+# and the fork's own CMakeLists hard-fails sm_70 on any toolkit older than 12.8. That leaves
+# exactly one usable window: CUDA 12.8, the last toolkit that still assembles sm_70. The
+# upstream README says as much and directs Volta users to build with a 12.8 devel base and
+# -DCMAKE_CUDA_ARCHITECTURES=70; this file is that build, containerized to match how
+# llama.cpp is already built on this host (see config/hosts.yaml backends.cuda).
+#
+# Build (from a ninfer-v100 checkout, with this file passed via -f):
+#   docker build -f Dockerfile.v100 -t ninfer-v100 .
+#
+# The sm_70 route vendors NVIDIA CUTLASS v4.4.2 via FetchContent at configure time, so the
+# build stage needs git and network access. It also needs python3: CUTLASS's own top-level
+# CMakeLists does an unconditional `find_package(Python3 ... REQUIRED)` even in the
+# headers-only configuration this build asks for, and the CUDA devel image ships no
+# interpreter -- so without it configure dies in _deps/cutlass-src, not in ninfer.
+
+FROM nvidia/cuda:12.8.1-devel-ubuntu24.04 AS build
+
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends \
+        cmake \
+        git \
+        libavcodec-dev \
+        libavformat-dev \
+        libavutil-dev \
+        libcurl4-openssl-dev \
+        libswscale-dev \
+        ninja-build \
+        pkg-config \
+        python3 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+COPY . .
+
+# CMAKE_CUDA_ARCHITECTURES=70 is the whole point: it selects the fork's Volta compile-time
+# routes (CUTLASS SM70 tensor-core GEMMs, m8n8k4 MMA schedules, the software-NVFP4 prepack)
+# instead of upstream's sm_120a kernels, which do not assemble on this toolkit.
+RUN cmake -S . -B /build -G Ninja \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_CUDA_ARCHITECTURES=70 \
+        -DNINFER_BUILD_APPS=ON \
+        -DBUILD_TESTING=OFF \
+        -DNINFER_BUILD_BENCHMARKS=OFF \
+    && cmake --build /build --parallel --target ninfer ninfer-serve
+
+FROM nvidia/cuda:12.8.1-runtime-ubuntu24.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends \
+        ca-certificates \
+        libavcodec60 \
+        libavformat60 \
+        libavutil58 \
+        libcurl4t64 \
+        libswscale7 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=build /build/apps/ninfer /usr/local/bin/ninfer
+COPY --from=build /build/apps/ninfer-serve /usr/local/bin/ninfer-serve
+
+WORKDIR /workspace
+EXPOSE 8080
+STOPSIGNAL SIGTERM
+
+CMD ["ninfer-serve", "--help"]

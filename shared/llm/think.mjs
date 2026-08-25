@@ -8,8 +8,9 @@
  *   reasoning_only — always reasons, no toggle (LFM2.5)
  *
  * Think toggle mechanisms (see applyThinkControl):
- *   enable_thinking — chat_template_kwargs.enable_thinking=true/false (Qwen3, Gemma4)
- *   system_keyword  — /think or /no_think prepended to system message (Nemotron)
+ *   enable_thinking     — chat_template_kwargs.enable_thinking=true/false (Qwen3, Gemma4)
+ *   enable_thinking_top — TOP-LEVEL enable_thinking=true/false (NInfer)
+ *   system_keyword      — /think or /no_think prepended to system message (Nemotron)
  *
  * Reasoning traces are extracted server-side via --reasoning-format auto.
  * The server delivers clean `content`; no client-side stripping is needed, though
@@ -75,6 +76,17 @@ export function thinkStates(cap) {
  *     Sends: chat_template_kwargs.enable_thinking = true|false
  *     The model's Jinja template reads this kwarg to wrap/suppress the think block.
  *
+ *   'enable_thinking_top'
+ *     NInfer (engine: ninfer). Same Qwen switch, different envelope: NInfer takes
+ *     `enable_thinking` as a TOP-LEVEL request field and hard-rejects the nested spelling —
+ *     `chat_template_kwargs` there accepts only `preserve_thinking`, and any other non-null key
+ *     returns HTTP 400 `chat_template_option_not_supported` (src/serve/openai_schema.cpp). So the
+ *     default mechanism above is not merely ignored on that engine, it fails the request outright,
+ *     which is why this is its own mode rather than a tolerated variation.
+ *     NInfer's documented alternative, `reasoning_effort: "none"`, is deliberately NOT used:
+ *     it toggles the same new-turn switch, and sending both risks HTTP 400
+ *     `conflicting_template_option`. One mechanism, matching the llama.cpp rows' semantics.
+ *
  *   'system_keyword'
  *     Nemotron Nano v2 (and possibly future models without Jinja kwarg support).
  *     Prepends /think or /no_think to the system message (or inserts a system
@@ -82,12 +94,17 @@ export function thinkStates(cap) {
  *
  * @param {Array}        messages   original message array (not mutated)
  * @param {boolean|null} think      true = think, false = no_think, null = omit toggle
- * @param {string}       control    'enable_thinking' | 'system_keyword' (default: 'enable_thinking')
+ * @param {string}       control    'enable_thinking' | 'enable_thinking_top' | 'system_keyword'
+ *                                   (default: 'enable_thinking')
  * @returns {{ messages: Array, extraBody: object }}
  */
 export function applyThinkControl(messages, think, control = 'enable_thinking') {
    if (think === null) {
       return { messages, extraBody: {} };
+   }
+
+   if (control === 'enable_thinking_top') {
+      return { messages, extraBody: { enable_thinking: think } };
    }
 
    if (control === 'system_keyword') {

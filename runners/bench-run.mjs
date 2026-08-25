@@ -29,6 +29,7 @@ import { resolveSampling, samplingHash, validateSamplingMatrix } from '../shared
 import { deriveSubjectDims, loadModelsConfig } from '../shared/models-config.mjs';
 import { metricRowsFromResult } from '../shared/tidy-schema.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
+import { ninferServer } from './ninfer-server.mjs';
 import { optiqServer } from './optiq-server.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -57,7 +58,7 @@ const { values: flags } = parseArgs({
 
 const SSH = process.env.SSH_HOST || null;
 const host = loadHostConfig(join(ROOT, 'config/hosts.yaml'), flags.target);
-const ENGINE = host.engine ?? 'llamacpp'; // 'llamacpp' (rose/llama-server) | 'optiq' (M1 Mac/MLX)
+const ENGINE = host.engine ?? 'llamacpp'; // 'llamacpp' (rose/llama-server) | 'ninfer' (rose/one V100 per instance) | 'optiq' (M1 Mac/MLX)
 const SSH_HOST = SSH || host.sshHost;
 const LOCAL = flags.local || LOCAL_HOST; // run host scripts locally vs over SSH
 const SUDO = LOCAL ? 'sudo -n' : 'sudo'; // non-interactive sudo when on-host
@@ -177,9 +178,11 @@ async function main() {
       `[bench-run] ${models.length} models · benches=[${benchNames}] · think=${flags.think} · samples=${SAMPLES} · build=${llamacpp_build} · template=${chatTemplate} · exec=${LOCAL ? 'local' : 'ssh'}`,
    );
 
-   // Stop the production llama-server container to free GPU VRAM for the bench run.
-   // OptiQ runs its own persistent daemon — nothing for us to stop there.
-   if (ENGINE === 'llamacpp' && !flags['keep-router']) {
+   // Stop the production llama-server container to free GPU VRAM for the bench run. NInfer shares
+   // the same box and the same two cards, so it needs that container gone too — a resident
+   // llama-server would both steal VRAM and skew every per-device reading. OptiQ is on a different
+   // machine and runs its own persistent daemon — nothing for us to stop there.
+   if ((ENGINE === 'llamacpp' || ENGINE === 'ninfer') && !flags['keep-router']) {
       const r = await ssh(`docker stop llama-server 2>/dev/null; docker rm -f llama-server 2>/dev/null; echo stopped`);
       console.error(`[bench-run] production server: ${r || 'n/a'}`);
    }
@@ -196,7 +199,19 @@ async function main() {
    const srv =
       ENGINE === 'optiq'
          ? optiqServer({ inferenceUrl: host.llamaUrl, debug: !!process.env.BENCH_DEBUG })
-         : llamacppServer({
+         : ENGINE === 'ninfer'
+           ? ninferServer({
+                sshHost: SSH_HOST,
+                inferenceUrl: host.llamaUrl,
+                // One instance owns one card. Everything host-side is scoped by this index, so a
+                // missing `device:` in hosts.yaml must not silently become "gpu0" for both targets.
+                device: host.device ?? 0,
+                artifactDir: host.artifactDir,
+                image: host.image,
+                debug: !!process.env.BENCH_DEBUG,
+                local: LOCAL,
+             })
+           : llamacppServer({
               sshHost: SSH_HOST,
               llamaUrl: host.llamaUrl,
               backend: host.backend,
@@ -242,7 +257,9 @@ async function main() {
    // 1-token completion, best-effort. Doing it here (rather than per model) keeps it off the
    // measured path entirely. Null stays null if the daemon is unreachable; the run then fails on
    // its own in startServer with a much better message than a version probe would give.
-   if (ENGINE === 'optiq') {
+   if (ENGINE === 'optiq' || ENGINE === 'ninfer') {
+      // OptiQ reads it from a response's system_fingerprint (its daemon is already serving);
+      // NInfer reads the source-commit label off the pinned image, which needs no server at all.
       platformBase.engine_version = await srv.engineVersion();
       console.error(`[bench-run] engine_version: ${platformBase.engine_version ?? 'unknown'}`);
    }

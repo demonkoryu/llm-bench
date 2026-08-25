@@ -40,3 +40,52 @@ m1:
    ssh_host: "${SSH_HOST_M1:-llm1}"
    port: 8080
    remote_dir: "~/llm-bench"
+
+# ── rose / NInfer (ninfer-v100, sm_70 Volta port) ────────────────────────────────
+# https://github.com/geoffwatts/ninfer-v100 — a from-scratch C++/CUDA engine, single-GPU by
+# design ("specialized for one Tesla V100 and one CUDA device"). So rose runs TWO independent
+# ninfer-serve instances, one per card, declared as two targets that differ only in `device`,
+# `port` and URL. engine: ninfer routes to runners/ninfer-server.mjs, which launches/stops the
+# instance per model like llama.cpp (unlike the persistent OptiQ daemon) via the per-device
+# scripts under scripts/llm2/ninfer/.
+#
+# Weights are single pre-converted .ninfer artifacts staged out of band in artifact_dir — there
+# is no llama.cpp-style HF auto-fetch — so models.yaml carries the filename in `hf_file` and
+# `hf_repo` only records provenance.
+#
+# The two cards are identical V100s, so `device` is NOT a measurement dimension and rows from
+# either target are directly comparable. The split exists solely so the two deployments can be
+# measured CONCURRENTLY without contending for one GPU. Pick which model goes where with
+# --models; an unfiltered run would serve both artifacts sequentially on the one card, which is
+# a valid measurement, just not a parallel one.
+rose-ninfer0:
+   label: "rose / Tesla V100 #0 — NInfer"
+   gpu: "V100"                         # same slug as the llama.cpp rows: same silicon, comparable
+   vram_total_mib: 32768               # ONE card — this instance cannot reach the peer's memory
+   engine: ninfer
+   backend: ninfer
+   device: 0
+   ninfer: "${NINFER_URL_0:-http://192.168.1.120:8100}"
+   ssh_host: "${SSH_HOST:-llm2}"
+   port: 8100
+   artifact_dir: "~/models/ninfer"
+   image: "ninfer-v100:latest"         # build.sh also tags :<source-commit>; engine_version reads
+                                       # the ninfer.source.commit label off the running container,
+                                       # so the floating tag never blurs which build was measured
+   remote_dir: "~/llm-bench"
+   vram_cmd: "nvidia-smi -i 0 --query-gpu=memory.used --format=csv,noheader,nounits"
+
+rose-ninfer1:
+   label: "rose / Tesla V100 #1 — NInfer"
+   gpu: "V100"
+   vram_total_mib: 32768
+   engine: ninfer
+   backend: ninfer
+   device: 1
+   ninfer: "${NINFER_URL_1:-http://192.168.1.120:8101}"
+   ssh_host: "${SSH_HOST:-llm2}"
+   port: 8101
+   artifact_dir: "~/models/ninfer"
+   image: "ninfer-v100:latest"
+   remote_dir: "~/llm-bench"
+   vram_cmd: "nvidia-smi -i 1 --query-gpu=memory.used --format=csv,noheader,nounits"
