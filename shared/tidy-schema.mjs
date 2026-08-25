@@ -287,6 +287,15 @@ export function metricRowsFromResult(rawRow, dims) {
          base[d] = dims[d] ?? null;
       }
       base.think_mode = think_mode;
+      // A per-CASE context wins over the run-level one. `dims.ctx` is whatever --ctx the run was
+      // launched with (16384 by default), which is right for a bench served at the run's window but
+      // wrong for a probe that reloads the server per case at a context of its own: agent_ctx sweeps
+      // lane widths and emits a `lane_64k`/`lane_128k` case per width, so without this every lane
+      // lands stamped 16384 and the ctx dimension says the run's flag rather than what was measured.
+      // (Repaired in Postgres by hand once, on 2026-08-25, before being fixed here.)
+      if (rawRow.lane_ctx != null) {
+         base.ctx = numOrNull(rawRow.lane_ctx) ?? base.ctx;
+      }
       // ensure full column set / column order
       const row = {};
       for (const c of COLUMN_NAMES) {

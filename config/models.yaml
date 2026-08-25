@@ -811,11 +811,16 @@ models:
      # output. docs/serving.md calls it "the effective Vision limit", which is what misled this
      # entry. So a vision-enabled instance may serve a text prompt wider than 32k.
      #
-     # 32768 therefore stands as a MEMORY choice awaiting measurement, not a ceiling: NVFP4 weights
-     # are 20.02 GiB of a 32 GiB V100 and the vision tower is frozen startup residency on top, so
-     # the KV that fits is the real question. Raising it means an agent_ctx/maxctx probe on gpu0 and
-     # a re-run; until that happens the 32k-depth probes this row is missing (e2e-32k, ttft-32k,
-     # quality_decay-32k) are absent because we launched it at 32768, not because they cannot fit.
+     # 32768 therefore stands as a MEMORY choice, not a ceiling: NVFP4 weights are 20.02 GiB of a
+     # 32 GiB V100 and the vision tower is frozen startup residency on top, so the KV that fits is
+     # the real question. MEASURED 2026-08-25 by the agent_ctx probe (run
+     # v100-ninfer-20260825-215117-x3iz-benchrun): the engine serves this model at --max-context
+     # 131072 and resolves a 131,072-token KV pool at 28,992 MiB, one lane, needle-verified — and
+     # the same 131,072 pool split two ways gives 2 x 64k lanes at 29,304 MiB. So the fitting
+     # window is 4x this cap, and the 32k-depth probes this row is missing (e2e-32k, ttft-32k,
+     # quality_decay-32k) are absent purely because we launched it at 32768. Raising the cap is a
+     # deliberate re-run, not a blocked one: it costs every depth-comparable number this model
+     # already has, so it stays at 32768 until we choose to re-measure the whole row.
      ctx_cap: 32768
      kv_variants: []
      extra_flags:
