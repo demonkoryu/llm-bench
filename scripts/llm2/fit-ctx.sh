@@ -70,9 +70,12 @@ if [[ "$extra_flags" == *"--cache-type-k"* ]]; then
 fi
 
 # Exclusive GPU: kill any running server container and wait for VRAM to clear.
-docker kill "$CONTAINER" 2>/dev/null || true
-docker rm -f "$CONTAINER" 2>/dev/null || true
-fuser -k 8090/tcp 2>/dev/null || true
+# >/dev/null on all three: `docker kill`/`docker rm` echo the container NAME on success, and this
+# script's stdout is its return value (the caller parses it as an integer). The leaked
+# "llama-server" line is what made every fit_ctx row on this host unparseable.
+docker kill "$CONTAINER" >/dev/null 2>&1 || true
+docker rm -f "$CONTAINER" >/dev/null 2>&1 || true
+fuser -k 8090/tcp >/dev/null 2>&1 || true
 
 deadline=$((SECONDS + VRAM_CLEAR_TIMEOUT))
 while [ $SECONDS -lt $deadline ]; do

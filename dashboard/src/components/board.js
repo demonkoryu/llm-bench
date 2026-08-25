@@ -30,6 +30,7 @@ export function boardRows(entities) {
          model: e.dims.gguf_file.replace('.gguf', ''),
          template: e.dims.chat_template,
          kv: e.dims.kv_quant ?? '—',
+         spec: e.dims.spec_decode ?? '—',
          think: e.think ?? '—',
          family: e.dims.family,
       };
@@ -40,11 +41,13 @@ export function boardRows(entities) {
    });
 }
 
-// A short "model kv [think]" label for the ranking chart. chat_template is an entity dimension, so
-// two configs that differ ONLY by template are distinct rows; without the template in the label they
-// collapse onto one bar (two values, one row). Append the template when it isn't the default 'builtin'
-// so those variants are visually distinct. ('—'/missing template is treated as default → no suffix.)
+// A short "model kv [think]" label for the ranking chart. chat_template and spec_decode are entity
+// dimensions, so two configs that differ ONLY by template (or only by speculative decoding) are
+// distinct rows; without them in the label they collapse onto one bar (two values, one row). Append
+// each when it is not the default so those variants are visually distinct. ('—'/missing template is
+// treated as default → no suffix; missing spec_decode means plain autoregressive decode.)
 export const boardLabel = (r) => {
    const tpl = r.template && r.template !== 'builtin' && r.template !== '—' ? ` ·${r.template}` : '';
-   return `${r.model} ${r.kv === '—' ? '' : r.kv} [${r.think}]${tpl}`.replace(/\s+/g, ' ').trim();
+   const spec = r.spec && r.spec !== '—' ? ` ·${r.spec}` : '';
+   return `${r.model} ${r.kv === '—' ? '' : r.kv} [${r.think}]${tpl}${spec}`.replace(/\s+/g, ' ').trim();
 };

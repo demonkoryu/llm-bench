@@ -698,8 +698,13 @@ models:
      tools: true
      native_max_ctx: 262144
      kv_bytes_per_token: 16384
+     # MTP speculative decode. `spec_decode:` alone is only the RECORDED dimension — it does not
+     # reach the server. The extra_flags entry is what actually starts llama-server with
+     # `--spec-type draft-mtp` (this build's MTP uses the target model's own MTP head, so no
+     # separate draft model). Keep the two in sync: bench-run records ef['spec-type'] first.
      spec_decode: draft-mtp
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
+     extra_flags: { spec-type: draft-mtp }
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, speed, throughput, kv_per_tok, agent_ctx, fit_ctx]
      kv_variants: [q8_0]
 
    # ── Qwen3.8-27B Q6_K · asymmetric KV (k=q8_0, v=q4_0) ───────────────────────
@@ -717,8 +722,8 @@ models:
      kv_bytes_per_token: 12288
      kv_quant: k8v4
      spec_decode: draft-mtp
-     extra_flags: { cache-type-k: q8_0, cache-type-v: q4_0 }
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
+     extra_flags: { cache-type-k: q8_0, cache-type-v: q4_0, spec-type: draft-mtp }
+     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, speed, throughput, kv_per_tok, agent_ctx, fit_ctx]
 
 
 # ── Sampling matrix ───────────────────────────────────────────────────────────────

@@ -12,7 +12,11 @@ export const SCORING_VERSION = 3;
 // metrics measured across a llama.cpp upgrade (e.g. no_think@10050 + think@10064) group
 // into ONE served config. The build stays in the DB for provenance but never splits or
 // labels an entity. (caps-cache DOES key on build — ctx-ceiling memoization must invalidate.)
-export const ENTITY_DIMS = ['family', 'gguf_file', 'quant', 'kv_quant', 'chat_template', 'backend', 'gpu'];
+// spec_decode IS an entity dim: speculative decoding (MTP) changes throughput by a large factor
+// while leaving output identical, so merging a non-MTP and an MTP measurement of the same GGUF
+// averages two different machines into one meaningless number. It split the V100 Qwen3.8 speed
+// rows (pre-MTP runs vs the 2026-08-25 MTP runs) — hence a dim, not just provenance.
+export const ENTITY_DIMS = ['family', 'gguf_file', 'quant', 'kv_quant', 'chat_template', 'spec_decode', 'backend', 'gpu'];
 
 // The template-independent identity: ENTITY_DIMS minus chat_template. 'general'-scope metric rows
 // (perf/serving probes — see tidy-schema's scopeFor) are shared across every chat_template variant
@@ -48,4 +52,5 @@ export const DEFAULT_DIALS = {
    fleet: { worker_ctx: 65536, reserve: 512, parallel_overhead: 512, ctx_tier: 100000, w_cap: 2, w_ctx: 1, w_slots: 1, w_thru: 0.5 },
 };
 
-export const CARD_TOTAL_MIB = 20464; // RX 7900 XT usable VRAM (mirrors hosts.yaml)
+// (No CARD_TOTAL_MIB here: usable VRAM is a per-host fact from config/hosts.yaml `vram_total_mib`,
+// threaded to consumers at runtime. The old 20464 literal was an RX 7900 XT value that nothing read.)

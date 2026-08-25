@@ -56,7 +56,7 @@ display(html`<div class="scroll-x">${Plot.plot({
 
 ```js
 display(Inputs.table(data, {
-  columns: ["model", "template", "kv", "think", ...BOARD_COLUMNS.map((c) => c.key)],
+  columns: ["model", "template", "kv", "spec", "think", ...BOARD_COLUMNS.map((c) => c.key)],
   sort: "capability",
   reverse: true,
   format: boardFormat,

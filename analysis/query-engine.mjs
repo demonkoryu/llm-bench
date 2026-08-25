@@ -22,6 +22,9 @@ export const FACET_DIMS = [
    'quant',
    'kv_quant',
    'chat_template',
+   // spec_decode is a facet AND an entity dim (see scoring-config): MTP vs plain decode are
+   // different machines at the same output quality, so they must be filterable and never merged.
+   'spec_decode',
    'think_mode',
    'backend',
    'gpu',
@@ -265,9 +268,9 @@ function paretoPts(rows, xf, yf, vf, think) {
    const rs = rows.filter((r) => r.think_mode === 'n/a' || r.think_mode === think);
    const out = [];
    for (const [k, grp] of groupBy(rs, (r) =>
-      JSON.stringify([r.gguf_file, r.quant, r.kv_quant, r.chat_template, r.arch, r.active_params, r.total_params]),
+      JSON.stringify([r.gguf_file, r.quant, r.kv_quant, r.chat_template, r.spec_decode, r.arch, r.active_params, r.total_params]),
    )) {
-      const [g, q, kv, ct, arch, ap, tp] = JSON.parse(k);
+      const [g, q, kv, ct, sd, arch, ap, tp] = JSON.parse(k);
       const x = xf(grp),
          y = yf(grp);
       if (x == null || y == null) {
@@ -279,8 +282,8 @@ function paretoPts(rows, xf, yf, vf, think) {
          vram: vf(grp),
          arch,
          think,
-         cfg: { gguf_file: g, quant: q, kv_quant: kv, chat_template: ct, think },
-         label: `${g.replace('.gguf', '')} ${kv || ''} ${ct} [${think}]`.replace(/\s+/g, ' ').trim(),
+         cfg: { gguf_file: g, quant: q, kv_quant: kv, chat_template: ct, spec_decode: sd, think },
+         label: `${g.replace('.gguf', '')} ${kv || ''} ${ct} ${sd || ''} [${think}]`.replace(/\s+/g, ' ').trim(),
          dims: { gguf_file: g, arch, active_params: ap, total_params: tp },
       });
    }
@@ -345,7 +348,7 @@ export function leaderboard(rows, b) {
 // NOT joinGeneral output — coverage must show what was measured vs merely inherited.
 export function coverage(rows, b) {
    const src = filt(rows, b.facets);
-   const cfg = (r) => `${r.gguf_file.replace('.gguf', '')}|${r.kv_quant || ''}|${r.chat_template}`;
+   const cfg = (r) => `${r.gguf_file.replace('.gguf', '')}|${r.kv_quant || ''}|${r.chat_template}|${r.spec_decode || ''}`;
    const configs = [...new Set(src.map(cfg))].sort(),
       benches = [...new Set(src.map((r) => r.bench))].sort();
    const measured = new Set(src.map((r) => cfg(r) + CELL_SEP + r.bench));

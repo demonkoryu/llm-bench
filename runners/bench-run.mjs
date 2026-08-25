@@ -163,10 +163,10 @@ async function main() {
    const run_id = `${slug(host.gpu)}-${host.backend}-${stamp}-benchrun`;
    // The llama.cpp build/driver probe SSHes to the host and runs `llama-server --version`. OptiQ
    // has no such binary — leave llamacpp_build null (nullable in the schema) on non-llamacpp engines.
-   const { llamacpp_build } =
+   const { llamacpp_build, driver } =
       ENGINE === 'llamacpp'
          ? await probeHostBuild({ sshHost: SSH_HOST, binPath: host.backends?.[host.backend]?.bin ?? (host.backends?.[host.backend]?.image ? `docker:${host.backends[host.backend].image}` : null), local: LOCAL })
-         : { llamacpp_build: null };
+         : { llamacpp_build: null, driver: null };
    console.error(
       `[bench-run] ${models.length} models · benches=[${benchNames}] · think=${flags.think} · samples=${SAMPLES} · build=${llamacpp_build} · template=${chatTemplate} · exec=${LOCAL ? 'local' : 'ssh'}`,
    );
@@ -228,7 +228,9 @@ async function main() {
       // answered this, but OptiQ only reveals its version in a response's system_fingerprint.
       // common() reads platformBase at row-build time, so the later fill-in reaches every row.
       engine_version: llamacpp_build,
-      driver: null,
+      // probeHostBuild returns this (nvidia-smi / rocm-smi); it used to be destructured away and
+      // hardcoded null, so `driver` was null on every row of every run on every host.
+      driver: driver ?? null,
    };
    // OptiQ is a persistent daemon that is already serving, so its version can be read now — one
    // 1-token completion, best-effort. Doing it here (rather than per model) keeps it off the
@@ -445,6 +447,10 @@ async function main() {
                // ceiling, so these depth probes fall back to ctx_cap.)
                maxctx: caps?.coherence_ceiling ?? m.ctx_cap ?? CTX,
                caps,
+               // Usable VRAM on THIS host (config/hosts.yaml vram_total_mib). agent_ctx gates its
+               // shared-KV-pool search on it; passing it instead of a literal keeps the probe
+               // honest when the same code runs on a different GPU.
+               vramTotalMib: host.vramTotalMib ?? null,
                upsertCap: (v) => upsertCap(RESULTS, capKeyFields, { ...v, source_run_id: run_id }),
             };
             // A probe emits MANY sub-bench rows (speed → speed_short, speed_prefill-4k,

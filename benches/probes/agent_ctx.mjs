@@ -33,12 +33,24 @@ import { runMlx } from './agent_ctx_mlx.mjs';
 const PLANNER_TARGET = 131072;
 const CODER_TARGET = 65536;
 
-const CARD_TOTAL_MIB = 20464; // RX 7900 XT usable VRAM (mirrors hosts.yaml / scoring-config)
+// No card-size literal here: the usable VRAM total is a per-HOST fact that rots the moment the
+// probe runs on a different GPU (it was hardcoded to the RX 7900 XT's 20464 MiB, which silently
+// rejected every rung on a 65536 MiB 2xV100 host). It is threaded in from config/hosts.yaml
+// (`vram_total_mib` -> host.vramTotalMib -> probe ctx.vramTotalMib) by runners/bench-run.mjs.
 // Reserve for the STARTING estimate only (the empirical GTT-spill gate is the real limit). Leaves
 // a little room for the prefill compute buffer so the search starts near the true answer; being
 // off just costs a few extra (fast, load-only) search rungs.
 const EST_COMPUTE_RESERVE_MIB = 1024;
 const MAX_LOADS = 9; // bound the total reloads across the down-then-up boundary search
+
+// Phase-3 coherence fill budget, in TOTAL concurrent prompt tokens. The fill prefills every slot
+// at once, so its wall time scales with the whole pool — on a big-VRAM host the fitting plan can be
+// a multi-million-token pool, whose fill would exceed fillTimeoutMs()'s 45-minute cap and report a
+// spurious 0/N incoherent. Capacity (the load-only footprint gate) is the measurement that feeds
+// scoring; coherent_slots/verified are advisory, so above this budget the fill is skipped and left
+// unrecorded rather than measured wrong. 540k ≈ the 45-minute cap at the same pessimistic
+// ~200 tok/s shared-prefill rate fillTimeoutMs() assumes.
+const MAX_FILL_TOKENS = 540_672; // 528k, 4k-aligned
 
 // KV-cache element size relative to q8_0 (the reference kv_bytes_per_token in models.yaml),
 // from GGML type sizes (bytes/32 elems): q8_0=34, q5_0=22, q5_1=24, q4_0=18, q4_1=20, f16=64.
@@ -101,7 +113,17 @@ async function runSlots(client, sizes, { think, thinkControl }) {
 
 // llama.cpp implementation — reloads llama-server across a shared-KV-pool sweep and
 // gates on nvidia-smi VRAM usage. Selected for llama.cpp hosts (engine unset/llamacpp).
-async function runLlamacpp({ srv, client, model, caps }) {
+async function runLlamacpp({ srv, client, model, caps, vramTotalMib }) {
+   const cardTotalMib = vramTotalMib ?? null;
+   if (cardTotalMib == null) {
+      return [
+         {
+            bench: 'agent_ctx',
+            status: 'skip',
+            notes: 'no vram_total_mib for this host — cannot gate the shared-pool footprint',
+         },
+      ];
+   }
    const think = model.think === 'optional' ? false : null;
    const thinkControl = model.think_control ?? 'enable_thinking';
 
@@ -151,7 +173,7 @@ async function runLlamacpp({ srv, client, model, caps }) {
    // picks where the search starts — the down/up loop finds the true boundary regardless of
    // estimate error (kv_bytes_per_token is often a rough yaml guess).
    const weightsMib = footPlanner != null ? Math.max(0, footPlanner - kib(plannerCtx, kvBytesPerTok)) : null;
-   const kvBudgetMib = CARD_TOTAL_MIB - EST_COMPUTE_RESERVE_MIB - (weightsMib ?? CARD_TOTAL_MIB);
+   const kvBudgetMib = cardTotalMib - EST_COMPUTE_RESERVE_MIB - (weightsMib ?? cardTotalMib);
    const poolTokens = weightsMib != null ? Math.floor((kvBudgetMib * 1024 * 1024) / kvBytesPerTok) : plannerCtx;
    const nCodersEst = Math.max(0, Math.floor((poolTokens - plannerCtx) / coderCtx));
    console.log(
@@ -192,11 +214,13 @@ async function runLlamacpp({ srv, client, model, caps }) {
 
       const mem = await srv.snapshotMem(); // idle: weights + preallocated KV(T) — clean & monotonic
       const total = mem.vram != null && mem.gtt != null ? mem.vram + mem.gtt : null;
+      // On NVIDIA there is no GTT spill (meminfo.sh reports gtt=0), so this reduces to vram ≤ card
+      // and the gate is simply "does the preallocated pool fit the board".
       // amdgpu parks a fixed ~1 GB on GTT even for a model that fits, so the gate is the TOTAL
       // footprint (VRAM + GTT) fitting the card's VRAM — NOT gtt≈0. total > card ⇒ the config
       // genuinely exceeds VRAM and the overflow runs PCIe-bound on system RAM. VRAM+GTT is clean
       // and monotonic in the pool size (measured), so this boundary is deterministic.
-      const fits = total != null && total <= CARD_TOTAL_MIB;
+      const fits = total != null && total <= cardTotalMib;
       let coherent = 0;
       if (fill && fits) {
          const results = await runSlots(client, sizes, { think, thinkControl });
@@ -236,12 +260,17 @@ async function runLlamacpp({ srv, client, model, caps }) {
    // ── Phase 3: verify the winning plan WITH a concurrent fill (coherence) ────────────────────
    // The capacity gate is the idle footprint above; this fill just records how many slots
    // actually retrieve their own needle at depth (coherent_slots).
-   if (best) {
+   const fillSkipped = best != null && best.total_ctx > MAX_FILL_TOKENS;
+   if (best && !fillSkipped) {
       const v = await loadAndCheck(best.n_coders, { fill: true });
       loads++;
       if (v.servable) {
          best = v;
       }
+   } else if (fillSkipped) {
+      console.log(
+         `  [agent_ctx] coherence fill SKIPPED — pool ${(best.total_ctx / 1024).toFixed(0)}k > ${(MAX_FILL_TOKENS / 1024).toFixed(0)}k budget (would exceed the fill timeout); capacity stands, coherent_slots not measured`,
+      );
    }
 
    await srv.stopServer().catch(() => {});
@@ -250,7 +279,10 @@ async function runLlamacpp({ srv, client, model, caps }) {
    if (!best || !best.servable) {
       return fail(`no VRAM-resident plan ≥ planner ${plannerCtx / 1024}k (spills to system RAM)`);
    }
-   const fullyCoherent = best.coherent_slots === best.n_slots;
+   // coherent_slots is 0 both when the fill genuinely failed and when it never ran — so when it was
+   // skipped, emit NO coherence leaf at all (numOrNull drops nulls) instead of a 0 that reads as
+   // "measured, incoherent".
+   const fullyCoherent = !fillSkipped && best.coherent_slots === best.n_slots;
    console.log(
       `  [agent_ctx] RESULT: 1×${best.planner_ctx / 1024}k planner + ${best.n_coders}×${best.coder_ctx / 1024}k coders  (pool ${(best.total_ctx / 1024).toFixed(0)}k, ${best.coherent_slots}/${best.n_slots} coherent, vram ${best.vram_mib ?? '?'}MiB)`,
    );
@@ -260,15 +292,15 @@ async function runLlamacpp({ srv, client, model, caps }) {
          score: best.n_coders, // headline: coder agents supported alongside the planner
          n_slots: best.n_slots,
          n_coders: best.n_coders,
-         coherent_slots: best.coherent_slots,
+         coherent_slots: fillSkipped ? null : best.coherent_slots,
          total_ctx: best.total_ctx,
          planner_ctx: best.planner_ctx,
          coder_ctx: best.coder_ctx,
          vram_mib: best.vram_mib,
          gtt_mib: best.gtt_mib,
-         verified: fullyCoherent ? 1 : 0,
+         verified: fillSkipped ? null : fullyCoherent ? 1 : 0,
          status: 'ok',
-         notes: `1x${best.planner_ctx / 1024}k+${best.n_coders}x${best.coder_ctx / 1024}k kvunified ${kvQuant} ${best.coherent_slots}/${best.n_slots}coh`,
+         notes: `1x${best.planner_ctx / 1024}k+${best.n_coders}x${best.coder_ctx / 1024}k kvunified ${kvQuant} ${fillSkipped ? 'fill-skipped (pool over budget)' : `${best.coherent_slots}/${best.n_slots}coh`}`,
       },
    ];
 }

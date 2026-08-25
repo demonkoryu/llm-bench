@@ -11,13 +11,28 @@ async function hostCmd(cmd, opts) {
    return r.ok ? r.stdout : '';
 }
 
-/** Parse `version: 9780 (1191758c5)` (llama-server --version, printed on stderr). */
+/**
+ * Parse the build id out of `llama-server --version` (printed on stderr).
+ *
+ * Two shapes are in the wild:
+ *   upstream:  `version: 9780 (1191758c5)`                    → "9780 (1191758c5)"
+ *   forks:     `version: 0.2.0-dev (build 1, commit f280b26)` → "0.2.0-dev (f280b26)"
+ * The second shape is what the CUDA image on rose prints; the old numeric-only regex fell
+ * through to the bare-token fallback and dropped the commit, so every V100 row recorded a
+ * build with no way to tell two forks apart.
+ */
 export function parseLlamacppBuild(versionText) {
-   const m = /version:\s*(\d+)\s*\(([0-9a-f]+)\)/i.exec(versionText || '');
+   const text = versionText || '';
+   const m = /version:\s*(\d+)\s*\(([0-9a-f]+)\)/i.exec(text);
    if (m) {
       return `${m[1]} (${m[2]})`;
    }
-   const alt = /version:\s*(\S+)/i.exec(versionText || '');
+   const paren = /version:\s*(\S+)\s*\(([^)]*)\)/i.exec(text);
+   if (paren) {
+      const commit = /(?:commit\s+)?\b([0-9a-f]{7,40})\b/i.exec(paren[2]);
+      return commit ? `${paren[1]} (${commit[1]})` : `${paren[1]} (${paren[2].trim()})`;
+   }
+   const alt = /version:\s*(\S+)/i.exec(text);
    return alt ? alt[1] : null;
 }
 
@@ -35,7 +50,10 @@ export async function probeHostBuild({ sshHost, binPath, local = LOCAL_HOST }) {
    let verOut = '';
    if (binPath && binPath.startsWith('docker:')) {
       const image = binPath.slice('docker:'.length);
-      verOut = await hostCmd(`docker run --rm ${image} --version 2>&1 | head -3`, o);
+      // --gpus all is REQUIRED: without it the container has no libcuda.so.1 and the binary
+      // dies before printing its version, which is why llamacpp_build was null on every
+      // containerized (CUDA) run.
+      verOut = await hostCmd(`docker run --rm --gpus all ${image} --version 2>&1 | head -3`, o);
    } else if (binPath) {
       verOut = await hostCmd(`${binPath} --version 2>&1 | head -3`, o);
    }
