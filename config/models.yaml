@@ -802,9 +802,20 @@ models:
      no_schema: true
      tools: true                         # VERIFIED live 2026-08-25: function tools accepted, proper tool_calls returned
      native_max_ctx: 262144
-     # HARD engine ceiling, not a conservative choice: with --vision the effective window is
-     # min(--max-context, 32768) — the merged-token side of ninfer's 32,768-merged / 131,072-raw-patch
-     # envelope (docs/serving.md). Asking for more is silently unreachable, so 32768 IS the window.
+     # CORRECTED 2026-08-25. This was recorded as a hard engine ceiling on the reading that
+     # --vision forces the window to min(--max-context, 32768). It does not. That 32,768 is the
+     # merged-token side of the Vision envelope (P raw patches <= 131,072, V = P/4 <= 32,768) and
+     # it bounds how far ONE media item may expand, not the text window: the 27B model doc is
+     # explicit that "these Vision columns are not Text token T", and in the runtime the constant
+     # appears only as min(capacity, 32768) sizing the vision encoder's workspace and transient
+     # output. docs/serving.md calls it "the effective Vision limit", which is what misled this
+     # entry. So a vision-enabled instance may serve a text prompt wider than 32k.
+     #
+     # 32768 therefore stands as a MEMORY choice awaiting measurement, not a ceiling: NVFP4 weights
+     # are 20.02 GiB of a 32 GiB V100 and the vision tower is frozen startup residency on top, so
+     # the KV that fits is the real question. Raising it means an agent_ctx/maxctx probe on gpu0 and
+     # a re-run; until that happens the 32k-depth probes this row is missing (e2e-32k, ttft-32k,
+     # quality_decay-32k) are absent because we launched it at 32768, not because they cannot fit.
      ctx_cap: 32768
      kv_variants: []
      extra_flags:
@@ -820,7 +831,7 @@ models:
         draft-tokens: 3
         lm-head-draft: true
      spec_decode: mtp                    # recorded dimension; the extra_flags entries above are what reach the server
-     capability_note: "vision-language model served WITH vision enabled (unlike the OptiQ 3.8 row, which serves the same base text-only) — so the 32768 window is the vision envelope min(--max-context,32768), not a memory limit. Perf probes report client-clocked TTFT/decode from SSE: ninfer-serve emits a standard usage block and no llama.cpp timings object, so there is no server-measured prefill/decode split. JSON benches run UNCONSTRAINED (no_schema): response_format is 400 response_format_not_supported on this engine, so triage/reasoning* adherence is not comparable to a constrained llama.cpp row."
+     capability_note: "vision-language model served WITH vision enabled (unlike the OptiQ 3.8 row, which serves the same base text-only) — so image input is actually exercised. The 32768 window is a memory choice awaiting measurement, NOT an engine ceiling -- see the corrected ctx_cap note above; the 32,768 merged-token Vision envelope bounds media expansion, not the text window. Perf probes report client-clocked TTFT/decode from SSE: ninfer-serve emits a standard usage block and no llama.cpp timings object, so there is no server-measured prefill/decode split. JSON benches run UNCONSTRAINED (no_schema): response_format is 400 response_format_not_supported on this engine, so triage/reasoning* adherence is not comparable to a constrained llama.cpp row."
      benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
                struct_output, instruction_following, agentic_loop, speed, throughput, prefix_cache, quality_decay]
 
@@ -829,9 +840,11 @@ models:
    # 64k-deep lanes actually fit, bounded by ninfer's startup-fixed 1..8 (so at most 1 planner +
    # 7 coders — a ceiling the llama.cpp rows do not have; the probe flags when it binds).
    #
-   # Text-only deliberately: DFlash speculative decoding is mutually exclusive with --vision at
-   # startup (both are frozen residency decisions), and this row exists to measure the agent fleet,
-   # where decode speed under concurrency matters and image input does not.
+   # Text-only deliberately, though no longer for the reason first written here: the DFlash/--vision
+   # mutual exclusion stopped applying when this row moved to MTP, and the 27B row runs --vision and
+   # --spec mtp together. It stays text-only because --vision is frozen startup residency that would
+   # shrink the very fleet this row exists to measure, where decode speed under concurrency matters
+   # and image input does not.
    - hf_repo: Qwen/Qwen3.6-35B-A3B          # provenance only — never fetched
      hf_file: qwen3_6_35b_a3b.ninfer
      engine: ninfer
