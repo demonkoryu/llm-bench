@@ -15,6 +15,19 @@ function vals(rows, pred) {
       .filter((v) => v != null);
 }
 const pickMean = (rows, metric, bench) => mean(vals(rows, (r) => r.metric === metric && (!bench || r.bench === bench)));
+
+// agent_ctx can emit one row PER FLEET SHAPE — the ninfer path sweeps 64k and 128k lanes and tags
+// each with a case_id. pickMean is case-blind, so without this the fleet inputs below would be the
+// MEAN of two different deployments (a 3-lane 128k fleet averaged with an 8-lane 64k one), a number
+// describing neither. The 64k case is canonical because it is the width scoring-config's worker_ctx
+// dial names; wider cases stay in the store to be read, out of the composite. Rows from engines
+// that emit a single untagged fleet row fall through the `canon.length` guard unchanged.
+const FLEET_CASE = 'lane_64k';
+const pickFleet = (rows, metric) => {
+   const all = rows.filter((r) => r.bench === 'agent_ctx');
+   const canon = all.filter((r) => r.case_id === FLEET_CASE);
+   return mean(vals(canon.length ? canon : all, (r) => r.metric === metric));
+};
 const ratio = (rows, a, b) => {
    const t = sum(vals(rows, (r) => r.metric === b));
    return t ? sum(vals(rows, (r) => r.metric === a)) / t : null;
@@ -86,12 +99,12 @@ const METRIC_DEFS = {
       norm: 'identity',
    },
    // shared multi-agent KV pool (total_ctx across 1 planner + n coders), from agent_ctx
-   agent_ctx: { raw: (r) => pickMean(r, 'total_ctx', 'agent_ctx'), norm: 'ratioMax' },
+   agent_ctx: { raw: (r) => pickFleet(r, 'total_ctx'), norm: 'ratioMax' },
    fit_ctx: { raw: (r) => pickMean(r, 'score', 'fit_ctx'), norm: 'ratioMax' },
    // fleet inputs (empirical, from the agent_ctx probe; not scored directly)
-   _agent_slots: { raw: (r) => pickMean(r, 'n_slots', 'agent_ctx'), norm: 'raw' },
-   _agent_planner_ctx: { raw: (r) => pickMean(r, 'planner_ctx', 'agent_ctx'), norm: 'raw' },
-   _vram_at_ctx: { raw: (r) => pickMean(r, 'vram_mib', 'agent_ctx'), norm: 'raw' },
+   _agent_slots: { raw: (r) => pickFleet(r, 'n_slots'), norm: 'raw' },
+   _agent_planner_ctx: { raw: (r) => pickFleet(r, 'planner_ctx'), norm: 'raw' },
+   _vram_at_ctx: { raw: (r) => pickFleet(r, 'vram_mib'), norm: 'raw' },
    _kv_per_tok_kib: { raw: (r) => pickMean(r, 'score', 'kv_per_tok'), norm: 'raw' },
 };
 

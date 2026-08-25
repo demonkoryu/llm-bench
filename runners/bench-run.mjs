@@ -332,11 +332,12 @@ async function main() {
       for (const m of models) {
          const subject = deriveSubjectDims(m);
          const ef = typeof m.extra_flags === 'object' ? m.extra_flags : {};
-         // KV-quant tag: kv-variant tag, else a llama.cpp cache-type flag, else a model-declared
-         // override. The override is how a non-llama.cpp engine records its KV precision — the MLX
-         // entry sets `kv_quant: int4` (OptiQ `--kv-bits 4`, a serve-time flag) so its
-         // rows are a distinct config dim, not a null-KV placeholder.
-         const kv_quant = m.variant?.replace(/^kv/, '') ?? m.kv_quant ?? ef['cache-type-k'] ?? null;
+         // KV-quant tag: kv-variant tag, else a model-declared override, else whichever engine's
+         // cache flag the entry spells (`cache-type-k` on llama.cpp, `kv-dtype` on ninfer). The
+         // override is how an engine with no such flag records its KV precision — the MLX entry
+         // sets `kv_quant: int4` (OptiQ `--kv-bits 4`, a serve-time flag) so its rows are a
+         // distinct config dim, not a null-KV placeholder.
+         const kv_quant = m.variant?.replace(/^kv/, '') ?? m.kv_quant ?? ef['cache-type-k'] ?? ef['kv-dtype'] ?? null;
          // Per-model chat template: a model may pin one; falls back to the run-wide flag.
          const modelTemplate = m.chat_template ?? chatTemplate;
          const serving = {

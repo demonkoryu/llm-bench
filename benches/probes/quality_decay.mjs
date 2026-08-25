@@ -30,7 +30,12 @@ export const bench = {
       await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx, extraFlags: extraFlagsToString(model.extra_flags) });
       await srv.waitHealthy(360000);
       const depths = [0, ...DEPTHS.filter((d) => d + 512 < ctx)];
+      // Whichever think mechanism the model declares. Hardcoding `enable_thinking` here made this
+      // probe silently unmeasurable on any engine that rejects it: ninfer 400s that field, every
+      // request threw into the catch below, and the probe returned zero rows without a word.
+      const thinkControl = model.think_control ?? 'enable_thinking';
       const rows = [];
+      let lastErr = null;
       for (const d of depths) {
          let correct = 0,
             n = 0;
@@ -43,10 +48,11 @@ export const bench = {
             try {
                res = await client.chat(
                   built.messages,
-                  { think: false, thinkControl: 'enable_thinking', max_tokens: 64, temperature: 0.0 },
+                  { think: false, thinkControl, max_tokens: 64, temperature: 0.0 },
                   900000,
                );
-            } catch {
+            } catch (e) {
+               lastErr = e;
                continue;
             }
             if (res.timings?.prompt_ms) {
@@ -65,6 +71,11 @@ export const bench = {
          if (ttfts.length) {
             rows.push({ bench: `ttft-${k}k`, score: ttfts.sort((a, b) => a - b)[Math.floor(ttfts.length / 2)], status: 'ok' });
          }
+      }
+      // Zero rows is indistinguishable from "measured nothing" downstream, so say why rather than
+      // returning an empty array and letting the run look complete.
+      if (!rows.length) {
+         console.warn(`  [quality_decay] no depth produced a measurement — every request failed: ${lastErr?.message ?? 'unknown error'}`);
       }
       return rows;
    },

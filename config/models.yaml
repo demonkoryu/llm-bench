@@ -810,6 +810,10 @@ models:
      extra_flags:
         batch-size: null                 # llama.cpp spellings from defaults.extra_flags — see note 2 above
         ubatch-size: null
+        # int8 group-64 KV. This is also start-server.sh's default, stated here so the value that
+        # reaches the server is the one recorded as the kv_quant dimension — left implicit, every
+        # ninfer row lands with an empty KV column while actually running quantized KV.
+        kv-dtype: int8
         vision: true                     # frozen at startup: a text-only instance 400s media rather than degrading
         max-concurrency: 1               # the user's "1 agent on gpu0"; also what makes this row a latency row
         spec: mtp
@@ -834,7 +838,11 @@ models:
      label: "Qwen3.6-35B-A3B [ninfer]"
      family: qwen3.6
      type: moe
-     quant: "ninfer-default"
+     # From the artifact manifest's weights_id. Mixed-format like the 27B row: 22770245536 tensor
+     # bytes over 934 tensors, mostly BF16 with a Q4/Q5/Q6-G64 + W8G32 quantized tail. effective_bpw
+     # is deliberately absent — the manifest carries no logical parameter count, and dividing by a
+     # nominal "35B" would invent precision the artifact does not state.
+     quant: "groupwise-int"
      total_params: 35
      active_params: 3
      think: optional
@@ -842,21 +850,50 @@ models:
      no_schema: true
      tools: true
      native_max_ctx: 262144
-     # 64k per the user's brief for this deployment. Also the agent_ctx coder target, so the fleet
-     # search runs at exactly the depth being deployed rather than extrapolating from a smaller one.
+     # 64k for the single-stream benches (throughput/quality_decay depths). It does NOT bound the
+     # fleet sweep: agent_ctx evaluates BOTH a 64k-lane and a 128k-lane fleet on this engine (two
+     # case_id rows), bounded by native_max_ctx, because lane width is a serving choice and "does a
+     # smaller fleet of deep agents fit" is a separate question from "how many working agents fit".
+     # 128k exceeds this ceiling, so that row's coherence fill is what says whether the resident
+     # tokens are usable as well as allocated.
      ctx_cap: 65536
      kv_variants: []
      extra_flags:
         batch-size: null
         ubatch-size: null
-        spec: dflash
-        draft-tokens: 7
+        kv-dtype: int8                   # as above: start-server.sh's default, made explicit so it is recorded
+        # SPECULATION HISTORY 2026-08-25 (disabled, then re-enabled at a safe width -- read both
+        # halves). The sm_70 speculative VERIFY path is correct only up to
+        # THREE draft positions; DFlash runs block 8 (k=7), far outside that, so it produced corrupt
+        # output on every long generation -- coherent for ~53-160 tokens, then one token repeated to
+        # the budget ceiling ("me me me...", "which which which...").
+        #
+        # The width boundary was measured on gpu1, this artifact, `--spec mtp --lm-head-draft`,
+        # identical prose prompt at temperature 0.0, 4 reps per width: k=1/2/3 are bit-exact
+        # reproducible and stop naturally; k=4 collapses 2/4 reps and k=5 collapses 3/4. So this is
+        # NOT a DFlash-specific defect and NOT speculation being broken on Volta -- the 27B row is
+        # clean because it runs `--draft-tokens 3`, inside the safe region. The diagnostic that
+        # proves a defect rather than a sampling artifact is non-reproducibility at temperature 0.0:
+        # greedy decode of a fixed prompt must be byte-identical run to run. Watch for the
+        # non-repeating variant too -- it never emits EOS and burns the whole budget at ~45 tok/s,
+        # which reads as merely slow and inspects as fine.
+        #
+        # RE-ENABLED 2026-08-25 at the safe width, to benchmark the config anyone would actually
+        # deploy. k=3 is the LAST correct width -- do not raise it, and note that the old DFlash
+        # k=7 line is gone rather than commented, so it cannot be restored by accident.
+        # `--lm-head-draft` is on because it is a win in both directions here (+26% decode on
+        # high-acceptance shapes like structured/JSONL, -5% on free prose, both against spec-off),
+        # despite the README describing it as an acceptance tradeoff. The spec-off baseline this is
+        # measured against is run v100-ninfer-20260825-190750-benchrun, kept for comparison; the
+        # two are distinguished in Postgres by the `spec_decode` dimension.
+        spec: mtp
+        draft-tokens: 3
         lm-head-draft: true
         # max-concurrency is deliberately ABSENT: agent_ctx owns that flag (it strips any value it
         # finds and sweeps its own), and the perf probes should run at the engine default rather
         # than at whichever lane count the fleet search happened to settle on.
-     spec_decode: dflash
-     capability_note: "served text-only: DFlash speculative decoding and --vision are mutually exclusive frozen-startup options, and this row measures the concurrent agent fleet. Lane count is startup-fixed 1..8 on this engine, so agent_ctx reports a lane-capped result rather than a memory-bound one when it hits 7 coders. Same NInfer caveats as the 27B row: client-clocked SSE timings only (no server timings object), and JSON benches run unconstrained (no_schema) because response_format is rejected."
+     spec_decode: mtp                 # k=3, matching the 27B row's tag; was dflash at k=7 (sm_70 verify path is correct only to k=3 -- see the extra_flags note above)
+     capability_note: "served text-only BY CHOICE, not by constraint: this row measures the concurrent text agent fleet, and --vision is frozen-startup residency that would shrink it. The artifact does carry a vision tower (334 objects, same count as the 27B), and the DFlash/--vision mutual exclusion that used to force text-only no longer applies now that speculation is MTP -- the 27B row runs --vision and --spec mtp together. Enabling vision here is therefore possible and would be a separate measurement. Lane count is startup-fixed 1..8 on this engine, so agent_ctx reports a lane-capped result rather than a memory-bound one when it hits 8 lanes. Its fleets are FLAT (planner_ctx == coder_ctx): --max-context is one per-sequence ceiling for every lane, so a wide planner beside narrow coders is not expressible here the way --kv-unified makes it on llama.cpp. Same NInfer caveats as the 27B row: client-clocked SSE timings only (no server timings object), and JSON benches run unconstrained (no_schema) because response_format is rejected."
      benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
                struct_output, instruction_following, agentic_loop, speed, throughput, agent_ctx, prefix_cache, quality_decay]
 
