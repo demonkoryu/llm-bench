@@ -161,7 +161,13 @@ async function main() {
       .replace(/[-:T]/g, '')
       .slice(0, 14)
       .replace(/(\d{8})(\d{6})/, '$1-$2');
-   const run_id = `${slug(host.gpu)}-${host.backend}-${stamp}-benchrun`;
+   // The stamp is second-resolution, so two runs launched against the same GPU in the same second
+   // produce the same run_id and silently merge in Postgres -- which happened on 2026-08-25, when a
+   // suite and a fleet sweep fired together and the suite's run ended up claiming 140 rows against
+   // the 120 its own run.json recorded. A short random tail is enough: collisions only matter within
+   // one second on one host, and the timestamp still carries the ordering.
+   const nonce = Math.random().toString(36).slice(2, 6);
+   const run_id = `${slug(host.gpu)}-${host.backend}-${stamp}-${nonce}-benchrun`;
    // The llama.cpp build/driver probe SSHes to the host and runs `llama-server --version`. OptiQ
    // has no such binary — leave llamacpp_build null (nullable in the schema) on non-llamacpp engines.
    const { llamacpp_build, driver } =
