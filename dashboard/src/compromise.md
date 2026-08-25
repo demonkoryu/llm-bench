@@ -8,10 +8,11 @@ import * as Inputs from "npm:@observablehq/inputs";
 import { leaderboard, meta, facets as facetValues } from "./lib/query-engine.js";
 import { linkedSelect, linkedRadio, linkedFacets, linkedWeights } from "./components/url-state.js";
 import { X_DIMS, capabilityScores, combine, frontier } from "./components/combine.js";
-import { boardLabel } from "./components/board.js";
+import { boardLabel, modelName } from "./components/board.js";
 import * as palette from "./components/palette.js";
 
 const rows = await FileAttachment("data/measurements.json").json();
+const modelLabels = await FileAttachment("data/model-labels.json").json();
 const fv = facetValues(rows);
 const m = meta();
 const archByGguf = new Map(rows.map((r) => [r.gguf_file, r.arch]));
@@ -45,7 +46,7 @@ const pts = lb.entities
       y: yGet(e),
       arch: archByGguf.get(e.dims.gguf_file) ?? "—",
       kv_quant: e.dims.kv_quant ?? "—",
-      label: boardLabel({ model: e.dims.gguf_file.replace(".gguf", ""), kv: e.dims.kv_quant ?? "—", think: e.think ?? "—", template: e.dims.chat_template, spec: e.dims.spec_decode }),
+      label: boardLabel({ model: modelName(e.dims.gguf_file, modelLabels), kv: e.dims.kv_quant ?? "—", think: e.think ?? "—", template: e.dims.chat_template, spec: e.dims.spec_decode }),
       parts,
     };
   })

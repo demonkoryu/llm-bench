@@ -1,4 +1,19 @@
 /**
+ * hf_file -> human label, straight off the YAML.
+ *
+ * Deliberately NOT built from loadModelsConfig(): that expands `kv_variants` into one entry per KV
+ * quant and appends " · KV <quant>" to each label, so the map would carry one arbitrary variant's
+ * KV in the model's NAME. Consumers that display a model (the dashboard board/pivot) show kv_quant
+ * as its own column, and stamping a second, possibly contradictory KV into the name misreports the
+ * row. Defaults merging and disabled-filtering are equally irrelevant to a name, so this reads the
+ * file plainly. Entries without a `label` are omitted; callers fall back to the artifact filename.
+ */
+export function loadModelLabels(path) {
+   const cfg = yaml.load(readFileSync(path, 'utf8')) ?? {};
+   return Object.fromEntries((cfg.models ?? []).filter((m) => m?.hf_file && m?.label).map((m) => [m.hf_file, m.label]));
+}
+
+/**
  * Central loader for config/models.yaml.
  *
  * The single reason this exists instead of a bare `yaml.load()` at each call site:

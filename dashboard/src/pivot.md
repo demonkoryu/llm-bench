@@ -8,8 +8,10 @@ import * as Inputs from "npm:@observablehq/inputs";
 import { pivot, meta, facets as facetValues, METRIC_HELP } from "./lib/query-engine.js";
 import { linkedSelect, linkedFacets } from "./components/url-state.js";
 import { metricHelp } from "./components/metric-help.js";
+import { modelName } from "./components/board.js";
 
 const rows = await FileAttachment("data/measurements.json").json();
+const modelLabels = await FileAttachment("data/model-labels.json").json();
 const fv = facetValues(rows);
 const m = meta();
 ```
@@ -32,7 +34,9 @@ display(metricHelp(METRIC_HELP, [metric], { title: "current metric" }));
 
 ```js
 const pv = pivot(rows, { rowsDim, colsDim, metric, baseline: baseline === "(none)" ? null : baseline, facets: facetsSel });
-const clean = (s) => String(s).replace(".gguf", "");
+// Row-axis values are whatever dimension is selected; modelName only rewrites the ones that are
+// artifact filenames and passes everything else through with the old .gguf strip.
+const clean = (s) => modelName(s, modelLabels);
 const long = pv.cells.flatMap((row) => row.vals.map((cell) => ({ r: clean(row.r), c: String(cell.c), v: cell.v, delta: cell.delta })));
 const hasDelta = baseline !== "(none)";
 ```

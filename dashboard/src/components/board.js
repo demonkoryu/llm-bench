@@ -24,10 +24,16 @@ export const boardFormat = Object.fromEntries(
    BOARD_COLUMNS.map((c) => [c.key, (v) => (v == null || Number.isNaN(v) ? '—' : (+v).toFixed(c.dec))]),
 );
 
-export function boardRows(entities) {
+// Artifact filename -> display name. `labels` is the build-time map from config/models.yaml
+// (data/model-labels.json); anything missing falls back to the stripped basename, which is what
+// this used to do unconditionally and still reads fine for llama.cpp-style filenames. Safe to call
+// on non-model values too (pivot passes whatever dimension is on its row axis).
+export const modelName = (v, labels) => labels?.[v] ?? String(v).replace('.gguf', '');
+
+export function boardRows(entities, labels) {
    return entities.map((e) => {
       const row = {
-         model: e.dims.gguf_file.replace('.gguf', ''),
+         model: modelName(e.dims.gguf_file, labels),
          template: e.dims.chat_template,
          kv: e.dims.kv_quant ?? '—',
          spec: e.dims.spec_decode ?? '—',

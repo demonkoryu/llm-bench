@@ -11,6 +11,7 @@ import { metricHelp } from "./components/metric-help.js";
 import { BOARD_COLUMNS, boardRows, boardFormat, boardLabel } from "./components/board.js";
 
 const rows = await FileAttachment("data/measurements.json").json();
+const modelLabels = await FileAttachment("data/model-labels.json").json();
 const fv = facetValues(rows);
 const m = meta();
 ```
@@ -26,7 +27,7 @@ display(metricHelp(METRIC_HELP, BOARD_COLUMNS.map((c) => c.key), { title: "score
 
 ```js
 const lb = leaderboard(rows, { think, facets: facetsSel });
-const data = boardRows(lb.entities).map((d) => ({ ...d, label: boardLabel(d) }));
+const data = boardRows(lb.entities, modelLabels).map((d) => ({ ...d, label: boardLabel(d) }));
 const top = [...data].sort((a, b) => (b.capability ?? -1) - (a.capability ?? -1)).slice(0, 20);
 ```
 
