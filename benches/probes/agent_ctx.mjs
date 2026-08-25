@@ -56,11 +56,20 @@ const MAX_FILL_TOKENS = 540_672; // 528k, 4k-aligned
 // from GGML type sizes (bytes/32 elems): q8_0=34, q5_0=22, q5_1=24, q4_0=18, q4_1=20, f16=64.
 const KV_QUANT_RATIO = { q8_0: 1.0, q5_0: 0.647, q5_1: 0.706, q4_0: 0.529, q4_1: 0.588, f16: 1.882 };
 
-// Flags to strip when self-managing the server: speculative-draft / MTP flags are unsupported
-// with -np > 1 (embedded-tensor MTP crashes on multi-slot), and MTP is a decode-speed trick
-// that does NOT change the KV footprint we're measuring, so dropping it yields the true
-// multi-agent capacity for those configs. `parallel` is set by us.
-const STRIP_FLAGS = new Set(['spec-type', 'model-draft', 'spec-draft-n-max', 'parallel']);
+// Flags to strip when self-managing the server. `parallel` is set by us (the whole point of the
+// probe is to sweep it), so it can never come from the model config.
+//
+// MTP/speculative flags are NOT stripped. The previous comment here claimed they were "unsupported
+// with -np > 1 (embedded-tensor MTP crashes on multi-slot)" and that MTP "does NOT change the KV
+// footprint we're measuring". Both were tested against build 0.2.0-dev (f280b2698) on 2026-08-25
+// and both are false for it:
+//   - `--parallel 4 --spec-type draft-mtp` starts (n_slots = 4 with the MTP draft context live) and
+//     all four slots speculate concurrently (draft acceptance 0.54-0.64, mean len ~2.9).
+//   - The draft context costs ~4794 MiB at a 65536-token unified pool (31452 vs 26658 MiB) — i.e.
+//     MTP materially reduces multi-agent capacity.
+// Stripping it therefore reported a pool/VRAM the production config can never actually reach, while
+// kv_per_tok (which keeps MTP) reported an MTP-inclusive KiB/tok — one dashboard row, two machines.
+const STRIP_FLAGS = new Set(['parallel']);
 
 const round4k = (n) => Math.max(4096, Math.round(n / 4096) * 4096);
 const kib = (tokens, kvBytesPerTok) => (tokens * kvBytesPerTok) / 1024 / 1024; // → MiB

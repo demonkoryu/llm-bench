@@ -165,7 +165,13 @@ async function main() {
    // has no such binary — leave llamacpp_build null (nullable in the schema) on non-llamacpp engines.
    const { llamacpp_build, driver } =
       ENGINE === 'llamacpp'
-         ? await probeHostBuild({ sshHost: SSH_HOST, binPath: host.backends?.[host.backend]?.bin ?? (host.backends?.[host.backend]?.image ? `docker:${host.backends[host.backend].image}` : null), local: LOCAL })
+         ? await probeHostBuild({
+              sshHost: SSH_HOST,
+              binPath:
+                 host.backends?.[host.backend]?.bin ??
+                 (host.backends?.[host.backend]?.image ? `docker:${host.backends[host.backend].image}` : null),
+              local: LOCAL,
+           })
          : { llamacpp_build: null, driver: null };
    console.error(
       `[bench-run] ${models.length} models · benches=[${benchNames}] · think=${flags.think} · samples=${SAMPLES} · build=${llamacpp_build} · template=${chatTemplate} · exec=${LOCAL ? 'local' : 'ssh'}`,

@@ -703,8 +703,13 @@ models:
      # `--spec-type draft-mtp` (this build's MTP uses the target model's own MTP head, so no
      # separate draft model). Keep the two in sync: bench-run records ef['spec-type'] first.
      spec_decode: draft-mtp
-     extra_flags: { spec-type: draft-mtp }
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, speed, throughput, kv_per_tok, agent_ctx, fit_ctx]
+     # spec-draft-type-k/v MUST mirror the target KV quant (here start-server.sh's q8_0/q8_0
+     # defaults). Left unset, the MTP draft cache allocates at f16: measured 2026-08-25 as
+     # 4794 MiB for a 65536-token pool (~75 KiB/tok) against a target KV of only ~10-15 KiB/tok,
+     # which cut the agent fleet from 10 coders to 4.
+     extra_flags: { spec-type: draft-mtp, spec-draft-type-k: q8_0, spec-draft-type-v: q8_0 }
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
+               struct_output, instruction_following, agentic_loop, speed, throughput, kv_per_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
      kv_variants: [q8_0]
 
    # ── Qwen3.8-27B Q6_K · asymmetric KV (k=q8_0, v=q4_0) ───────────────────────
@@ -722,8 +727,11 @@ models:
      kv_bytes_per_token: 12288
      kv_quant: k8v4
      spec_decode: draft-mtp
-     extra_flags: { cache-type-k: q8_0, cache-type-v: q4_0, spec-type: draft-mtp }
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, speed, throughput, kv_per_tok, agent_ctx, fit_ctx]
+     # spec-draft-type-k/v mirror this entry's asymmetric target KV (see the q8_0 entry above
+     # for the f16-draft measurement that motivated pinning them).
+     extra_flags: { cache-type-k: q8_0, cache-type-v: q4_0, spec-type: draft-mtp, spec-draft-type-k: q8_0, spec-draft-type-v: q4_0 }
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
+               struct_output, instruction_following, agentic_loop, speed, throughput, kv_per_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
 
 
 # ── Sampling matrix ───────────────────────────────────────────────────────────────
