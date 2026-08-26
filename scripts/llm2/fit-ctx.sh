@@ -92,6 +92,7 @@ out=$(docker run --rm \
    --gpus all \
    --entrypoint llama-fit-params \
    -v "$HOME/.cache/huggingface:/root/.cache/huggingface" \
+   -v "$HOME/models:$HOME/models:ro" \
    "$IMAGE" \
    $model_args -fa on $ctk_flag --fit-ctx "$fit_floor" --fit-target "$fit_target" $extra_flags \
    2>"$err_log") || true

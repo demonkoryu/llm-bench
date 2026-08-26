@@ -128,6 +128,10 @@ const BPW = [
    ['Q5_K_S', 5.5],
    ['Q5_0', 5.5],
    ['Q5_1', 6.0],
+   // Unsloth's dynamic Q5. Derived from the artifact, not guessed: Muse-Glimmer-30B-UD-Q5_K_XL.gguf
+   // is 21,789,618,976 B for a 30B model -> 5.81 bpw. Sits above Q5_K_M as the dynamic variants do.
+   ['Q5_K_XL', 5.8],
+   ['UD-Q5_K_XL', 5.8],
    ['Q4_K_XL', 4.8],
    ['Q4_K_M', 4.85],
    ['Q4_K_S', 4.6],

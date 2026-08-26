@@ -3,6 +3,14 @@
 # Fields per model:
 #   hf_repo          HuggingFace repo (passed to llama-server --hf-repo)
 #   hf_file          GGUF filename inside the repo (--hf-file)
+#                    NOTE: llama-server does NOT fetch these. The llama-server-cuda image is built
+#                    without HTTPS support, so --hf-repo resolves ONLY against the local
+#                    ~/.cache/huggingface hub cache on the serving host; an unstaged repo fails at
+#                    startup with "get_repo_commit: HTTPS is not supported". Stage a new model on
+#                    the host first, e.g.
+#                      python3 -c 'from huggingface_hub import hf_hub_download as d; d("<repo>","<file>")'
+#                    Local-path artifacts (drafters, --model-draft) live in ~/models, which
+#                    scripts/llm2/start-server.sh bind-mounts read-only at the same path.
 #   label            Human-readable label for results tables
 #   family           Model family — must match a key in sampling_matrix
 #   type             dense | moe
@@ -915,6 +923,79 @@ models:
      benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
                struct_output, instruction_following, agentic_loop, speed, throughput, agent_ctx, prefix_cache, quality_decay]
 
+   # ── Muse-Glimmer-30B UD-Q5_K_XL (Meta Superintelligence Labs, dense VLM) ───
+   # 29.6B dense causal transformer + a frozen ~1.8B ViT-G/14 perception encoder, distilled from
+   # Muse Spark and trained for agentic work. Served TEXT-ONLY here (--no-mmproj), like every other
+   # vision row in this file, so the numbers stay comparable to the rest of the fleet.
+   #
+   # Attention is [Local, Local, Local, Global] repeating over 52 layers with a 2048 sliding window,
+   # GQA 32q/2kv, head dim 128. Only the 13 global layers grow KV with context; the 39 local ones
+   # are pinned to the window. Hence the unusually small kv_bytes_per_token below.
+   #
+   # ALWAYS reasons (think: reasoning): there is no on/off toggle. Strength is a separate knob the
+   # ATEM chat template reads from a `reasoning_strength` kwarg and DEFAULTS TO `high` when unset,
+   # which is what the model card recommends for coding/agentic work -- so these runs measure the
+   # model at its recommended effort without us injecting anything. Sweeping low/medium/high/xhigh
+   # is a real axis, but it needs a think_control mechanism we do not have yet; not done here.
+   #
+   # This build's arch + tool support was verified on the host image, not assumed: libllama carries
+   # the `muse-glimmer` arch string and libllama-common/-server carry the `atem` tool-format parser
+   # (llama-server-cuda, built 2026-08-24).
+   - hf_repo: unsloth/Muse-Glimmer-30B-GGUF
+     hf_file: Muse-Glimmer-30B-UD-Q5_K_XL.gguf
+     label: "Muse-Glimmer-30B UD-Q5_K_XL"
+     family: muse-glimmer
+     type: dense
+     think: reasoning
+     tools: true
+     native_max_ctx: 131072
+     # q8_0 KV, GLOBAL LAYERS ONLY: 13 layers x 2 (K+V) x 2 kv-heads x 128 dim x ~1.06 B/elem
+     # ~= 7.1 KiB/token, plus a fixed ~43 MiB for the 39 windowed local layers. This assumes
+     # llama.cpp allocates the local layers at the window rather than at full context; if it does
+     # not, the true figure is ~4x this. fit_ctx / agent_ctx measure the truth either way -- this
+     # value only seeds the binary search's hi bound.
+     kv_bytes_per_token: 7168
+     # DFlash speculative decode: a 5-layer block-diffusion drafter that proposes 16 tokens per
+     # forward pass, shipped as a separate 1.6 GB GGUF (unsloth's dflash-kquant.gguf, staged to
+     # ~/models). Unlike the Qwen3.8 MTP rows there is no self-draft head, so --model-draft is
+     # required. `spec_decode:` is only the RECORDED dimension; --spec-type is what reaches the
+     # server, and bench-run reads ef['spec-type'] first -- keep the two in sync.
+     #
+     # CORRECTNESS WAS NOT ASSUMED. The 35B NInfer row above records DFlash at k=7 producing
+     # corrupt output on sm_70 because that engine's Volta verify path is only correct to 3 draft
+     # positions; Volta plus speculation has burned this fleet once already, so llama.cpp's DFlash
+     # was smoke-tested on rose (2026-08-26, 16k ctx, q8_0 KV, -np 1) before this row was enabled.
+     #
+     # What that test found, in order of importance:
+     #
+     # 1. DFlash is CORRECT here. Final answers matched the speculation-off baseline on every
+     #    probe: identical prime-list and short-fact answers, and Fibonacci code that was valid in
+     #    every rep (one rep named the function `fibonacci` instead of `fib` -- a wording choice,
+     #    not a defect). No corruption, no runaway generation, no missing EOS.
+     #
+     # 2. Greedy self-reproducibility is NOT a usable correctness signal on this model. At
+     #    temperature 0.0 / top_k 1 the baseline itself diverges run to run on 3 of 4 probes --
+     #    WORSE than with DFlash on (2 of 4). Divergence always lands inside the long reasoning
+     #    trace as a synonym swap ("heeling force" vs "heeling moment"), with both branches fluent
+     #    and the final answer unchanged. That is baseline kernel/batching nondeterminism, not
+     #    speculation. Do not read a NON-REPRO here as the NInfer failure mode; compare against the
+     #    spec-off baseline instead.
+     #
+     # 3. --spec-draft-n-max DEFAULTS TO 3 in this build while DFlash's block_size is 16, which
+     #    throttles the drafter to 3/16 of a block. Measured decode, spec-off -> n_max=3 -> n_max=16:
+     #    structured output 27.6 -> 54.0 -> 78.2 tok/s (2.83x), short factual 27.5 -> - -> 58.2
+     #    (2.12x), code 27.7 -> - -> 44.3 (1.60x), free prose 27.6 -> 32.2 -> 27.2 (~1x -- prose has
+     #    the lowest draft acceptance, so speculation buys nothing there). Hence the explicit 16.
+     spec_decode: draft-dflash
+     extra_flags:
+        "no-mmproj": true   # repo ships mmproj-*.gguf -- skip it (text-only, as with the gemma4 rows)
+        model-draft: /home/demonkoryu/models/Muse-Glimmer-30B-dflash-kquant.gguf
+        spec-type: draft-dflash
+        spec-draft-n-max: 16   # match DFlash's block_size; the build default of 3 costs ~1.4x on structured output
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
+               struct_output, instruction_following, agentic_loop, speed, throughput, kv_per_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
+     notes: "Text-only by choice (--no-mmproj); the perception encoder is a separate measurement. Always-reasoning at the template's default strength `high`. DFlash verified correct on sm_70 2026-08-26 by agreement with the spec-off baseline, not by greedy self-reproducibility -- this model is nondeterministic at temperature 0.0 with speculation OFF too."
+
 
 # ── Sampling matrix ───────────────────────────────────────────────────────────────
 # Read by shared/llm/sampling.mjs. Authoritative source for ALL per-request sampling.
@@ -939,6 +1020,7 @@ models:
 #   gemma4:      https://ai.google.dev/gemma/docs/core/model_card_4
 #   lfm2.5:      https://huggingface.co/LiquidAI/LFM2.5-8B-A1B
 #   nemotron:    https://huggingface.co/nvidia/NVIDIA-Nemotron-Nano-12B-v2
+#   muse-glimmer: https://huggingface.co/meta-models/Muse-Glimmer-30B (card, August 2026)
 
 sampling_matrix:
 
@@ -1134,6 +1216,18 @@ sampling_matrix:
       no_think:
          temperature: 0.3
          top_p: 0.95
+
+   # ── Muse-Glimmer (always-reasoning, null think state) ──────────────────────
+   # Vendor-published "Best Practices" from the model card, verified 2026-08-26:
+   # temperature 1.0 / top_p 0.95 / top_k 64. Only a `default:` block, because think: reasoning
+   # resolves to a null think state and resolveSampling skips think/no_think entirely -- same
+   # shape as lfm2.5 above. Reasoning STRENGTH is not a sampling parameter here; it lives in the
+   # chat template and defaults to `high` (see the model entry).
+   muse-glimmer:
+      default:
+         temperature: 1.0
+         top_p: 0.95
+         top_k: 64
 
 
 # ── Host configuration ───────────────────────────────────────────────────────────

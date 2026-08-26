@@ -113,6 +113,7 @@ CID=$(docker run -d \
    --gpus all \
    -p "$port:8090" \
    -v "$HOME/.cache/huggingface:/root/.cache/huggingface" \
+   -v "$HOME/models:$HOME/models:ro" \
    "$IMAGE" \
    $model_args \
    -c "$ctx" \
