@@ -18,5 +18,8 @@ import { loadModelsConfig } from '../../../shared/models-config.mjs';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const active = new Set(loadModelsConfig(join(ROOT, 'config', 'models.yaml')).models.map((m) => m.hf_file));
 
-const rows = (await query("SELECT * FROM $TIDY WHERE status IS DISTINCT FROM 'partial'")).filter((r) => active.has(r.gguf_file));
+// $LATEST, not $TIDY: the store is append-only, so a re-measured config keeps its old row too and
+// the scoring average downstream would blend the superseded value into the live one. $LATEST already
+// excludes 'partial'; the filter below is kept as documentation of intent, not because it is load-bearing.
+const rows = (await query("SELECT * FROM $LATEST WHERE status IS DISTINCT FROM 'partial'")).filter((r) => active.has(r.gguf_file));
 process.stdout.write(JSON.stringify(rows));

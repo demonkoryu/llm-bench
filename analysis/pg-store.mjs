@@ -5,8 +5,10 @@
 //
 // Access is a thin native-Postgres client (porsager `postgres`). The table schema is GENERATED
 // from shared/tidy-schema.mjs (COLUMNS) so it can't drift. NOTE: measurement_id is a SOFT dedup hint,
-// not unique — a few ids legitimately map to >1 row (a bench sampled twice, the same config
-// re-measured across runs); the engine reads every row and scoring averages duplicates.
+// not unique — the same config re-measured across runs appends a second row rather than replacing the
+// first. Reads that report a number must therefore go through `$LATEST` (latest-wins, see below), NOT
+// `$TIDY`. Averaging every row, which is what consumers did before 2026-08-26, blends superseded
+// measurements into live ones.
 //
 // Connection comes from the environment (never committed):
 //   LLMBENCH_PG_HOST      (default 192.168.1.120)
@@ -200,12 +202,63 @@ export async function markBenchesComplete(run_id, benches) {
    }
 }
 
-/** Run engine SQL against Postgres. `$TIDY` expands to the `measurements` table. */
+// The config identity of a measurement: two rows sharing these dims (plus metric/case_id) measure
+// THE SAME THING, so a later one supersedes an earlier one rather than adding a second sample. This
+// is deliberately the same list as bench-run's RESUME_KEY — if resume considers a combo already
+// measured, then a re-measurement of it must supersede, or the two would disagree. Keep them in step.
+const IDENTITY_KEY = [
+   'gguf_file',
+   'kv_quant',
+   'chat_template',
+   'sampling_hash',
+   'ctx',
+   'n_parallel',
+   'batch',
+   'ubatch',
+   'spec_decode',
+   'host',
+   'backend',
+   'gpu',
+   'bench',
+   'think_mode',
+   // Not in RESUME_KEY because resume works per (config x bench) while a bench emits many rows;
+   // these split one bench's rows apart so dedup never collapses distinct metrics or cases.
+   'metric',
+   'case_id',
+];
+// Known limit, verified harmless as of 2026-08-26: sampling_hash is NULL on all pre-August rows and on
+// probes, and a NULL identity never matches a hashed one — so a legacy measurement re-measured after
+// the hash landed would keep BOTH rows. Audited: 0 such groups exist. Self-healing too, since resume
+// keys on the same column and re-measures the legacy combo rather than skipping it.
+
+// Latest-wins projection of `measurements`. The table is append-only with no PK, so re-measuring a
+// config INSERTS a second row instead of replacing the first, and every consumer that aggregates
+// (the dashboard's scoring average, caps-cache's avg/max) silently folded the stale value into the
+// live one. Measured on 2026-08-26 before this existed: 554 duplicate groups / 1209 rows, 549 of
+// them cross-run supersessions — including ttft-32k on qwen3.6-27b averaging a 62,328 ms row with a
+// 5,116 ms one, and speed_prefill-12k on qwen3.8-27b averaging 71 tok/s with 940. Those were
+// published numbers.
+//
+// `status <> 'partial'` sits INSIDE the projection on purpose: rows land 'partial' and are promoted
+// by markBenchesComplete, so a crashed re-run would otherwise supersede a good row and then be
+// filtered out by the caller, making the combo vanish entirely instead of falling back to the older
+// measurement. History is preserved — nothing is deleted, `$TIDY` still sees every row.
+const LATEST_VIEW = `(SELECT DISTINCT ON (${IDENTITY_KEY.map((c) => `"${c}"`).join(', ')}) *
+   FROM measurements WHERE status IS DISTINCT FROM 'partial'
+   ORDER BY ${IDENTITY_KEY.map((c) => `"${c}"`).join(', ')}, ts DESC NULLS LAST, run_id DESC) AS latest`;
+
+/**
+ * Run engine SQL against Postgres.
+ *   `$LATEST` expands to the latest-wins projection — one row per config x metric x case, newest
+ *             measurement only. Use this for ANY read that reports a number.
+ *   `$TIDY`   expands to the raw `measurements` table, superseded rows included. Use it only when
+ *             you genuinely want the history (bench-run's resume set, provenance queries).
+ */
 export async function query(text) {
    const sql = conn();
    const { password } = pgConfig();
    try {
-      const rows = await sql.unsafe(text.replaceAll('$TIDY', 'measurements'));
+      const rows = await sql.unsafe(text.replaceAll('$LATEST', LATEST_VIEW).replaceAll('$TIDY', 'measurements'));
       const numCols = (rows.columns || []).filter((c) => NUMERIC_OIDS.has(c.type)).map((c) => c.name);
       return rows.map((r) => {
          const o = { ...r };

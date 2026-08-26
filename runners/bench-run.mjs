@@ -286,6 +286,8 @@ async function main() {
    //    moves the numbers. Use --no-resume after a build bump.
    //  · n (sample count) — not an equality dim but a threshold one; handled below via max(n), so
    //    `--samples 5` after a samples=1 run re-measures while `--samples 1` after samples=5 skips.
+   // Mirrored by IDENTITY_KEY in analysis/pg-store.mjs, which drives latest-wins dedup on reads.
+   // Change one and change the other: if resume calls a combo done, a re-measurement must supersede it.
    const SEP = '␟';
    const RESUME_KEY = [
       'gguf_file',
@@ -312,6 +314,8 @@ async function main() {
       // status='ok' is essential: rows are written 'partial' and only promoted once the bench
       // completes, so without this filter a combo whose every row is a crashed partial (or a 'skip')
       // would count as done and never be retried.
+      // Raw $TIDY on purpose, not $LATEST: this asks "was this combo EVER measured to completion",
+      // and max(n) is a threshold over the whole history. Superseded rows are a legitimate yes here.
       const cols = RESUME_KEY.map((c) => `"${c}"`).join(', ');
       try {
          for (const r of await query(`SELECT ${cols}, max(n) AS samples FROM $TIDY WHERE status = 'ok' GROUP BY ${cols}`)) {
