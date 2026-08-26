@@ -503,11 +503,11 @@ models:
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
 
    # ── Gemma4-31B IQ4_XS ────────────────────────────────────────────────────────
-   # Dense 31B, hybrid think, native FC. IQ4_XS ≈ 16.5 GB → fits 20.5 GB card.
+   # Dense 31B, hybrid think, native FC. IQ4_XS ≈ 16.5 GB → fits a 32 GB V100 with room for KV.
    # Same family/sampling/think mechanism as E4B/26B; no-mmproj for text-only.
-   # DISABLED: dense 31B is ~10× slower prefill than the MoE 26B (31B active vs 4B active).
    # Un-parked 2026-08-26 to fill V100 coverage. The park reason (dense 31B prefills ~10x slower
-   # than the MoE 26B) is architectural and still true — this entry is slow by design, not broken.
+   # than the MoE 26B — 31B active vs 4B active) is architectural and still true: this entry is
+   # slow by design, not broken. Budget for it accordingly; do not read the wall-clock as a fault.
    - hf_repo: unsloth/gemma-4-31B-it-GGUF
      hf_file: gemma-4-31B-it-IQ4_XS.gguf
      label: "Gemma4-31B IQ4_XS"
