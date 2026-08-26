@@ -1,0 +1,20 @@
+{
+  "run_id": "v100-cuda-20260826-061516-ucum-benchrun",
+  "kind": "benchrun",
+  "host": "rose",
+  "gpu": "V100",
+  "backend": "cuda",
+  "llamacpp_build": null,
+  "engine_version": null,
+  "chat_template": "builtin",
+  "resume": true,
+  "benches": [
+    "toolcalling",
+    "reasoning"
+  ],
+  "samples": 1,
+  "ctx": 16384,
+  "tidy_rows": 0,
+  "started": "2026-08-26T06:15:17.101Z",
+  "status": "complete"
+}
