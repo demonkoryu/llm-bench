@@ -76,7 +76,7 @@ export const bench = {
          }
          const k = Math.round(d / 1024);
          if (n) {
-            rows.push({ bench: `quality_decay-${k}k`, score: (correct / n) * 100, status: 'ok' });
+            rows.push({ bench: `quality_decay-${k}k`, score: (correct / n) * 100, status: 'ok', lane_ctx: ctx });
          }
       }
       // Zero rows is indistinguishable from "measured nothing" downstream, so say why rather than

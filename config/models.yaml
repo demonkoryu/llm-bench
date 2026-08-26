@@ -712,6 +712,9 @@ models:
      think: optional
      tools: true
      native_max_ctx: 262144
+     # VRAM-aware cap, distinct from native_max_ctx above: 65536 is the largest window
+     # observed to load on rose (2026-08-26) once the MTP draft cache is accounted for.
+     ctx_cap: 65536
      kv_bytes_per_token: 16384
      # MTP speculative decode. `spec_decode:` alone is only the RECORDED dimension — it does not
      # reach the server. The extra_flags entry is what actually starts llama-server with
@@ -739,6 +742,8 @@ models:
      think: optional
      tools: true
      native_max_ctx: 262144
+     # VRAM-aware cap: 65536 observed to load on rose (2026-08-26). See the q8_0 entry.
+     ctx_cap: 65536
      kv_bytes_per_token: 12288
      kv_quant: k8v4
      spec_decode: draft-mtp
@@ -949,6 +954,10 @@ models:
      think: reasoning
      tools: true
      native_max_ctx: 131072
+     # VRAM-aware cap: 102400 is the largest window observed to load on rose (2026-08-26,
+     # q8_0 KV at the measured 39 KiB/tok = ~4.0 GiB KV). Without it, maxctx falls through
+     # to the run's --ctx flag and every depth probe collapses to depth 0.
+     ctx_cap: 102400
      # MEASURED, not estimated: kv_per_tok on rose returned 39 KiB/token (2026-08-26, q8_0 KV).
      # The original estimate here was 7.1 KiB, assuming only the 13 GLOBAL layers grow with context
      # and the 39 local ones stay pinned to the 2048 window. That assumption is WRONG on two counts,

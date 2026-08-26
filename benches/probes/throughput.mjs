@@ -160,10 +160,17 @@ export const bench = {
          }
          const k = Math.round(d / 1024);
          if (e2es.length) {
-            rows.push({ bench: `e2e-${k}k`, score: median(e2es), tok_s: median(decs), prefill_tps: median(prefs), status: 'ok' });
+            rows.push({
+               bench: `e2e-${k}k`,
+               score: median(e2es),
+               tok_s: median(decs),
+               prefill_tps: median(prefs),
+               status: 'ok',
+               lane_ctx: ctx,
+            });
          }
          if (ttfts.length) {
-            rows.push({ bench: `ttft-${k}k`, score: median(ttfts), status: 'ok' });
+            rows.push({ bench: `ttft-${k}k`, score: median(ttfts), status: 'ok', lane_ctx: ctx });
          }
       }
       return rows;

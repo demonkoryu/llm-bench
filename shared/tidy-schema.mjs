@@ -120,7 +120,7 @@ export const DIM_COLUMNS = [
 ];
 
 // ── Spine fields that are NOT measurements (skip when exploding) ─────────────────
-const SPINE = new Set(['target', 'backend', 'model', 'think', 'bench', 'status', 'ts', 'notes', 'n', 'spread', 'case_id']);
+const SPINE = new Set(['target', 'backend', 'model', 'think', 'bench', 'status', 'ts', 'notes', 'n', 'spread', 'case_id', 'lane_ctx']);
 
 // Capacity/VRAM facts must only be emitted by the probe that owns them, not duplicated
 // onto every core-quality row (which would fill the store with noise).
@@ -297,6 +297,11 @@ export function metricRowsFromResult(rawRow, dims) {
       // lane widths and emits a `lane_64k`/`lane_128k` case per width, so without this every lane
       // lands stamped 16384 and the ctx dimension says the run's flag rather than what was measured.
       // (Repaired in Postgres by hand once, on 2026-08-25, before being fixed here.)
+      // The depth probes (throughput, quality_decay) reload at max(maxctx, floor) and so stamp
+      // lane_ctx too — without it a ttft-64k row could claim ctx=40960, a window that cannot hold
+      // its own depth. 35 such rows were deleted on 2026-08-26 rather than re-stamped: ctx is an
+      // identity dimension, so correcting it forks the row instead of superseding it, and every
+      // affected row was on a backend (vulkan, optiq) that no longer exists to re-measure.
       if (rawRow.lane_ctx != null) {
          base.ctx = numOrNull(rawRow.lane_ctx) ?? base.ctx;
       }
