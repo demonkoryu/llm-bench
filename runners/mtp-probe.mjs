@@ -10,7 +10,7 @@
  *   2. spec-draft-n-max sweep (4 → 6 → 8) — higher depth wins when acceptance is
  *      high, loses when it's low. Find the knee.
  *
- * Method (mirrors the warmup-confound rule, results/int-dot-impact.md):
+ * Method (mirrors the warmup-confound rule — see the warmup notes in backend-ab.mjs):
  *   - greedy decoding (temp 0) so the draft acceptance rate is deterministic and
  *     output is identical across configs (spec-decode is exact);
  *   - two workloads — code (high structure → high acceptance) and prose (lower) —

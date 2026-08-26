@@ -62,8 +62,8 @@ const BACKEND = (arg('backend', 'vulkan') || 'vulkan').toLowerCase();
 const DEFAULT_BIN = BACKEND === 'rocm' ? '~/llama.cpp/build-rocm/bin/llama-bench' : '~/llama.cpp/build-vulkan/bin/llama-bench';
 const VULKAN_BIN = arg('vulkan-bin', arg('bin', DEFAULT_BIN));
 
-// Production Vulkan config: int-dot disabled (net-negative on this host; see
-// results/int-dot-impact.md). Override with LLAMA_VK_INT_DOT=1 to A/B. The env var
+// Production Vulkan config: int-dot disabled — it measured net-negative for decode
+// on the Vulkan host. Override with LLAMA_VK_INT_DOT=1 to A/B. The env var
 // is Vulkan-only, so it's omitted entirely on non-vulkan backends.
 const VK_ENV = BACKEND !== 'vulkan' || process.env.LLAMA_VK_INT_DOT === '1' ? '' : 'env GGML_VK_DISABLE_INTEGER_DOT_PRODUCT=1 ';
 
@@ -102,8 +102,8 @@ async function findGguf(hf_file) {
  *
  * Warmup discard is mandatory: a fresh llama-bench starts from idle GPU clocks and
  * the ramp outlasts its internal warmup. We fire one throwaway -r REPS run (same
- * shapes) to reach steady state, then the real -r REPS run. See backend-ab.mjs and
- * the warmup-confound writeup in results/int-dot-impact.md.
+ * shapes) to reach steady state, then the real -r REPS run. See backend-ab.mjs, whose
+ * bench() header records why a single -r 1 warmup is not enough.
  */
 async function bench(ggufPath, state) {
    const base = [

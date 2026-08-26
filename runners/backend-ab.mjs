@@ -65,7 +65,7 @@ const VULKAN_BIN = arg('vulkan-bin', '~/llama.cpp/build-vulkan/bin/llama-bench')
 const ROCM_BIN = arg('rocm-bin', '~/llama.cpp/build-rocm/bin/llama-bench');
 
 // vulkan runs with int-dot DISABLED — that's the production config (it measured
-// net-negative for decode on this host; see results/int-dot-impact.md). Override by
+// net-negative for decode on the Vulkan host). Override by
 // setting LLAMA_VK_INT_DOT=1 in this process's env to A/B with int-dot on instead.
 const VK_ENV = process.env.LLAMA_VK_INT_DOT === '1' ? '' : 'env GGML_VK_DISABLE_INTEGER_DOT_PRODUCT=1 ';
 const BACKENDS = [
@@ -105,8 +105,8 @@ async function findGguf(hf_file) {
  * vulkan cold and rocm warm, faking a rocm win. So we fire one throwaway run (same shapes,
  * full -r REPS) to ramp clocks + populate the shader cache, then the real -r REPS run.
  * A single -r 1 warmup proved insufficient for slow-ramping big models (Nemotron, the 30B
- * Qwen MoEs read ~15–45% low); a full -r REPS warmup reaches steady state. See the
- * warmup-confound writeup in results/int-dot-impact.md.
+ * Qwen MoEs read ~15–45% low); a full -r REPS warmup reaches steady state. This is the
+ * canonical statement of the warmup-confound rule; the other runners cite it.
  */
 async function bench(bin, ggufPath, env = '', batch = BATCH, ubatch = UBATCH) {
    const base = [

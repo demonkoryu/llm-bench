@@ -154,7 +154,7 @@ const BURST_PROMPT =
 
 // Discard this many warmup bursts before measuring. A freshly (re)loaded server
 // starts from idle GPU clocks, and the ramp outlasts a single short generation —
-// the warmup-confound rule (results/int-dot-impact.md). One warmup left the FIRST
+// the warmup-confound rule (see backend-ab.mjs). One warmup left the FIRST
 // state of each model reading low and faked a +32% q4 "win"; multiple warmups pin
 // the clock to steady state so the q8/q4/asym deltas are real, not ramp.
 const BURST_WARMUPS = 3;
