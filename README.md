@@ -9,12 +9,15 @@ and renders an interactive **Observable Framework** dashboard.
   Runs **on the benchmarking host** from a git checkout (see §4); the dev box is only for
   editing. Bench modules live in `benches/` (reuse the graders in `benchmarks/*`);
   performance/capacity **probes** (`benches/probes/`) self-manage the server.
-- **Inference** — two engines, selected per host by `engine:` in `config/hosts.yaml`:
-  a `llama.cpp` server on a GPU host (`engine: llamacpp`, default; lifecycle/VRAM/health/
-  systemd-router in `runners/llamacpp-server.mjs` + `scripts/llm2/`), or an **OptiQ** (MLX)
-  daemon on Apple Silicon (`engine: optiq`; persistent `optiq serve` daemon launched by
-  `scripts/llm1/serve.sh`, no-op lifecycle + no VRAM readout in `runners/optiq-server.mjs`).
-  (RapidMLX was the prior Apple-Silicon engine; retired 2026-07-22 → `archive/rapidmlx/`.)
+- **Inference** — engines are selected per host by `engine:` in `config/hosts.yaml`. Two are
+  live, both CUDA on the V100 host: a `llama.cpp` server (`engine: llamacpp`, default;
+  lifecycle/VRAM/health/systemd-router in `runners/llamacpp-server.mjs` + `scripts/llm2/`), and
+  **NInfer** (`engine: ninfer`, one instance per card, `runners/ninfer-server.mjs` +
+  `scripts/llm2/ninfer/`). A third, **OptiQ** (MLX) on Apple Silicon (`engine: optiq`,
+  `runners/optiq-server.mjs`), is **parked as of 2026-08-26** — the fleet is V100-only, so every
+  `engine: optiq` model carries `disabled: true` and `--target m1` matches nothing. The code and
+  host block are kept as the record of how it was wired. (RapidMLX was the prior Apple-Silicon
+  engine; retired 2026-07-22 → `archive/rapidmlx/`.)
 - **Store** — a **central Postgres** table, `llmbench.measurements` (central-db @
   192.168.1.120), one row per measured metric with every config axis (chat_template, kv_quant,
   quant, arch, finetune, llamacpp_build, sampling, think…) as a queryable column. `bench-run`
@@ -144,7 +147,10 @@ The two host types differ only in how inference is served:
   coexists with the host's systemd `llama-server` router. Run with `--local` (env
   `BENCH_LOCAL=1`) so the host scripts + router `systemctl` execute locally instead of over
   SSH. Readiness: `scripts/llm2/ready.sh`.
-- **OptiQ (MLX) hosts (m1 / llm1).** OptiQ is a **persistent daemon** (`optiq serve`), launched
+- **OptiQ (MLX) hosts (m1 / llm1) — PARKED 2026-08-26.** Nothing below is runnable while the
+  fleet is V100-only: every `engine: optiq` model is `disabled: true`, so `--target m1` matches
+  no model and exits 1. Kept as the record of the wiring. OptiQ is a **persistent daemon**
+  (`optiq serve`), launched
   separately by [`scripts/llm1/serve.sh`](scripts/llm1/serve.sh) (installs via `pipx install
   mlx-optiq`). For `engine: optiq` the harness server-lifecycle is a **no-op** — it never starts/
   stops/reloads the daemon, has no VRAM readout, and talks to it over **loopback**
@@ -158,91 +164,36 @@ The two host types differ only in how inference is served:
 
 ---
 
-## GPU host: building `llama.cpp` (ROCm + Vulkan)
+## GPU host: the `llama.cpp` backend
 
-The orchestrator drives a `llama.cpp` server on the GPU host over SSH; the host carries
-**two** builds, switched with `run-suite --backend <vulkan|rocm>`. This section is the
-source of truth for reproducing them (e.g. in Docker). Reference hardware: **AMD RX 7900
-XT** (`gfx1100`, RDNA3, 20 GiB), Ubuntu 24.04, ROCm 7.2.3, Mesa/RADV 25.2. Tested against
-llama.cpp `ggml-org/llama.cpp` @ commit **`a121232fd`**.
+The orchestrator drives a `llama.cpp` server on the GPU host over SSH. Reference hardware:
+**rose** — 2x NVIDIA Tesla V100 PCIe 32 GB (`sm_70`, 64 GB total), declared in
+[`config/hosts.yaml`](config/hosts.yaml).
 
-```bash
-git clone https://github.com/ggml-org/llama.cpp && cd llama.cpp
-```
+The backend is a **prebuilt CUDA container image**, not an in-tree build.
+[`scripts/llm2/backends.sh`](scripts/llm2/backends.sh) is the source of truth for detection: it
+reports `cuda docker:<image>` when both the image and `nvidia-smi` are present, and exits
+non-zero otherwise, which is how the harness auto-selects the backend. The image name comes from
+`$LLAMA_IMAGE` (default `llama-server-cuda`) and is also declared per host under
+`backends.cuda.image`, so read it from there rather than hardcoding it — it is built out of band
+on the host and the tag moves.
 
-### ROCm build (`build-rocm/`)
+The NInfer engine is the other CUDA path and *does* build in-tree, from
+[`scripts/llm2/ninfer/Dockerfile.v100`](scripts/llm2/ninfer/Dockerfile.v100); see the
+`rose-ninfer0` / `rose-ninfer1` host blocks for how the two per-card instances are wired.
 
-```bash
-export PATH=/opt/rocm/bin:$PATH
-HIPCXX=/opt/rocm/bin/amdclang++ cmake -S . -B build-rocm \
-  -DGGML_HIP=ON -DAMDGPU_TARGETS=gfx1100 -DCMAKE_BUILD_TYPE=Release -DLLAMA_CURL=ON
-cmake --build build-rocm --config Release -j"$(nproc)" --target llama-server llama-bench llama-cli
-```
+> The ROCm and Vulkan build recipes that used to live here were removed 2026-08-26 with the
+> RX 7900 XT they described (`gfx1100`, RDNA3, 20 GiB) — including the `glslc`/int-dot build
+> gate, which was specific to llama.cpp's Vulkan shader feature-test and has no CUDA analogue.
+> `git log -- README.md` still has them if that card ever comes back.
 
-For `gfx1100`, `-DGGML_HIP=ON` **auto-enables** the RDNA3 fast paths — you do not pass them
-explicitly, but verify they landed in `build-rocm/CMakeCache.txt`:
-`GGML_HIP_ROCWMMA_FATTN=ON` (WMMA flash-attention), `GGML_HIP_GRAPHS=ON`,
-`GGML_HIP_MMQ_MFMA=ON` (native int8 MMQ). Runtime needs the **ROCm 7.x** stack.
-
-### Vulkan build (`build-vulkan/`) — ⚠️ needs a modern `glslc`
-
-```bash
-cmake -S . -B build-vulkan \
-  -DGGML_VULKAN=ON -DGGML_NATIVE=ON -DCMAKE_BUILD_TYPE=Release \
-  -DVulkan_GLSLC_EXECUTABLE=/opt/vulkan-sdk/x86_64/bin/glslc      # ← see below, do NOT omit
-cmake --build build-vulkan -j"$(nproc)" --target llama-server llama-bench
-```
-
-**The `glslc` version is load-bearing for whether int-dot is even _available_.**
-llama.cpp's int8 dot-product path is gated at _build time_ on a CMake feature-test that
-tries to compile a `GL_EXT_integer_dot_product` shader. The **stock Ubuntu 24.04 `glslc`
-(shaderc 2023.8 / glslang 14) cannot compile it**, so the macro
-`GGML_VULKAN_INTEGER_DOT_GLSLC_SUPPORT` is silently left undefined and the int8 path is
-compiled out — the device reports `int dot: 0`, with **no error**. Use a `glslc` from a
-recent **Vulkan SDK ≥ 1.3.290** (we used LunarG **1.4.350.1** → shaderc v2026.2) to get
-`int dot: 1`:
-
-> **Measured caveat — int-dot is _off_ at runtime on this host.** Having `int dot: 1`
-> available let us A/B it rigorously (runtime toggle `GGML_VK_DISABLE_INTEGER_DOT_PRODUCT`).
-> On this RX 7900 XT + RADV + KHR_coopmat build it is **neutral-to-negative for decode**
-> (0% … −7.4% tg; prefill unaffected) — it only swaps the decode GEMV kernel, and that
-> kernel is slower than the coopmat path for our quants. So we **disable it at runtime**.
-> Still build with the modern glslc (a different GPU/driver may flip the sign). Full data
->
-> - the warmup-confound that earlier faked a "+37% win": [`results/int-dot-impact.md`](results/int-dot-impact.md).
-
-```bash
-VER=$(curl -s https://vulkan.lunarg.com/sdk/latest/linux.txt)        # e.g. 1.4.350.1
-curl -s -o sdk.tar.xz "https://sdk.lunarg.com/sdk/download/$VER/linux/vulkansdk-linux-x86_64-$VER.tar.xz"
-mkdir -p /opt/vulkan-sdk && tar -xJf sdk.tar.xz -C /opt/vulkan-sdk --strip-components=1
-# glslc is the prebuilt /opt/vulkan-sdk/x86_64/bin/glslc — point -DVulkan_GLSLC_EXECUTABLE at it
-```
-
-Runtime needs **Mesa/RADV ≥ 24.x** (exposes `VK_KHR_cooperative_matrix` and accelerated
-integer dot for `gfx1100`). The build only needs the modern `glslc`; the Vulkan headers
-and loader can stay at the distro version.
-
-### Verify the build is optimal
-
-A correct Vulkan build prints this device line on load (any `llama-bench`/server start):
-
-```
-ggml_vulkan: 0 = Radeon RX 7900 XT (RADV NAVI31) | fp16: 1 | int dot: 1 | matrix cores: KHR_coopmat
-```
-
-`int dot: 1` **and** `matrix cores: KHR_coopmat` must both be present — `int dot: 0` means
-the glslc was too old (rebuild with a newer SDK). For ROCm, confirm
-`GGML_HIP_ROCWMMA_FATTN=ON` in its CMakeCache.
 
 ### Server launch flags
 
 The server is launched by [`scripts/llm2/start-server.sh`](scripts/llm2/start-server.sh):
 `-fa on`, `--cache-type-k/v q8_0` (quantized KV), `--jinja`, `--reasoning-format auto`,
-`-np 1`. Batch sizing (`-b 2048 -ub 2048`, the Vulkan prefill-throttle fix) is **not** in
-the script — it is injected per-model from `config/models.yaml` `defaults.extra_flags`. See
-that file's header for the rationale. For the **vulkan** backend the script also exports
-`GGML_VK_DISABLE_INTEGER_DOT_PRODUCT=1` (int-dot measured net-negative for decode here —
-override with `LLAMA_VK_INT_DOT=1`; see [`results/int-dot-impact.md`](results/int-dot-impact.md)).
+`-np 1`. Batch sizing (`-b 2048 -ub 2048`) is **not** in the script — it is injected per-model
+from `config/models.yaml` `defaults.extra_flags`. See that file's header for the rationale.
 
 ---
 
@@ -271,7 +222,12 @@ so the displayed formula can't drift from the code.
 
 ---
 
-## Benchmark winner (2026-06-09)
+## Benchmark winner (2026-06-09) — RETIRED HARDWARE
+
+> Measured on the RX 7900 XT under Vulkan. Those measurements were deleted from the store on
+> 2026-08-26 when the fleet went V100-only (see [`results/archive/`](results/archive/)), so
+> **none of the numbers below can be reproduced from the current data set** and no V100 run has
+> re-crowned a winner yet. Kept because the deployment flags are what production still runs.
 
 **Gemma4-26B QAT q4_0 · KV q5_0 [no_think]** — fleet-suitability rank 1.
 
@@ -292,5 +248,9 @@ Deployed to production at `llm.local.xor0.de/v1` — see
 
 Key deployment flags: `-ngl 99 -fa on -b 2048 -ub 2048 --cache-type-k q5_0 --cache-type-v q5_0 --ctx-size 430080 -np 5 --no-mmproj --jinja --reasoning-format auto --swa-full`.
 
-> **MTP disabled.** Gemma4 MTP with quantized KV on Vulkan gives 0% draft acceptance
-> (Hadamard-rotation bug). See `results/gemma-mtp.md`.
+> **MTP was disabled for this deployment.** Gemma4 MTP with quantized KV on Vulkan gave 0% draft
+> acceptance (Hadamard-rotation bug). That finding is Vulkan-specific: on V100/CUDA the
+> `Gemma4-26B QAT UD-Q4_K_XL` entry now runs `spec-type: draft-mtp` with a pinned draft KV
+> quant and is measured with speculation on — the V100 evidence is the run log under
+> `results/bench-mtp-*.log` plus the `spec_decode` dimension in the store. (The old
+> `results/gemma-mtp.md` writeup this used to link is gone.)

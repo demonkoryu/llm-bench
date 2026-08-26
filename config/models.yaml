@@ -186,7 +186,11 @@ models:
    - hf_repo: unsloth/Qwen3.6-27B-GGUF
      hf_file: Qwen3.6-27B-IQ4_XS.gguf
      label: "Qwen3.6-27B IQ4_XS"
-     disabled: true   # parked 2026-06-23 (~33 tok/s on Vulkan — 5× slower than rest of fleet)
+     # Un-parked 2026-08-26. The park reason was "~33 tok/s on Vulkan — 5x slower than rest of
+     # fleet": a measurement on the RX 7900 XT, which is no longer in the fleet. GatedDeltaNet
+     # dense-hybrid was slow under the Vulkan backend specifically, so the figure says nothing
+     # about CUDA on V100 and cannot stand as a reason to skip the model. Re-park it if the
+     # V100 numbers reproduce the gap.
      family: qwen3.6
      type: moe   # GatedDeltaNet dense hybrid — dense but slow on Vulkan like Qwen3.5-27B
      think: optional
@@ -204,7 +208,9 @@ models:
    - hf_repo: unsloth/Qwen3.6-27B-GGUF
      hf_file: Qwen3.6-27B-UD-Q4_K_XL.gguf
      label: "Qwen3.6-27B UD-Q4_K_XL"
-     disabled: true   # parked 2026-06-08 (UD-Q4_K_XL too heavy: 19.9 GB at 102k q4_0 KV, no headroom for higher quants)
+     # Un-parked 2026-08-26. The park reason — "19.9 GB at 102k q4_0 KV, no headroom for higher
+     # quants" — was headroom against the single 20.5 GB RX 7900 XT. rose is now 2x V100 32 GB
+     # (64 GB total), so 19.9 GB is not a fit problem any more.
      family: qwen3.6
      type: moe
      think: optional
@@ -281,6 +287,8 @@ models:
    # → --kv-config kv_config.json) vs this uniform --kv-bits 4 — the OptiQ analog of the old RapidMLX
    # pflash A/B. Deferred; add a disabled `[kv-mixed]` variant when running it.
    - hf_repo: mlx-community/Qwen3.6-27B-OptiQ-4bit
+     disabled: true   # parked 2026-08-26: fleet is V100-only. The M1/OptiQ host is out of the
+                      # measured fleet, so this entry can no longer produce a comparable row.
      hf_file: Qwen3.6-27B-OptiQ-4bit
      engine: optiq
      mlx_model: mlx-community/Qwen3.6-27B-OptiQ-4bit
@@ -332,6 +340,8 @@ models:
    # probe_max_ctx/ctx_cap inherit the operator's LOCKED 1×64k deploy slot (2026-07-22, "128k is just
    # too slow") — not a fresh measurement. agent_ctx (run FIRST) re-measures coherence_ceiling.
    - hf_repo: mlx-community/Qwen3.8-27B-4bit
+     disabled: true   # parked 2026-08-26: fleet is V100-only. The M1/OptiQ host is out of the
+                      # measured fleet, so this entry can no longer produce a comparable row.
      hf_file: Qwen3.8-27B-4bit
      engine: optiq
      mlx_model: mlx-community/Qwen3.8-27B-4bit
@@ -379,6 +389,8 @@ models:
    # NO PUBLISHED NUMBERS: the card's Capability Score table is explicitly unfilled ("No numbers are
    # quoted until that run completes"), so there is nothing upstream to sanity-check our results against.
    - hf_repo: mlx-community/Qwen3.8-27B-OptiQ-4bit
+     disabled: true   # parked 2026-08-26: fleet is V100-only. The M1/OptiQ host is out of the
+                      # measured fleet, so this entry can no longer produce a comparable row.
      hf_file: Qwen3.8-27B-OptiQ-4bit
      engine: optiq
      mlx_model: mlx-community/Qwen3.8-27B-OptiQ-4bit
@@ -431,6 +443,8 @@ models:
    # pair is NOT bit-matched across generations, so OptiQ-vs-OptiQ alone would not isolate generation.
    # mlx_vlm caveat resolved: both 3.6-27B and 3.8-27B are VLMs and both serve text-only under mlx_lm.
    - hf_repo: mlx-community/Qwen3.6-27B-4bit
+     disabled: true   # parked 2026-08-26: fleet is V100-only. The M1/OptiQ host is out of the
+                      # measured fleet, so this entry can no longer produce a comparable row.
      hf_file: Qwen3.6-27B-4bit
      engine: optiq
      mlx_model: mlx-community/Qwen3.6-27B-4bit
@@ -492,8 +506,9 @@ models:
    # Dense 31B, hybrid think, native FC. IQ4_XS ≈ 16.5 GB → fits 20.5 GB card.
    # Same family/sampling/think mechanism as E4B/26B; no-mmproj for text-only.
    # DISABLED: dense 31B is ~10× slower prefill than the MoE 26B (31B active vs 4B active).
-   - disabled: true
-     hf_repo: unsloth/gemma-4-31B-it-GGUF
+   # Un-parked 2026-08-26 to fill V100 coverage. The park reason (dense 31B prefills ~10x slower
+   # than the MoE 26B) is architectural and still true — this entry is slow by design, not broken.
+   - hf_repo: unsloth/gemma-4-31B-it-GGUF
      hf_file: gemma-4-31B-it-IQ4_XS.gguf
      label: "Gemma4-31B IQ4_XS"
      family: gemma4
@@ -654,7 +669,7 @@ models:
    - hf_repo: LiquidAI/LFM2.5-8B-A1B-GGUF
      hf_file: LFM2.5-8B-A1B-Q5_K_M.gguf
      label: "LFM2.5-8B Q5_K_M"
-     disabled: true   # parked 2026-06-07 (user prune)
+     # Un-parked 2026-08-26: pruned 2026-06-07 to keep the Vulkan fleet small; re-measured on V100.
      family: lfm2.5
      type: dense
      think: reasoning
@@ -674,7 +689,7 @@ models:
    - hf_repo: unsloth/granite-4.0-h-tiny-GGUF
      hf_file: granite-4.0-h-tiny-Q5_K_M.gguf
      label: "Granite-4-H-Tiny Q5_K_M"
-     disabled: true   # parked 2026-06-07 (user prune)
+     # Un-parked 2026-08-26: pruned 2026-06-07 to keep the Vulkan fleet small; re-measured on V100.
      family: granite
      type: moe
      arch: mamba-hybrid          # 7B-A1B MoE with mamba layers (name carries no <n>B token)
@@ -693,7 +708,7 @@ models:
    - hf_repo: bartowski/nvidia_Nemotron-3-Nano-4B-GGUF
      hf_file: nvidia_Nemotron-3-Nano-4B-Q8_0.gguf
      label: "Nemotron-3-Nano-4B Q8_0"
-     disabled: true   # parked 2026-06-07 (user prune)
+     # Un-parked 2026-08-26: pruned 2026-06-07 to keep the Vulkan fleet small; re-measured on V100.
      family: nemotron3
      type: dense
      think: optional

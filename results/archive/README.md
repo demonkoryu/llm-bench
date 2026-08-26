@@ -46,3 +46,30 @@ which is outside the V100 fleet — so they cannot come back without a policy ch
 Deleted against raw `measurements`, not against `$LATEST`. Deleting only a live row promotes the
 superseded row beneath it, so history has to go with it; verified afterwards at 0 identity groups
 with more than one live row.
+
+## The retired-hardware artifacts (deleted from the tree, not archived here)
+
+Deleted 2026-08-26 when the fleet went V100-only. Unlike the row dumps above, these were
+git-tracked files, so `git log --diff-filter=D -- <path>` recovers them and copying them into
+this directory would only duplicate history.
+
+| removed | what it was |
+|---|---|
+| `results/tidy/host=rose/backend=vulkan/` | 16 parquet parts, the entire tidy export — every part was Vulkan |
+| `results/runs/*rx7900xt-vulkan-*/` | 34 run manifests from the RX 7900 XT |
+| 13 entries in `results/caps/capabilities.json` | `\|vulkan\|RX 7900 XT` context caps; 2 `\|cuda\|V100` entries remain |
+| `results/froggeric-template-ab.md`, `results/froggeric-ab-dashboard.html`, `results/ab-froggeric-manifest.tsv`, `ab-compare.mjs` | round 1 of the froggeric chat-template A/B — an end-to-end capability comparison generated on the RX 7900 XT, plus the script whose only input was that manifest |
+| `results/froggeric-template-ab-m1-optiq.md` | the M1/OptiQ arm of the same A/B |
+
+Round 2 of the template A/B (`results/froggeric-template-claims.md`, `results/template-claims.json`,
+`runners/template-claims.mjs`) is **kept**: it tests the template's claims by *rendering*
+(`/apply-template` + `/tokenize`) rather than generating, so its results were byte-identical across
+all four models and carry no hardware dependence. It also supersedes round 1's verdict, which is
+why removing round 1 costs no conclusion. `results/optiq-schema-outlines.md` is likewise kept
+despite the name — `shared/triage-prompt.mjs` cites it as the reason the triage schema encodes
+nullables as `anyOf[{enum},{null}]`, and that encoding is still live on CUDA.
+
+Config side: the four `engine: optiq` model entries are `disabled: true` rather than deleted, and
+the `m1` host block is annotated PARKED. `--target m1` now matches no model and exits 1. The
+entries carry a lot of measured provenance (bpw figures, the mlx_vlm text-only finding, the
+prefix-cache-nil caveat) that would be expensive to reconstruct if Apple silicon ever returns.
