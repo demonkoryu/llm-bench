@@ -1,95 +1,82 @@
 {
-  "Qwen3.6-35B-A3B-APEX-I-Compact.gguf|APEX-I-Compact|q4_0|vulkan|RX 7900 XT|∅": {
+  "Qwen3.6-35B-A3B-APEX-I-Compact.gguf|APEX-I-Compact|q4_0|vulkan|RX 7900 XT": {
     "gguf_file": "Qwen3.6-35B-A3B-APEX-I-Compact.gguf",
     "quant": "APEX-I-Compact",
     "kv_quant": "q4_0",
     "backend": "vulkan",
     "gpu": "RX 7900 XT",
-    "llamacpp_build": null,
     "native_max_ctx": 262144,
-    "ctx_ceiling": 131072,
-    "coherence_ceiling": 131072,
-    "oom_ceiling": 131072,
-    "kv_bytes_per_token": 10393.6,
-    "vram_at_ctx": 18678,
-    "measured_at": {
-      "micros": 1782202254988000
-    },
-    "source_run_id": "rose-rx7900xt-vulkan-20260623-143954"
+    "ctx_ceiling": 102400,
+    "coherence_ceiling": 102400,
+    "oom_ceiling": 102400,
+    "kv_bytes_per_token": 10551.652173913044,
+    "vram_at_ctx": 18408,
+    "measured_at": "2026-07-10T12:30:39.046Z",
+    "source_run_id": "rx7900xt-vulkan-20260710-113213-benchrun",
+    "llamacpp_build": "9945 (82fce65d8)"
   },
-  "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf|Q4_K_XL|q4_0|vulkan|RX 7900 XT|∅": {
+  "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf|Q4_K_XL|q4_0|vulkan|RX 7900 XT": {
     "gguf_file": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf",
     "quant": "Q4_K_XL",
     "kv_quant": "q4_0",
     "backend": "vulkan",
     "gpu": "RX 7900 XT",
-    "llamacpp_build": null,
     "native_max_ctx": 131072,
     "ctx_ceiling": 131072,
     "coherence_ceiling": 131072,
     "oom_ceiling": 131072,
     "kv_bytes_per_token": 13952,
     "vram_at_ctx": 16587,
-    "measured_at": {
-      "micros": 1782203697197000
-    },
+    "measured_at": "2026-06-23T08:34:57.197000Z",
     "source_run_id": "rose-rx7900xt-vulkan-20260623-143954"
   },
-  "gemma-4-26B-A4B-it-UD-Q4_K_M.gguf|Q4_K_M|q4_0|vulkan|RX 7900 XT|∅": {
+  "gemma-4-26B-A4B-it-UD-Q4_K_M.gguf|Q4_K_M|q4_0|vulkan|RX 7900 XT": {
     "gguf_file": "gemma-4-26B-A4B-it-UD-Q4_K_M.gguf",
     "quant": "Q4_K_M",
     "kv_quant": "q4_0",
     "backend": "vulkan",
     "gpu": "RX 7900 XT",
-    "llamacpp_build": null,
     "native_max_ctx": 131072,
     "ctx_ceiling": 102400,
     "coherence_ceiling": 102400,
     "oom_ceiling": 102400,
     "kv_bytes_per_token": 13946.88,
     "vram_at_ctx": 18779,
-    "measured_at": {
-      "micros": 1782202785452000
-    },
+    "measured_at": "2026-06-23T08:19:45.452000Z",
     "source_run_id": "rose-rx7900xt-vulkan-20260623-143954"
   },
-  "Qwen3.6-35B-A3B-UD-IQ4_XS.gguf|IQ4_XS|q4_0|vulkan|RX 7900 XT|∅": {
+  "Qwen3.6-35B-A3B-UD-IQ4_XS.gguf|IQ4_XS|q4_0|vulkan|RX 7900 XT": {
     "gguf_file": "Qwen3.6-35B-A3B-UD-IQ4_XS.gguf",
     "quant": "IQ4_XS",
     "kv_quant": "q4_0",
     "backend": "vulkan",
     "gpu": "RX 7900 XT",
-    "llamacpp_build": null,
     "native_max_ctx": 262144,
     "ctx_ceiling": 102400,
     "coherence_ceiling": 102400,
-    "oom_ceiling": 131072,
-    "kv_bytes_per_token": 12822.528,
+    "oom_ceiling": 102400,
+    "kv_bytes_per_token": 12833.391304347826,
     "vram_at_ctx": 19863,
-    "measured_at": {
-      "micros": 1782201787519000
-    },
-    "source_run_id": "rose-rx7900xt-vulkan-20260623-143954"
+    "measured_at": "2026-07-10T12:21:56.656Z",
+    "source_run_id": "rx7900xt-vulkan-20260710-113213-benchrun",
+    "llamacpp_build": "9945 (82fce65d8)"
   },
-  "gemma-4-26B_q4_0-it.gguf|q4_0|q4_0|vulkan|RX 7900 XT|∅": {
+  "gemma-4-26B_q4_0-it.gguf|q4_0|q4_0|vulkan|RX 7900 XT": {
     "gguf_file": "gemma-4-26B_q4_0-it.gguf",
     "quant": "q4_0",
     "kv_quant": "q4_0",
     "backend": "vulkan",
     "gpu": "RX 7900 XT",
-    "llamacpp_build": null,
     "native_max_ctx": 131072,
     "ctx_ceiling": 102400,
     "coherence_ceiling": 102400,
     "oom_ceiling": 102400,
     "kv_bytes_per_token": 13957.12,
     "vram_at_ctx": 16387,
-    "measured_at": {
-      "micros": 1782203169953000
-    },
+    "measured_at": "2026-06-23T08:26:09.953000Z",
     "source_run_id": "rose-rx7900xt-vulkan-20260623-143954"
   },
-  "Qwen3.6-35B-A3B-UD-IQ4_XS.gguf|IQ4_XS|q5_0|vulkan|RX 7900 XT|9945 (82fce65d8)": {
+  "Qwen3.6-35B-A3B-UD-IQ4_XS.gguf|IQ4_XS|q5_0|vulkan|RX 7900 XT": {
     "gguf_file": "Qwen3.6-35B-A3B-UD-IQ4_XS.gguf",
     "quant": "IQ4_XS",
     "kv_quant": "q5_0",
@@ -105,7 +92,7 @@
     "coherence_ceiling": 102400,
     "native_max_ctx": 262144
   },
-  "Qwen3.6-27B-IQ4_XS.gguf|IQ4_XS|q5_0|vulkan|RX 7900 XT|9945 (82fce65d8)": {
+  "Qwen3.6-27B-IQ4_XS.gguf|IQ4_XS|q5_0|vulkan|RX 7900 XT": {
     "gguf_file": "Qwen3.6-27B-IQ4_XS.gguf",
     "quant": "IQ4_XS",
     "kv_quant": "q5_0",
@@ -121,7 +108,7 @@
     "measured_at": "2026-07-10T04:45:04.979Z",
     "kv_bytes_per_token": 31392
   },
-  "Qwen3.6-27B-UD-Q4_K_XL.gguf|Q4_K_XL|q5_0|vulkan|RX 7900 XT|9945 (82fce65d8)": {
+  "Qwen3.6-27B-UD-Q4_K_XL.gguf|Q4_K_XL|q5_0|vulkan|RX 7900 XT": {
     "gguf_file": "Qwen3.6-27B-UD-Q4_K_XL.gguf",
     "quant": "Q4_K_XL",
     "kv_quant": "q5_0",
@@ -137,7 +124,7 @@
     "measured_at": "2026-07-10T05:16:17.148Z",
     "kv_bytes_per_token": 31392
   },
-  "Qwen3.6-35B-A3B-APEX-I-Compact.gguf|APEX-I-Compact|q5_0|vulkan|RX 7900 XT|9945 (82fce65d8)": {
+  "Qwen3.6-35B-A3B-APEX-I-Compact.gguf|APEX-I-Compact|q5_0|vulkan|RX 7900 XT": {
     "gguf_file": "Qwen3.6-35B-A3B-APEX-I-Compact.gguf",
     "quant": "APEX-I-Compact",
     "kv_quant": "q5_0",
@@ -153,7 +140,7 @@
     "measured_at": "2026-07-10T05:38:13.509Z",
     "kv_bytes_per_token": 13152
   },
-  "Qwen3.6-27B-IQ4_XS.gguf|IQ4_XS|q4_0|vulkan|RX 7900 XT|9945 (82fce65d8)": {
+  "Qwen3.6-27B-IQ4_XS.gguf|IQ4_XS|q4_0|vulkan|RX 7900 XT": {
     "gguf_file": "Qwen3.6-27B-IQ4_XS.gguf",
     "quant": "IQ4_XS",
     "kv_quant": "q4_0",
@@ -169,7 +156,7 @@
     "measured_at": "2026-07-10T11:43:43.706Z",
     "kv_bytes_per_token": 24197.565217391304
   },
-  "Qwen3.6-27B-UD-Q4_K_XL.gguf|Q4_K_XL|q4_0|vulkan|RX 7900 XT|9945 (82fce65d8)": {
+  "Qwen3.6-27B-UD-Q4_K_XL.gguf|Q4_K_XL|q4_0|vulkan|RX 7900 XT": {
     "gguf_file": "Qwen3.6-27B-UD-Q4_K_XL.gguf",
     "quant": "Q4_K_XL",
     "kv_quant": "q4_0",
@@ -185,39 +172,7 @@
     "measured_at": "2026-07-10T12:08:32.355Z",
     "kv_bytes_per_token": 24230.956521739132
   },
-  "Qwen3.6-35B-A3B-UD-IQ4_XS.gguf|IQ4_XS|q4_0|vulkan|RX 7900 XT|9945 (82fce65d8)": {
-    "gguf_file": "Qwen3.6-35B-A3B-UD-IQ4_XS.gguf",
-    "quant": "IQ4_XS",
-    "kv_quant": "q4_0",
-    "backend": "vulkan",
-    "gpu": "RX 7900 XT",
-    "llamacpp_build": "9945 (82fce65d8)",
-    "ctx_ceiling": 102400,
-    "oom_ceiling": 102400,
-    "coherence_ceiling": 102400,
-    "vram_at_ctx": 19863,
-    "native_max_ctx": 262144,
-    "source_run_id": "rx7900xt-vulkan-20260710-113213-benchrun",
-    "measured_at": "2026-07-10T12:21:56.656Z",
-    "kv_bytes_per_token": 12833.391304347826
-  },
-  "Qwen3.6-35B-A3B-APEX-I-Compact.gguf|APEX-I-Compact|q4_0|vulkan|RX 7900 XT|9945 (82fce65d8)": {
-    "gguf_file": "Qwen3.6-35B-A3B-APEX-I-Compact.gguf",
-    "quant": "APEX-I-Compact",
-    "kv_quant": "q4_0",
-    "backend": "vulkan",
-    "gpu": "RX 7900 XT",
-    "llamacpp_build": "9945 (82fce65d8)",
-    "ctx_ceiling": 102400,
-    "oom_ceiling": 102400,
-    "coherence_ceiling": 102400,
-    "vram_at_ctx": 18408,
-    "native_max_ctx": 262144,
-    "source_run_id": "rx7900xt-vulkan-20260710-113213-benchrun",
-    "measured_at": "2026-07-10T12:30:39.046Z",
-    "kv_bytes_per_token": 10551.652173913044
-  },
-  "gemma-4-31B_q4_0-it.gguf|q4_0|q4_0|vulkan|RX 7900 XT|10050 (b15ca938a)": {
+  "gemma-4-31B_q4_0-it.gguf|q4_0|q4_0|vulkan|RX 7900 XT": {
     "gguf_file": "gemma-4-31B_q4_0-it.gguf",
     "quant": "q4_0",
     "kv_quant": "q4_0",
@@ -232,7 +187,7 @@
     "source_run_id": "rx7900xt-vulkan-20260716-153300-benchrun",
     "measured_at": "2026-07-16T16:08:54.961Z"
   },
-  "gemma-4-31B_q4_0-it.gguf|q4_0|q5_0|vulkan|RX 7900 XT|10050 (b15ca938a)": {
+  "gemma-4-31B_q4_0-it.gguf|q4_0|q5_0|vulkan|RX 7900 XT": {
     "gguf_file": "gemma-4-31B_q4_0-it.gguf",
     "quant": "q4_0",
     "kv_quant": "q5_0",
@@ -247,7 +202,7 @@
     "source_run_id": "rx7900xt-vulkan-20260716-161359-benchrun",
     "measured_at": "2026-07-16T16:50:31.702Z"
   },
-  "Qwen3.8-27B-UD-Q6_K.gguf|Q6_K|q8_0|cuda|V100|0.2.0-dev (f280b2698)": {
+  "Qwen3.8-27B-UD-Q6_K.gguf|Q6_K|q8_0|cuda|V100": {
     "gguf_file": "Qwen3.8-27B-UD-Q6_K.gguf",
     "quant": "Q6_K",
     "kv_quant": "q8_0",
@@ -259,7 +214,7 @@
     "source_run_id": "v100-cuda-20260825-110517-benchrun",
     "measured_at": "2026-08-25T11:05:46.622Z"
   },
-  "Qwen3.8-27B-UD-Q6_K.gguf|Q6_K|k8v4|cuda|V100|0.2.0-dev (f280b2698)": {
+  "Qwen3.8-27B-UD-Q6_K.gguf|Q6_K|k8v4|cuda|V100": {
     "gguf_file": "Qwen3.8-27B-UD-Q6_K.gguf",
     "quant": "Q6_K",
     "kv_quant": "k8v4",

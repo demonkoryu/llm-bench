@@ -2,9 +2,17 @@
 // ceilings, KV footprint, VRAM) so the orchestrator doesn't re-probe them every run.
 //
 // Keyed by the tuple those facts actually depend on:
-//   (gguf_file, quant, kv_quant, backend, gpu, llamacpp_build)
-// llamacpp_build is in the key on purpose: a silent llama.cpp upgrade (e.g. 9780→9945)
-// changes RoPE/ctx behavior, so it misses the cache and forces a clean re-probe.
+//   (gguf_file, quant, kv_quant, backend, gpu)
+//
+// llamacpp_build was in this key until 2026-08-26, on the reasoning that a silent llama.cpp
+// upgrade changes RoPE/ctx behavior and should force a clean re-probe. In practice that made
+// EVERY ceiling expire on every build bump, silently: `maxctx` falls back
+// `coherence_ceiling → ctx_cap → --ctx`, so a model with no ctx_cap quietly dropped to the 16384
+// default and its depth probes then measured one depth instead of a curve, with nothing flagging it.
+// Measured on 2026-08-26: zero configs on the then-current V100 build had a usable ceiling, while
+// twelve hard-won Vulkan ceilings sat in the cache unreachable. A cache that always misses is not a
+// conservative cache, it is an absent one. The build is still RECORDED on each entry as provenance
+// (`llamacpp_build`), so a stale ceiling is auditable — it just no longer partitions the key.
 //
 // Small keyed store → a single JSON file (results/caps/capabilities.json), which is
 // git-diffable and trivial to upsert; the big measurement store is Postgres (pg-store.mjs).
@@ -17,8 +25,27 @@ import { query } from './pg-store.mjs';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const capsPath = (resultsDir) => join(resultsDir, 'caps', 'capabilities.json');
 
-export function capKey({ gguf_file, quant, kv_quant, backend, gpu, llamacpp_build }) {
-   return [gguf_file, quant, kv_quant, backend, gpu, llamacpp_build].map((x) => x ?? '∅').join('|');
+// Postgres timestamps arrive from the driver as `{ micros }`, not a string. Writing that straight
+// into the JSON cache produced 5 entries whose `measured_at` was an object — unusable for ordering,
+// and truthy, so it silently defeated the `?? new Date().toISOString()` fallback in upsertCap.
+function isoTs(v) {
+   if (v == null) {
+      return null;
+   }
+   if (typeof v === 'string') {
+      return v;
+   }
+   if (typeof v === 'object' && typeof v.micros === 'number') {
+      return new Date(v.micros / 1000).toISOString();
+   }
+   if (v instanceof Date) {
+      return v.toISOString();
+   }
+   return null;
+}
+
+export function capKey({ gguf_file, quant, kv_quant, backend, gpu }) {
+   return [gguf_file, quant, kv_quant, backend, gpu].map((x) => x ?? '∅').join('|');
 }
 function load(resultsDir) {
    const p = capsPath(resultsDir);
@@ -46,16 +73,19 @@ export function readCap(resultsDir, keyFields) {
 export function upsertCap(resultsDir, keyFields, values) {
    const all = load(resultsDir);
    const k = capKey(keyFields);
-   all[k] = { ...keyFields, ...(all[k] ?? {}), ...values, measured_at: values.measured_at ?? new Date().toISOString() };
+   // Existing entry FIRST so this run's keyFields win. That order matters now that llamacpp_build
+   // is provenance rather than part of the key: with the old ordering a stale entry's build would
+   // overwrite the current one and the recorded provenance would never advance.
+   all[k] = { ...(all[k] ?? {}), ...keyFields, ...values, measured_at: isoTs(values.measured_at) ?? new Date().toISOString() };
    save(resultsDir, all);
    return all[k];
 }
 
 /**
  * Seed the cache from the measurement store (Postgres): derive ceilings from `agent_ctx` rows and
- * KV footprint from `kv_per_tok` rows, per config key. Historical rows carry
- * llamacpp_build=null, so these entries won't satisfy a fresh run on a newer build — they
- * document what WAS measured and force one honest re-probe under the new build.
+ * KV footprint from `kv_per_tok` rows, per config key. `llamacpp_build` is recorded on the entry
+ * but is NOT part of the key (see header), so a ceiling measured under an older build does satisfy
+ * a run on a newer one; check the entry's build if a ceiling looks wrong for the current binary.
  *
  * agent_ctx measures a shared multi-agent KV pool, so the single-slot ceiling used by the
  * depth probes is taken as its verified planner_ctx; total_ctx / vram document the pool.
@@ -102,7 +132,7 @@ export async function seedFromTidy(resultsDir = join(ROOT, 'results')) {
          oom_ceiling: r.oom_ceiling ?? null,
          kv_bytes_per_token: kvByKey.get(capKey(r)) != null ? kvByKey.get(capKey(r)) * 1024 : null,
          vram_at_ctx: r.vram_at_ctx ?? null,
-         measured_at: r.measured_at ?? null,
+         measured_at: isoTs(r.measured_at),
          source_run_id: r.source_run_id ?? null,
       });
       n++;

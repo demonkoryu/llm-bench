@@ -634,6 +634,11 @@ models:
      think_control: enable_thinking
      tools: true
      native_max_ctx: 131072
+     ctx_cap: 131072   # measured 2026-08-26 on V100/cuda: agent_ctx planner coherent at 128k, serves at 131072.
+                       # Pinned as the durable fallback — the caps cache is keyed on backend+gpu, so a new host
+                       # misses it and maxctx would otherwise drop to the --ctx default (that is how this model
+                       # was previously measured at a single depth). fit_ctx says 262144 but that is a memory-fit
+                       # bound only, not architecture-aware, so it is NOT the usable window.
      kv_bytes_per_token: 16384
      extra_flags:
         "no-mmproj": true   # repo ships mmproj-*.gguf — skip it (text-only)
