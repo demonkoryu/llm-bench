@@ -231,6 +231,12 @@ const IDENTITY_KEY = [
 // the hash landed would keep BOTH rows. Audited: 0 such groups exist. Self-healing too, since resume
 // keys on the same column and re-measures the legacy combo rather than skipping it.
 
+// Latest-wins is a RESTORED policy, not a new one. `shared/results-csv.mjs` enforced it explicitly
+// ("Newest row wins: a re-run supersedes the prior value for the same model/think/bench, regardless of
+// whether it's higher or lower") until commit 53d7540 purged the legacy CSV path; the Postgres-native
+// replacement never carried it over, and re-runs silently went from superseding to averaging. Do not
+// delete this projection without putting the policy somewhere else first.
+//
 // Latest-wins projection of `measurements`. The table is append-only with no PK, so re-measuring a
 // config INSERTS a second row instead of replacing the first, and every consumer that aggregates
 // (the dashboard's scoring average, caps-cache's avg/max) silently folded the stale value into the
