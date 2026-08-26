@@ -64,7 +64,11 @@ export const bench = {
       await srv.killAll();
       await srv.waitVramClear(30000);
       await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx, extraFlags: extraFlagsToString(model.extra_flags) });
-      await srv.waitHealthy(360000);
+      // 600s, not 360s: this must cover a first-run HF download (startServer documents the same
+      // allowance). At 360s an uncached GGUF times out mid-download and the probe returns zero
+      // rows with exit=0 — which is how gemma-4-26B-A4B-it-qat silently produced no data on
+      // 2026-08-26 and was nearly misdiagnosed as a VRAM ceiling.
+      await srv.waitHealthy(600000);
       let nonce = 0;
       const rows = [];
       for (const d of DEPTHS.filter((x) => x + GEN + 512 < ctx)) {

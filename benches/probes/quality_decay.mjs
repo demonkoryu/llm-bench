@@ -38,7 +38,11 @@ export const bench = {
       await srv.killAll();
       await srv.waitVramClear(30000);
       await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx, extraFlags: extraFlagsToString(model.extra_flags) });
-      await srv.waitHealthy(360000);
+      // 600s, not 360s: this must cover a first-run HF download (startServer documents the same
+      // allowance). At 360s an uncached GGUF times out mid-download and the probe returns zero
+      // rows with exit=0 — which is how gemma-4-26B-A4B-it-qat silently produced no data on
+      // 2026-08-26 and was nearly misdiagnosed as a VRAM ceiling.
+      await srv.waitHealthy(600000);
       const depths = [0, ...DEPTHS.filter((d) => d + 512 < ctx)];
       // Whichever think mechanism the model declares. Hardcoding `enable_thinking` here made this
       // probe silently unmeasurable on any engine that rejects it: ninfer 400s that field, every
@@ -56,12 +60,24 @@ export const bench = {
             // `content` directly rather than after a trace that eats the 64-token budget.
             // This is a request, not a guarantee: a model with no toggle (think:'reasoning' /
             // 'required') reasons anyway, and applyThinkControl on such a model is a proven no-op.
-            // The probe survives that because answersWith() below grades content AND
-            // reasoning_content together, so an answer reached inside a truncated trace still
-            // scores — verified on Muse-Glimmer-30B (rose, 2026-08-26), which scores
-            // quality_decay-0k = 100 with no toggle at all. Do NOT "fix" this by sizing the budget
-            // off reasons(): reasons(model, false) is false by construction, so it cannot see this
-            // case, and a bigger budget would change what every existing row measured.
+            // answersWith() below grades content AND reasoning_content together so that an answer
+            // reached inside a truncated trace still scores.
+            //
+            // KNOWN LIMITATION for always-reasoning models: that grading is not enough, because
+            // 64 tokens can run out BEFORE the answer appears anywhere. Measured on
+            // Muse-Glimmer-30B (rose, 2026-08-26): it opens its trace by echoing the prompt, so
+            // whether the value fits in 64 tokens depends on how long the echoed preamble happens
+            // to be at that depth. At depth 16k the trace reaches only "FLOW" and scores 0/3
+            // (reproduced in two independent runs); at 32k the echo is shorter, reaches
+            // "FLOW_RETRY_LIMIT_4 = 88" and scores 100. Given max_tokens 2048 it answers CORRECTLY
+            // at both depths. So a 0 here can mean "budget too small", not "lost the needle", and
+            // the result is non-monotonic in depth for such models.
+            //
+            // Deliberately NOT fixed by widening the budget: max_tokens is part of what every
+            // stored quality_decay row measured, so changing it silently makes old and new rows
+            // incomparable. It also cannot be keyed off reasons(model, false), which is false by
+            // construction and so blind to this case. Fixing it properly means re-measuring the
+            // whole quality_decay family under one budget.
             try {
                res = await client.chat(built.messages, { think: false, thinkControl, max_tokens: 64, temperature: 0.0 }, 900000);
             } catch (e) {
