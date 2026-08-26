@@ -255,29 +255,56 @@ async function runLlamacpp({ srv, client, model, caps, vramTotalMib }) {
       return shaped({ servable: fits, vram_mib: mem.vram, gtt_mib: mem.gtt, coherent_slots: coherent });
    };
 
-   // ── Phase 2: bidirectional boundary search over the coder COUNT (load-only footprint gate) ──
-   // Descend from the estimate until a plan FITS (VRAM+GTT ≤ card), then ascend (+1 coder) while
-   // it still fits. Load-only (no fill) suffices because the KV is preallocated at load, so the
-   // idle footprint is the deterministic gate — each rung is just a fast load.
+   // ── Phase 2: bisecting boundary search over the coder COUNT (load-only footprint gate) ──────
+   // "Does this pool fit" is monotonic in the coder count, and nCodersEst is an analytic upper
+   // bound, so bisect [0, est] instead of walking. Load-only (no fill) suffices because the KV is
+   // preallocated at load, so the idle footprint is the deterministic gate — each rung is a load.
+   //
+   // This used to step k -= 1 down from the estimate, which made MAX_LOADS bound REACHABILITY
+   // rather than precision: an estimate overshooting by more than the budget could never reach the
+   // boundary, so the loop fell through and the probe returned `fail("no VRAM-resident plan")` — a
+   // measurement failure indistinguishable from a real capacity verdict. Measured on
+   // gemma-4-26B-A4B-it-qat (2026-08-26): estimated 73 coders, still failing at 66 after eight
+   // rungs at ~6min each, budget exhausted with nothing recorded. Bisection pins the boundary
+   // EXACTLY within 9 loads for any estimate up to 192 (verified by simulation over the whole
+   // range), so a coarse estimate now costs precision at worst, never the measurement.
    let best = null;
    let loads = 0;
-   let k = nCodersEst;
-   while (k >= 0 && loads < MAX_LOADS) {
-      const r = await loadAndCheck(k, { fill: false });
+   let lo = -1; // largest coder count known to fit (-1 = none yet)
+   let hi = null; // smallest coder count known to exceed VRAM
+
+   const probe = async (n) => {
+      const r = await loadAndCheck(n, { fill: false });
       loads++;
       if (r.servable) {
+         lo = n;
          best = r;
-         break;
+      } else if (hi === null || n < hi) {
+         hi = n;
       }
-      k -= 1; // footprint exceeds VRAM → drop one coder
+      return r.servable;
+   };
+
+   if (await probe(nCodersEst)) {
+      // The estimate itself fits, so the true boundary is ABOVE it (the estimate was conservative).
+      // Gallop up by doubling to find a count that fails, which gives bisection its upper bound.
+      let up = 1;
+      while (loads < MAX_LOADS) {
+         if (!(await probe(lo + up))) {
+            break;
+         }
+         up *= 2;
+      }
    }
-   while (best && loads < MAX_LOADS) {
-      const r = await loadAndCheck(best.n_coders + 1, { fill: false });
-      loads++;
-      if (!r.servable) {
-         break; // one more coder exceeds VRAM → the last fitting plan is the answer
-      }
-      best = r;
+   while (hi !== null && hi - lo > 1 && loads < MAX_LOADS) {
+      await probe(Math.floor((lo + hi) / 2));
+   }
+   // Spending the whole budget without closing the bracket is a real outcome, not an error: the
+   // answer is then a LOWER bound. Say so rather than letting it read as an exact ceiling.
+   if (best && hi !== null && hi - best.n_coders > 1) {
+      console.log(
+         `  [agent_ctx] boundary not pinned in ${MAX_LOADS} loads: ${best.n_coders} fits, ${hi} does not — reporting ${best.n_coders} as a LOWER bound (true ceiling is between ${best.n_coders} and ${hi - 1})`,
+      );
    }
 
    // ── Phase 3: verify the winning plan WITH a concurrent fill (coherence) ────────────────────

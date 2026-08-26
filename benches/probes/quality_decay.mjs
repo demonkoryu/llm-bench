@@ -53,29 +53,30 @@ export const bench = {
             const built = makeFillPrompt(Math.max(d, 256));
             let res;
             // Needle retrieval, not reasoning → ask for thinking off so the answer lands in
-            // `content` directly rather than after a trace that eats the 64-token budget.
-            // This is a request, not a guarantee: a model with no toggle (think:'reasoning' /
-            // 'required') reasons anyway, and applyThinkControl on such a model is a proven no-op.
-            // answersWith() below grades content AND reasoning_content together so that an answer
-            // reached inside a truncated trace still scores.
+            // `content` directly rather than after a reasoning trace. This is a request, not a
+            // guarantee: a model with no toggle (think:'reasoning' / 'required') reasons anyway, and
+            // applyThinkControl on such a model is a proven no-op. answersWith() below therefore
+            // grades content AND reasoning_content together, so an answer reached inside a trace
+            // still scores.
             //
-            // KNOWN LIMITATION for always-reasoning models: that grading is not enough, because
-            // 64 tokens can run out BEFORE the answer appears anywhere. Measured on
-            // Muse-Glimmer-30B (rose, 2026-08-26): it opens its trace by echoing the prompt, so
-            // whether the value fits in 64 tokens depends on how long the echoed preamble happens
-            // to be at that depth. At depth 16k the trace reaches only "FLOW" and scores 0/3
-            // (reproduced in two independent runs); at 32k the echo is shorter, reaches
-            // "FLOW_RETRY_LIMIT_4 = 88" and scores 100. Given max_tokens 2048 it answers CORRECTLY
-            // at both depths. So a 0 here can mean "budget too small", not "lost the needle", and
-            // the result is non-monotonic in depth for such models.
+            // max_tokens is 8192 rather than a snug budget because a snug one does not measure
+            // retention, it measures trace length. Established on Muse-Glimmer-30B (rose,
+            // 2026-08-26) under the previous budget of 64: Muse opens its trace by echoing the
+            // prompt, so whether the value fits depended on how long the echoed preamble happened
+            // to be at that depth — at 16k the trace reached only "FLOW" and scored 0/3 (two
+            // independent runs), while at 32k the shorter echo reached "FLOW_RETRY_LIMIT_4 = 88"
+            // and scored 100. Given room it answered correctly at both. A too-small budget thus
+            // produces a 0 that reads as "lost the needle" and a curve that is non-monotonic in
+            // depth, and it cannot be keyed off reasons(model, false), which is false by
+            // construction and so blind to the case. 8192 is deliberately generous: the answer is
+            // one integer, so the budget exists only to let a trace finish, and overshooting costs
+            // nothing beyond time on the models that actually need it.
             //
-            // Deliberately NOT fixed by widening the budget: max_tokens is part of what every
-            // stored quality_decay row measured, so changing it silently makes old and new rows
-            // incomparable. It also cannot be keyed off reasons(model, false), which is false by
-            // construction and so blind to this case. Fixing it properly means re-measuring the
-            // whole quality_decay family under one budget.
+            // Widening this made every quality_decay row measured under max_tokens 64 incomparable
+            // with rows measured after it. Those rows are gone: the store was reset to V100-only
+            // measurements on 2026-08-26 and the family re-measured under this budget.
             try {
-               res = await client.chat(built.messages, { think: false, thinkControl, max_tokens: 64, temperature: 0.0 }, 900000);
+               res = await client.chat(built.messages, { think: false, thinkControl, max_tokens: 8192, temperature: 0.0 }, 900000);
             } catch (e) {
                lastErr = e;
                continue;
