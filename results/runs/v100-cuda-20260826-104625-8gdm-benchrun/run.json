@@ -1,0 +1,19 @@
+{
+  "run_id": "v100-cuda-20260826-104625-8gdm-benchrun",
+  "kind": "benchrun",
+  "host": "rose",
+  "gpu": "V100",
+  "backend": "cuda",
+  "llamacpp_build": "0.2.0-dev (f280b2698)",
+  "engine_version": "0.2.0-dev (f280b2698)",
+  "chat_template": "builtin",
+  "resume": false,
+  "benches": [
+    "throughput"
+  ],
+  "samples": 1,
+  "ctx": 102400,
+  "tidy_rows": 24,
+  "started": "2026-08-26T10:49:49.681Z",
+  "status": "complete"
+}
