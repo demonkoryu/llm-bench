@@ -36,6 +36,13 @@ import { createClient } from '../shared/llm/index.mjs';
 // the download budget again; six of them had already settled on an inconsistent 360s.
 export const LOAD_TIMEOUT_MS = 600_000;
 
+// For a RELOAD of a model this run has already served — the GGUF is on disk by definition, so no
+// download allowance is warranted and waiting the full LOAD_TIMEOUT_MS just makes failure slow.
+// This matters where a probe deliberately loads until it fails: agent_ctx steps a slot-count ladder
+// down until a rung serves, and rungs that fail by health timeout rather than crash pay this in
+// full on every attempt.
+export const RELOAD_TIMEOUT_MS = 360_000;
+
 export function extraFlagsToString(flags) {
    if (!flags) {
       return '';

@@ -24,7 +24,7 @@
 // Supersedes the old single-slot maxctx ladder and feeds the fleet score (analysis/score.mjs)
 // with the EMPIRICAL slot count instead of a VRAM formula.
 
-import { extraFlagsToString, LOAD_TIMEOUT_MS } from '../../runners/llamacpp-server.mjs';
+import { extraFlagsToString, LOAD_TIMEOUT_MS, RELOAD_TIMEOUT_MS } from '../../runners/llamacpp-server.mjs';
 import { makeFillPrompt } from '../../shared/codebase.mjs';
 import { runMlx } from './agent_ctx_mlx.mjs';
 
@@ -225,7 +225,8 @@ async function runLlamacpp({ srv, client, model, caps, vramTotalMib }) {
       await srv.waitVramClear(30_000);
       try {
          await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx: T, extraFlags: probeExtraFlags(model, nSlots) });
-         await srv.waitHealthy(LOAD_TIMEOUT_MS);
+         // Reload: the planner load above already pulled this GGUF. See RELOAD_TIMEOUT_MS.
+         await srv.waitHealthy(RELOAD_TIMEOUT_MS);
       } catch {
          const crashed = await srv.hasCrashed();
          console.log(
