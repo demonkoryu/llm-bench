@@ -25,7 +25,15 @@ import { BENCHES } from '../benches/index.mjs';
 import { LOCAL_HOST, runHostCmd } from '../shared/host-exec.mjs';
 import { probeHostBuild } from '../shared/host-probe.mjs';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
-import { resolveSampling, samplingHash, validateSamplingMatrix } from '../shared/llm/index.mjs';
+import {
+   capabilityClass,
+   reasons,
+   resolveSampling,
+   samplingHash,
+   thinkModeFor,
+   thinkStates,
+   validateSamplingMatrix,
+} from '../shared/llm/index.mjs';
 import { deriveSubjectDims, loadModelsConfig } from '../shared/models-config.mjs';
 import { metricRowsFromResult } from '../shared/tidy-schema.mjs';
 import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
@@ -87,17 +95,33 @@ async function ssh(cmd) {
    return r.stdout;
 }
 
+// The think states to RUN for a model, from the one shared implementation. This used to be a
+// second, divergent copy (it mapped think:'reasoning' to [true] where shared/llm/think.mjs maps it
+// to [null]) — see thinkStates() there for why [null] is the correct thing to send and
+// thinkModeFor() for where the [true]'s real meaning went.
+//
+// The --think filter now selects on reasons() rather than `x === true`, which is the same question
+// asked of the model instead of of the raw toggle. Identical for hybrids (false→no, true→yes); the
+// difference is that a model with no toggle is no longer silently dropped from --think think.
 function thinkStatesFor(model) {
-   let s = model.think === 'optional' ? [false, true] : model.think === 'required' || model.think === 'reasoning' ? [true] : [null];
+   const all = thinkStates(capabilityClass(model));
+   let s = all;
    if (flags.think === 'no_think') {
-      s = s.filter((x) => x !== true);
+      s = all.filter((t) => !reasons(model, t));
    }
    if (flags.think === 'think') {
-      s = s.filter((x) => x === true);
+      s = all.filter((t) => reasons(model, t));
    }
+   // A class with no state matching the filter still runs, as before, rather than vanishing from a
+   // targeted run; thinkModeFor() then labels it by what the model actually did.
    return s.length ? s : [null];
 }
-const thinkModeOf = (s) => (s === true ? 'think' : 'no_think');
+// One representative state for a thinkDependent:false bench — these emit a single row per config
+// (think_mode 'n/a'), so they need one state, not the matrix. Previously hardcoded as
+// `[m.think === 'optional' ? false : null]`, which ignored capability class; thinkStates()[0] is
+// identical for every class in models.yaml today (optional→false, none/reasoning→null) and derives
+// it instead of restating it.
+const soleThinkStateFor = (model) => thinkStates(capabilityClass(model))[0] ?? null;
 
 // Aggregate N sample rawRows → one rawRow with means, n, and per-primary spread.
 function aggregate(rawRows) {
@@ -382,8 +406,8 @@ async function main() {
          const anyNeeded = wantBenches.some((b) =>
             BENCHES[b].kind === 'probe'
                ? need(BENCHES[b].resumeBench ?? b, 'n/a', null)
-               : (BENCHES[b].thinkDependent ? thinkStatesFor(m) : [m.think === 'optional' ? false : null]).some((t) =>
-                    need(b, BENCHES[b].thinkDependent ? thinkModeOf(t) : 'n/a', hashFor(t, b)),
+               : (BENCHES[b].thinkDependent ? thinkStatesFor(m) : [soleThinkStateFor(m)]).some((t) =>
+                    need(b, BENCHES[b].thinkDependent ? thinkModeFor(m, t) : 'n/a', hashFor(t, b)),
                  ),
          );
          if (!anyNeeded) {
@@ -417,9 +441,9 @@ async function main() {
          // Regular (client-prompt) benches first — they use the server loaded above.
          for (const benchName of wantBenches.filter((b) => BENCHES[b].kind !== 'probe')) {
             const bench = BENCHES[benchName];
-            const states = bench.thinkDependent ? thinkStatesFor(m) : [m.think === 'optional' ? false : null];
+            const states = bench.thinkDependent ? thinkStatesFor(m) : [soleThinkStateFor(m)];
             for (const think of states) {
-               const think_mode = bench.thinkDependent ? thinkModeOf(think) : 'n/a';
+               const think_mode = bench.thinkDependent ? thinkModeFor(m, think) : 'n/a';
                const sampling = resolveSampling(m, think, profileOf(benchName), matrix);
                const sampling_hash = samplingHash(sampling);
                if (!need(benchName, think_mode, sampling_hash)) {
