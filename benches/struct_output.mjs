@@ -2,6 +2,8 @@
 // Ported from runners/struct-output.mjs (TASKS + extractJson inline; validated logic).
 // NOTE: the sibling `power_eff` metric needs host wattage sensing (a host probe), so it
 // is handled by the orchestrator's probe path, not here.
+import { reasons } from '../shared/llm/think.mjs';
+
 const TASKS = [
    {
       p: 'Extract the person as JSON with keys name (string), age (number), email (string): "Dana Lee, 34, dana@x.io".',
@@ -45,6 +47,16 @@ const TASKS = [
 ];
 const SYS = 'You output only valid JSON. No prose, no markdown fences — just the JSON object.';
 
+// A flat 256 is enough for a non-reasoning model to emit one small JSON object, but it is FAR too
+// little for a model that reasons first: the trace alone runs 650-3900 chars on these 12 tasks, so
+// the budget is exhausted before any content is emitted and the response comes back with
+// finish_reason=length and EMPTY content -- which extractJson() scores as a parse failure.
+// Measured on Muse-Glimmer-30B (rose, 2026-08-26): 256 -> 41.67% with 7/12 truncated, 1024 -> 91.67%
+// with 1/12, 4096 -> 100% with 0. Not one malformed JSON at any budget; the 41.67% was measuring the
+// harness, not the model. 256 is kept for the non-reasoning path so existing rows stay comparable.
+const MAX_TOK = 256;
+const MAX_TOK_REASONING = 4096;
+
 function extractJson(text) {
    const s = String(text).replace(/```(json)?/gi, '');
    const start = s.indexOf('{');
@@ -71,7 +83,7 @@ const isType = (v, ty) =>
 export const bench = {
    name: 'struct_output',
    thinkDependent: false,
-   async run(client, { think, thinkControl }) {
+   async run(client, { think, thinkControl, model }) {
       let parseOk = 0,
          schemaOk = 0;
       for (const t of TASKS) {
@@ -82,7 +94,7 @@ export const bench = {
                   { role: 'system', content: SYS },
                   { role: 'user', content: t.p },
                ],
-               { think, thinkControl, max_tokens: 256, temperature: 0.0 },
+               { think, thinkControl, max_tokens: reasons(model, think) ? MAX_TOK_REASONING : MAX_TOK, temperature: 0.0 },
                120000,
             );
             text = completion?.choices?.[0]?.message?.content ?? '';

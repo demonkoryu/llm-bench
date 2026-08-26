@@ -3,6 +3,7 @@
 // orchestrator explodes via shared/tidy-schema.mjs — same path as backfill.
 import toolGrader from '../benchmarks/toolcalling/grader.mjs';
 import { CASES as TOOL_CASES, TOOLS_POOL } from '../benchmarks/toolcalling/toolcases.mjs';
+import { reasons } from '../shared/llm/think.mjs';
 
 const SYSTEM =
    'You are a helpful assistant with access to tools. Call a tool ONLY when needed. ' +
@@ -11,7 +12,7 @@ const SYSTEM =
 export const bench = {
    name: 'toolcalling',
    thinkDependent: true,
-   async run(client, { think, sampling, thinkControl }) {
+   async run(client, { think, sampling, thinkControl, model }) {
       let pass = 0;
       for (const [caseId, tc] of Object.entries(TOOL_CASES)) {
          const userMsg = tc.user ?? caseId;
@@ -26,7 +27,7 @@ export const bench = {
                think,
                thinkControl,
                tools,
-               max_tokens: think === true ? 2048 : 1024,
+               max_tokens: reasons(model, think) ? 2048 : 1024,
                ...sampling,
             }));
          } catch {

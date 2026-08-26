@@ -2,6 +2,7 @@
 import summGrader from '../benchmarks/summarization/grader.mjs';
 import { SUMM_ITEMS } from '../benchmarks/summarization/summcases.mjs';
 import { stripThink } from '../shared/llm/index.mjs';
+import { reasons } from '../shared/llm/think.mjs';
 
 const SYSTEM =
    'Summarize and categorize content for a personal knowledge vault.\nVault areas: craft (software, AI, hardware, PKM), finance (trading, markets), music (DJing, production), work (career, employer).\n\n' +
@@ -10,7 +11,7 @@ const SYSTEM =
 export const bench = {
    name: 'summarization',
    thinkDependent: true,
-   async run(client, { think, sampling, thinkControl }) {
+   async run(client, { think, sampling, thinkControl, model }) {
       const totals = { kw: 0, area: 0, tags: 0, length: 0 };
       let count = 0;
       for (const [caseId, item] of Object.entries(SUMM_ITEMS)) {
@@ -20,7 +21,12 @@ export const bench = {
          ];
          let completion;
          try {
-            ({ completion } = await client.chat(messages, { think, thinkControl, max_tokens: think === true ? 4096 : 1024, ...sampling }));
+            ({ completion } = await client.chat(messages, {
+               think,
+               thinkControl,
+               max_tokens: reasons(model, think) ? 4096 : 1024,
+               ...sampling,
+            }));
          } catch {
             continue;
          }

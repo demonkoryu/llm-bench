@@ -5,6 +5,7 @@
 import { HARD_CASES } from '../benchmarks/reasoning/cases-hard.mjs';
 import reasoningGrader from '../benchmarks/reasoning/grader.mjs';
 import { stripThink } from '../shared/llm/index.mjs';
+import { reasons } from '../shared/llm/think.mjs';
 
 const SYSTEM =
    'Solve the reasoning problem. Think step by step.\n' +
@@ -32,7 +33,7 @@ export const bench = {
                think,
                thinkControl,
                responseFormat: think === true || model?.no_schema ? null : ANSWER_SCHEMA,
-               max_tokens: think === true ? 4096 : 1024,
+               max_tokens: reasons(model, think) ? 4096 : 1024,
                ...sampling,
             }));
          } catch {

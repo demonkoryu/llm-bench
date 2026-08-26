@@ -4,6 +4,7 @@
 import { EXPERT_CASES } from '../benchmarks/reasoning/cases-expert.mjs';
 import reasoningGrader from '../benchmarks/reasoning/grader.mjs';
 import { stripThink } from '../shared/llm/index.mjs';
+import { reasons } from '../shared/llm/think.mjs';
 
 const SYSTEM =
    'Solve the problem. Think step by step and show your work.\n' +
@@ -29,7 +30,7 @@ export const bench = {
                thinkControl,
                // harder problems need room to work; no schema in think mode (grammar blocks think)
                responseFormat: think === true || model?.no_schema ? null : ANSWER_SCHEMA,
-               max_tokens: think === true ? 8192 : 2048,
+               max_tokens: reasons(model, think) ? 8192 : 2048,
                ...sampling,
             }));
          } catch {

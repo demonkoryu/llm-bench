@@ -1,4 +1,6 @@
 // Bench module: triage. Reuses the shared rubric (triage-golden/prompt/rubric).
+
+import { reasons } from '../shared/llm/think.mjs';
 import { GOLDEN } from '../shared/triage-golden.mjs';
 import { TRIAGE_SCHEMA, TRIAGE_STATIC_PROMPT } from '../shared/triage-prompt.mjs';
 import { computeScore as triageComputeScore, gradeOne as triageGradeOne } from '../shared/triage-rubric.mjs';
@@ -21,7 +23,7 @@ export const bench = {
                think,
                thinkControl,
                responseFormat: think === true || model?.no_schema ? null : TRIAGE_SCHEMA,
-               max_tokens: think === true ? 4096 : 1024,
+               max_tokens: reasons(model, think) ? 4096 : 1024,
                ...sampling,
             }));
          } catch {

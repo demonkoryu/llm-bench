@@ -6,6 +6,7 @@ import { CASES as BUGFIX } from '../benchmarks/coding/cases-bugfix.mjs';
 import { CASES as HARD } from '../benchmarks/coding/cases-hard.mjs';
 import { CASES as PRACTICAL } from '../benchmarks/coding/cases-practical.mjs';
 import { gradeCase as codingGradeCase } from '../benchmarks/coding/grader.mjs';
+import { reasons } from '../shared/llm/think.mjs';
 
 const defaultSystem = (c) =>
    `You are an expert programmer. Implement the requested function in JavaScript.\n` +
@@ -21,7 +22,7 @@ function codingBench(name, cases, buildSystem, maxTok, thinkTok) {
       // fourth coding bench inherits it instead of silently falling back to family defaults.
       samplingProfile: 'coding',
       thinkDependent: true,
-      async run(client, { think, sampling, thinkControl }) {
+      async run(client, { think, sampling, thinkControl, model }) {
          let passAt1 = 0,
             testsPassed = 0,
             testsTotal = 0,
@@ -36,7 +37,7 @@ function codingBench(name, cases, buildSystem, maxTok, thinkTok) {
                const { completion } = await client.chat(messages, {
                   think,
                   thinkControl,
-                  max_tokens: think === true ? thinkTok : maxTok,
+                  max_tokens: reasons(model, think) ? thinkTok : maxTok,
                   ...sampling,
                });
                raw = completion.choices?.[0]?.message?.content ?? '';

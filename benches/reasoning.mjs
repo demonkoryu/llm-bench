@@ -3,6 +3,7 @@
 import { CASES as REASON_CASES } from '../benchmarks/reasoning/cases.mjs';
 import reasoningGrader from '../benchmarks/reasoning/grader.mjs';
 import { stripThink } from '../shared/llm/index.mjs';
+import { reasons } from '../shared/llm/think.mjs';
 
 const ANSWER_SCHEMA = { type: 'object', properties: { answer: { type: 'string' } }, required: ['answer'] };
 const SYSTEM =
@@ -28,7 +29,7 @@ export const bench = {
                think,
                thinkControl,
                responseFormat: think === true || model?.no_schema ? null : ANSWER_SCHEMA,
-               max_tokens: think === true ? 4096 : 1024,
+               max_tokens: reasons(model, think) ? 4096 : 1024,
                ...sampling,
             }));
          } catch {

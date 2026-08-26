@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gradeAll as docqaGradeAll } from '../benchmarks/docqa/grader.mjs';
 import { stripThink } from '../shared/llm/index.mjs';
+import { reasons } from '../shared/llm/think.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const docqaCases = JSON.parse(readFileSync(join(ROOT, 'benchmarks/docqa/cases.json'), 'utf8'));
@@ -12,7 +13,7 @@ export const bench = {
    name: 'docqa',
    samplingProfile: 'docqa',
    thinkDependent: true,
-   async run(client, { think, sampling, thinkControl }) {
+   async run(client, { think, sampling, thinkControl, model }) {
       const { docs, questions } = docqaCases;
       const docMap = Object.fromEntries((docs ?? []).map((d) => [d.id, d.source]));
       const answers = {};
@@ -31,7 +32,12 @@ export const bench = {
          ];
          let completion;
          try {
-            ({ completion } = await client.chat(messages, { think, thinkControl, max_tokens: think === true ? 4096 : 1024, ...sampling }));
+            ({ completion } = await client.chat(messages, {
+               think,
+               thinkControl,
+               max_tokens: reasons(model, think) ? 4096 : 1024,
+               ...sampling,
+            }));
          } catch {
             answers[q.id] = '';
             continue;

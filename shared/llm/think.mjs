@@ -66,6 +66,35 @@ export function thinkStates(cap) {
 }
 
 /**
+ * True when the model will actually emit a reasoning trace for this request.
+ *
+ * Benches size their token budget as `think === true ? big : small`, which is WRONG for a
+ * reasoning_only model: thinkStates() returns [null] for BOTH non_thinking and reasoning_only, so
+ * `think === null` cannot distinguish "never reasons" from "always reasons" and the always-reasoning
+ * model silently gets the non-thinking budget. That is what scored Muse-Glimmer-30B at 41.67% on
+ * struct_output (2026-08-26): with max_tokens 256 the model spent the whole budget inside the
+ * reasoning trace and returned EMPTY content on 7 of 12 tasks -- finish_reason=length, not one
+ * malformed JSON. At 4096 the same 12 tasks score 100%.
+ *
+ * Use this instead of `think === true` wherever a budget or timeout is being sized. Behaviour is
+ * unchanged for hybrid (think is true/false), thinking (always true) and non_thinking (always null)
+ * models -- only reasoning_only models are affected.
+ *
+ * @param {object}       model  models.yaml entry (needs .think)
+ * @param {boolean|null} think  the resolved think state for this request
+ */
+export function reasons(model, think) {
+   if (think === true) {
+      return true;
+   }
+   if (think === false) {
+      return false;
+   }
+   const cap = capabilityClass(model ?? {});
+   return cap === CAPABILITY.REASONING_ONLY || cap === CAPABILITY.THINKING;
+}
+
+/**
  * Apply the model's think-control mechanism to produce a final messages array
  * and extra request body fields.
  *
