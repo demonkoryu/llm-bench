@@ -2,7 +2,7 @@
 // large prefix COLD (unique nonce → full prefill) then WARM (identical → prefill
 // skipped), median over reps. Emits prefix_cache_cold_ms / _warm_ms / _speedup.
 
-import { extraFlagsToString } from '../../runners/llamacpp-server.mjs';
+import { extraFlagsToString, LOAD_TIMEOUT_MS } from '../../runners/llamacpp-server.mjs';
 import { makeFillPrompt } from '../../shared/codebase.mjs';
 
 const median = (xs) => {
@@ -24,7 +24,7 @@ export const bench = {
       await srv.killAll();
       await srv.waitVramClear(30000);
       await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx, extraFlags: extraFlagsToString(model.extra_flags) });
-      await srv.waitHealthy(360000);
+      await srv.waitHealthy(LOAD_TIMEOUT_MS);
       const ttftOf = async (messages) => {
          const { timings } = await client.chat(messages, { think: null, max_tokens: 4, temperature: 0.0 }, 900000);
          // llama.cpp reports server-side prefill ms directly; MLX/OptiQ emits no timings, so fall back

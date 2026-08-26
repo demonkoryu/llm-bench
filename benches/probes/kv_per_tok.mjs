@@ -1,7 +1,7 @@
 // Probe: KV-cache footprint (ported from runners/kv-probe.mjs). Loads at two ctx sizes
 // and reads board VRAM at each; the slope (ΔVRAM / Δctx) is KV bytes/token. Emits
 // kv_per_tok (KiB/token) and updates the capabilities cache.
-import { extraFlagsToString } from '../../runners/llamacpp-server.mjs';
+import { extraFlagsToString, LOAD_TIMEOUT_MS } from '../../runners/llamacpp-server.mjs';
 
 const C_LOW = 8192;
 
@@ -23,7 +23,7 @@ export const bench = {
          await srv.killAll();
          await srv.waitVramClear(30000);
          await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx, extraFlags: extraFlagsToString(model.extra_flags) });
-         await srv.waitHealthy(360000);
+         await srv.waitHealthy(LOAD_TIMEOUT_MS);
          return srv.snapshotVram();
       };
       const vLow = await vramAtCtx(C_LOW);

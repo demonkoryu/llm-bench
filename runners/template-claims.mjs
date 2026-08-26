@@ -31,7 +31,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
 import { loadModelsConfig } from '../shared/models-config.mjs';
-import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
+import { extraFlagsToString, LOAD_TIMEOUT_MS, llamacppServer } from './llamacpp-server.mjs';
 import { FIXTURES, makeErrorExecutor, RECOVERY_TASKS, TOOLS } from './template-claims-fixtures.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -258,7 +258,7 @@ for (const m of wanted) {
       await srv.waitVramClear?.(30_000).catch?.(() => {});
       try {
          await srv.startServer({ hf_repo: m.hf_repo, hf_file: m.hf_file, ctx: CTX, extraFlags });
-         await srv.waitHealthy(360_000);
+         await srv.waitHealthy(LOAD_TIMEOUT_MS);
       } catch (e) {
          console.error(`  load failed: ${(e.message || '').slice(0, 80)} — skipping`);
          results[id][arm] = { error: 'load-failed' };

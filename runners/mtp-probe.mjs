@@ -30,7 +30,7 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
 import { loadModelsConfig } from '../shared/models-config.mjs';
-import { llamacppServer } from './llamacpp-server.mjs';
+import { LOAD_TIMEOUT_MS, llamacppServer } from './llamacpp-server.mjs';
 
 const ROOT = join(import.meta.dirname, '..');
 
@@ -136,7 +136,7 @@ async function main() {
 
          try {
             await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx: CTX, extraFlags });
-            await srv.waitHealthy(360_000);
+            await srv.waitHealthy(LOAD_TIMEOUT_MS);
          } catch (e) {
             console.log(`    load FAILED: ${e.message.slice(0, 160)}`);
             report.byBackend[backend][cfg.tag] = { error: e.message.slice(0, 200) };

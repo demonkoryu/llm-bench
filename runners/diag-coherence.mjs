@@ -16,7 +16,7 @@
 
 import { parseArgs } from 'node:util';
 import { buildCodebase, buildQuestionBlock } from '../shared/codebase.mjs';
-import { llamacppServer } from './llamacpp-server.mjs';
+import { LOAD_TIMEOUT_MS, llamacppServer } from './llamacpp-server.mjs';
 
 const { values: f } = parseArgs({
    options: {
@@ -60,7 +60,7 @@ console.log(`\n[diag-coherence] ${f.file}  ctx=${CTX}  think=${THINK}  fills=[${
 await srv.killAll();
 await srv.waitVramClear(30_000);
 await srv.startServer({ hf_repo: f.repo, hf_file: f.file, ctx: CTX });
-await srv.waitHealthy(360_000);
+await srv.waitHealthy(LOAD_TIMEOUT_MS);
 const vram = await srv.snapshotVram();
 console.log(`[diag-coherence] loaded at ctx=${CTX}  vram=${vram ?? '?'}MiB\n`);
 

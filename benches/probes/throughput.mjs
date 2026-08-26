@@ -33,7 +33,7 @@
 //     ninfer-serve returns a standard `usage` block and nothing else, so the non-streaming path
 //     below would silently degrade it to the wall-clock e2e fallback and leave ttft/prefill null.
 
-import { extraFlagsToString } from '../../runners/llamacpp-server.mjs';
+import { extraFlagsToString, LOAD_TIMEOUT_MS } from '../../runners/llamacpp-server.mjs';
 import { makeFillPrompt } from '../../shared/codebase.mjs';
 
 const median = (xs) => {
@@ -64,11 +64,7 @@ export const bench = {
       await srv.killAll();
       await srv.waitVramClear(30000);
       await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx, extraFlags: extraFlagsToString(model.extra_flags) });
-      // 600s, not 360s: this must cover a first-run HF download (startServer documents the same
-      // allowance). At 360s an uncached GGUF times out mid-download and the probe returns zero
-      // rows with exit=0 — which is how gemma-4-26B-A4B-it-qat silently produced no data on
-      // 2026-08-26 and was nearly misdiagnosed as a VRAM ceiling.
-      await srv.waitHealthy(600000);
+      await srv.waitHealthy(LOAD_TIMEOUT_MS);
       let nonce = 0;
       const rows = [];
       for (const d of DEPTHS.filter((x) => x + GEN + 512 < ctx)) {

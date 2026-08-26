@@ -2,7 +2,7 @@
 // the server with --parallel MAXP and fires K = 1/2/4/8 concurrent generations,
 // measuring aggregate tok/s = Σ tokens ÷ wall time. Emits speed_pargen-<K>.
 
-import { extraFlagsToString } from '../../runners/llamacpp-server.mjs';
+import { extraFlagsToString, LOAD_TIMEOUT_MS } from '../../runners/llamacpp-server.mjs';
 import { makeFillPrompt } from '../../shared/codebase.mjs';
 
 const CONC = [1, 2, 4, 8],
@@ -19,7 +19,7 @@ export const bench = {
       await srv.waitVramClear(30000);
       const extra = `--parallel ${MAXP} ${extraFlagsToString(model.extra_flags)}`.trim();
       await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx: 16384, extraFlags: extra });
-      await srv.waitHealthy(360000);
+      await srv.waitHealthy(LOAD_TIMEOUT_MS);
       const rows = [];
       for (const k of CONC) {
          const t0 = Date.now();

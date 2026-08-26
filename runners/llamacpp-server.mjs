@@ -28,6 +28,14 @@ import { createClient } from '../shared/llm/index.mjs';
  * Boolean values:  true  → "--flag"   false → omit
  * Numeric/string:  value → "--flag value"
  */
+// Health-check allowance for a server that may still be downloading its GGUF. It must match the
+// 600s startServer gives runScript below: when a health timeout is SHORTER than the download
+// allowance, an uncached model times out mid-download, the probe returns zero rows, and bench-run
+// still exits 0 — so the run reads as complete. gemma-4-26B-A4B-it-qat lost a whole run that way on
+// 2026-08-26 and was nearly written up as a VRAM ceiling. Exported so call sites cannot drift from
+// the download budget again; six of them had already settled on an inconsistent 360s.
+export const LOAD_TIMEOUT_MS = 600_000;
+
 export function extraFlagsToString(flags) {
    if (!flags) {
       return '';

@@ -3,7 +3,7 @@
 // (prefill tok/s on synthetic codebase prompts). Uses the server already loaded by a
 // prior probe if present; else loads at maxctx.
 
-import { extraFlagsToString } from '../../runners/llamacpp-server.mjs';
+import { extraFlagsToString, LOAD_TIMEOUT_MS } from '../../runners/llamacpp-server.mjs';
 import { makeFillPrompt } from '../../shared/codebase.mjs';
 
 const SHORT = 'Tell me a single short sentence about the sky.';
@@ -23,7 +23,7 @@ export const bench = {
       await srv.killAll();
       await srv.waitVramClear(30000);
       await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx, extraFlags: extraFlagsToString(model.extra_flags) });
-      await srv.waitHealthy(360000);
+      await srv.waitHealthy(LOAD_TIMEOUT_MS);
       const rows = [];
       for (const [label, prompt] of [
          ['short', SHORT],

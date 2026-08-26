@@ -24,7 +24,7 @@
 // Supersedes the old single-slot maxctx ladder and feeds the fleet score (analysis/score.mjs)
 // with the EMPIRICAL slot count instead of a VRAM formula.
 
-import { extraFlagsToString } from '../../runners/llamacpp-server.mjs';
+import { extraFlagsToString, LOAD_TIMEOUT_MS } from '../../runners/llamacpp-server.mjs';
 import { makeFillPrompt } from '../../shared/codebase.mjs';
 import { runMlx } from './agent_ctx_mlx.mjs';
 
@@ -178,7 +178,7 @@ async function runLlamacpp({ srv, client, model, caps, vramTotalMib }) {
    await srv.waitVramClear(30_000);
    try {
       await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx: plannerCtx, extraFlags: probeExtraFlags(model, 1) });
-      await srv.waitHealthy(360_000);
+      await srv.waitHealthy(LOAD_TIMEOUT_MS);
    } catch (e) {
       return fail(`planner load failed at ${plannerCtx}: ${(e.message ?? '').slice(0, 60)}`);
    }
@@ -225,7 +225,7 @@ async function runLlamacpp({ srv, client, model, caps, vramTotalMib }) {
       await srv.waitVramClear(30_000);
       try {
          await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx: T, extraFlags: probeExtraFlags(model, nSlots) });
-         await srv.waitHealthy(360_000);
+         await srv.waitHealthy(LOAD_TIMEOUT_MS);
       } catch {
          const crashed = await srv.hasCrashed();
          console.log(
@@ -423,7 +423,7 @@ async function sweepNinferFleet({ srv, client, model, think, thinkControl, laneC
          ctx: laneCtx,
          extraFlags: `--max-concurrency ${nSlots} --kv-capacity auto ${pending} ${cleaned}`.replace(/\s+/g, ' ').trim(),
       });
-      await srv.waitHealthy(600_000);
+      await srv.waitHealthy(LOAD_TIMEOUT_MS);
       resident = nSlots;
    };
 
@@ -436,7 +436,9 @@ async function sweepNinferFleet({ srv, client, model, think, thinkControl, laneC
       } catch (e) {
          resident = null;
          const crashed = await srv.hasCrashed();
-         console.log(`  [agent_ctx] ${label}: ${nSlots} lanes — load failed (${crashed ? 'crash' : 'timeout'}): ${(e.message ?? '').slice(0, 60)}`);
+         console.log(
+            `  [agent_ctx] ${label}: ${nSlots} lanes — load failed (${crashed ? 'crash' : 'timeout'}): ${(e.message ?? '').slice(0, 60)}`,
+         );
          return { n_slots: nSlots, servable: false, capacity: null, vram_mib: null, gtt_mib: null };
       }
       const capacity = await srv.kvCapacity();
@@ -474,7 +476,14 @@ async function sweepNinferFleet({ srv, client, model, think, thinkControl, laneC
    }
    if (!best) {
       await srv.stopServer().catch(() => {});
-      return row({ score: 0, n_slots: 0, total_ctx: 0, verified: 0, status: 'skip', notes: `not even one ${label} lane serves (needs ${laneCtx} tok)` });
+      return row({
+         score: 0,
+         n_slots: 0,
+         total_ctx: 0,
+         verified: 0,
+         status: 'skip',
+         notes: `not even one ${label} lane serves (needs ${laneCtx} tok)`,
+      });
    }
 
    // ── Phase 2: verify the winning fleet with a concurrent fill ─────────────────────────────────
@@ -491,7 +500,9 @@ async function sweepNinferFleet({ srv, client, model, think, thinkControl, laneC
          // It loaded once already, so a failure here is a flake, not a verdict on the capacity
          // result — which stands on its own. Skip the fill rather than voiding the row.
          fillSkipped = true;
-         console.log(`  [agent_ctx] ${label}: could not reload the winning ${best.n_slots}-lane fleet (${(e.message ?? '').slice(0, 60)}) — capacity stands, coherence not measured`);
+         console.log(
+            `  [agent_ctx] ${label}: could not reload the winning ${best.n_slots}-lane fleet (${(e.message ?? '').slice(0, 60)}) — capacity stands, coherence not measured`,
+         );
       }
    }
    let coherent = 0;
@@ -502,7 +513,11 @@ async function sweepNinferFleet({ srv, client, model, think, thinkControl, laneC
    } else {
       // Depth is the lane window MINUS the answer budget — see OUT_ENTITLEMENT above. Filling to
       // the full window would be refused on --max-context and misread as an incoherence failure.
-      const results = await runSlots(client, Array.from({ length: best.n_slots }, () => laneCtx - OUT_ENTITLEMENT), { think, thinkControl });
+      const results = await runSlots(
+         client,
+         Array.from({ length: best.n_slots }, () => laneCtx - OUT_ENTITLEMENT),
+         { think, thinkControl },
+      );
       coherent = results.filter((r) => r.ok).length;
       const failed = results.filter((r) => !r.ok);
       console.log(

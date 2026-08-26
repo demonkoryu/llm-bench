@@ -36,7 +36,7 @@ import {
 } from '../shared/llm/index.mjs';
 import { deriveSubjectDims, loadModelsConfig } from '../shared/models-config.mjs';
 import { metricRowsFromResult } from '../shared/tidy-schema.mjs';
-import { extraFlagsToString, llamacppServer } from './llamacpp-server.mjs';
+import { extraFlagsToString, LOAD_TIMEOUT_MS, llamacppServer } from './llamacpp-server.mjs';
 import { ninferServer } from './ninfer-server.mjs';
 import { optiqServer } from './optiq-server.mjs';
 
@@ -242,12 +242,12 @@ async function main() {
                 local: LOCAL,
              })
            : llamacppServer({
-              sshHost: SSH_HOST,
-              llamaUrl: host.llamaUrl,
-              backend: host.backend,
-              debug: !!process.env.BENCH_DEBUG,
-              local: LOCAL,
-           });
+                sshHost: SSH_HOST,
+                llamaUrl: host.llamaUrl,
+                backend: host.backend,
+                debug: !!process.env.BENCH_DEBUG,
+                local: LOCAL,
+             });
    const client = srv.client;
    // Incremental persistence: each bench/probe result is inserted into Postgres immediately, so
    // a crash or kill never loses completed work (--resume re-reads what's already in the store).
@@ -431,7 +431,7 @@ async function main() {
                .join(' ');
             try {
                await srv.startServer({ hf_repo: m.hf_repo, hf_file: m.hf_file, mlxModel: m.mlx_model, ctx: CTX, extraFlags });
-               await srv.waitHealthy(360000);
+               await srv.waitHealthy(LOAD_TIMEOUT_MS);
             } catch (e) {
                console.error(`  load failed: ${(e.message ?? '').slice(0, 80)} — skipping`);
                continue;
