@@ -17,6 +17,9 @@ export const COLUMNS = {
    seed_run_id: 'VARCHAR',
    // subject (the model under test)
    family: 'VARCHAR',
+   // Base-model identity (qwen3.8-27b, gemma4-26b-a4b): the weights, independent of quant,
+   // engine and artifact. See deriveModelId in shared/models-config.mjs.
+   model: 'VARCHAR',
    arch: 'VARCHAR',
    type: 'VARCHAR',
    total_params: 'DOUBLE',
@@ -86,6 +89,7 @@ export const scopeFor = (bench) => (GENERAL_BENCH.some((re) => re.test(bench)) ?
 // Dimension columns the caller supplies via `dims` (everything except the measurement + provenance).
 export const DIM_COLUMNS = [
    'family',
+   'model',
    'arch',
    'type',
    'total_params',

@@ -16,6 +16,10 @@ const GENERAL = 'general';
 
 export const FACET_DIMS = [
    'family',
+   // The base model, independent of quant/engine/artifact — the axis for "how does this
+   // model do across the ways we serve it", which family (a generation) and gguf_file (one
+   // artifact) each answer only half of.
+   'model',
    'arch',
    'type',
    'finetune',

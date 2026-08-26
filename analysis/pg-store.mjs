@@ -128,7 +128,7 @@ function conn() {
 
 // Columns added after the table's first creation. CREATE TABLE IF NOT EXISTS never alters an
 // existing table, so new COLUMNS entries need an explicit idempotent ADD COLUMN here.
-const ADDED_COLUMNS = ['scope', 'sampling_hash', 'engine_version'];
+const ADDED_COLUMNS = ['scope', 'sampling_hash', 'engine_version', 'model'];
 
 /** Create the measurements table in Postgres if absent, and add any later columns (idempotent). */
 export async function ensureSchema() {

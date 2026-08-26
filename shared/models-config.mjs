@@ -203,16 +203,40 @@ function parseFinetune(text = '') {
 // Classify by SPARSITY (active < total → MoE) crossed with family hybrid-ness, so the
 // dense-hybrid 27B (active==total) and the sparse 35B-A3B (active≪total) — same family —
 // separate correctly. This is the axis the dense-vs-MoE study turns on.
-function deriveArch(family = '', total = null, active = null) {
+export function deriveArch(family = '', total = null, active = null) {
    const f = String(family).toLowerCase();
    const sparse = total != null && active != null && active < total;
-   if (/qwen3\.[56]/.test(f)) {
+   // Every qwen3.x from 3.5 on is gated-delta. This was /qwen3\.[56]/ and so silently
+   // dropped qwen3.8 through to the generic dense/moe branch below — which is why the
+   // Q6_K 27B recorded arch 'dense' while its NVFP4/OptiQ siblings, which declare arch
+   // explicitly in models.yaml, recorded 'gated-delta-dense' for the same weights.
+   if (/qwen3\.(?:[5-9]|\d\d)/.test(f)) {
       return sparse ? 'gated-delta-moe' : 'gated-delta-dense';
    }
    if (/lfm|mamba|falcon-h|jamba|hybrid/.test(f)) {
       return 'mamba-hybrid';
    }
    return sparse ? 'moe' : 'dense';
+}
+
+/**
+ * The BASE MODEL a row is about — the weights, independent of how they were quantized,
+ * converted, served or finetuned. `family` is only the generation (qwen3.6) and `gguf_file`
+ * is one artifact of one quant on one engine, so neither answers "how does Qwen3.8-27B do
+ * across NVFP4, OptiQ and Q6_K" — the question the dashboard could not previously ask.
+ *
+ * Derived from family + params rather than declared per entry, so it cannot drift from the
+ * param columns beside it and a new models.yaml entry gets one without remembering to. The
+ * MoE active-param token stays in the id because it separates genuinely different models
+ * (a dense 26B is not a 26B-A4B); dense models get no suffix. `model:` in models.yaml
+ * overrides for anything this shape does not fit.
+ */
+export function deriveModelId(family, total, active) {
+   if (!family || total == null) {
+      return null;
+   }
+   const base = `${String(family).toLowerCase()}-${total}b`;
+   return active != null && active < total ? `${base}-a${active}b` : base;
 }
 
 /** Subject dims for a (possibly kv-variant-expanded) model entry. Overrides win. */
@@ -223,12 +247,23 @@ export function deriveSubjectDims(model = {}) {
    const quant = model.quant ?? parseQuant(hf_file);
    // Parse from hf_file first — it reliably carries the MoE "A<n>B" active-param token
    // (labels often omit it, which would wrongly make a 35B-A3B MoE look 35B-active).
+   // But not always: google's QAT file is plain `gemma-4-26B_q4_0-it.gguf` while the repo
+   // it comes from is `gemma-4-26B-A4B-it-qat-...`, so a filename that yields a total but
+   // no A-token falls back to the repo for the active side rather than assuming dense.
    const fromFile = parseParams(hf_file ?? '');
    const params = fromFile.total_params != null ? fromFile : parseParams(label);
+   if (params.total_params != null && params.active_params === params.total_params) {
+      const fromRepo = parseParams(model.hf_repo ?? '');
+      if (fromRepo.total_params === params.total_params && fromRepo.active_params < fromRepo.total_params) {
+         params.active_params = fromRepo.active_params;
+      }
+   }
    const total_params = model.total_params ?? params.total_params;
    const active_params = model.active_params ?? params.active_params;
+   const family = model.family ?? null;
    return {
-      family: model.family ?? null,
+      family,
+      model: model.model ?? deriveModelId(family, total_params, active_params),
       type: model.type ?? null,
       arch: model.arch ?? deriveArch(model.family, total_params, active_params),
       total_params,
