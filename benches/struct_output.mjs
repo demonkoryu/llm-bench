@@ -54,6 +54,10 @@ const SYS = 'You output only valid JSON. No prose, no markdown fences — just t
 // Measured on Muse-Glimmer-30B (rose, 2026-08-26): 256 -> 41.67% with 7/12 truncated, 1024 -> 91.67%
 // with 1/12, 4096 -> 100% with 0. Not one malformed JSON at any budget; the 41.67% was measuring the
 // harness, not the model. 256 is kept for the non-reasoning path so existing rows stay comparable.
+// This bench is the only one that was actually affected, because it is the only one that is BOTH
+// thinkDependent:false and budget-on-think: bench-run hands thinkDependent:false benches
+// `think === null` even for an always-reasoning model, while thinkDependent:true benches get
+// `think === true` and were already taking the big branch. See reasons() in shared/llm/think.mjs.
 const MAX_TOK = 256;
 const MAX_TOK_REASONING = 4096;
 

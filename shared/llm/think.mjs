@@ -69,16 +69,28 @@ export function thinkStates(cap) {
  * True when the model will actually emit a reasoning trace for this request.
  *
  * Benches size their token budget as `think === true ? big : small`, which is WRONG for a
- * reasoning_only model: thinkStates() returns [null] for BOTH non_thinking and reasoning_only, so
- * `think === null` cannot distinguish "never reasons" from "always reasons" and the always-reasoning
- * model silently gets the non-thinking budget. That is what scored Muse-Glimmer-30B at 41.67% on
- * struct_output (2026-08-26): with max_tokens 256 the model spent the whole budget inside the
- * reasoning trace and returned EMPTY content on 7 of 12 tasks -- finish_reason=length, not one
- * malformed JSON. At 4096 the same 12 tasks score 100%.
+ * reasoning_only model on a `thinkDependent: false` bench. Mechanism (traced 2026-08-26, and NOT what
+ * an earlier version of this comment claimed): bench-run.mjs picks think states two different ways.
+ * For `thinkDependent: true` it calls its own thinkStatesFor(), which maps think:'reasoning' to
+ * [true] — so those benches get think===true and already take the big branch. For
+ * `thinkDependent: false` it hardcodes `[m.think === 'optional' ? false : null]`, ignoring capability
+ * class entirely, so the SAME always-reasoning model arrives as think===null in the same run and
+ * silently gets the non-thinking budget.
  *
- * Use this instead of `think === true` wherever a budget or timeout is being sized. Behaviour is
- * unchanged for hybrid (think is true/false), thinking (always true) and non_thinking (always null)
- * models -- only reasoning_only models are affected.
+ * That is what scored Muse-Glimmer-30B at 41.67% on struct_output (2026-08-26) — the one bench that
+ * is both thinkDependent:false and budget-on-think. With max_tokens 256 the model spent the whole
+ * budget inside the reasoning trace and returned EMPTY content on 7 of 12 tasks: finish_reason=length,
+ * not one malformed JSON. At 4096 the same 12 tasks score 100%.
+ *
+ * Use this instead of `think === true` wherever a budget or timeout is being sized. It cannot make
+ * things worse: it only ever turns a null into true for a model that does reason, so hybrid, thinking
+ * and non_thinking models are bit-identical, and thinkDependent:true benches (already think===true)
+ * are unaffected. Applying it there is defensive, not a behaviour change.
+ *
+ * SEPARATE, UNFIXED defect this uncovered: thinkStatesFor() in bench-run.mjs and thinkStates() here
+ * disagree for think:'reasoning' — [true] vs [null]. Two implementations of one question. Reconciling
+ * them would move think_mode stamping, which is part of both the resume key and the read-side dedup
+ * identity, so it is deliberately left alone rather than changed as a side effect of a budget fix.
  *
  * @param {object}       model  models.yaml entry (needs .think)
  * @param {boolean|null} think  the resolved think state for this request
