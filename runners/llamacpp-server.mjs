@@ -41,6 +41,10 @@ export const LOAD_TIMEOUT_MS = 600_000;
 // This matters where a probe deliberately loads until it fails: agent_ctx steps a slot-count ladder
 // down until a rung serves, and rungs that fail by health timeout rather than crash pay this in
 // full on every attempt.
+//
+// Since alive.sh landed, a rung whose server actually exits is detected within ~10s regardless of
+// this budget, so what remains here bounds only the genuinely-hung case: a container still running
+// but never becoming ready.
 export const RELOAD_TIMEOUT_MS = 360_000;
 
 export function extraFlagsToString(flags) {
@@ -151,12 +155,23 @@ export function llamacppServer({
     */
    async function waitHealthy(timeoutMs = 300_000) {
       // Try direct HTTP first (faster; works when the dev host can reach llm2 directly)
+      let dead = null;
       const ready = await client
-         .waitHealthy(timeoutMs)
+         .waitHealthy(timeoutMs, { abortIf: deadReason })
          .then(() => true)
-         .catch(() => false);
+         .catch((e) => {
+            if (e.serverDead) {
+               dead = e;
+            }
+            return false;
+         });
       if (ready) {
          return true;
+      }
+      // The server is gone, not merely unreachable — health.sh would spend the whole budget over
+      // again polling the same dead port, which is precisely the wait we just cut short.
+      if (dead) {
+         throw dead;
       }
       // Fallback: run health.sh on llm2 (handles firewall/NAT cases)
       const timeoutS = Math.floor(timeoutMs / 1000);
@@ -197,6 +212,25 @@ export function llamacppServer({
          .split(/\s+/)
          .map((x) => parseInt(x, 10));
       return { vram: Number.isNaN(v) ? null : v, gtt: Number.isNaN(g) ? null : g };
+   }
+
+   /**
+    * Why the server process is gone, or null if it is running or we cannot tell.
+    *
+    * alive.sh is three-valued (0 running / 1 exited / 2 unknown) and only exit 1 counts as dead:
+    * an SSH hiccup or a missing container must not abort a load that is simply slow. The log-tail
+    * check is a second call, but it only runs once we already know the thing is dead, and the
+    * distinction it draws — crashed vs exited cleanly — is the first thing anyone reading the
+    * failure wants.
+    */
+   async function deadReason() {
+      const r = await runHostCmd(`bash ${SCRIPTS_DIR}/alive.sh`, { local, sshHost, timeout: 10_000 });
+      if (r.exitCode !== 1) {
+         return null;
+      }
+      const code = r.stdout.trim() || '?';
+      const crashed = await hasCrashed().catch(() => false);
+      return `container exited (code ${code})${crashed ? ', crash pattern in log' : ''}`;
    }
 
    /** Check for crash patterns in the server log. Returns true if crashed. */
@@ -321,6 +355,7 @@ export function llamacppServer({
       snapshotMem,
       waitVramClear,
       hasCrashed,
+      deadReason,
       ensureAlive,
    };
 }

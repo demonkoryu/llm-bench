@@ -364,8 +364,16 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
     * it no longer returns 503 (Loading model).
     *
     * Returns true when ready, throws if not ready within timeoutMs.
+    *
+    * `abortIf` is an optional async predicate that returns a reason string when the server process
+    * is known to be gone (or null/false when it is running or cannot be determined). A server that
+    * dies mid-load looks exactly like one still loading from here — the endpoint is simply
+    * unreachable either way — so without this the poll spends its entire budget on a corpse. When
+    * it fires, the thrown error carries `.serverDead = true` so callers can skip fallback paths
+    * that would only wait again. Errors from the predicate itself are swallowed: "cannot tell"
+    * must keep us waiting, never abort a load that is merely slow.
     */
-   async function waitHealthy(timeoutMs = 300_000) {
+   async function waitHealthy(timeoutMs = 300_000, { abortIf = null } = {}) {
       const start = Date.now();
       const deadline = start + timeoutMs;
       let lastLog = start;
@@ -391,6 +399,16 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
             const elapsed = Math.round((now - start) / 1000);
             console.log(`[llm] waiting for model load... ${elapsed}s`);
             lastLog = now;
+            // Deliberately on the same cadence as the log line, so every "waiting" we print is
+            // one we have just confirmed is worth printing.
+            if (abortIf) {
+               const reason = await abortIf().catch(() => null);
+               if (reason) {
+                  const e = new Error(`llama-server died ${elapsed}s into the load: ${reason}`);
+                  e.serverDead = true;
+                  throw e;
+               }
+            }
          }
          await new Promise((r) => setTimeout(r, 2_000));
       }
