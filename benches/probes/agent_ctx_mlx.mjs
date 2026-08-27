@@ -139,7 +139,6 @@ export async function runMlx({ srv, client, model, caps, upsertCap }) {
    // n_coders stays 0 and the headline metric is the single-session max context above. Retained
    // (guarded) so a future multi-client MLX host can re-enable coder search by raising MAX_CODERS.
    let nCoders = 0;
-   let coherentSlots = 1; // planner alone established coherent above
    let lastNotes = 'planner only (single-client)';
    for (let k = 1; k <= MAX_CODERS && requests + (1 + k) <= REQUEST_BUDGET; k++) {
       const sizes = [plannerTarget, ...Array.from({ length: k }, () => coderCtx)];
@@ -147,13 +146,17 @@ export async function runMlx({ srv, client, model, caps, upsertCap }) {
       requests += sizes.length;
       const coherent = results.filter((r) => r.ok).length;
       const errored = results.some((r) => r.err);
+      // NOTE: unlike the llama.cpp path — which gates on the idle VRAM footprint and, since
+      // 2026-08-27, does no concurrent fill at all — this probe HAS no VRAM readout (unified memory,
+      // no vram_cmd), so growing the fleet while every slot stays coherent is the only gate
+      // available. The concurrent behaviour is therefore load-bearing here and stays; it just no
+      // longer emits coherent_slots/verified as metrics. This host (m1/optiq) is parked.
       const allOk = coherent === sizes.length && !errored;
       console.log(
          `  [agent_ctx/mlx] 1 planner@${plannerTarget / 1024}k + ${k} coders@${coderCtx / 1024}k → ${coherent}/${sizes.length} coherent${errored ? ' (error)' : ''} ${allOk ? 'OK' : 'STOP'}`,
       );
       if (allOk) {
          nCoders = k;
-         coherentSlots = coherent;
          lastNotes = `1x${plannerTarget / 1024}k+${k}x${coderCtx / 1024}k`;
       } else {
          break;
@@ -162,9 +165,8 @@ export async function runMlx({ srv, client, model, caps, upsertCap }) {
 
    const nSlots = 1 + nCoders;
    const totalCtx = plannerTarget + nCoders * coderCtx;
-   const fullyCoherent = coherentSlots === nSlots;
    console.log(
-      `  [agent_ctx/mlx] RESULT: 1×${plannerTarget / 1024}k planner + ${nCoders}×${coderCtx / 1024}k coders (pool ${(totalCtx / 1024).toFixed(0)}k, ${coherentSlots}/${nSlots} coherent, ${requests} reqs)`,
+      `  [agent_ctx/mlx] RESULT: 1×${plannerTarget / 1024}k planner + ${nCoders}×${coderCtx / 1024}k coders (pool ${(totalCtx / 1024).toFixed(0)}k, ${requests} reqs)`,
    );
 
    return [
@@ -173,13 +175,11 @@ export async function runMlx({ srv, client, model, caps, upsertCap }) {
          score: nCoders, // headline for the multi-agent axis (0 here by single-client design)
          n_slots: nSlots,
          n_coders: nCoders,
-         coherent_slots: coherentSlots,
          total_ctx: totalCtx,
          planner_ctx: plannerTarget,
          coder_ctx: coderCtx,
-         verified: fullyCoherent ? 1 : 0,
          status: 'ok',
-         notes: `${lastNotes} client-driven ${coherentSlots}/${nSlots}coh`,
+         notes: `${lastNotes} client-driven`,
       },
    ];
 }
@@ -193,11 +193,9 @@ function fail(model, notes) {
          score: 0,
          n_slots: 1,
          n_coders: 0,
-         coherent_slots: 0,
          total_ctx: plannerCtx,
          planner_ctx: plannerCtx,
          coder_ctx: coderCtx,
-         verified: 0,
          status: 'skip',
          notes,
       },

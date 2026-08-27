@@ -146,7 +146,7 @@ export const METRIC_HELP = {
    'e2e tok/s': 'End-to-end throughput — prompt-eval + decode tokens/sec on the 8k run.',
    'ttft ms': 'Time to first token (ms) at 8k context. Lower is better.',
    // multi-agent capacity (from the agent_ctx probe)
-   'coder slots': 'Coder agents (alongside 1 planner) that load AND stay coherent from one shared KV pool.',
+   'coder slots': 'Coder agents (alongside 1 planner) whose KV fits VRAM-resident in one shared pool. Capacity, not concurrent quality.',
    'agent pool k': 'Total shared KV context (K tokens) across the planner + all coders.',
    'planner ctx k': 'Context window (K tokens) reserved for the planner agent in the shared pool.',
    'fit-ctx': 'llama.cpp native auto-fit context length (tokens) it allocates for this config.',
@@ -160,7 +160,7 @@ export const METRIC_HELP = {
    speed: 'Speed composite — throughput, TTFT and long-context decode retention combined.',
    fleet: 'Fleet-suitability — how well it serves a multi-agent fleet: capability × agent slots × pool context × throughput.',
    // leaderboard raw columns (different labels for the same underlying measures)
-   'agent slots': 'Coder agents that fit + stay coherent alongside the planner (from agent_ctx).',
+   'agent slots': 'Coder agents whose KV fits alongside the planner (from agent_ctx). Capacity only.',
    'pool k': 'Total shared KV context (K tokens) across planner + coders.',
    'fit-ctx k': 'Native auto-fit context length (K tokens).',
    'vram MiB': 'Peak GPU memory (MiB). Lower is better.',

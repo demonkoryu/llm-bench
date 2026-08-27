@@ -18,39 +18,12 @@
 //      does NOT OOM on VRAM overflow — it SPILLS into GTT (system RAM). So the deterministic gate
 //      is the TOTAL footprint (VRAM + GTT, clean & monotonic) ≤ the card's VRAM, NOT an OOM crash
 //      (a fitting model still parks ~1 GB on GTT). Load-only per rung (fast).
-//   3. the winning plan is re-run WITH a concurrent fill: each of the planner + k coders gets a
-//      distinct code needle, and the coherent-slot count is recorded (coherent_slots).
 //
-// Supersedes the old single-slot maxctx ladder and feeds the fleet score (analysis/score.mjs)
-// with the EMPIRICAL slot count instead of a VRAM formula.
-
-import { extraFlagsToString, LOAD_TIMEOUT_MS, RELOAD_TIMEOUT_MS } from '../../runners/llamacpp-server.mjs';
-import { makeFillPrompt } from '../../shared/codebase.mjs';
-import { runMlx } from './agent_ctx_mlx.mjs';
-
-// Agent profile (mirrors the fleet dials in analysis/scoring-config.mjs: worker_ctx=65536,
-// ctx_tier=100000). Both are capped per-config at the model's coherent window.
-const PLANNER_TARGET = 131072;
-const CODER_TARGET = 65536;
-
-// No card-size literal here: the usable VRAM total is a per-HOST fact that rots the moment the
-// probe runs on a different GPU (it was hardcoded to the RX 7900 XT's 20464 MiB, which silently
-// rejected every rung on a 65536 MiB 2xV100 host). It is threaded in from config/hosts.yaml
-// (`vram_total_mib` -> host.vramTotalMib -> probe ctx.vramTotalMib) by runners/bench-run.mjs.
-// Reserve for the STARTING estimate only (the empirical GTT-spill gate is the real limit). Leaves
-// a little room for the prefill compute buffer so the search starts near the true answer; being
-// off just costs a few extra (fast, load-only) search rungs.
-const EST_COMPUTE_RESERVE_MIB = 1024;
-const MAX_LOADS = 9; // bound the total reloads across the down-then-up boundary search
-
-// Phase-3 coherence fill budget, in TOTAL concurrent prompt tokens. The fill prefills every slot
-// at once, so its wall time scales with the whole pool — on a big-VRAM host the fitting plan can be
-// a multi-million-token pool, whose fill would exceed fillTimeoutMs()'s 45-minute cap and report a
-// spurious 0/N incoherent. Capacity (the load-only footprint gate) is the measurement that feeds
-// scoring; coherent_slots/verified are advisory, so above this budget the fill is skipped and left
-// unrecorded rather than measured wrong. 540k ≈ the 45-minute cap at the same pessimistic
-// ~200 tok/s shared-prefill rate fillTimeoutMs() assumes.
-const MAX_FILL_TOKENS = 540_672; // 528k, 4k-aligned
+// Coherence is measured ONE REQUEST AT A TIME, by the single-planner check in step 1 — that value is
+// what caps records as coherence_ceiling. There is deliberately NO concurrent-fill phase: it was
+// removed 2026-08-27 (see the note at the end of the llama.cpp path).
+//
+// Supersedes the old single-slot maxctx ladder and feeds the fleet score (analysis/score.mjs).
 
 // NInfer's `--max-concurrency` is a startup-fixed 1..8 (docs/serving.md: "one resident Engine with
 // a startup-fixed capacity of 1..8 active generation requests"). So on that engine the fleet is
@@ -92,7 +65,7 @@ const kib = (tokens, kvBytesPerTok) => (tokens * kvBytesPerTok) / 1024 / 1024; /
 // a per-slot-only timeout false-fails half the slots when 6 deep prompts prefill at once (looks
 // like incoherence). Scale with the TOTAL concurrent token load at a pessimistic ~200 tok/s
 // shared prefill; floor 5 min, cap 45 min so a genuine hang still terminates.
-function fillTimeoutMs(totalTokens) {
+function requestTimeoutMs(totalTokens) {
    const est = Math.round((totalTokens / 200) * 1000);
    return Math.min(2_700_000, Math.max(300_000, est));
 }
@@ -118,7 +91,7 @@ function probeExtraFlags(model, nSlots) {
 // Each slot gets a slightly different fill size → a different synthetic codebase + needle,
 // so a coherent result proves that slot retrieved ITS OWN answer (not a neighbour's).
 async function runSlots(client, sizes, { think, thinkControl }) {
-   const timeoutMs = fillTimeoutMs(sizes.reduce((a, b) => a + b, 0)); // scale with TOTAL concurrent load
+   const timeoutMs = requestTimeoutMs(sizes.reduce((a, b) => a + b, 0)); // scale with the token load
    const reqs = sizes.map((size, i) => {
       const built = makeFillPrompt(Math.floor(size * (1 - 0.01 * i)));
       const expected = String(built.expectedAnswer).toLowerCase();
@@ -172,7 +145,6 @@ async function runLlamacpp({ srv, client, model, caps, vramTotalMib }) {
          total_ctx: plannerCtx,
          planner_ctx: plannerCtx,
          coder_ctx: coderCtx,
-         verified: 0,
          status: 'skip',
          notes,
       },
@@ -207,16 +179,15 @@ async function runLlamacpp({ srv, client, model, caps, vramTotalMib }) {
       `  [agent_ctx] kv≈${Math.round(kvBytesPerTok)}B/tok (${kvQuant})  weights≈${weightsMib ?? '?'}MiB  → est ${nCodersEst} coders`,
    );
 
-   // loadAndCheck(nCoders, {fill}): load a TIGHT shared pool `-c (planner + nCoders·coder)
+   // loadAndCheck(nCoders): load a TIGHT shared pool `-c (planner + nCoders·coder)
    // --kv-unified -np (1+nCoders)`. The KV is PREALLOCATED at load, and critically amdgpu does
    // NOT OOM when it overflows VRAM — it SPILLS the excess into GTT (system RAM). So the "fits in
    // VRAM" signal is the TOTAL footprint (VRAM + GTT) ≤ card, since a fitting model still parks
    // ~1 GB on GTT. A config over that runs partly PCIe-bound on system RAM (still loads/coheres),
    // so without this check the search would over-count coders that don't truly fit.
-   const loadAndCheck = async (nCoders, { fill }) => {
+   const loadAndCheck = async (nCoders) => {
       const nSlots = 1 + nCoders;
       const T = plannerCtx + nCoders * coderCtx;
-      const sizes = [plannerCtx, ...Array.from({ length: nCoders }, () => coderCtx)];
       const shaped = (extra) => ({
          total_ctx: T,
          planner_ctx: plannerCtx,
@@ -237,7 +208,7 @@ async function runLlamacpp({ srv, client, model, caps, vramTotalMib }) {
          console.log(
             `  [agent_ctx] ${nCoders} coders (pool ${(T / 1024).toFixed(0)}k, np=${nSlots}) — load failed (${crashed ? 'OOM/crash' : 'timeout'})`,
          );
-         return shaped({ servable: false, vram_mib: null, gtt_mib: null, coherent_slots: 0 });
+         return shaped({ servable: false, vram_mib: null, gtt_mib: null });
       }
 
       const mem = await srv.snapshotMem(); // idle: weights + preallocated KV(T) — clean & monotonic
@@ -249,15 +220,10 @@ async function runLlamacpp({ srv, client, model, caps, vramTotalMib }) {
       // genuinely exceeds VRAM and the overflow runs PCIe-bound on system RAM. VRAM+GTT is clean
       // and monotonic in the pool size (measured), so this boundary is deterministic.
       const fits = total != null && total <= cardTotalMib;
-      let coherent = 0;
-      if (fill && fits) {
-         const results = await runSlots(client, sizes, { think, thinkControl });
-         coherent = results.filter((r) => r.ok).length;
-      }
       console.log(
-         `  [agent_ctx] 1 planner@${plannerCtx / 1024}k + ${nCoders} coders@${coderCtx / 1024}k (pool ${(T / 1024).toFixed(0)}k)${fill ? `  → ${coherent}/${nSlots} coherent` : ''}  vram+gtt=${total ?? '?'}MiB (v=${mem.vram ?? '?'} g=${mem.gtt ?? '?'})  ${fits ? 'FITS' : 'SPILL→RAM'}`,
+         `  [agent_ctx] 1 planner@${plannerCtx / 1024}k + ${nCoders} coders@${coderCtx / 1024}k (pool ${(T / 1024).toFixed(0)}k)  vram+gtt=${total ?? '?'}MiB (v=${mem.vram ?? '?'} g=${mem.gtt ?? '?'})  ${fits ? 'FITS' : 'SPILL→RAM'}`,
       );
-      return shaped({ servable: fits, vram_mib: mem.vram, gtt_mib: mem.gtt, coherent_slots: coherent });
+      return shaped({ servable: fits, vram_mib: mem.vram, gtt_mib: mem.gtt });
    };
 
    // ── Phase 2: bisecting boundary search over the coder COUNT (load-only footprint gate) ──────
@@ -279,7 +245,7 @@ async function runLlamacpp({ srv, client, model, caps, vramTotalMib }) {
    let hi = null; // smallest coder count known to exceed VRAM
 
    const probe = async (n) => {
-      const r = await loadAndCheck(n, { fill: false });
+      const r = await loadAndCheck(n);
       loads++;
       if (r.servable) {
          lo = n;
@@ -312,34 +278,23 @@ async function runLlamacpp({ srv, client, model, caps, vramTotalMib }) {
       );
    }
 
-   // ── Phase 3: verify the winning plan WITH a concurrent fill (coherence) ────────────────────
-   // The capacity gate is the idle footprint above; this fill just records how many slots
-   // actually retrieve their own needle at depth (coherent_slots).
-   const fillSkipped = best != null && best.total_ctx > MAX_FILL_TOKENS;
-   if (best && !fillSkipped) {
-      const v = await loadAndCheck(best.n_coders, { fill: true });
-      loads++;
-      if (v.servable) {
-         best = v;
-      }
-   } else if (fillSkipped) {
-      console.log(
-         `  [agent_ctx] coherence fill SKIPPED — pool ${(best.total_ctx / 1024).toFixed(0)}k > ${(MAX_FILL_TOKENS / 1024).toFixed(0)}k budget (would exceed the fill timeout); capacity stands, coherent_slots not measured`,
-      );
-   }
-
+   // NO concurrent-fill phase. Removed 2026-08-27: this probe measures how much CAPACITY a card
+   // holds, and coherence is measured ONE REQUEST AT A TIME by the single-planner check in Phase 1a
+   // (which is what caps derives coherence_ceiling from). The old Phase 3 filled every slot at once
+   // and reported coherent_slots/verified — a concurrent-quality measurement that (a) no established
+   // benchmark corroborates, (b) was skipped for 13 of 21 configs because a large pool exceeded the
+   // fill budget, systematically omitting exactly the high-capacity configs, and (c) returned <=2
+   // coherent slots almost regardless of fleet size, which is as consistent with a harness artifact
+   // as with a model property. Capacity numbers are unaffected: the gate was always the idle
+   // footprint above, never the fill.
    await srv.stopServer().catch(() => {});
    await srv.waitVramClear(20_000).catch(() => {});
 
    if (!best || !best.servable) {
       return fail(`no VRAM-resident plan ≥ planner ${plannerCtx / 1024}k (spills to system RAM)`);
    }
-   // coherent_slots is 0 both when the fill genuinely failed and when it never ran — so when it was
-   // skipped, emit NO coherence leaf at all (numOrNull drops nulls) instead of a 0 that reads as
-   // "measured, incoherent".
-   const fullyCoherent = !fillSkipped && best.coherent_slots === best.n_slots;
    console.log(
-      `  [agent_ctx] RESULT: 1×${best.planner_ctx / 1024}k planner + ${best.n_coders}×${best.coder_ctx / 1024}k coders  (pool ${(best.total_ctx / 1024).toFixed(0)}k, ${best.coherent_slots}/${best.n_slots} coherent, vram ${best.vram_mib ?? '?'}MiB)`,
+      `  [agent_ctx] RESULT: 1×${best.planner_ctx / 1024}k planner + ${best.n_coders}×${best.coder_ctx / 1024}k coders  (pool ${(best.total_ctx / 1024).toFixed(0)}k, vram ${best.vram_mib ?? '?'}MiB)`,
    );
    return [
       {
@@ -347,15 +302,13 @@ async function runLlamacpp({ srv, client, model, caps, vramTotalMib }) {
          score: best.n_coders, // headline: coder agents supported alongside the planner
          n_slots: best.n_slots,
          n_coders: best.n_coders,
-         coherent_slots: fillSkipped ? null : best.coherent_slots,
          total_ctx: best.total_ctx,
          planner_ctx: best.planner_ctx,
          coder_ctx: best.coder_ctx,
          vram_mib: best.vram_mib,
          gtt_mib: best.gtt_mib,
-         verified: fillSkipped ? null : fullyCoherent ? 1 : 0,
          status: 'ok',
-         notes: `1x${best.planner_ctx / 1024}k+${best.n_coders}x${best.coder_ctx / 1024}k kvunified ${kvQuant} ${fillSkipped ? 'fill-skipped (pool over budget)' : `${best.coherent_slots}/${best.n_slots}coh`}`,
+         notes: `1x${best.planner_ctx / 1024}k+${best.n_coders}x${best.coder_ctx / 1024}k kvunified ${kvQuant}`,
       },
    ];
 }
@@ -381,12 +334,8 @@ async function runLlamacpp({ srv, client, model, caps, vramTotalMib }) {
 //
 // What is measurable is the resolved pool: ninfer-serve reports `resolved=N tokens` at startup, and
 // admission is entitlement-based, so n lanes genuinely coexist iff the pool covers n whole lanes.
-// That is the gate. The concurrent fill still runs, but as verification of coherence (each lane
-// retrieves its OWN needle), not as the capacity test.
-async function runNinfer({ srv, client, model, caps }) {
-   const think = model.think === 'optional' ? false : null;
-   const thinkControl = model.think_control ?? 'enable_thinking';
-
+// That is the gate — capacity only; no concurrent fill.
+async function runNinfer({ srv, model, caps }) {
    // Bounded by the ARCHITECTURAL window, not the coherence ceiling: a lane width is a serving
    // choice, and whether 128k lanes fit is a fair question even on a model whose measured coherence
    // tops out lower. Where a width exceeds that ceiling the row says so, and the coherence fill is
@@ -396,14 +345,14 @@ async function runNinfer({ srv, client, model, caps }) {
 
    const rows = [];
    for (const laneCtx of NINFER_LANE_WIDTHS.filter((w) => w <= archMax).map(round4k)) {
-      rows.push(await sweepNinferFleet({ srv, client, model, think, thinkControl, laneCtx, coherentWindow }));
+      rows.push(await sweepNinferFleet({ srv, model, laneCtx, coherentWindow }));
    }
    return rows;
 }
 
 // One lane width: the widest fleet of `laneCtx`-token lanes the engine admits, verified by a
 // concurrent fill. Returns a single agent_ctx row.
-async function sweepNinferFleet({ srv, client, model, think, thinkControl, laneCtx, coherentWindow }) {
+async function sweepNinferFleet({ srv, model, laneCtx, coherentWindow }) {
    const label = `${laneCtx / 1024}k`;
    // Admission reserves prompt PLUS the request's effective output limit. Those output pages come
    // OUT OF the lane's window, not on top of it: `--max-context` is the per-sequence ceiling, so a
@@ -412,7 +361,6 @@ async function sweepNinferFleet({ srv, client, model, think, thinkControl, laneC
    // auto` is itself capped at lanes x --max-context, so n*(laneCtx + 256) would exceed the largest
    // pool the engine can ever resolve and would reject EVERY rung, reporting 0 lanes on a healthy
    // card. So: a lane is laneCtx tokens in total, and the fill prompts leave room to answer.
-   const OUT_ENTITLEMENT = 256; // must match runSlots' max_tokens
    const entitlement = (nSlots) => nSlots * laneCtx;
    const beyondCoherent = laneCtx > coherentWindow;
 
@@ -430,7 +378,6 @@ async function sweepNinferFleet({ srv, client, model, think, thinkControl, laneC
    // Strip the harness's llama.cpp-only extra_flags: on this engine they are not merely ignored,
    // ninfer-serve rejects unknown flags at startup. A ninfer model entry carries ninfer flags, so
    // the only thing to add here is the lane count and the per-sequence ceiling, both of ours.
-   let resident = null; // lane count currently serving, so phase 2 knows whether it must reload
    const launch = async (nSlots) => {
       const ef = extraFlagsToString(model.extra_flags);
       // `--max-concurrency` is ours to sweep, so it can never come from the model config; likewise
@@ -450,14 +397,13 @@ async function sweepNinferFleet({ srv, client, model, think, thinkControl, laneC
       // Scale it with the aggregate load on the same pessimistic ~200 tok/s basis fillTimeoutMs()
       // uses. A value in the model config wins — it would be a deliberate statement about the
       // deployment's tolerance, which is not ours to overwrite.
-      const pending = /--pending-timeout-ms/.test(cleaned) ? '' : `--pending-timeout-ms ${fillTimeoutMs(nSlots * laneCtx)}`;
+      const pending = /--pending-timeout-ms/.test(cleaned) ? '' : `--pending-timeout-ms ${requestTimeoutMs(nSlots * laneCtx)}`;
       await srv.startServer({
          hf_file: model.hf_file,
          ctx: laneCtx,
          extraFlags: `--max-concurrency ${nSlots} --kv-capacity auto ${pending} ${cleaned}`.replace(/\s+/g, ' ').trim(),
       });
       await srv.waitHealthy(LOAD_TIMEOUT_MS);
-      resident = nSlots;
    };
 
    // One load per rung: configure nSlots lanes, read the pool the engine resolved, compare against
@@ -467,7 +413,6 @@ async function sweepNinferFleet({ srv, client, model, think, thinkControl, laneC
       try {
          await launch(nSlots);
       } catch (e) {
-         resident = null;
          const crashed = await srv.hasCrashed();
          console.log(
             `  [agent_ctx] ${label}: ${nSlots} lanes — load failed (${crashed ? 'crash' : 'timeout'}): ${(e.message ?? '').slice(0, 60)}`,
@@ -513,57 +458,22 @@ async function sweepNinferFleet({ srv, client, model, think, thinkControl, laneC
          score: 0,
          n_slots: 0,
          total_ctx: 0,
-         verified: 0,
          status: 'skip',
          notes: `not even one ${label} lane serves (needs ${laneCtx} tok)`,
       });
    }
 
-   // ── Phase 2: verify the winning fleet with a concurrent fill ─────────────────────────────────
-   // Unlike a descent, a binary search does not necessarily end on the winner — the last probe is
-   // usually a rung that did NOT fit. Filling that would be worse than filling nothing: an
-   // over-subscribed engine queues rather than refuses, so the fill would stall out and report the
-   // winner as incoherent. Reload the winner when the search moved past it.
+   // NO concurrent-fill phase — removed 2026-08-27, same reasoning as the llama.cpp path above:
+   // capacity is what this probe measures, and coherence is measured one request at a time by the
+   // single-lane check inside the search. The pool total still documents the fleet.
    const totalCtx = best.n_slots * laneCtx;
-   let fillSkipped = totalCtx > MAX_FILL_TOKENS;
-   if (!fillSkipped && resident !== best.n_slots) {
-      try {
-         await launch(best.n_slots);
-      } catch (e) {
-         // It loaded once already, so a failure here is a flake, not a verdict on the capacity
-         // result — which stands on its own. Skip the fill rather than voiding the row.
-         fillSkipped = true;
-         console.log(
-            `  [agent_ctx] ${label}: could not reload the winning ${best.n_slots}-lane fleet (${(e.message ?? '').slice(0, 60)}) — capacity stands, coherence not measured`,
-         );
-      }
-   }
-   let coherent = 0;
-   if (fillSkipped) {
-      console.log(
-         `  [agent_ctx] ${label}: coherence fill SKIPPED — fleet ${(totalCtx / 1024).toFixed(0)}k > ${(MAX_FILL_TOKENS / 1024).toFixed(0)}k budget; capacity stands, coherent_slots not measured`,
-      );
-   } else {
-      // Depth is the lane window MINUS the answer budget — see OUT_ENTITLEMENT above. Filling to
-      // the full window would be refused on --max-context and misread as an incoherence failure.
-      const results = await runSlots(
-         client,
-         Array.from({ length: best.n_slots }, () => laneCtx - OUT_ENTITLEMENT),
-         { think, thinkControl },
-      );
-      coherent = results.filter((r) => r.ok).length;
-      const failed = results.filter((r) => !r.ok);
-      console.log(
-         `  [agent_ctx] ${label}: coherence fill ${coherent}/${best.n_slots} lanes retrieved their own needle${failed.length ? ` — first failure: ${failed[0].err ?? `wanted ${failed[0].expected}, got "${failed[0].got}"`}` : ''}`,
-      );
-   }
 
    await srv.stopServer().catch(() => {});
    await srv.waitVramClear(30_000).catch(() => {});
 
    const laneCapped = best.n_slots === NINFER_MAX_LANES;
    console.log(
-      `  [agent_ctx] ${label} RESULT: ${best.n_slots} x ${label} lanes (pool ${best.capacity} tok, ${coherent}/${best.n_slots} coherent, vram ${best.vram_mib ?? '?'}MiB)${laneCapped ? ' — AT THE 8-LANE ENGINE CAP' : ''}`,
+      `  [agent_ctx] ${label} RESULT: ${best.n_slots} x ${label} lanes (pool ${best.capacity} tok, vram ${best.vram_mib ?? '?'}MiB)${laneCapped ? ' — AT THE 8-LANE ENGINE CAP' : ''}`,
    );
    return row({
       // score stays "agents beside the first" so a ninfer row reads on the same axis as the
@@ -571,17 +481,15 @@ async function sweepNinferFleet({ srv, client, model, think, thinkControl, laneC
       score: best.n_slots - 1,
       n_slots: best.n_slots,
       n_coders: best.n_slots - 1,
-      coherent_slots: fillSkipped ? null : coherent,
       total_ctx: totalCtx,
       vram_mib: best.vram_mib,
       gtt_mib: best.gtt_mib,
-      verified: fillSkipped ? null : coherent === best.n_slots ? 1 : 0,
       status: 'ok',
       // laneCapped is the difference between "this is what the GPU holds" and "this is what the
       // engine admits"; without it a reader would take 8 for a memory result.
       notes: `${best.n_slots}x${label} pool=${best.capacity}tok kv=${model.extra_flags?.['kv-dtype'] ?? 'int8'} ${
          laneCapped ? 'AT 8-lane engine cap (--max-concurrency 1..8): pool may hold more' : 'pool-bound'
-      } ${fillSkipped ? 'fill-skipped' : `${coherent}/${best.n_slots}coh`}${beyondCoherent ? ` lane>coherence_ceiling(${coherentWindow})` : ''}`,
+      }${beyondCoherent ? ` lane>coherence_ceiling(${coherentWindow})` : ''}`,
    });
 }
 
