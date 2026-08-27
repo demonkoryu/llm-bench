@@ -6,9 +6,19 @@
 #   The harness auto-detects via scripts/llm2/backends.sh.
 
 rose:
-   label: "rose / 2x Tesla V100 PCIe 32GB"
+   # SINGLE-GPU as of 2026-08-27, by request: one GPU per model is the deployment being measured.
+   # The box still has two V100s; start-server.sh pins the container to device 0 (LLAMA_GPUS), so
+   # --split-mode has nothing to split and every reading describes one 32 GiB card.
+   #
+   # Why this matters for the numbers: the 1375 cuda rows measured before this date were 2-GPU
+   # layer-split deployments. `vram_total_mib` gates the agent_ctx/fit_ctx ladders, so leaving it at
+   # 65536 would let a capacity probe chase a pool the visible card cannot hold. vram_total is NOT in
+   # IDENTITY_KEY (analysis/pg-store.mjs), so a single-GPU re-measure SUPERSEDES the 2-GPU row at the
+   # same identity rather than sitting beside it — deliberate here, but it means the two cannot be
+   # compared from $LATEST. Declare a second host entry if both are ever wanted at once.
+   label: "rose / Tesla V100 PCIe 32GB (1 of 2, device 0)"
    gpu: "V100"                         # slugged into result CSV filenames (→ v100)
-   vram_total_mib: 65536               # 2x 32768 MiB
+   vram_total_mib: 32768               # ONE card. Was 65536 (2x32768) through 2026-08-26.
    llamacpp: "${LLAMA_URL:-http://192.168.1.120:8090}"
    ssh_host: "${SSH_HOST:-llm2}"
    port: 8090
@@ -29,7 +39,7 @@ rose:
 # only health-checked + model-selected via GET /v1/models). OptiQ serves single-model by default, so
 # the request `model` field is just a label (any value serves the loaded --model).
 # Unified memory: NO VRAM readout (no rocm-smi), so vram_cmd is intentionally absent —
-# kv_per_tok / fit_ctx skip cleanly and agent_ctx uses the client-driven MLX probe.
+# vram_per_ctx_tok / fit_ctx skip cleanly and agent_ctx uses the client-driven MLX probe.
 # DEPLOYMENT: bench-run runs ON llm1 from the ~/llm-bench git checkout (deploy via commit→push→
 # `scripts/deploy.sh --host llm1`), talking to the local OptiQ daemon — hence the loopback URL.
 # The daemon is launched separately on llm1 by scripts/llm1/serve.sh. See README §4a.

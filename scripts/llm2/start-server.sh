@@ -91,6 +91,11 @@ else
    exit 1
 fi
 
+# ONE GPU per model (2026-08-27). Was `--gpus all`, which with --split-mode layer spread every
+# model across both V100s and made each reading a 64 GiB two-card number. Override with
+# LLAMA_GPUS=all to reproduce the old 2-GPU behaviour, or LLAMA_GPUS='"device=1"' for the other card.
+gpus_flag="${LLAMA_GPUS:-device=0}"
+
 rf_flag="--reasoning-format auto"
 if [[ "$extra_flags" == *"--reasoning-format"* ]]; then
    rf_flag=""
@@ -110,7 +115,7 @@ fi
 echo "  [start-server] launching cuda ctx=$ctx port=$port" >&2
 CID=$(docker run -d \
    --name "$CONTAINER" \
-   --gpus all \
+   --gpus "$gpus_flag" \
    -p "$port:8090" \
    -v "$HOME/.cache/huggingface:/root/.cache/huggingface" \
    -v "$HOME/models:$HOME/models:ro" \
