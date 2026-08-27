@@ -83,7 +83,7 @@ export function upsertCap(resultsDir, keyFields, values) {
 
 /**
  * Seed the cache from the measurement store (Postgres): derive ceilings from `agent_ctx` rows and
- * KV footprint from `kv_per_tok` rows, per config key. `llamacpp_build` is recorded on the entry
+ * Per-context-token VRAM footprint from `vram_per_ctx_tok` rows, per config key. `llamacpp_build` is recorded on the entry
  * but is NOT part of the key (see header), so a ceiling measured under an older build does satisfy
  * a run on a newer one; check the entry's build if a ceiling looks wrong for the current binary.
  *
@@ -111,7 +111,7 @@ export async function seedFromTidy(resultsDir = join(ROOT, 'results')) {
       `
     SELECT gguf_file, quant, kv_quant, backend, gpu, llamacpp_build,
            avg(CASE WHEN metric='score' THEN metric_value END) AS kv_kib_per_tok
-    FROM $LATEST WHERE bench='kv_per_tok' GROUP BY 1,2,3,4,5,6`,
+    FROM $LATEST WHERE bench='vram_per_ctx_tok' GROUP BY 1,2,3,4,5,6`,
    );
    const kvByKey = new Map(kv.map((r) => [capKey(r), r.kv_kib_per_tok]));
 
@@ -130,7 +130,7 @@ export async function seedFromTidy(resultsDir = join(ROOT, 'results')) {
          ctx_ceiling: r.ctx_ceiling ?? null,
          coherence_ceiling: r.coherence_ceiling ?? null,
          oom_ceiling: r.oom_ceiling ?? null,
-         kv_bytes_per_token: kvByKey.get(capKey(r)) != null ? kvByKey.get(capKey(r)) * 1024 : null,
+         vram_bytes_per_ctx_tok: kvByKey.get(capKey(r)) != null ? kvByKey.get(capKey(r)) * 1024 : null,
          vram_at_ctx: r.vram_at_ctx ?? null,
          measured_at: isoTs(r.measured_at),
          source_run_id: r.source_run_id ?? null,

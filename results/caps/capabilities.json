@@ -6,10 +6,10 @@
     "backend": "cuda",
     "gpu": "V100",
     "llamacpp_build": "0.2.0-dev (f280b2698)",
-    "kv_bytes_per_token": 91428.57142857143,
-    "vram_at_ctx": 29102,
-    "source_run_id": "v100-cuda-20260825-110517-benchrun",
-    "measured_at": "2026-08-25T11:05:46.622Z"
+    "kv_bytes_per_token": 91099.42857142857,
+    "vram_at_ctx": 29070,
+    "source_run_id": "v100-cuda-20260827-115333-u3bj-benchrun",
+    "measured_at": "2026-08-27T11:54:24.004Z"
   },
   "Qwen3.8-27B-UD-Q6_K.gguf|Q6_K|k8v4|cuda|V100": {
     "gguf_file": "Qwen3.8-27B-UD-Q6_K.gguf",
@@ -18,10 +18,10 @@
     "backend": "cuda",
     "gpu": "V100",
     "llamacpp_build": "0.2.0-dev (f280b2698)",
-    "kv_bytes_per_token": 83236.57142857143,
-    "vram_at_ctx": 28590,
-    "source_run_id": "v100-cuda-20260825-110517-benchrun",
-    "measured_at": "2026-08-25T11:19:43.130Z"
+    "kv_bytes_per_token": 82395.42857142857,
+    "vram_at_ctx": 28526,
+    "source_run_id": "v100-cuda-20260827-115333-u3bj-benchrun",
+    "measured_at": "2026-08-27T11:55:11.165Z"
   },
   "Muse-Glimmer-30B-UD-Q5_K_XL.gguf|Q5_K_XL|∅|cuda|V100": {
     "gguf_file": "Muse-Glimmer-30B-UD-Q5_K_XL.gguf",

@@ -184,7 +184,7 @@ export function optiqServer({ inferenceUrl = 'http://127.0.0.1:8080', debug = fa
    }
 
    // Unified memory — no VRAM/GTT split, no rocm-smi. Return nulls so any stray VRAM-based probe
-   // (kv_per_tok) short-circuits cleanly instead of crashing; the MLX agent_ctx probe is
+   // (vram_per_ctx_tok) short-circuits cleanly instead of crashing; the MLX agent_ctx probe is
    // coherence-gated and never calls these.
    async function snapshotVram() {
       return null;

@@ -32,7 +32,9 @@
 #   tools            true | false
 #   native_max_ctx   Documented maximum context window (tokens). Caps the binary search.
 #   ctx_cap          Hard override cap (OOM/RoPE ceiling discovered empirically)
-#   kv_bytes_per_token  Q8_0 KV cache bytes per input token (used to estimate hi bound)
+#   (kv_bytes_per_token was removed 2026-08-27 — hand-estimated, and it named a cache size that the
+#    measured quantity never was. agent_ctx now seeds its hi bound from the measured
+#    vram_per_ctx_tok slope in results/caps, falling back to a constant.)
 #   extra_flags      Server-launch-only flags (speculative decoding, backend tweaks).
 #                    NO sampling keys here — those belong exclusively in sampling_matrix.
 #                    Batch sizing is NOT set per-entry: it comes from the top-level
@@ -91,7 +93,6 @@ models:
      think: none
      tools: true
      native_max_ctx: 262144
-     kv_bytes_per_token: 49152
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
      notes: "No think mode. repeat_penalty in sampling_matrix. If ub2048 OOMs at max ctx, set ubatch-size: 1024."
 
@@ -107,7 +108,6 @@ models:
      think: none
      tools: true
      native_max_ctx: 262144
-     kv_bytes_per_token: 49152
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
      notes: "If ub2048 OOMs at max ctx, set ubatch-size: 1024."
 
@@ -121,7 +121,6 @@ models:
      tools: true
      native_max_ctx: 262144
      ctx_cap: 81920
-     kv_bytes_per_token: 49152
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
 
    # ── Qwen3-14B Q5_K_M ────────────────────────────────────────────────────────
@@ -137,7 +136,6 @@ models:
      tools: true
      native_max_ctx: 32768
      ctx_cap: 40960
-     kv_bytes_per_token: 24576
      benches: [triage, reasoning, toolcalling, toolcalling_decay, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
 
    # ── Qwen3.5-9B (hybrid GatedDeltaNet + sparse MoE) ───────────────────────────
@@ -154,7 +152,6 @@ models:
      think: optional
      tools: true
      native_max_ctx: 262144
-     kv_bytes_per_token: 8192
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
      notes: "Hybrid GatedDeltaNet+MoE; linear-attn layers → small KV. Unsloth Q5_K_M."
 
@@ -172,10 +169,9 @@ models:
      tools: true
      native_max_ctx: 262144
      ctx_cap: 102400   # measured: all KV variants cap at 102400 (131072 incoherent)
-     kv_bytes_per_token: 16384
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
      kv_variants: [q5_0]
-     notes: "kv_bytes_per_token is estimated — kv-probe will calibrate."
+     notes: "Run vram_per_ctx_tok to measure this config's per-context-token footprint."
 
    # ── Qwen3.6-27B IQ4_XS ───────────────────────────────────────────────────────
    # Same architecture as Qwen3.5 (model_type=qwen3_5, Qwen3_5ForConditionalGeneration,
@@ -197,7 +193,6 @@ models:
      tools: true
      native_max_ctx: 262144
      ctx_cap: 102400   # measured: all KV variants cap at 102400 (131072 incoherent)
-     kv_bytes_per_token: 16384   # estimated — same arch as Qwen3.5-27B; kv-probe will calibrate
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
      kv_variants: [q5_0, q4_0]
 
@@ -216,10 +211,9 @@ models:
      think: optional
      tools: true
      native_max_ctx: 262144
-     kv_bytes_per_token: 49152
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
      kv_variants: [q5_0, q4_0]
-     notes: "kv_bytes_per_token matches 35B estimate — kv-probe will calibrate."
+     notes: "Run vram_per_ctx_tok to measure this config's per-context-token footprint."
 
    # ── Qwen3.6-35B-A3B IQ4_XS ──────────────────────────────────────────────────
    # Hybrid: runs both nothi and think passes.
@@ -234,7 +228,6 @@ models:
      tools: true
      native_max_ctx: 262144
      ctx_cap: 102400   # measured: 131072 incoherent on Vulkan (maxctx probe 2026-06-23); safe cap = 102400
-     kv_bytes_per_token: 49152
      extra_flags:
         spec-type: draft-mtp
         spec-draft-n-max: 4
@@ -258,7 +251,6 @@ models:
      tools: true
      native_max_ctx: 262144
      ctx_cap: 102400   # conservative: same arch as IQ4_XS; 131072 incoherent there (2026-06-23)
-     kv_bytes_per_token: 49152
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
      kv_variants: [q5_0, q4_0]
 
@@ -282,7 +274,7 @@ models:
    # ctx_cap is a FRESH seed for OptiQ (the RapidMLX int4 64k ceiling does NOT transfer — different
    # quant + serving stack, and the caps-cache key uses backend=optiq); agent_ctx (run FIRST)
    # re-measures the coherence_ceiling for the depth probes. extra_flags null llama.cpp batch defaults.
-   # Excludes kv_per_tok/fit_ctx (VRAM/llama.cpp-only) and parallel_gen (violates 1-client).
+   # Excludes vram_per_ctx_tok/fit_ctx (VRAM/llama.cpp-only) and parallel_gen (violates 1-client).
    # NOTE: OptiQ's natural secondary A/B is mixed-precision KV (`optiq kv-cache <model> --target-bits N`
    # → --kv-config kv_config.json) vs this uniform --kv-bits 4 — the OptiQ analog of the old RapidMLX
    # pflash A/B. Deferred; add a disabled `[kv-mixed]` variant when running it.
@@ -482,7 +474,6 @@ models:
      think_control: enable_thinking
      tools: true   # native function-calling (Google docs list gemma-4-E4B-it)
      native_max_ctx: 131072
-     kv_bytes_per_token: 16384
      # b9496 auto-loads a vision projector for gemma4 → clip.cpp "Unknown projector
      # type" abort on load. We benchmark text-only, so disable it.
      extra_flags: { "no-mmproj": true }
@@ -498,7 +489,6 @@ models:
      think_control: enable_thinking
      tools: true
      native_max_ctx: 131072
-     kv_bytes_per_token: 16384
      extra_flags: { "no-mmproj": true }   # see Q8 note: skip gemma4 vision projector (text-only)
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
 
@@ -524,7 +514,6 @@ models:
      think_control: enable_thinking
      tools: true
      native_max_ctx: 131072
-     kv_bytes_per_token: 16384
      extra_flags: { "no-mmproj": true }
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
 
@@ -541,7 +530,6 @@ models:
      tools: true
      native_max_ctx: 131072
      ctx_cap: 102400   # measured: q4_0 and q5_0 KV cap at 102400
-     kv_bytes_per_token: 16384
      extra_flags:
         "no-mmproj": true   # skip gemma4 vision projector (text-only)
         model-draft: /home/demonkoryu/models/gemma-4-26B-A4B-it-MTP-Q8_0.gguf
@@ -566,7 +554,6 @@ models:
      # is a 128k window (256k would need YaRN rope-scaling not baked in here), so
      # bound the search at the real trained length rather than probing dead range.
      native_max_ctx: 131072
-     kv_bytes_per_token: 16384
      extra_flags: { "no-mmproj": true }   # see E4B Q8 note: skip gemma4 vision projector (text-only)
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
 
@@ -584,7 +571,6 @@ models:
      think_control: enable_thinking
      tools: true
      native_max_ctx: 131072   # same 128k window as the unsloth 12B GGUF
-     kv_bytes_per_token: 16384
      extra_flags: { "no-mmproj": true }   # skip gemma4 vision projector (text-only)
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
 
@@ -598,7 +584,6 @@ models:
      tools: true
      native_max_ctx: 131072
      ctx_cap: 102400   # measured: q5_0 KV caps at 102400; use conservative value for all variants
-     kv_bytes_per_token: 16384
      extra_flags:
         "no-mmproj": true   # repo ships gemma-4-26B-it-mmproj.gguf — skip it (text-only)
         model-draft: /home/demonkoryu/models/gemma-4-26B-A4B-it-MTP-Q8_0.gguf
@@ -622,7 +607,6 @@ models:
      tools: true
      native_max_ctx: 131072
      ctx_cap: 102400   # gemma4 family coheres to ~100k, not the full 131072 (agent_ctx planner @128k was incoherent + near-OOM 2026-07-18)
-     kv_bytes_per_token: 16384
      extra_flags: { "no-mmproj": true }   # repo ships gemma-4-31B-it-mmproj.gguf — skip it (text-only)
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
      kv_variants: [q4_0, q5_0]
@@ -643,7 +627,6 @@ models:
      think_control: enable_thinking
      tools: true
      native_max_ctx: 131072   # same 128k window as the other 12B GGUFs
-     kv_bytes_per_token: 16384
      extra_flags: { "no-mmproj": true }   # skip gemma4 vision projector (text-only)
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
 
@@ -661,7 +644,6 @@ models:
                        # misses it and maxctx would otherwise drop to the --ctx default (that is how this model
                        # was previously measured at a single depth). fit_ctx says 262144 but that is a memory-fit
                        # bound only, not architecture-aware, so it is NOT the usable window.
-     kv_bytes_per_token: 16384
      extra_flags:
         "no-mmproj": true   # repo ships mmproj-*.gguf — skip it (text-only)
         model-draft: /home/demonkoryu/models/gemma-4-26B-A4B-it-MTP-Q8_0.gguf
@@ -683,7 +665,6 @@ models:
      tools: true   # native tool-calling; emits Pythonic calls by default (may grade low vs JSON grader)
      native_max_ctx: 131072
      ctx_cap: 131072
-     kv_bytes_per_token: 8192
      # NO triage: always-reasoning model spends the smoke triage-JSON probe's token
      # budget on reasoning_content before emitting proposed_action → smoke FAILs
      # (triage-json:no-action) → ALL benches skip. Capability limit, like Nemotron+tools.
@@ -705,7 +686,6 @@ models:
      think: none
      tools: true
      native_max_ctx: 131072
-     kv_bytes_per_token: 8192
      benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
 
    # ── Nemotron-3-Nano-4B (mamba-hybrid) ─────────────────────────────────────────
@@ -724,7 +704,6 @@ models:
      capability_note: "tool-calling + json_schema blocked by llama.cpp#24081 class; mamba assert risk #20570"
      no_schema: true
      native_max_ctx: 131072
-     kv_bytes_per_token: 16384
      benches: [triage, reasoning, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
 
    # ── Qwen3.8-27B Q6_K ─────────────────────────────────────────────────────────
@@ -742,7 +721,6 @@ models:
      # VRAM-aware cap, distinct from native_max_ctx above: 65536 is the largest window
      # observed to load on rose (2026-08-26) once the MTP draft cache is accounted for.
      ctx_cap: 65536
-     kv_bytes_per_token: 16384
      # MTP speculative decode. `spec_decode:` alone is only the RECORDED dimension — it does not
      # reach the server. The extra_flags entry is what actually starts llama-server with
      # `--spec-type draft-mtp` (this build's MTP uses the target model's own MTP head, so no
@@ -754,7 +732,7 @@ models:
      # which cut the agent fleet from 10 coders to 4.
      extra_flags: { spec-type: draft-mtp, spec-draft-type-k: q8_0, spec-draft-type-v: q8_0 }
      benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
-               struct_output, instruction_following, agentic_loop, speed, throughput, kv_per_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
+               struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
      kv_variants: [q8_0]
 
    # ── Qwen3.8-27B Q6_K · asymmetric KV (k=q8_0, v=q4_0) ───────────────────────
@@ -771,14 +749,13 @@ models:
      native_max_ctx: 262144
      # VRAM-aware cap: 65536 observed to load on rose (2026-08-26). See the q8_0 entry.
      ctx_cap: 65536
-     kv_bytes_per_token: 12288
      kv_quant: k8v4
      spec_decode: draft-mtp
      # spec-draft-type-k/v mirror this entry's asymmetric target KV (see the q8_0 entry above
      # for the f16-draft measurement that motivated pinning them).
      extra_flags: { cache-type-k: q8_0, cache-type-v: q4_0, spec-type: draft-mtp, spec-draft-type-k: q8_0, spec-draft-type-v: q4_0 }
      benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
-               struct_output, instruction_following, agentic_loop, speed, throughput, kv_per_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
+               struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
 
    # ══ NInfer (engine: ninfer) ═══════════════════════════════════════════════════
    # ninfer-v100 (https://github.com/geoffwatts/ninfer-v100) — the sm_70 Volta port of a
@@ -805,7 +782,7 @@ models:
    # Excluded benches, and why (they are not "not yet run" — they cannot mean anything here):
    #   fit_ctx     — needs llama-fit-params; there is no analytic fit tool, so probeFitCtx returns
    #                 null and the probe self-skips anyway.
-   #   kv_per_tok  — measures VRAM delta across two context sizes. Under `--kv-capacity auto` the
+   #   vram_per_ctx_tok — measures VRAM delta across two context sizes. Under `--kv-capacity auto` the
    #                 pool always grows to fill free memory minus 1 GiB headroom, so the footprint
    #                 is CONSTANT and the delta is ~0 regardless of context. A zero here would read
    #                 as "free KV", which is the opposite of the truth.
@@ -962,7 +939,7 @@ models:
    #
    # Attention is [Local, Local, Local, Global] repeating over 52 layers with a 2048 sliding window,
    # GQA 32q/2kv, head dim 128. Only the 13 global layers grow KV with context; the 39 local ones
-   # are pinned to the window. Hence the unusually small kv_bytes_per_token below.
+   # are pinned to the window, so its per-context-token footprint is unusually small.
    #
    # ALWAYS reasons (think: reasoning): there is no on/off toggle. Strength is a separate knob the
    # ATEM chat template reads from a `reasoning_strength` kwarg and DEFAULTS TO `high` when unset,
@@ -985,7 +962,8 @@ models:
      # q8_0 KV at the measured 39 KiB/tok = ~4.0 GiB KV). Without it, maxctx falls through
      # to the run's --ctx flag and every depth probe collapses to depth 0.
      ctx_cap: 102400
-     # MEASURED, not estimated: kv_per_tok on rose returned 39 KiB/token (2026-08-26, q8_0 KV).
+     # MEASURED, not estimated: vram_per_ctx_tok on rose returned 39 KiB/token (2026-08-26, q8_0 KV,
+     # 2-GPU). Re-measured single-GPU 2026-08-27.
      # The original estimate here was 7.1 KiB, assuming only the 13 GLOBAL layers grow with context
      # and the 39 local ones stay pinned to the 2048 window. That assumption is WRONG on two counts,
      # and the measurement decomposes exactly:
@@ -995,7 +973,6 @@ models:
      # So llama.cpp does NOT window-size the local layers' KV -- it allocates every layer at full
      # context -- and the drafter's own cache counts too, which the first estimate ignored entirely.
      # Any speculative row with a separate --model-draft pays that second term.
-     kv_bytes_per_token: 39936
      # DFlash speculative decode: a 5-layer block-diffusion drafter that proposes 16 tokens per
      # forward pass, shipped as a separate 1.6 GB GGUF (unsloth's dflash-kquant.gguf, staged to
      # ~/models). Unlike the Qwen3.8 MTP rows there is no self-draft head, so --model-draft is
@@ -1034,7 +1011,7 @@ models:
         spec-type: draft-dflash
         spec-draft-n-max: 16   # match DFlash's block_size; the build default of 3 costs ~1.4x on structured output
      benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
-               struct_output, instruction_following, agentic_loop, speed, throughput, kv_per_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
+               struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
      notes: "Text-only by choice (--no-mmproj); the perception encoder is a separate measurement. Always-reasoning at the template's default strength `high`. DFlash verified correct on sm_70 2026-08-26 by agreement with the spec-off baseline, not by greedy self-reproducibility -- this model is nondeterministic at temperature 0.0 with speculation OFF too."
 
 

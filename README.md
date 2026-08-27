@@ -56,7 +56,7 @@ host's systemd `llama-server` service).
 Benches (`benches/`): `triage, reasoning, reasoning_hard, toolcalling, summarization,
 docqa, coding_{multipl,hard,practical,bugfix}, agentic_loop, struct_output,
 instruction_following`, plus **probes** (`benches/probes/`, self-manage the server):
-`maxctx, kv_per_tok, throughput` (e2e/ttft), `speed, prefix_cache, quality_decay,
+`maxctx, vram_per_ctx_tok, throughput` (e2e/ttft), `speed, prefix_cache, quality_decay,
 parallel_gen`.
 
 > **Host note:** the GPU host runs a systemd `llama-server` model-router on port 8090.

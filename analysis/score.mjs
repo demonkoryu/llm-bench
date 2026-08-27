@@ -105,7 +105,7 @@ const METRIC_DEFS = {
    _agent_slots: { raw: (r) => pickFleet(r, 'n_slots'), norm: 'raw' },
    _agent_planner_ctx: { raw: (r) => pickFleet(r, 'planner_ctx'), norm: 'raw' },
    _vram_at_ctx: { raw: (r) => pickFleet(r, 'vram_mib'), norm: 'raw' },
-   _kv_per_tok_kib: { raw: (r) => pickMean(r, 'score', 'kv_per_tok'), norm: 'raw' },
+   _vram_per_ctx_tok_kib: { raw: (r) => pickMean(r, 'score', 'vram_per_ctx_tok'), norm: 'raw' },
 };
 
 // ── entity grouping ─────────────────────────────────────────────────────────────

@@ -65,7 +65,7 @@ const NINFER_MAX_LANES = 8;
 // not two guesses at one number, so both are reported rather than one being picked.
 const NINFER_LANE_WIDTHS = [65536, 131072];
 
-// KV-cache element size relative to q8_0 (the reference kv_bytes_per_token in models.yaml),
+// KV-cache element size relative to q8_0 (the reference footprint from caps),
 // from GGML type sizes (bytes/32 elems): q8_0=34, q5_0=22, q5_1=24, q4_0=18, q4_1=20, f16=64.
 const KV_QUANT_RATIO = { q8_0: 1.0, q5_0: 0.647, q5_1: 0.706, q4_0: 0.529, q4_1: 0.588, f16: 1.882 };
 
@@ -81,7 +81,7 @@ const KV_QUANT_RATIO = { q8_0: 1.0, q5_0: 0.647, q5_1: 0.706, q4_0: 0.529, q4_1:
 //   - The draft context costs ~4794 MiB at a 65536-token unified pool (31452 vs 26658 MiB) — i.e.
 //     MTP materially reduces multi-agent capacity.
 // Stripping it therefore reported a pool/VRAM the production config can never actually reach, while
-// kv_per_tok (which keeps MTP) reported an MTP-inclusive KiB/tok — one dashboard row, two machines.
+// vram_per_ctx_tok (which keeps MTP) reports an MTP-inclusive KiB/tok — one dashboard row, two machines.
 const STRIP_FLAGS = new Set(['parallel']);
 
 const round4k = (n) => Math.max(4096, Math.round(n / 4096) * 4096);
@@ -156,7 +156,12 @@ async function runLlamacpp({ srv, client, model, caps, vramTotalMib }) {
    const coderCtx = round4k(Math.min(CODER_TARGET, coherentWindow));
 
    const kvQuant = model.variant?.replace(/^kv/, '') ?? model.extra_flags?.['cache-type-k'] ?? 'q8_0';
-   const kvBytesPerTok = (caps?.kv_bytes_per_token ?? model.kv_bytes_per_token ?? 24576) * (KV_QUANT_RATIO[kvQuant] ?? 1.0);
+   // Starting-rung estimate only — the binary search below verifies every rung against real VRAM, so
+   // an inaccurate figure costs probe iterations, never a wrong answer. Reads the measured
+   // vram_per_ctx_tok slope from caps when present; the per-model `kv_bytes_per_token` yaml estimates
+   // were removed 2026-08-27 (they were hand-guesses, 16 KiB against a measured 89 KiB slope on
+   // Qwen3.8-27B Q6_K, and their name asserted a cache size the number never was).
+   const kvBytesPerTok = (caps?.vram_bytes_per_ctx_tok ?? 24576) * (KV_QUANT_RATIO[kvQuant] ?? 1.0);
 
    const fail = (notes) => [
       {
@@ -193,7 +198,7 @@ async function runLlamacpp({ srv, client, model, caps, vramTotalMib }) {
    // ── Phase 1b: estimate a STARTING coder count (only a hint; the search below is empirical) ─
    // weights ≈ footprint(planner) − KV(planner); the rest of the card holds more KV pool. Just
    // picks where the search starts — the down/up loop finds the true boundary regardless of
-   // estimate error (kv_bytes_per_token is often a rough yaml guess).
+   // estimate error (the caps slope is VRAM-per-ctx-token, not cache size).
    const weightsMib = footPlanner != null ? Math.max(0, footPlanner - kib(plannerCtx, kvBytesPerTok)) : null;
    const kvBudgetMib = cardTotalMib - EST_COMPUTE_RESERVE_MIB - (weightsMib ?? cardTotalMib);
    const poolTokens = weightsMib != null ? Math.floor((kvBudgetMib * 1024 * 1024) / kvBytesPerTok) : plannerCtx;

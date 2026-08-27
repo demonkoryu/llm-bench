@@ -83,7 +83,7 @@ export const SCOPE = Object.freeze({ GENERAL: 'general', TEMPLATE: 'template' })
 // but its `quality_decay-*` accuracy rows are template-dependent, while the `ttft-*` timing rows it
 // also emits are general — so this keys on what actually landed in the row. Mirrors the
 // SCORE_UNIT_BY_BENCH structure below (same probe-name patterns).
-const GENERAL_BENCH = [/^agent_ctx$/, /^fit_ctx$/, /^kv_per_tok$/, /^power_eff$/, /^e2e-/, /^ttft-/, /^speed(_|$)/, /^prefix_cache_/];
+const GENERAL_BENCH = [/^agent_ctx$/, /^fit_ctx$/, /^vram_per_ctx_tok$/, /^power_eff$/, /^e2e-/, /^ttft-/, /^speed(_|$)/, /^prefix_cache_/];
 export const scopeFor = (bench) => (GENERAL_BENCH.some((re) => re.test(bench)) ? SCOPE.GENERAL : SCOPE.TEMPLATE);
 
 // Dimension columns the caller supplies via `dims` (everything except the measurement + provenance).
@@ -172,7 +172,7 @@ const UNIT_EXACT = {
 const SCORE_UNIT_BY_BENCH = [
    [/^agent_ctx$/, 'count'], // score = n_coders (coder agents alongside the planner)
    [/^fit_ctx$/, 'tokens'],
-   [/^kv_per_tok$/, 'kib'],
+   [/^vram_per_ctx_tok$/, 'kib'],
    [/^power_eff$/, 'tok_s_per_w'],
    [/^e2e-/, 'tok_s'],
    [/^ttft-/, 'ms'],

@@ -8,12 +8,12 @@ import { bench as instruction_following } from './instruction_following.mjs';
 // performance/capacity probes (kind: 'probe' — self-manage the server)
 import { bench as agent_ctx } from './probes/agent_ctx.mjs';
 import { bench as fit_ctx } from './probes/fit_ctx.mjs';
-import { bench as kv_per_tok } from './probes/kv_per_tok.mjs';
 import { bench as parallel_gen } from './probes/parallel_gen.mjs';
 import { bench as prefix_cache } from './probes/prefix_cache.mjs';
 import { bench as quality_decay } from './probes/quality_decay.mjs';
 import { bench as speed } from './probes/speed.mjs';
 import { bench as throughput } from './probes/throughput.mjs';
+import { bench as vram_per_ctx_tok } from './probes/vram_per_ctx_tok.mjs';
 import { bench as reasoning } from './reasoning.mjs';
 import { bench as reasoning_expert } from './reasoning_expert.mjs';
 import { bench as reasoning_hard } from './reasoning_hard.mjs';
@@ -36,7 +36,7 @@ const all = [
    instruction_following,
    agent_ctx,
    fit_ctx,
-   kv_per_tok,
+   vram_per_ctx_tok,
    throughput,
    speed,
    prefix_cache,

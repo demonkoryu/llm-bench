@@ -114,9 +114,12 @@ export const METRIC_CATALOG = {
    },
    'fit-ctx': { fn: (r) => maxF(r, (x) => x.bench === 'fit_ctx' && x.metric === 'score') },
    'VRAM MiB': { fn: (r) => maxF(r, (x) => x.bench === 'agent_ctx' && x.metric === 'vram_mib'), lower: true },
-   'KV bytes/tok': {
+   // NOT the KV cache: this is every allocation that grows with context, the MTP draft cache included
+   // (see benches/probes/vram_per_ctx_tok.mjs). Labelled accordingly so nobody checks it against a
+   // bits-per-element calculation and concludes the quantization is broken.
+   'VRAM bytes/ctx tok': {
       fn: (r) => {
-         const v = avgF(r, (x) => x.bench === 'kv_per_tok' && x.metric === 'score');
+         const v = avgF(r, (x) => x.bench === 'vram_per_ctx_tok' && x.metric === 'score');
          return v == null ? null : 1024 * v;
       },
       lower: true,
