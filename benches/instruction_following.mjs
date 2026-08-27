@@ -17,7 +17,10 @@ export const bench = {
          ];
          let text = '';
          try {
-            const { completion } = await client.chat(messages, { think, thinkControl, max_tokens: 1024, temperature: 0.0 }, 300000);
+            // Flat budget (2026-08-27) — see the note in benches/struct_output.mjs. 1024 was small enough
+            // that a reasoning model could spend it inside the trace and return empty content, which
+            // this bench scores as a failed instruction rather than as a truncation.
+            const { completion } = await client.chat(messages, { think, thinkControl, max_tokens: 4096, temperature: 0.0 }, 300000);
             text = completion?.choices?.[0]?.message?.content ?? '';
          } catch {
             /* empty → fails checks */

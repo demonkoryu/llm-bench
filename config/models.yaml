@@ -193,7 +193,8 @@ models:
      tools: true
      native_max_ctx: 262144
      ctx_cap: 102400   # measured: all KV variants cap at 102400 (131072 incoherent)
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
+               struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
      kv_variants: [q5_0, q4_0]
 
    # ── Qwen3.6-27B UD-Q4_K_XL ───────────────────────────────────────────────────
@@ -211,7 +212,8 @@ models:
      think: optional
      tools: true
      native_max_ctx: 262144
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
+               struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
      kv_variants: [q5_0, q4_0]
      notes: "Run vram_per_ctx_tok to measure this config's per-context-token footprint."
 
@@ -232,7 +234,8 @@ models:
         spec-type: draft-mtp
         spec-draft-n-max: 4
         parallel: 1   # MTP (embedded tensors) not supported with n_parallel > 1
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
+               struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
      kv_variants: [q5_0, q4_0]
      notes: "MTP speculative draft; smoke will catch if Vulkan build lacks support."
 
@@ -251,7 +254,8 @@ models:
      tools: true
      native_max_ctx: 262144
      ctx_cap: 102400   # conservative: same arch as IQ4_XS; 131072 incoherent there (2026-06-23)
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
+               struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
      kv_variants: [q5_0, q4_0]
 
    # ── Qwen3.6-27B OptiQ 4-bit (OptiQ / mlx-optiq on the M1 Mac) ─────────────────
@@ -515,7 +519,8 @@ models:
      tools: true
      native_max_ctx: 131072
      extra_flags: { "no-mmproj": true }
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
+               struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
 
    # ── Gemma4-26B-A4B ───────────────────────────────────────────────────────────
    # Hybrid: runs both nothi and think passes. ~16.9 GB weights.
@@ -535,7 +540,8 @@ models:
         model-draft: /home/demonkoryu/models/gemma-4-26B-A4B-it-MTP-Q8_0.gguf
         spec-type: draft-mtp
         spec-draft-n-max: 4
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
+               struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
      kv_variants: [q4_0, q5_0]   # q4_0 added 2026-07-20 to align agent_ctx/VRAM with the q4_0 quality rows
 
    # ── Gemma4-12B (dense "unified" — encoder-free multimodal, run text-only) ──────
@@ -589,7 +595,8 @@ models:
         model-draft: /home/demonkoryu/models/gemma-4-26B-A4B-it-MTP-Q8_0.gguf
         spec-type: draft-mtp
         spec-draft-n-max: 4
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
+               struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
      kv_variants: [q4_0, q5_0]   # q4_0 added 2026-07-20 to align agent_ctx/VRAM with the q4_0 quality rows
 
    # ── Gemma4-31B QAT q4_0 (Google official, dense) ────────────────────────────
@@ -608,7 +615,8 @@ models:
      native_max_ctx: 131072
      ctx_cap: 102400   # gemma4 family coheres to ~100k, not the full 131072 (agent_ctx planner @128k was incoherent + near-OOM 2026-07-18)
      extra_flags: { "no-mmproj": true }   # repo ships gemma-4-31B-it-mmproj.gguf — skip it (text-only)
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
+               struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
      kv_variants: [q4_0, q5_0]
 
    # ── Gemma4 QAT — Unsloth Dynamic UD-Q4_K_XL (QAT base, unsloth's dynamic quant) ─
@@ -649,12 +657,25 @@ models:
         model-draft: /home/demonkoryu/models/gemma-4-26B-A4B-it-MTP-Q8_0.gguf
         spec-type: draft-mtp
         spec-draft-n-max: 4
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
+               struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
      kv_variants: [q4_0, q5_0]   # q4_0 added 2026-07-20 to align agent_ctx/VRAM with the q4_0 quality rows
 
    # ── LFM2.5-8B-A1B ────────────────────────────────────────────────────────────
    # Always-reasoning: outputs to reasoning_content field, not content.
    # Only 6 of 24 layers are attention → tiny KV footprint.
+   #
+   # `triage` RESTORED 2026-08-27. It was excluded because a pre-flight smoke probe ran triage-JSON on
+   # a 256-token budget, this model spent that budget inside reasoning_content before emitting
+   # proposed_action, and the resulting `triage-json:no-action` failure dropped EVERY bench for the
+   # model. All three legs of that are gone:
+   #   · the gate itself — `skipOrRun()` lived in run-suite.mjs, which no longer exists. bench-run has
+   #     no pre-flight gate, and a failing bench now fails that bench alone.
+   #   · the 256-token budget — every quality bench is on a flat generous budget (2026-08-27); the
+   #     asymmetric `reasons() ? big : small` shape that starved the non-thinking path is gone.
+   #   · answers landing in reasoning_content — shared/llm/client.mjs recovers them when content comes
+   #     back empty, measured at ~25% of replies on the model that exposed it.
+   # If triage still fails here, it is now a result rather than a harness artifact — record it.
    - hf_repo: LiquidAI/LFM2.5-8B-A1B-GGUF
      hf_file: LFM2.5-8B-A1B-Q5_K_M.gguf
      label: "LFM2.5-8B Q5_K_M"
@@ -668,7 +689,8 @@ models:
      # NO triage: always-reasoning model spends the smoke triage-JSON probe's token
      # budget on reasoning_content before emitting proposed_action → smoke FAILs
      # (triage-json:no-action) → ALL benches skip. Capability limit, like Nemotron+tools.
-     benches: [reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
+               struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
      capability_note: "triage excluded: always-reasoning output can't emit triage-JSON action within the smoke probe budget"
      notes: "reasoning_content merged by llm client. repeat_penalty in sampling_matrix."
 
@@ -686,7 +708,8 @@ models:
      think: none
      tools: true
      native_max_ctx: 131072
-     benches: [triage, reasoning, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
+               struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
 
    # ── Nemotron-3-Nano-4B (mamba-hybrid) ─────────────────────────────────────────
    # Small v3 Nemotron; Q8_0 ≈4.3GB → big KV headroom for long context. Same bug
@@ -704,7 +727,8 @@ models:
      capability_note: "tool-calling + json_schema blocked by llama.cpp#24081 class; mamba assert risk #20570"
      no_schema: true
      native_max_ctx: 131072
-     benches: [triage, reasoning, summarization, docqa, coding_hard, coding_practical, coding_bugfix, speed, agent_ctx, fit_ctx]
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output,
+               instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
 
    # ── Qwen3.8-27B Q6_K ─────────────────────────────────────────────────────────
    # Qwen3.8-27B: model_type=qwen3_5 (GatedDeltaNet dense hybrid, same arch as

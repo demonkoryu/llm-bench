@@ -3,7 +3,6 @@
 // orchestrator explodes via shared/tidy-schema.mjs — same path as backfill.
 import toolGrader from '../benchmarks/toolcalling/grader.mjs';
 import { CASES as TOOL_CASES, TOOLS_POOL } from '../benchmarks/toolcalling/toolcases.mjs';
-import { reasons } from '../shared/llm/think.mjs';
 
 const SYSTEM =
    'You are a helpful assistant with access to tools. Call a tool ONLY when needed. ' +
@@ -12,7 +11,7 @@ const SYSTEM =
 export const bench = {
    name: 'toolcalling',
    thinkDependent: true,
-   async run(client, { think, sampling, thinkControl, model }) {
+   async run(client, { think, sampling, thinkControl }) {
       let pass = 0;
       for (const [caseId, tc] of Object.entries(TOOL_CASES)) {
          const userMsg = tc.user ?? caseId;
@@ -27,7 +26,13 @@ export const bench = {
                think,
                thinkControl,
                tools,
-               max_tokens: reasons(model, think) ? 2048 : 1024,
+               // Flat budget (2026-08-27). The `reasons(model, think) ? big : small` shape gave the pass LEAST able
+               // to afford truncation the SMALLER budget, and a truncated or empty reply is scored as a parse
+               // failure or a wrong answer — the harness measuring itself. struct_output quantified it on
+               // Muse-Glimmer-30B: 256 -> 41.67%, 1024 -> 91.67%, 4096 -> 100%, "not one malformed JSON at any
+               // budget". Same shape produced Qwen3.6-27B's triage json_fail=18/18. A model that stops early costs
+               // nothing here; only one that needed the room is affected.
+               max_tokens: 2048,
                ...sampling,
             }));
          } catch {

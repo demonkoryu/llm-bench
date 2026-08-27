@@ -4,7 +4,6 @@
 import { EXPERT_CASES } from '../benchmarks/reasoning/cases-expert.mjs';
 import reasoningGrader from '../benchmarks/reasoning/grader.mjs';
 import { stripThink } from '../shared/llm/index.mjs';
-import { reasons } from '../shared/llm/think.mjs';
 
 const SYSTEM =
    'Solve the problem. Think step by step and show your work.\n' +
@@ -30,7 +29,13 @@ export const bench = {
                thinkControl,
                // harder problems need room to work; no schema in think mode (grammar blocks think)
                responseFormat: think === true || model?.no_schema ? null : ANSWER_SCHEMA,
-               max_tokens: reasons(model, think) ? 8192 : 2048,
+               // Flat budget (2026-08-27). The `reasons(model, think) ? big : small` shape gave the pass LEAST able
+               // to afford truncation the SMALLER budget, and a truncated or empty reply is scored as a parse
+               // failure or a wrong answer — the harness measuring itself. struct_output quantified it on
+               // Muse-Glimmer-30B: 256 -> 41.67%, 1024 -> 91.67%, 4096 -> 100%, "not one malformed JSON at any
+               // budget". Same shape produced Qwen3.6-27B's triage json_fail=18/18. A model that stops early costs
+               // nothing here; only one that needed the room is affected.
+               max_tokens: 8192,
                ...sampling,
             }));
          } catch {

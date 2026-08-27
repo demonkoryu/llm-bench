@@ -2,7 +2,6 @@
 // Ported from runners/struct-output.mjs (TASKS + extractJson inline; validated logic).
 // NOTE: the sibling `power_eff` metric needs host wattage sensing (a host probe), so it
 // is handled by the orchestrator's probe path, not here.
-import { reasons } from '../shared/llm/think.mjs';
 
 const TASKS = [
    {
@@ -58,8 +57,13 @@ const SYS = 'You output only valid JSON. No prose, no markdown fences — just t
 // thinkDependent:false and budget-on-think: bench-run hands thinkDependent:false benches
 // `think === null` even for an always-reasoning model, while thinkDependent:true benches get
 // `think === true` and were already taking the big branch. See reasons() in shared/llm/think.mjs.
-const MAX_TOK = 256;
-const MAX_TOK_REASONING = 4096;
+// Flat budget (2026-08-27). The `reasons(model, think) ? big : small` shape gave the pass LEAST able
+// to afford truncation the SMALLER budget, and a truncated or empty reply is scored as a parse
+// failure or a wrong answer — the harness measuring itself. struct_output quantified it on
+// Muse-Glimmer-30B: 256 -> 41.67%, 1024 -> 91.67%, 4096 -> 100%, "not one malformed JSON at any
+// budget". Same shape produced Qwen3.6-27B's triage json_fail=18/18. A model that stops early costs
+// nothing here; only one that needed the room is affected.
+const MAX_TOK = 4096;
 
 function extractJson(text) {
    const s = String(text).replace(/```(json)?/gi, '');
@@ -87,7 +91,7 @@ const isType = (v, ty) =>
 export const bench = {
    name: 'struct_output',
    thinkDependent: false,
-   async run(client, { think, thinkControl, model }) {
+   async run(client, { think, thinkControl }) {
       let parseOk = 0,
          schemaOk = 0;
       for (const t of TASKS) {
@@ -98,7 +102,7 @@ export const bench = {
                   { role: 'system', content: SYS },
                   { role: 'user', content: t.p },
                ],
-               { think, thinkControl, max_tokens: reasons(model, think) ? MAX_TOK_REASONING : MAX_TOK, temperature: 0.0 },
+               { think, thinkControl, max_tokens: MAX_TOK, temperature: 0.0 },
                120000,
             );
             text = completion?.choices?.[0]?.message?.content ?? '';
