@@ -573,6 +573,15 @@ async function main() {
       ),
    );
    console.error(`\n[bench-run] wrote ${writtenTotal} measurement rows → Postgres · run ${run_id}`);
+   // How often the server handed back an empty `content` with the answer in reasoning_content, which
+   // the client repaired (see the channel-misrouting note in shared/llm/client.mjs). Reported because
+   // a silent repair is indistinguishable from a model that simply answered — and the RATE is the
+   // signal worth watching: it was ~25% on Nemotron-3-Nano-4B, and every one of those was a complete
+   // answer the old read scored as a parse failure.
+   const repaired = client.channelRepairs?.() ?? 0;
+   if (repaired > 0) {
+      console.error(`[bench-run] channel-misrouting repairs: ${repaired} reply/replies recovered from reasoning_content`);
+   }
 }
 
 function slug(s) {

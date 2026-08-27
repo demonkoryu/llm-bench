@@ -66,6 +66,9 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
    // Side-channel for timings from the last intercepted response.
    // The openai SDK parses responses into typed objects and drops unknown fields.
    // We save timings here during the custom fetch interception.
+   // Count of replies whose answer had to be recovered from reasoning_content — surfaced so a run
+   // can report how often the server misrouted, instead of the repair being silent.
+   let _channelRepairs = 0;
    let _lastTimings = null;
    // Wall-clock fallback for engines that don't emit a llama.cpp `timings` object (e.g. mlx_lm /
    // OptiQ, whose OpenAI response carries only `usage` token counts). chat() records the request
@@ -172,6 +175,33 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
       const completion = await sdk.chat.completions.create(reqParams, { signal });
       _lastWallMs = Date.now() - _t0;
       _lastUsage = completion?.usage ?? null;
+
+      // ── Channel-misrouting repair ────────────────────────────────────────────────────────────
+      // `--reasoning-format auto` splits a reply into reasoning_content + clean content. When the
+      // model emits its answer ONCE (no separate post-trace copy), the server sometimes assigns
+      // that single copy to reasoning_content and leaves content EMPTY. Every bench reads
+      // message.content alone, so a complete answer is scored as a parse failure.
+      //
+      // Measured on Nemotron-3-Nano-4B Q8_0, triage, 2026-08-27: 11 of 44 replies (~25%) came back
+      // content=0 chars with reasoning_content holding the whole answer — finish_reason=stop,
+      // ~100 completion tokens, and in every case the reasoning payload parsed as a COMPLETE triage
+      // object. The successful replies emitted the JSON twice (~200 tokens) and the parser copied it
+      // into both fields, which is why the same case passes and fails run to run.
+      //
+      // Guarded on content being EMPTY, never merely short: a model that answered in the right
+      // channel is untouched, so this changes no existing number for any model whose content is
+      // populated. It cannot invent a pass either — a rambling trace still fails the graders.
+      const _msg = completion?.choices?.[0]?.message;
+      if (_msg && !(_msg.content ?? '').trim()) {
+         const _rc = (_msg.reasoning_content ?? _msg.reasoning ?? '').trim();
+         if (_rc) {
+            _msg.content = _rc;
+            _channelRepairs++;
+            if (debug) {
+               process.stderr.write(`[llm:repair] empty content — recovered ${_rc.length} chars from reasoning_content\n`);
+            }
+         }
+      }
 
       if (debug) {
          const c = completion.choices?.[0];
@@ -478,7 +508,21 @@ export function createClient(baseUrl = DEFAULT_URL, { debug = false, timeout = D
       return toks > 0 ? toks / (_lastWallMs / 1000) : null;
    }
 
-   return { chat, chatStream, toolsLoop, waitHealthy, getServerProps, tokPerSec, prefillTokPerSec, lastWallMs, e2eTokPerSec, baseUrl };
+   const channelRepairs = () => _channelRepairs;
+
+   return {
+      chat,
+      chatStream,
+      toolsLoop,
+      waitHealthy,
+      getServerProps,
+      tokPerSec,
+      prefillTokPerSec,
+      lastWallMs,
+      e2eTokPerSec,
+      channelRepairs,
+      baseUrl,
+   };
 }
 
 /** Convenience: create a client from the default env URL. */
