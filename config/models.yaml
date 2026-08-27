@@ -505,9 +505,16 @@ models:
    # ── Gemma4-31B IQ4_XS ────────────────────────────────────────────────────────
    # Dense 31B, hybrid think, native FC. IQ4_XS ≈ 16.5 GB → fits a 32 GB V100 with room for KV.
    # Same family/sampling/think mechanism as E4B/26B; no-mmproj for text-only.
-   # Un-parked 2026-08-26 to fill V100 coverage. The park reason (dense 31B prefills ~10x slower
-   # than the MoE 26B — 31B active vs 4B active) is architectural and still true: this entry is
-   # slow by design, not broken. Budget for it accordingly; do not read the wall-clock as a fault.
+   # Un-parked 2026-08-26 to fill V100 coverage.
+   # [correction 2026-08-27] The park reason said "dense 31B prefills ~10x slower than the MoE 26B
+   # (31B active vs 4B active) — slow by design; budget for it accordingly". MEASURED, it is the
+   # FASTEST 26-31B entry in the fleet, 4-5x quicker than Qwen3.6-27B on the same benches:
+   #   coding_hard think   8.4m  vs 41.9m      triage think  5.4m vs 15.7m
+   #   reasoning think      2.0m vs  5.6m      docqa think   1.8m vs  5.5m
+   # (per-bench wall time from measurement timestamps, rose, 2026-08-26/27, 5 configs.)
+   # Prefill cost is real but it is not what dominates a bench pass: the think passes generate
+   # thousands of tokens, so DECODE throughput is the bottleneck, and Qwen3.6-27B's GatedDeltaNet
+   # hybrid decodes at only ~34 t/s. Do not budget extra time for this entry.
    - hf_repo: unsloth/gemma-4-31B-it-GGUF
      hf_file: gemma-4-31B-it-IQ4_XS.gguf
      label: "Gemma4-31B IQ4_XS"
