@@ -12,6 +12,7 @@
 // mid-way. Charting those would show a half-populated bench as if it were a real result.
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { findIdentityForks, formatForks } from '../../../analysis/identity-forks.mjs';
 import { query } from '../../../analysis/pg-store.mjs';
 import { loadModelsConfig } from '../../../shared/models-config.mjs';
 
@@ -44,6 +45,35 @@ if (rows.length < all.length) {
    console.warn(
       '[measurements] A "<no artifact>" line means those rows can never be published — no models.yaml entry can match a NULL gguf_file.',
    );
+}
+
+// Identity forks: one physical config live TWICE because an identity dimension's stamping changed
+// between runs, so latest-wins never collapsed them. A ROW FORK is the dangerous kind — the differing
+// dimension is not an ENTITY_DIM, so both rows land in the same entity and score.mjs AVERAGES them,
+// which is how Muse-Glimmer came to publish the mean of a 2-GPU and a single-GPU throughput
+// measurement (485.08 for values 488.72 and 481.44). Nothing about that looks wrong on the page,
+// which is exactly why it is reported here, at the only point every publish must pass through.
+// ENTITY FORKS are listed separately: they split the config into two dashboard rows, and some are
+// deliberate A/Bs (spec_decode none-vs-mtp on the ninfer entry), so they need a human read.
+const forks = findIdentityForks(rows);
+const rowForks = forks.filter((f) => f.kind === 'ROW FORK');
+const entityForks = forks.filter((f) => f.kind === 'ENTITY FORK');
+if (rowForks.length) {
+   console.warn(`[measurements] *** ${rowForks.length} ROW FORK(S): a value below is the AVERAGE of two`);
+   console.warn('[measurements] *** measurements of one config, taken under different serving details.');
+   for (const l of formatForks(rowForks, { limit: 12 })) {
+      console.warn(`[measurements] ${l}`);
+   }
+   console.warn('[measurements] *** Fix: delete the whole stale STACK at that identity, not just the live');
+   console.warn('[measurements] *** row — removing the tip promotes the superseded row underneath it.');
+}
+if (entityForks.length) {
+   console.warn(
+      `[measurements] ${entityForks.length} entity fork(s) — one config, two dashboard rows. Deliberate A/Bs look like this too:`,
+   );
+   for (const l of formatForks(entityForks, { limit: 4 })) {
+      console.warn(`[measurements] ${l}`);
+   }
 }
 
 process.stdout.write(JSON.stringify(rows));
