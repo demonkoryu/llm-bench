@@ -216,9 +216,19 @@ function capability(e, dials) {
    const cap = comp == null || coding == null ? null : comp ** dials.comprehension.strength * coding ** dials.coding.strength;
    return { comprehension: comp, coding, capability: cap == null ? null : cap * 100 };
 }
+// Same completeness rule as capability above, and for the same reason. wSum RENORMALIZES over the
+// members that are present, so a config carrying only decode_retention (weight 0.1) scored
+// (0.1/0.1)x1.0 = 100 and took first place on the speed board without a single throughput or TTFT
+// measurement. Observed 2026-08-28 on Qwen3.8-27B Q6_K: a stale spec_decode=NULL entity had
+// speed_short/speed_long (decode_retention) but no e2e/ttft, and outranked LFM2.5-8B-A1B measured at
+// 4123 tok/s. A missing bench must not be treated as a perfect score.
 function speed(e, dials) {
    const w = dials.speed.weights;
-   return wSum(GROUPS.speed.members.map((m) => [e.norm[m], w[m] ?? 0]));
+   const members = GROUPS.speed.members.filter((m) => (w[m] ?? 0) > 0);
+   if (!members.every((m) => e.norm[m] != null)) {
+      return null;
+   }
+   return wSum(members.map((m) => [e.norm[m], w[m]]));
 }
 
 // Fleet suitability from the EMPIRICAL agent_ctx probe: it directly measured how many
@@ -236,6 +246,11 @@ function fleet(e, dials) {
    }
    const ctxNorm = Math.min(mctx, d.ctx_tier) / d.ctx_tier;
    const slotNorm = Math.min(1, slots / 4);
+   // Unlike speed above, a MISSING e2e_throughput here is substituted rather than nulling the
+   // composite (`?? 0` → the `|| 0.01` floor below). That deflates rather than inflates, so it
+   // cannot manufacture a leader — but it does make "unmeasured" indistinguishable from "very slow".
+   // Left as-is deliberately: changing it moves published fleet numbers for the 4 of 51 configs
+   // without throughput, which is a separate decision from fixing the speed inflation.
    const thru = e.norm.e2e_throughput ?? 0;
    return { slots, suitability: (cap / 100) ** d.w_cap * ctxNorm ** d.w_ctx * slotNorm ** d.w_slots * (thru || 0.01) ** d.w_thru * 100 };
 }
