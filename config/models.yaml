@@ -182,6 +182,7 @@ models:
    - hf_repo: unsloth/Qwen3.6-27B-GGUF
      hf_file: Qwen3.6-27B-IQ4_XS.gguf
      label: "Qwen3.6-27B IQ4_XS"
+     disabled: true   # parked 2026-08-28 (user request: fleet narrowed to the Qwen3.8-27B / Qwen3.6-35B-A3B / Muse-Glimmer coding comparison)
      # Un-parked 2026-08-26. The park reason was "~33 tok/s on Vulkan — 5x slower than rest of
      # fleet": a measurement on the RX 7900 XT, which is no longer in the fleet. GatedDeltaNet
      # dense-hybrid was slow under the Vulkan backend specifically, so the figure says nothing
@@ -204,6 +205,7 @@ models:
    - hf_repo: unsloth/Qwen3.6-27B-GGUF
      hf_file: Qwen3.6-27B-UD-Q4_K_XL.gguf
      label: "Qwen3.6-27B UD-Q4_K_XL"
+     disabled: true   # parked 2026-08-28 (user request: fleet narrowed to the Qwen3.8-27B / Qwen3.6-35B-A3B / Muse-Glimmer coding comparison)
      # Un-parked 2026-08-26. The park reason — "19.9 GB at 102k q4_0 KV, no headroom for higher
      # quants" — was headroom against the single 20.5 GB RX 7900 XT. rose is now 2x V100 32 GB
      # (64 GB total), so 19.9 GB is not a fit problem any more.
@@ -224,6 +226,7 @@ models:
    - hf_repo: unsloth/Qwen3.6-35B-A3B-MTP-GGUF
      hf_file: Qwen3.6-35B-A3B-UD-IQ4_XS.gguf
      label: "Qwen3.6-35B IQ4_XS"
+     disabled: true   # parked 2026-08-28 (user request: fleet narrowed to the Qwen3.8-27B / Qwen3.6-35B-A3B / Muse-Glimmer coding comparison)
      family: qwen3.6
      type: moe
      think: optional
@@ -246,6 +249,7 @@ models:
    - hf_repo: mudler/Qwen3.6-35B-A3B-APEX-GGUF
      hf_file: Qwen3.6-35B-A3B-APEX-I-Compact.gguf
      label: "Qwen3.6-35B APEX I-Compact"
+     disabled: true   # parked 2026-08-28 (user request: fleet narrowed to the Qwen3.8-27B / Qwen3.6-35B-A3B / Muse-Glimmer coding comparison)
      family: qwen3.6
      type: moe
      quant: APEX-I-Compact       # non-standard APEX imatrix quant (not a Q/IQ token)
@@ -512,6 +516,7 @@ models:
    - hf_repo: unsloth/gemma-4-31B-it-GGUF
      hf_file: gemma-4-31B-it-IQ4_XS.gguf
      label: "Gemma4-31B IQ4_XS"
+     disabled: true   # parked 2026-08-28 (user request: fleet narrowed to the Qwen3.8-27B / Qwen3.6-35B-A3B / Muse-Glimmer coding comparison)
      family: gemma4
      type: dense
      think: optional
@@ -528,6 +533,7 @@ models:
    - hf_repo: unsloth/gemma-4-26B-A4B-it-GGUF
      hf_file: gemma-4-26B-A4B-it-UD-Q4_K_M.gguf
      label: "Gemma4-26B Q4_K_M"
+     disabled: true   # parked 2026-08-28 (user request: fleet narrowed to the Qwen3.8-27B / Qwen3.6-35B-A3B / Muse-Glimmer coding comparison)
      family: gemma4
      type: moe
      think: optional
@@ -583,6 +589,7 @@ models:
    - hf_repo: google/gemma-4-26B-A4B-it-qat-q4_0-gguf
      hf_file: gemma-4-26B_q4_0-it.gguf
      label: "Gemma4-26B QAT q4_0"
+     disabled: true   # parked 2026-08-28 (user request: fleet narrowed to the Qwen3.8-27B / Qwen3.6-35B-A3B / Muse-Glimmer coding comparison)
      family: gemma4
      type: moe
      think: optional
@@ -607,6 +614,7 @@ models:
    - hf_repo: google/gemma-4-31B-it-qat-q4_0-gguf
      hf_file: gemma-4-31B_q4_0-it.gguf
      label: "Gemma4-31B QAT q4_0"
+     disabled: true   # parked 2026-08-28 (user request: fleet narrowed to the Qwen3.8-27B / Qwen3.6-35B-A3B / Muse-Glimmer coding comparison)
      family: gemma4
      type: dense
      think: optional
@@ -641,6 +649,7 @@ models:
    - hf_repo: unsloth/gemma-4-26B-A4B-it-qat-GGUF
      hf_file: gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf
      label: "Gemma4-26B QAT UD-Q4_K_XL"
+     disabled: true   # parked 2026-08-28 (user request: fleet narrowed to the Qwen3.8-27B / Qwen3.6-35B-A3B / Muse-Glimmer coding comparison)
      family: gemma4
      type: moe
      think: optional
@@ -679,6 +688,7 @@ models:
    - hf_repo: LiquidAI/LFM2.5-8B-A1B-GGUF
      hf_file: LFM2.5-8B-A1B-Q5_K_M.gguf
      label: "LFM2.5-8B Q5_K_M"
+     disabled: true   # parked 2026-08-28 (user request: fleet narrowed to the Qwen3.8-27B / Qwen3.6-35B-A3B / Muse-Glimmer coding comparison)
      # Un-parked 2026-08-26: pruned 2026-06-07 to keep the Vulkan fleet small; re-measured on V100.
      family: lfm2.5
      type: dense
@@ -699,6 +709,7 @@ models:
    - hf_repo: unsloth/granite-4.0-h-tiny-GGUF
      hf_file: granite-4.0-h-tiny-Q5_K_M.gguf
      label: "Granite-4-H-Tiny Q5_K_M"
+     disabled: true   # parked 2026-08-28 (user request: fleet narrowed to the Qwen3.8-27B / Qwen3.6-35B-A3B / Muse-Glimmer coding comparison)
      # Un-parked 2026-08-26: pruned 2026-06-07 to keep the Vulkan fleet small; re-measured on V100.
      family: granite
      type: moe
@@ -747,6 +758,7 @@ models:
    - hf_repo: unsloth/Qwen3.8-27B-GGUF
      hf_file: Qwen3.8-27B-UD-Q6_K.gguf
      label: "Qwen3.8-27B Q6_K"
+     disabled: true   # parked 2026-08-28 (user request: fleet narrowed to the Qwen3.8-27B / Qwen3.6-35B-A3B / Muse-Glimmer coding comparison)
      family: qwen3.8
      type: dense
      think: optional
@@ -776,6 +788,7 @@ models:
    - hf_repo: unsloth/Qwen3.8-27B-GGUF
      hf_file: Qwen3.8-27B-UD-Q6_K.gguf
      label: "Qwen3.8-27B Q6_K · KV k8v4"
+     disabled: true   # parked 2026-08-28 (user request: fleet narrowed to the Qwen3.8-27B / Qwen3.6-35B-A3B / Muse-Glimmer coding comparison)
      family: qwen3.8
      type: dense
      think: optional
