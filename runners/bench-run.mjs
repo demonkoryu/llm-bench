@@ -480,8 +480,17 @@ async function main() {
                      ? `${raw.toolcall_pass}/${raw.toolcall_total}`
                      : raw.reasoning_correct != null
                        ? `${raw.reasoning_correct}/${raw.reasoning_total}`
-                       : 'ok';
-               console.error(`  ${benchName.padEnd(14)} ${think_mode.padEnd(8)} → ${summary}${SAMPLES > 1 ? ` (n=${raw.n})` : ''}`);
+                       : raw.coding_pass_at_1 != null
+                         ? `${raw.coding_pass_at_1}/${raw.coding_total}${raw.coding_no_code ? ` no-code=${raw.coding_no_code}` : ''}`
+                         : 'ok';
+               // A bench that marked its OWN result non-'ok' (coding does this on any no-code case)
+               // must not print like a clean one. The bare 'ok' fallback above used to swallow that:
+               // an invalidated coding bench and a perfect one were the same line in the log, so an
+               // operator watching a long run had no way to see a combo drop out.
+               const statusTag = raw.status && raw.status !== 'ok' ? ` [${String(raw.status).toUpperCase()}]` : '';
+               console.error(
+                  `  ${benchName.padEnd(14)} ${think_mode.padEnd(8)} → ${summary}${statusTag}${SAMPLES > 1 ? ` (n=${raw.n})` : ''}`,
+               );
             }
          }
          // Probe benches last — they self-manage the server (reload at ceiling / --parallel).

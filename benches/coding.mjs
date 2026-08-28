@@ -33,13 +33,31 @@ function codingBench(name, cases, buildSystem, maxTok, thinkTok) {
                { role: 'user', content: `${c.prompt}\n\nSignature: ${c.signature}` },
             ];
             let raw = '';
+            const budget = reasons(model, think) ? thinkTok : maxTok;
             try {
-               const { completion } = await client.chat(messages, {
-                  think,
-                  thinkControl,
-                  max_tokens: reasons(model, think) ? thinkTok : maxTok,
-                  ...sampling,
-               });
+               // The request deadline must be derived from the BUDGET, not left at the client's
+               // 600s default. At the ~25 tok/s a 27B reasoner decodes on a V100, 600s buys about
+               // 15k tokens — so a 32768 budget was unreachable by construction: the AbortSignal
+               // fired first, chat() threw, the catch below swallowed it, and the case was graded
+               // 'no-code' exactly as if the model had emitted nothing. That made the timeout
+               // indistinguishable from budget starvation in coding_no_code, and it is why raising
+               // thinkTok to 32768 alone still left occasional no-code cases whose longest observed
+               // completion was only ~12.6k tokens.
+               // SLOWEST_TPS is deliberately pessimistic (the slowest config measured on this fleet);
+               // over-waiting costs wall-clock on a rare long case, under-waiting destroys the
+               // measurement. +120s covers prefill and server-side queueing.
+               const SLOWEST_TPS = 20;
+               const timeoutMs = Math.ceil((budget / SLOWEST_TPS) * 1000) + 120_000;
+               const { completion } = await client.chat(
+                  messages,
+                  {
+                     think,
+                     thinkControl,
+                     max_tokens: budget,
+                     ...sampling,
+                  },
+                  timeoutMs,
+               );
                raw = completion.choices?.[0]?.message?.content ?? '';
             } catch {
                /* no-code → fails */
@@ -61,14 +79,26 @@ function codingBench(name, cases, buildSystem, maxTok, thinkTok) {
             coding_tests_passed: testsPassed,
             coding_tests_total: testsTotal,
             coding_no_code: noCode,
-            status: 'ok',
+            // A no-code case is a HARNESS failure, not a wrong answer: the model emitted no
+            // extractable code block, which at think-time means the reasoning trace ate the
+            // max_tokens budget before any code was written. Scoring that as 0/N grades the
+            // budget, not the model — it is how Qwen3.8's think rows published a coding grade
+            // ~14 points under its own no_think rows. So the whole bench result is INVALID:
+            // `invalid` is excluded from $LATEST (analysis/pg-store.mjs) and from resume's
+            // status='ok' done-set, so the combo neither publishes nor counts as measured.
+            // NOTE this is a LOWER BOUND on budget damage — a trace that truncates mid-function
+            // yields a `define-error`, not 'no-code', and is indistinguishable from a wrong answer.
+            status: noCode > 0 ? 'invalid' : 'ok',
          };
       },
    };
 }
 
+// thinkTok is 32768 across all three (raised 2026-08-28 from 8192/8192/16384). The old budgets
+// were sized for models that emit a short trace; a reasoning-only model spends them entirely on
+// the trace and never reaches the code fence. See the status:'invalid' note above.
 export const benches = [
-   codingBench('coding_hard', HARD, defaultSystem, 4096, 8192),
-   codingBench('coding_practical', PRACTICAL, defaultSystem, 4096, 8192),
-   codingBench('coding_bugfix', BUGFIX, bugfixSystem, 8192, 16384),
+   codingBench('coding_hard', HARD, defaultSystem, 4096, 32768),
+   codingBench('coding_practical', PRACTICAL, defaultSystem, 4096, 32768),
+   codingBench('coding_bugfix', BUGFIX, bugfixSystem, 8192, 32768),
 ];
