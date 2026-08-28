@@ -76,4 +76,23 @@ if (entityForks.length) {
    }
 }
 
+// Invalid rows: a bench that disowned its own result (benches/coding.mjs does this on any no-code
+// case, where the run measured the token budget or the request deadline instead of the model).
+// $LATEST already drops them, so they cannot reach the page — which is exactly why they are worth
+// naming here. A silently-absent coding grade and a config that was never run look identical on the
+// board, and the difference matters: one needs a re-measurement, the other needs nothing. Same
+// principle as the allowlist and fork reports above — be loud about what silently changes what the
+// page can say. Counted over the raw table, since the projection has already removed them.
+const invalid = await query(
+   `SELECT bench, think_mode, count(*) AS n FROM $TIDY WHERE status = 'invalid' GROUP BY bench, think_mode ORDER BY n DESC`,
+);
+if (invalid.length) {
+   const total = invalid.reduce((a, r) => a + Number(r.n), 0);
+   console.warn(`[measurements] ${total} row(s) held back as status='invalid' — measured, but not a measurement:`);
+   for (const r of invalid.slice(0, 12)) {
+      console.warn(`[measurements]   ${String(r.n).padStart(5)}  ${r.bench} [${r.think_mode ?? 'n/a'}]`);
+   }
+   console.warn('[measurements] A config missing a bench here needs a RE-RUN; resume re-measures it (its done-set is status=ok).');
+}
+
 process.stdout.write(JSON.stringify(rows));
