@@ -3,20 +3,25 @@
 // replaced by Inputs.table's built-in click-to-sort (idiomatic Framework).
 const pct = (v) => (v == null ? null : v * 100);
 
-// key → { get(entity), dec, lower? }. `dec` = display decimals; `lower` marks lower-is-better.
+// key → { get(entity), dec, lower?, norm100? }. `dec` = display decimals; `lower` marks
+// lower-is-better (charts sort ascending and label the axis accordingly); `norm100` marks a score
+// already normalized to 0-100 within the selection, so a chart can pin the axis instead of scaling
+// to the data and making a weak field look strong.
 export const BOARD_COLUMNS = [
-   { key: 'capability', get: (e) => e.capability, dec: 1 },
-   { key: 'comp', get: (e) => pct(e.comprehension), dec: 1 },
-   { key: 'coding', get: (e) => pct(e.coding), dec: 1 },
-   { key: 'speed', get: (e) => pct(e.speed), dec: 1 },
-   { key: 'fleet', get: (e) => e.fleet_suitability, dec: 1 },
+   { norm100: true, key: 'capability', get: (e) => e.capability, dec: 1 },
+   { norm100: true, key: 'comp', get: (e) => pct(e.comprehension), dec: 1 },
+   { norm100: true, key: 'coding', get: (e) => pct(e.coding), dec: 1 },
+   { norm100: true, key: 'speed', get: (e) => pct(e.speed), dec: 1 },
+   { norm100: true, key: 'fleet', get: (e) => e.fleet_suitability, dec: 1 },
    { key: 'agent slots', get: (e) => e.fleet_slots, dec: 0 },
    { key: 'pool k', get: (e) => (e.raw?.agent_ctx == null ? null : e.raw.agent_ctx / 1000), dec: 0 },
    { key: 'fit-ctx k', get: (e) => (e.raw?.fit_ctx == null ? null : e.raw.fit_ctx / 1000), dec: 0 },
    { key: 'e2e tok/s', get: (e) => e.raw?.e2e_throughput, dec: 1 },
    { key: 'ttft ms', get: (e) => e.raw?.ttft, dec: 0, lower: true },
    { key: 'vram MiB', get: (e) => e.raw?._vram_at_ctx, dec: 0, lower: true },
-   { key: 'kv KiB/tok', get: (e) => e.raw?._kv_per_tok_kib, dec: 2, lower: true },
+   // Renamed with the metric (7273549): the scoring key is _vram_per_ctx_tok_kib and the quantity
+   // is VRAM-per-context-token, not cache size. The old key silently returned null after that commit.
+   { key: 'vram KiB/ctx-tok', get: (e) => e.raw?._vram_per_ctx_tok_kib, dec: 2, lower: true },
 ];
 
 // Per-column number formatters for Inputs.table (nulls render as em dash).

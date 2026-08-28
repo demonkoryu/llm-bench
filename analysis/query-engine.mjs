@@ -164,7 +164,12 @@ export const METRIC_HELP = {
    'pool k': 'Total shared KV context (K tokens) across planner + coders.',
    'fit-ctx k': 'Native auto-fit context length (K tokens).',
    'vram MiB': 'Peak GPU memory (MiB). Lower is better.',
-   'kv KiB/tok': 'KV-cache size (KiB per token). Lower is better.',
+   'vram KiB/ctx-tok': 'VRAM cost per token of context (KiB). NOT the KV cache: it is every allocation that grows with context, the MTP draft cache included. Lower is better.',
+   'capability': 'Composite quality score (0-100), normalized within the current selection: comprehension and coding combined.',
+   'comp': 'Comprehension sub-score (0-100): triage, reasoning, summarization, docqa and tool-calling.',
+   'coding': 'Coding sub-score (0-100) across coding_hard, coding_practical and coding_bugfix.',
+   'speed': 'Composite speed score (0-100) from decode/e2e throughput and TTFT, normalized within the selection.',
+   'fleet': 'Fleet-suitability score (0-100): how well this config serves a multi-agent fleet, driven by agent_ctx capacity.',
 };
 
 const filt = (rows, facets) => rows.filter((r) => Object.entries(facets || {}).every(([d, vs]) => !vs || !vs.length || vs.includes(r[d])));
