@@ -249,9 +249,17 @@ const IDENTITY_KEY = [
 // by markBenchesComplete, so a crashed re-run would otherwise supersede a good row and then be
 // filtered out by the caller, making the combo vanish entirely instead of falling back to the older
 // measurement. History is preserved — nothing is deleted, `$TIDY` still sees every row.
-const LATEST_VIEW = `(SELECT DISTINCT ON (${IDENTITY_KEY.map((c) => `"${c}"`).join(', ')}) *
+// The 'invalid' filter is applied AFTER the DISTINCT ON, not inside it, and the order is
+// load-bearing. Filtering before would let an OLDER valid row win the identity once the newest
+// measurement is invalidated — silently resurrecting a superseded number and presenting it as
+// current. Filtering after means an identity whose latest measurement is invalid simply has no
+// row: "we have no valid measurement of this" rather than "here is an older one". A bench marks
+// its own result invalid when the run measured the harness instead of the model (benches/coding.mjs
+// does this on any no-code case); markBenchesComplete only promotes 'partial', so the mark sticks.
+const LATEST_VIEW = `(SELECT * FROM (SELECT DISTINCT ON (${IDENTITY_KEY.map((c) => `"${c}"`).join(', ')}) *
    FROM measurements WHERE status IS DISTINCT FROM 'partial'
-   ORDER BY ${IDENTITY_KEY.map((c) => `"${c}"`).join(', ')}, ts DESC NULLS LAST, run_id DESC) AS latest`;
+   ORDER BY ${IDENTITY_KEY.map((c) => `"${c}"`).join(', ')}, ts DESC NULLS LAST, run_id DESC) AS newest
+   WHERE status IS DISTINCT FROM 'invalid') AS latest`;
 
 /**
  * Run engine SQL against Postgres.
