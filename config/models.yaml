@@ -718,6 +718,16 @@ models:
    - hf_repo: bartowski/nvidia_Nemotron-3-Nano-4B-GGUF
      hf_file: nvidia_Nemotron-3-Nano-4B-Q8_0.gguf
      label: "Nemotron-3-Nano-4B Q8_0"
+     disabled: true   # PARKED 2026-08-27 (user request): dropped from the dashboard and from active
+     # testing. Its rows stay in the store — the dashboard allowlist keys on ENABLED entries' hf_file
+     # (dashboard/src/data/measurements.json.js), so parking is what un-publishes it; nothing was
+     # deleted. Un-parking republishes the existing 95 rows without a re-measure.
+     #
+     # Measured before parking, worth keeping: 22 coder lanes + a 128k planner on one V100 (2nd only
+     # to Granite's 35), and its triage json_fail of 4/18 is genuine model behaviour, not a harness
+     # artifact — the channel-misrouting repair recovered 22 replies across its suite and those four
+     # still fail on unparseable runaway traces. Its `toolcalling` exclusion is a real capability gate
+     # (mamba-class, llama.cpp#24081), not drift.
      # Un-parked 2026-08-26: pruned 2026-06-07 to keep the Vulkan fleet small; re-measured on V100.
      family: nemotron3
      type: dense
