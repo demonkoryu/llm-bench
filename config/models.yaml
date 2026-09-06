@@ -1152,18 +1152,19 @@ models:
      # cache is exonerated); NOT a probe artifact (the needle constant FLOW_RETRY_LIMIT_4 is
      # assigned exactly once in the prompt, so there is nothing to confuse it with). A depth sweep
      # is non-monotonic — 16k hit, 20k miss, 24k miss, 28k hit, 32k miss — i.e. position-dependent
-     # degradation, not a hard cliff. UNRESOLVED: the MoVA attention-expert bank is the newest code
+     # degradation, not a hard cliff. CONFIRMED against provenance: the whole sweep was re-run on a
+     # Q5_K_M quantized here from IFM's own 74.9 GB BF16 and reproduced hit/miss for hit/miss, same
+     # wrong value, so the community quant named above is NOT the cause and is fine to keep using.
+     # UNRESOLVED: the MoVA attention-expert bank is the newest code
      # in the fork (d63ad5e64f + d6b148a795, 2026-08-31/09-01) and the dense path never touches it,
      # so "model property" and "bug in the fork's MoVA graph" are not separable from here. Either
      # way, do not deploy this model above ~16k on this stack, whatever fit_ctx says.
      #
-     # NO throughput / parallel_gen ROWS, deliberately, not a gap to backfill: both probes send
-     # ignore_eos:true to pin the token count, and this model driven past EOS on a code-analysis
-     # prompt emits output llama.cpp's peg-native parser rejects — the server returns
-     # `500 The model produced output that does not match the expected peg-native format`,
-     # deterministically (4/4). The 32B entry survives the same probe, so it is this model's
-     # continuation behaviour, not a blanket incompatibility. Dropping ignore_eos would fix it but
-     # would change an axis every existing fleet row was measured on, so the probe is left alone.
+     # throughput / parallel_gen were missing until 2026-09-06 and are now measured. The probes
+     # pinned their token count with ignore_eos, which this llama.cpp no longer implements as a
+     # logit bias, so this model sampled EOS, llama.cpp rendered it as an unprintable byte and the
+     # request 500'd deterministically. Fixed by declaring eog_tokens above; the full trace is in
+     # fixedLengthOpts() (runners/llamacpp-server.mjs). Nothing model-specific remains here.
      notes: "MoE: 100 experts + 1 shared (top-8) plus a 64-expert MoVA attention bank (top-4, softplus gate). Needs LLAMA_IMAGE=llama-server-cuda-k2. Unreliable retrieval past ~16k — see the note above."
 
    - hf_repo: IFM/K2-Horizon-32B-GGUF
