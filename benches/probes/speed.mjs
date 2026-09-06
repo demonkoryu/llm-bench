@@ -3,7 +3,7 @@
 // (prefill tok/s on synthetic codebase prompts). Uses the server already loaded by a
 // prior probe if present; else loads at maxctx.
 
-import { extraFlagsToString, LOAD_TIMEOUT_MS, modelSource } from '../../runners/llamacpp-server.mjs';
+import { extraFlagsToString, fixedLengthOpts, LOAD_TIMEOUT_MS, modelSource } from '../../runners/llamacpp-server.mjs';
 import { makeFillPrompt } from '../../shared/codebase.mjs';
 
 const SHORT = 'Tell me a single short sentence about the sky.';
@@ -51,7 +51,7 @@ export const bench = {
          const um = built.messages[built.messages.length - 1];
          um.content = `// speed prefill ${++nonce}\n${um.content}`;
          try {
-            await client.chat(built.messages, { think: null, max_tokens: 8, temperature: 0.0, ignore_eos: true }, 900000);
+            await client.chat(built.messages, { think: null, max_tokens: 8, temperature: 0.0, ...fixedLengthOpts(model) }, 900000);
             // Prefill-dominated (big prompt, 8 gen) → server prefill tps, else wall-clock e2e ≈ prefill tps.
             const pre = client.prefillTokPerSec() ?? client.e2eTokPerSec();
             if (Number.isFinite(pre)) {

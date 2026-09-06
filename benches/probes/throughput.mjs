@@ -33,7 +33,7 @@
 //     ninfer-serve returns a standard `usage` block and nothing else, so the non-streaming path
 //     below would silently degrade it to the wall-clock e2e fallback and leave ttft/prefill null.
 
-import { extraFlagsToString, LOAD_TIMEOUT_MS, modelSource } from '../../runners/llamacpp-server.mjs';
+import { extraFlagsToString, fixedLengthOpts, LOAD_TIMEOUT_MS, modelSource } from '../../runners/llamacpp-server.mjs';
 import { makeFillPrompt } from '../../shared/codebase.mjs';
 
 const median = (xs) => {
@@ -82,7 +82,11 @@ export const bench = {
                // e2e = (prompt+completion)/wall; decode ≈ tokens-after-first ÷ (wall − ttft).
                let s;
                try {
-                  s = await client.chatStream(built.messages, { think: null, max_tokens: GEN, temperature: 0.0, ignore_eos: true }, 900000);
+                  s = await client.chatStream(
+                     built.messages,
+                     { think: null, max_tokens: GEN, temperature: 0.0, ...fixedLengthOpts(model) },
+                     900000,
+                  );
                } catch {
                   continue;
                }
@@ -104,7 +108,7 @@ export const bench = {
                try {
                   const w = await client.chatStream(
                      built.messages,
-                     { think: null, max_tokens: WARM_GEN, temperature: 0.0, ignore_eos: true },
+                     { think: null, max_tokens: WARM_GEN, temperature: 0.0, ...fixedLengthOpts(model) },
                      900000,
                   );
                   if (Number.isFinite(w.ttftMs)) {
@@ -119,7 +123,7 @@ export const bench = {
             try {
                ({ timings: t } = await client.chat(
                   built.messages,
-                  { think: null, max_tokens: GEN, temperature: 0.0, ignore_eos: true },
+                  { think: null, max_tokens: GEN, temperature: 0.0, ...fixedLengthOpts(model) },
                   900000,
                ));
             } catch {
@@ -141,7 +145,7 @@ export const bench = {
                try {
                   const { timings: wt } = await client.chat(
                      built.messages,
-                     { think: null, max_tokens: WARM_GEN, temperature: 0.0, ignore_eos: true },
+                     { think: null, max_tokens: WARM_GEN, temperature: 0.0, ...fixedLengthOpts(model) },
                      900000,
                   );
                   if (Number.isFinite(wt?.prompt_ms)) {

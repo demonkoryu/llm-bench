@@ -2,7 +2,7 @@
 // the server with --parallel MAXP and fires K = 1/2/4/8 concurrent generations,
 // measuring aggregate tok/s = Σ tokens ÷ wall time. Emits speed_pargen-<K>.
 
-import { extraFlagsToString, LOAD_TIMEOUT_MS, modelSource } from '../../runners/llamacpp-server.mjs';
+import { extraFlagsToString, fixedLengthOpts, LOAD_TIMEOUT_MS, modelSource } from '../../runners/llamacpp-server.mjs';
 import { makeFillPrompt } from '../../shared/codebase.mjs';
 
 const CONC = [1, 2, 4, 8],
@@ -27,7 +27,7 @@ export const bench = {
             const built = makeFillPrompt(512);
             built.messages[built.messages.length - 1].content = `// pargen ${k}-${i}\n${built.messages[built.messages.length - 1].content}`;
             return client
-               .chat(built.messages, { think: null, max_tokens: GEN, temperature: 0.0, ignore_eos: true }, 900000)
+               .chat(built.messages, { think: null, max_tokens: GEN, temperature: 0.0, ...fixedLengthOpts(model) }, 900000)
                .then((r) => r.timings?.predicted_n ?? 0)
                .catch(() => 0);
          });

@@ -1131,6 +1131,15 @@ models:
      # agent_ctx does not seed a ladder into a pool this card cannot hold; fit_ctx measures the
      # real ceiling.
      ctx_cap: 65536
+     # EOG token ids, so the probes can pin a fixed generation length. VERIFIED on the host via
+     # /tokenize: <|ifm|endoftext|> -> 1, <|ifm|im_end|> -> 250019 (matches the vendor
+     # generation_config.json eos_token_id [1, 250019]). Needed because this llama.cpp's
+     # `ignore_eos` no longer biases the EOS logit — see fixedLengthOpts() in
+     # runners/llamacpp-server.mjs for the full trace. Both K2 entries carry the vocab quirk
+     # `special_eos_id is not in special_eog_ids` at load; it is present in IFM's own BF16 too
+     # (identical GGUF metadata keys before and after llama-quantize), so it comes from the fork's
+     # conversion for this arch, not from any one quant.
+     eog_tokens: [1, 250019]
      extra_flags:
         cache-type-k: q8_0
         cache-type-v: q4_0
@@ -1176,6 +1185,15 @@ models:
      # Dense 64 x 64 heads / 8 kv x 128 → ~106 KiB/token of KV at q8_0/q4_0, appreciably heavier
      # per token than the MoVA entry despite the smaller weights, because it has 16 more layers.
      ctx_cap: 65536
+     # EOG token ids, so the probes can pin a fixed generation length. VERIFIED on the host via
+     # /tokenize: <|ifm|endoftext|> -> 1, <|ifm|im_end|> -> 250019 (matches the vendor
+     # generation_config.json eos_token_id [1, 250019]). Needed because this llama.cpp's
+     # `ignore_eos` no longer biases the EOS logit — see fixedLengthOpts() in
+     # runners/llamacpp-server.mjs for the full trace. Both K2 entries carry the vocab quirk
+     # `special_eos_id is not in special_eog_ids` at load; it is present in IFM's own BF16 too
+     # (identical GGUF metadata keys before and after llama-quantize), so it comes from the fork's
+     # conversion for this arch, not from any one quant.
+     eog_tokens: [1, 250019]
      extra_flags:
         cache-type-k: q8_0
         cache-type-v: q4_0

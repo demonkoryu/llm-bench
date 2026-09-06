@@ -114,6 +114,37 @@ export function modelSource(model = {}) {
    return { hf_repo: model.hf_repo, hf_file: model.hf_file, model_path: model.model_path };
 }
 
+/**
+ * Request options that pin a generation to exactly `max_tokens` tokens.
+ *
+ * `ignore_eos: true` alone no longer does this. In this llama.cpp, common_sampler_init merges
+ * `params.logit_bias` plus the vocab's suppress-tokens and NOTHING ELSE — `ignore_eos` is declared
+ * in common.h and consumed nowhere in the sampling path. Older llama.cpp implemented it by pushing
+ * {eos, -INFINITY} into logit_bias; that code is gone. So today the flag only stops the SERVER from
+ * treating EOG as a stop condition: the model still samples EOS, llama.cpp renders it into the text
+ * as an unprintable byte, and generation runs on into a second reply.
+ *
+ * On a model whose EOS does not render as valid UTF-8 that output then fails to parse and the
+ * request 500s — not just on /v1/chat/completions but on /v1/completions and the native /completion
+ * too, with "Content-only format", the parser that should accept anything. Measured on
+ * K2-Horizon-MoVA-36B-A4B, deterministic 4/4; it is why that model banked no throughput or
+ * parallel_gen rows. Whether a given model trips it is luck — the dense K2-Horizon-32B carries the
+ * same vocab quirk and survived only because it never sampled EOS inside its 128 forced tokens.
+ *
+ * So a model that declares `eog_tokens` gets those ids biased to -100, which is what ignore_eos
+ * used to do for every model. This RESTORES the probes' original semantics rather than changing
+ * them: the generation is the same length it was always meant to be, and the output stays valid.
+ * `ignore_eos` is kept alongside as the belt to the bias's braces. A model with no `eog_tokens`
+ * behaves exactly as before, so no existing fleet row changes meaning.
+ */
+export function fixedLengthOpts(model = {}) {
+   const eog = model.eog_tokens;
+   if (!Array.isArray(eog) || eog.length === 0) {
+      return { ignore_eos: true };
+   }
+   return { ignore_eos: true, logit_bias: Object.fromEntries(eog.map((id) => [String(id), -100])) };
+}
+
 function modelSourceArgs({ hf_repo, hf_file, model_path }) {
    if (model_path) {
       return `--model '${model_path}'`;
