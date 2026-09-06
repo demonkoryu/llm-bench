@@ -30,6 +30,20 @@
 // hard-capped at 8 lanes = 1 planner + 7 coders NO MATTER how much KV pool fits — a ceiling the
 // llama.cpp path does not have, and the reason a ninfer row can read "7 coders" while the pool
 // would hold more.
+// Agent-fleet profile: the two context widths the shared-KV-pool search is built around — one deep
+// planner plus N working coders. 128k/64k are the same pair the MLX sibling declares (agent_ctx_mlx)
+// and the same widths the fleet dials in analysis/scoring-config.mjs assume. Both are CEILINGS, not
+// demands: each is clamped to the config's coherent window below, because RoPE breaks past the
+// trained window and a lane wider than that would measure nothing real.
+//
+// RESTORED 2026-09-06. d3609db removed the concurrent-coherence fill phase and deleted these two
+// constants with it, but left three references behind (here, and archMax in the ninfer sweep). They
+// are not part of the fill — they define the fleet shape the capacity search is measuring — so
+// every llama.cpp agent_ctx run since has died with "PLANNER_TARGET is not defined" and recorded
+// zero rows. Values are d3609db's, verbatim.
+const PLANNER_TARGET = 131072;
+const CODER_TARGET = 65536;
+
 const NINFER_MAX_LANES = 8;
 
 // Lane widths the ninfer fleet sweep evaluates, one row (case_id `lane_<W>`) each. 64k is the
