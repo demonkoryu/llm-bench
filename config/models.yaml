@@ -1199,6 +1199,28 @@ models:
         cache-type-k: q8_0
         cache-type-v: q4_0
      benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
+     # SPECULATIVE DECODING: EVALUATED 2026-09-06 AND REJECTED — do not re-add without new evidence.
+     # There is no self-draft path to begin with: neither K2 model has an MTP/EAGLE head (no nextn
+     # or mtp config keys, zero draft tensors in the safetensors index, layer indices exactly
+     # 0..num_hidden_layers-1), so --spec-type draft-mtp/draft-dflash/draft-dspark have nothing to
+     # attach to. That leaves two options and both were measured on this card, identical prompts and
+     # sampling, ctx 16384:
+     #   ngram-*  ALL FIVE variants REGRESS this model: -10% (ngram-cache) to -27% (ngram-simple)
+     #            against a 21.4 tok/s baseline. Even a deliberately repetitive prompt got slower
+     #            (21.3 -> 17.0), which is ngram's best case — acceptance is too low to pay for the
+     #            per-token overhead at the default draft length.
+     #   draft-simple  WORKS but does not fit the deployment. K2-Horizon-3.7B Q4_K_M is the only
+     #            valid drafter (the family shares vocab 250624; the 0.9B is 64256 and cannot draft)
+     #            and gives +21% at n=3 (the only setting that regresses no workload) or +35% mean
+     #            at n=8/p-min 0.75, more than doubling repetitive generation (21.3 -> 43.6) while
+     #            costing 13% on free-form prose. REJECTED ON VRAM: the drafter is ~3.96 GiB
+     #            resident (25,546 -> 29,506 MiB), which caps this entry at ~16k — against a
+     #            measured fit_ctx of 70,656. Four times the context is worth more than a third more
+     #            tokens/sec for agentic work. It OOMs outright at 32k.
+     # The MoVA entry above is worse off still and for a structural reason: speculation only pays
+     # when the target is much dearer than the draft, and that model activates 4B params against a
+     # 3.7B dense drafter. Every workload regressed there, -23%, including the repetitive one.
+     #
      # Holds 100% needle retrieval at 32k where the MoVA entry above collapses, on the same quant
      # and the same q8_0/q4_0 KV — which is what makes that entry's failure a property of the MoVA
      # path rather than of this arch, this quant or this cache config. MEASURED 108 KiB/token of KV
