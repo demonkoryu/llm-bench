@@ -4,21 +4,27 @@
 # Usage:
 #   start-server.sh --backend cuda --ctx <N> \
 #                   [--hf-repo <repo> --hf-file <file> | --model <path>] \
-#                   [--port <N>] [--ngl <N>] [extra flags...]
+#                   [--port <N>] [--ngl <N>] [--device <N>] [extra flags...]
+#
+# --device N pins the instance to ONE host GPU and scopes every host-wide resource to it:
+# container name, lockfile, and the VRAM-clear wait. This box has two V100s and each model
+# is served on one card (hosts.yaml, 2026-08-27), so two targets can be measured CONCURRENTLY
+# -- one per card -- exactly the way the ninfer engine already does it (scripts/llm2/ninfer/).
+# Without the scoping the second start would abort on the first's lockfile, kill its container,
+# and then wait out the VRAM timeout against the peer card's resident weights.
 #
 # Prints the container ID to stdout on success.
 # Exits 1 on failure (with reason to stderr).
 set -e
 
 IMAGE="${LLAMA_IMAGE:-llama-server-cuda}"
-CONTAINER="${LLAMA_CONTAINER:-llama-server}"
-LOCKFILE=/tmp/llama-server.lock
 VRAM_CLEAR_TIMEOUT=60
 
 backend=cuda
 ctx=8192
 port=8090
 ngl=99
+device=0
 hf_repo=""
 hf_file=""
 model_path=""
@@ -32,10 +38,15 @@ while [[ $# -gt 0 ]]; do
       --ngl)     ngl="$2";     shift 2 ;;
       --hf-repo) hf_repo="$2"; shift 2 ;;
       --hf-file) hf_file="$2"; shift 2 ;;
+      --device)  device="$2";  shift 2 ;;
       --model)   model_path="$2"; shift 2 ;;
       *)         extra_flags="$extra_flags $1"; shift ;;
    esac
 done
+
+# Device-scoped identity, so a run on gpu1 never touches gpu0's container or lock.
+CONTAINER="${LLAMA_CONTAINER:-llama-server-d${device}}"
+LOCKFILE="/tmp/llama-server-d${device}.lock"
 
 case "$backend" in
    cuda) ;;
@@ -64,8 +75,8 @@ fuser -k "$port/tcp" 2>/dev/null || true
 echo "  [start-server] waiting for VRAM to clear..." >&2
 deadline=$((SECONDS + VRAM_CLEAR_TIMEOUT))
 while [ $SECONDS -lt $deadline ]; do
-   used_mib=$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits 2>/dev/null \
-      | awk '{s+=$1} END {print int(s)}' || echo "0")
+   used_mib=$(nvidia-smi -i "$device" --query-gpu=memory.used --format=csv,noheader,nounits 2>/dev/null \
+      | awk 'NR==1{print int($1)}' || echo "0")
    if [ "$used_mib" -lt 512 ]; then
       echo "  [start-server] VRAM clear (${used_mib} MiB)" >&2
       break
@@ -94,7 +105,7 @@ fi
 # ONE GPU per model (2026-08-27). Was `--gpus all`, which with --split-mode layer spread every
 # model across both V100s and made each reading a 64 GiB two-card number. Override with
 # LLAMA_GPUS=all to reproduce the old 2-GPU behaviour, or LLAMA_GPUS='"device=1"' for the other card.
-gpus_flag="${LLAMA_GPUS:-device=0}"
+gpus_flag="${LLAMA_GPUS:-device=$device}"
 
 rf_flag="--reasoning-format auto"
 if [[ "$extra_flags" == *"--reasoning-format"* ]]; then
@@ -112,7 +123,7 @@ if [[ "$extra_flags" == *"--parallel"* || "$extra_flags" == *"-np "* ]]; then
 fi
 
 # Launch container
-echo "  [start-server] launching cuda ctx=$ctx port=$port" >&2
+echo "  [start-server] launching cuda gpu$device ctx=$ctx port=$port" >&2
 CID=$(docker run -d \
    --name "$CONTAINER" \
    --gpus "$gpus_flag" \

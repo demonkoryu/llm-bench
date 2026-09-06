@@ -13,17 +13,21 @@
 # Usage:
 #   fit-ctx.sh --backend cuda \
 #              [--hf-repo <repo> --hf-file <file> | --model <path>] \
-#              [--ngl <N>] [--fit-ctx <floor>] [extra flags...]
+#              [--ngl <N>] [--fit-ctx <floor>] [--device <N>] [extra flags...]
 #
-# Requires exclusive GPU: kills any running llama-server container + waits for
-# VRAM to clear first. Leaves no server running.
+# Requires exclusive use of ONE GPU: kills that card's llama-server container + waits for
+# its VRAM to clear first. Leaves no server running. --device N scopes the container name,
+# the port freed, the VRAM wait and the container's GPU to that card, so a fit probe on gpu1
+# does not evict the model being measured on gpu0 (see ../start-server.sh for the concurrency
+# rationale).
 set -e
 
 IMAGE="${LLAMA_IMAGE:-llama-server-cuda}"
-CONTAINER="${LLAMA_CONTAINER:-llama-server}"
 VRAM_CLEAR_TIMEOUT=60
 
 backend=cuda
+device=0
+port=8090
 fit_floor=4096
 fit_target=0
 hf_repo=""
@@ -39,10 +43,14 @@ while [[ $# -gt 0 ]]; do
       --fit-target)  fit_target="$2"; shift 2 ;;
       --hf-repo)  hf_repo="$2";   shift 2 ;;
       --hf-file)  hf_file="$2";   shift 2 ;;
+      --device)   device="$2";  shift 2 ;;
+      --port)     port="$2";    shift 2 ;;
       --model)    model_path="$2"; shift 2 ;;
       *)          extra_flags="$extra_flags $1"; shift ;;
    esac
 done
+
+CONTAINER="${LLAMA_CONTAINER:-llama-server-d${device}}"
 
 case "$backend" in
    cuda) ;;
@@ -75,12 +83,12 @@ fi
 # "llama-server" line is what made every fit_ctx row on this host unparseable.
 docker kill "$CONTAINER" >/dev/null 2>&1 || true
 docker rm -f "$CONTAINER" >/dev/null 2>&1 || true
-fuser -k 8090/tcp >/dev/null 2>&1 || true
+fuser -k "$port/tcp" >/dev/null 2>&1 || true
 
 deadline=$((SECONDS + VRAM_CLEAR_TIMEOUT))
 while [ $SECONDS -lt $deadline ]; do
-   used_mib=$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits 2>/dev/null \
-      | awk '{s+=$1} END {print int(s)}' || echo "0")
+   used_mib=$(nvidia-smi -i "$device" --query-gpu=memory.used --format=csv,noheader,nounits 2>/dev/null \
+      | awk 'NR==1{print int($1)}' || echo "0")
    [ "$used_mib" -lt 512 ] && break
    sleep 2
 done
@@ -89,7 +97,7 @@ done
 # so override it to llama-fit-params.
 err_log=$(mktemp)
 out=$(docker run --rm \
-   --gpus all \
+   --gpus "${LLAMA_GPUS:-device=$device}" \
    --entrypoint llama-fit-params \
    -v "$HOME/.cache/huggingface:/root/.cache/huggingface" \
    -v "$HOME/models:$HOME/models:ro" \

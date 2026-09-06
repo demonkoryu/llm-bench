@@ -24,9 +24,37 @@ rose:
    port: 8090
    backends:
       cuda:
-         image: "llama-server-cuda"
+         image: "${LLAMA_IMAGE:-llama-server-cuda}"
+   device: 0                           # the card this target owns; scopes container/lock/VRAM
    remote_dir: "~/llm-bench"
-   vram_cmd: "nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits"
+   vram_cmd: "nvidia-smi -i 0 --query-gpu=memory.used --format=csv,noheader,nounits"
+
+# ── rose-gpu1 / the second V100, llama.cpp ──────────────────────────────────────
+# Identical silicon and identical serving stack to `rose` — it differs ONLY in which card it
+# owns (device 1) and therefore in port and container. It exists for the same reason the two
+# ninfer targets do: so TWO models can be measured at once, one per card, instead of queueing
+# on one. `gpu:` is deliberately the same slug as rose — same V100, so rows from either target
+# are directly comparable and neither `device` nor `port` is a measurement dimension.
+#
+# CAVEAT, and it is the reason this is not simply the default: two concurrent servers share the
+# box's CPU, RAM bandwidth and PCIe. Correctness benches are unaffected (they are graded on
+# output, not latency), but every throughput/latency probe — speed, throughput, prefix_cache,
+# parallel_gen — reads LOW under contention and is NOT comparable to the solo-measured fleet.
+# Run the quality matrix concurrently across both targets; run the timing probes one card at a
+# time with the peer idle.
+rose-gpu1:
+   label: "rose / Tesla V100 PCIe 32GB (2 of 2, device 1)"
+   gpu: "V100"                         # same slug as rose — same card model, comparable rows
+   vram_total_mib: 32768               # ONE card
+   llamacpp: "${LLAMA_URL_GPU1:-http://192.168.1.120:8091}"
+   ssh_host: "${SSH_HOST:-llm2}"
+   port: 8091
+   device: 1
+   backends:
+      cuda:
+         image: "${LLAMA_IMAGE:-llama-server-cuda}"
+   remote_dir: "~/llm-bench"
+   vram_cmd: "nvidia-smi -i 1 --query-gpu=memory.used --format=csv,noheader,nounits"
 
 # ── m1 / Apple M1 Mac — OptiQ (MLX) — PARKED 2026-08-26 ─────────────────────────
 # The fleet is V100-only. Every engine: optiq model in config/models.yaml is now

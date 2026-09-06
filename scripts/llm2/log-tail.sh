@@ -1,17 +1,20 @@
 #!/usr/bin/env bash
 # Tail the server log and check for crash indicators.
-# Usage:  log-tail.sh [--lines <N>]
+# Usage:  log-tail.sh [--lines <N>] [--device <N>]
 # Exits:  0 = no crash detected, 2 = crash pattern found
 
-CONTAINER="${LLAMA_CONTAINER:-llama-server}"
 lines=30
+device=0
 
 while [[ $# -gt 0 ]]; do
    case "$1" in
-      --lines) lines="$2"; shift 2 ;;
+      --lines)  lines="$2";  shift 2 ;;
+      --device) device="$2"; shift 2 ;;
       *) shift ;;
    esac
 done
+
+CONTAINER="${LLAMA_CONTAINER:-llama-server-d${device}}"
 
 if ! docker ps -a -q -f "name=^${CONTAINER}$" 2>/dev/null | grep -q .; then
    exit 0

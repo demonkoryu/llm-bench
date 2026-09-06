@@ -16,7 +16,14 @@
 #
 # Only the exit code is contractual; alive.sh deliberately does not interpret the log. Use
 # log-tail.sh for WHY it died — this answers only whether it still exists.
-CONTAINER="${LLAMA_CONTAINER:-llama-server}"
+device=0
+while [[ $# -gt 0 ]]; do
+   case "$1" in
+      --device) device="$2"; shift 2 ;;
+      *) shift ;;
+   esac
+done
+CONTAINER="${LLAMA_CONTAINER:-llama-server-d${device}}"
 
 state=$(docker inspect -f '{{.State.Running}} {{.State.ExitCode}}' "$CONTAINER" 2>/dev/null) || exit 2
 [ -n "$state" ] || exit 2

@@ -245,6 +245,12 @@ async function main() {
                 sshHost: SSH_HOST,
                 llamaUrl: host.llamaUrl,
                 backend: host.backend,
+                // Both come from hosts.yaml so a second llama.cpp target can own the other card:
+                // the port must agree with llamaUrl (it used to be hardcoded to 8090 here, which
+                // silently pointed stop/kill at the wrong instance), and the device scopes the
+                // container, lockfile and VRAM readout — exactly as it does for ninfer above.
+                port: host.port ?? undefined,
+                device: host.device ?? 0,
                 debug: !!process.env.BENCH_DEBUG,
                 local: LOCAL,
              });
@@ -430,7 +436,7 @@ async function main() {
                .filter(Boolean)
                .join(' ');
             try {
-               await srv.startServer({ hf_repo: m.hf_repo, hf_file: m.hf_file, mlxModel: m.mlx_model, ctx: CTX, extraFlags });
+               await srv.startServer({ hf_repo: m.hf_repo, hf_file: m.hf_file, model_path: m.model_path, mlxModel: m.mlx_model, ctx: CTX, extraFlags });
                await srv.waitHealthy(LOAD_TIMEOUT_MS);
             } catch (e) {
                console.error(`  load failed: ${(e.message ?? '').slice(0, 80)} — skipping`);

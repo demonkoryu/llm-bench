@@ -67,7 +67,19 @@ export function loadHostConfig(path, target, { backend } = {}) {
       device: host.device ?? null,
       artifactDir: host.artifact_dir ?? null,
       image: host.image ?? null,
-      backends: host.backends ?? {},
+      // Env-interpolated like every other host field, because the backend image is the ONE fact
+      // that both halves of a run depend on: scripts/llm2/*.sh read $LLAMA_IMAGE directly, while
+      // the build/version probe (shared/host-probe.mjs) reads it from here. Leaving this literal
+      // let the two disagree silently — a run served by an override image recorded the DEFAULT
+      // image's llamacpp_build on every row, which is the one dimension that is supposed to make
+      // a non-stock build self-identifying. Declare it as ${LLAMA_IMAGE:-<default>} in hosts.yaml
+      // and both halves resolve to the same tag.
+      backends: Object.fromEntries(
+         Object.entries(host.backends ?? {}).map(([name, b]) => [
+            name,
+            b && typeof b === 'object' ? { ...b, ...(b.image ? { image: resolveEnv(b.image) } : {}), ...(b.bin ? { bin: resolveEnv(b.bin) } : {}) } : b,
+         ]),
+      ),
       raw: host,
    };
 }

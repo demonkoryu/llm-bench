@@ -1087,6 +1087,82 @@ models:
 #   nemotron:    https://huggingface.co/nvidia/NVIDIA-Nemotron-Nano-12B-v2
 #   muse-glimmer: https://huggingface.co/meta-models/Muse-Glimmer-30B (card, August 2026)
 
+   # ── K2-Horizon (IFM) — NEW ARCH, VENDOR-FORK BUILD ───────────────────────────
+   # Added 2026-09-06. Two entries: the MoVA MoE and the dense 32B, both Q5_K_M, both q8_0/q4_0 KV.
+   #
+   # THE BUILD IS NOT STOCK. `k2-horizon` does not exist in upstream llama.cpp — a model file
+   # loaded there dies with "unknown model architecture: 'k2-horizon'" (ggml-org/llama.cpp#28361,
+   # open, no PR merged). These rows were served by an image built from the vendor fork
+   # MBZUAI-IFM/llama.cpp, branch model/K2Horizon @ 35999d10 (2026-09-01, upstream base ~2026-08-28),
+   # tagged `llama-server-cuda-k2`. Set LLAMA_IMAGE=llama-server-cuda-k2 for any run that touches
+   # these two entries, or the start fails at load. The fork's five commits add ONLY conversion,
+   # arch/hparams/tensors, the compute graph, tokenizer registration and a reference jinja
+   # template — no chat-format parser. None is needed: this llama.cpp derives the reasoning and
+   # tool-call grammar from the template itself (COMMON_CHAT_FORMAT_PEG_NATIVE), which was verified
+   # live on both models — `reasoning_content`, native `tool_calls` and json_schema-constrained
+   # output all come back correctly parsed. `llamacpp_build` records b1-35999d10, so these rows are
+   # self-identifying and can never be confused with an upstream build.
+   #
+   # THINK. The chat template ALWAYS opens a thinking span (`<ifm|think>`), selected by
+   # `reasoning_effort` high|medium|low → think / think_fast / think_faster; there is no no-think
+   # branch in the template at all. Despite that, `think: optional` is correct and was verified on
+   # the host: llama.cpp honours chat_template_kwargs.enable_thinking=false and suppresses the span
+   # (a reasoning-heavy prompt came back with reasoning_content empty and the chain in `content`).
+   # So the standard enable_thinking control applies and --think both is meaningful.
+   #
+   # SAMPLING. Vendor-recommended, from the model card: temperature 1.0, top_p 0.95, and
+   # reasoning_effort=high on every request (which is also the template's default, so the think
+   # arm needs no kwarg to get it).
+   - hf_repo: NANI-Nithin/K2-Horizon-MoVA-36B-A4B-GGUF
+     hf_file: K2-Horizon-MoVA-36B-A4B-Q5_K_M.gguf
+     label: "K2-Horizon-MoVA-36B-A4B Q5_K_M"
+     family: k2-horizon
+     type: moe
+     think: optional
+     tools: true
+     native_max_ctx: 524288
+     # Q5_K_M is the largest of the ladder that fits ONE 32 GiB V100: 24.6 GiB of weights left
+     # 4.5 GiB free at 32k (MEASURED 28,150 MiB resident, q8_0/q4_0 KV, -ub 2048). Q6_K is 28.7 GiB
+     # of weights alone and cannot hold a usable window beside the compute buffers. The official
+     # IFM GGUF repo publishes BF16 only, hence a community quant — its vocab was checked on the
+     # host, `<ifm|tool_call>` / `<ifm|think>` / `<|ifm|im_start|>` each tokenize to exactly one id.
+     # ctx_cap: the KV is 48 layers x 8 kv x 128 = ~80 KiB/token at q8_0/q4_0, so ~5 GiB at 64k —
+     # right at the edge of what is left. Deliberately far below the 512k native window so
+     # agent_ctx does not seed a ladder into a pool this card cannot hold; fit_ctx measures the
+     # real ceiling.
+     ctx_cap: 65536
+     extra_flags:
+        cache-type-k: q8_0
+        cache-type-v: q4_0
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
+     notes: "MoE: 100 experts + 1 shared (top-8) plus a 64-expert MoVA attention bank (top-4, softplus gate). Needs LLAMA_IMAGE=llama-server-cuda-k2."
+
+   - hf_repo: IFM/K2-Horizon-32B-GGUF
+     hf_file: K2-Horizon-32B-Q5_K_M.gguf
+     # LOCALLY QUANTIZED — the file named above exists on this host and nowhere else. No q5/q6
+     # GGUF of this model is published anywhere on the Hub (the official repo has BF16 only; the
+     # only third-party builds are an FP4 ROCm one and an abliterated variant), so it was produced
+     # here from IFM/K2-Horizon-32B-GGUF's BF16 with the fork's llama-quantize. hf_repo above is
+     # therefore PROVENANCE, not a fetch path: the server is pointed at model_path instead, which
+     # start-server.sh bind-mounts read-only at the identical path inside the container. Reproduce
+     # with: llama-quantize <BF16>.gguf <out>.gguf Q5_K_M
+     model_path: /home/demonkoryu/models/k2-horizon/K2-Horizon-32B-Q5_K_M.gguf
+     label: "K2-Horizon-32B Q5_K_M"
+     family: k2-horizon
+     type: dense
+     think: optional
+     tools: true
+     native_max_ctx: 524288
+     # Dense 64 x 64 heads / 8 kv x 128 → ~106 KiB/token of KV at q8_0/q4_0, appreciably heavier
+     # per token than the MoVA entry despite the smaller weights, because it has 16 more layers.
+     ctx_cap: 65536
+     extra_flags:
+        cache-type-k: q8_0
+        cache-type-v: q4_0
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
+     notes: "Dense 64L, 512k native ctx, vocab 250624. Locally quantized (see model_path). Needs LLAMA_IMAGE=llama-server-cuda-k2."
+
+
 sampling_matrix:
 
    # Overrides live under `per_profile:` and key on a bench's declared samplingProfile, never on a
@@ -1293,6 +1369,20 @@ sampling_matrix:
          temperature: 1.0
          top_p: 0.95
          top_k: 64
+
+   # ── K2-Horizon (IFM; MoVA-36B-A4B + dense 32B) ────────────────────────────
+   # Straight off the vendor model card: "Recommended settings: reasoning_effort='high',
+   # temperature=1.0, top_p=0.95" — and all of IFM's reported results use high effort, which is
+   # also the chat template's own default, so the think arm inherits it without a kwarg. No
+   # top_k/min_p/penalty is published for this family; none is set here rather than borrowing
+   # another family's, since an invented sampler is indistinguishable from a model property in
+   # the store. no_think reuses the same values: the vendor documents nothing for it (the
+   # template has no no-think branch at all — llama.cpp suppresses the span), so holding sampling
+   # constant across the think split keeps that axis the only thing that differs.
+   k2-horizon:
+      default:
+         temperature: 1.0
+         top_p: 0.95
 
 
 # ── Host configuration ───────────────────────────────────────────────────────────

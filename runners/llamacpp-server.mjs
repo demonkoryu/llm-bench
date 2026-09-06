@@ -79,18 +79,48 @@ const DEFAULT_PORT = 8090;
  *   llamaUrl  {string}   HTTP endpoint for the OpenAI-compat API
  *   backend   {string}   'cuda' (default: 'cuda')
  *   port      {number}   llama-server port (default: 8090)
+ *   device    {number}   host CUDA device index this instance owns (default: 0). Every
+ *                        host-side operation is scoped to it — container name, lockfile,
+ *                        VRAM readout — so the two V100s can serve two models at once
+ *                        without one run evicting the other or reading its memory. Same
+ *                        contract as the ninfer engine's `device`; see scripts/llm2/start-server.sh.
  *   debug     {boolean}  verbose logging
  *   local     {boolean}  run the llm2 scripts locally (Node is ON the test host)
  *                        instead of over SSH; defaults to env BENCH_LOCAL=1.
  */
+/**
+ * The `--hf-repo/--hf-file | --model` choice, made once so startServer, probeFitCtx and the
+ * restart path cannot disagree about where a model's weights come from.
+ *
+ * `model_path` exists for a GGUF that is NOT a published HF artifact — a locally produced
+ * quant, the same way the speculative drafters already live under ~/models (which
+ * start-server.sh bind-mounts read-only at the identical path inside the container). It has to
+ * be a separate route rather than a clever cache-directory placement: the image is built with
+ * LLAMA_CURL=ON, so --hf-repo resolves the file against the repo manifest on huggingface.co
+ * and a filename that exists only on this disk fails there before the cache is ever consulted.
+ * `hf_file` stays populated for such a model — it is the identity/label the store keys on — it
+ * simply is not what the server is pointed at.
+ */
+function modelSourceArgs({ hf_repo, hf_file, model_path }) {
+   if (model_path) {
+      return `--model '${model_path}'`;
+   }
+   return `--hf-repo '${hf_repo}' --hf-file '${hf_file}'`;
+}
+
 export function llamacppServer({
    sshHost,
    llamaUrl = 'http://192.168.1.120:8090',
    backend = 'cuda',
    port = DEFAULT_PORT,
+   device = 0,
    debug = false,
    local = LOCAL_HOST,
 }) {
+   // Appended to every host script that owns or inspects the per-card container. NOT appended to
+   // health.sh (it addresses the URL, not the card) — and never blindly to all of them, because
+   // start-server.sh/fit-ctx.sh funnel unrecognised argv into the llama-server flag string.
+   const dev = `--device ${device}`;
    const client = createClient(llamaUrl, { debug });
 
    /** Run a script on the host (locally or over SSH). Throws on failure unless tolerant=true. */
@@ -127,17 +157,20 @@ export function llamacppServer({
     * @param {object} opts
     *   hf_repo    {string}   HF repo id
     *   hf_file    {string}   GGUF filename
+    *   model_path {string}   Absolute path to a GGUF on the host — used INSTEAD of the
+    *                         hf_repo/hf_file pair for a locally produced quant (see
+    *                         modelSourceArgs)
     *   ctx        {number}   Context size (tokens)
     *   extraFlags {string}   Additional llama-server flags (e.g. MTP, chat-template)
     * @returns {string} PID of the launched server
     */
-   async function startServer({ hf_repo, hf_file, ctx, extraFlags = '' }) {
+   async function startServer({ hf_repo, hf_file, model_path, ctx, extraFlags = '' }) {
       const args = [
          `--backend ${backend}`,
          `--ctx ${ctx}`,
          `--port ${port}`,
-         `--hf-repo '${hf_repo}'`,
-         `--hf-file '${hf_file}'`,
+         dev,
+         modelSourceArgs({ hf_repo, hf_file, model_path }),
          extraFlags,
       ]
          .filter(Boolean)
@@ -145,7 +178,7 @@ export function llamacppServer({
 
       // HF downloads can take a while on first run — give 600s
       const pid = await runScript('start-server.sh', args, { timeout: 600_000 });
-      console.log(`[llamacpp] started PID=${pid} backend=${backend} ctx=${ctx} ${hf_file}`);
+      console.log(`[llamacpp] started PID=${pid} gpu${device} backend=${backend} ctx=${ctx} ${hf_file ?? model_path}`);
       return pid;
    }
 
@@ -184,29 +217,29 @@ export function llamacppServer({
 
    /** Stop the tracked server and clean up. */
    async function stopServer() {
-      await runScript('stop-server.sh', `--port ${port}`, { tolerant: true, timeout: 15_000 });
+      await runScript('stop-server.sh', `--port ${port} ${dev}`, { tolerant: true, timeout: 15_000 });
    }
 
    /** Aggressive kill — use on SIGINT/SIGTERM and before each probe. */
    async function killAll() {
-      await runScript('kill-all.sh', `--port ${port}`, { tolerant: true, timeout: 30_000 });
+      await runScript('kill-all.sh', `--port ${port} ${dev}`, { tolerant: true, timeout: 30_000 });
    }
 
-   /** VRAM used in MiB (reads nvidia-smi on llm2, summed across GPUs). */
+   /** VRAM used in MiB on this instance's GPU (reads nvidia-smi on llm2, scoped by `device`). */
    async function snapshotVram() {
-      const out = await runScript('vram.sh', '', { tolerant: true, timeout: 30_000 });
+      const out = await runScript('vram.sh', dev, { tolerant: true, timeout: 30_000 });
       const n = parseInt(out, 10);
       return Number.isNaN(n) ? null : n;
    }
 
    /**
     * GPU memory used in MiB as { vram, gtt } (reads nvidia-smi on llm2).
-    * vram = total used across all GPUs. gtt = always 0 on NVIDIA (no transparent
+    * vram = used on this instance's GPU. gtt = always 0 on NVIDIA (no transparent
     * spill to system RAM — CUDA OOM is a hard failure, unlike amdgpu/GTT).
     * Returns nulls on parse failure.
     */
    async function snapshotMem() {
-      const out = await runScript('meminfo.sh', '', { tolerant: true, timeout: 30_000 });
+      const out = await runScript('meminfo.sh', dev, { tolerant: true, timeout: 30_000 });
       const [v, g] = String(out)
          .trim()
          .split(/\s+/)
@@ -224,7 +257,7 @@ export function llamacppServer({
     * failure wants.
     */
    async function deadReason() {
-      const r = await runHostCmd(`bash ${SCRIPTS_DIR}/alive.sh`, { local, sshHost, timeout: 10_000 });
+      const r = await runHostCmd(`bash ${SCRIPTS_DIR}/alive.sh ${dev}`, { local, sshHost, timeout: 10_000 });
       if (r.exitCode !== 1) {
          return null;
       }
@@ -235,7 +268,7 @@ export function llamacppServer({
 
    /** Check for crash patterns in the server log. Returns true if crashed. */
    async function hasCrashed() {
-      const r = await runHostCmd(`bash ${SCRIPTS_DIR}/log-tail.sh --lines 20`, { local, sshHost, timeout: 10_000 });
+      const r = await runHostCmd(`bash ${SCRIPTS_DIR}/log-tail.sh --lines 20 ${dev}`, { local, sshHost, timeout: 10_000 });
       return r.exitCode === 2;
    }
 
@@ -294,7 +327,7 @@ export function llamacppServer({
          console.warn('  [fit_ctx] string extra_flags — KV quant not forwarded to fit-params (using its q8_0 default)');
       }
 
-      const args = [`--backend ${backend}`, `--hf-repo '${modelCfg.hf_repo}'`, `--hf-file '${modelCfg.hf_file}'`, fitFlags]
+      const args = [`--backend ${backend}`, dev, `--port ${port}`, modelSourceArgs(modelCfg), fitFlags]
          .filter(Boolean)
          .join(' ');
 
@@ -332,6 +365,7 @@ export function llamacppServer({
          await startServer({
             hf_repo: modelCfg.hf_repo,
             hf_file: modelCfg.hf_file,
+            model_path: modelCfg.model_path,
             ctx: modelCfg._ctxLoaded ?? 8192,
             extraFlags: extraFlagsToString(modelCfg.extra_flags),
          });
