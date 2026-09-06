@@ -265,5 +265,29 @@
     "vram_at_ctx": 5496,
     "source_run_id": "v100-cuda-20260827-175133-7n7d-benchrun",
     "measured_at": "2026-08-27T17:51:57.078Z"
+  },
+  "K2-Horizon-MoVA-36B-A4B-Q5_K_M.gguf|Q5_K_M|q8_0|cuda|V100": {
+    "gguf_file": "K2-Horizon-MoVA-36B-A4B-Q5_K_M.gguf",
+    "quant": "Q5_K_M",
+    "kv_quant": "q8_0",
+    "backend": "cuda",
+    "gpu": "V100",
+    "llamacpp_build": "0.3.0-dev (35999d10)",
+    "vram_bytes_per_ctx_tok": 84260.57142857143,
+    "vram_at_ctx": 30804,
+    "source_run_id": "v100-cuda-20260906-164141-zgwf-benchrun",
+    "measured_at": "2026-09-06T17:24:41.178Z"
+  },
+  "K2-Horizon-32B-Q5_K_M.gguf|Q5_K_M|q8_0|cuda|V100": {
+    "gguf_file": "K2-Horizon-32B-Q5_K_M.gguf",
+    "quant": "Q5_K_M",
+    "kv_quant": "q8_0",
+    "backend": "cuda",
+    "gpu": "V100",
+    "llamacpp_build": "0.3.0-dev (35999d10)",
+    "vram_bytes_per_ctx_tok": 110592,
+    "vram_at_ctx": 30732,
+    "source_run_id": "v100-cuda-20260906-182720-bylw-benchrun",
+    "measured_at": "2026-09-06T18:29:09.805Z"
   }
 }

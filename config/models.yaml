@@ -1135,7 +1135,27 @@ models:
         cache-type-k: q8_0
         cache-type-v: q4_0
      benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
-     notes: "MoE: 100 experts + 1 shared (top-8) plus a 64-expert MoVA attention bank (top-4, softplus gate). Needs LLAMA_IMAGE=llama-server-cuda-k2."
+     # MEASURED 2026-09-06, and the reason this entry's usable window is far below its fitted one:
+     # needle retrieval is UNRELIABLE past ~16k. quality_decay scored 100/100/0 at 0k/16k/32k while
+     # the dense 32B entry below scored 100/100/100 on the same probe, same quant, same KV.
+     # Verified three ways before believing it: reproduced with a standalone script (returns 41
+     # where the answer is 88); NOT a KV artifact (identical miss with q8_0/q8_0, so the q4_0 V
+     # cache is exonerated); NOT a probe artifact (the needle constant FLOW_RETRY_LIMIT_4 is
+     # assigned exactly once in the prompt, so there is nothing to confuse it with). A depth sweep
+     # is non-monotonic — 16k hit, 20k miss, 24k miss, 28k hit, 32k miss — i.e. position-dependent
+     # degradation, not a hard cliff. UNRESOLVED: the MoVA attention-expert bank is the newest code
+     # in the fork (d63ad5e64f + d6b148a795, 2026-08-31/09-01) and the dense path never touches it,
+     # so "model property" and "bug in the fork's MoVA graph" are not separable from here. Either
+     # way, do not deploy this model above ~16k on this stack, whatever fit_ctx says.
+     #
+     # NO throughput / parallel_gen ROWS, deliberately, not a gap to backfill: both probes send
+     # ignore_eos:true to pin the token count, and this model driven past EOS on a code-analysis
+     # prompt emits output llama.cpp's peg-native parser rejects — the server returns
+     # `500 The model produced output that does not match the expected peg-native format`,
+     # deterministically (4/4). The 32B entry survives the same probe, so it is this model's
+     # continuation behaviour, not a blanket incompatibility. Dropping ignore_eos would fix it but
+     # would change an axis every existing fleet row was measured on, so the probe is left alone.
+     notes: "MoE: 100 experts + 1 shared (top-8) plus a 64-expert MoVA attention bank (top-4, softplus gate). Needs LLAMA_IMAGE=llama-server-cuda-k2. Unreliable retrieval past ~16k — see the note above."
 
    - hf_repo: IFM/K2-Horizon-32B-GGUF
      hf_file: K2-Horizon-32B-Q5_K_M.gguf
@@ -1160,6 +1180,10 @@ models:
         cache-type-k: q8_0
         cache-type-v: q4_0
      benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
+     # Holds 100% needle retrieval at 32k where the MoVA entry above collapses, on the same quant
+     # and the same q8_0/q4_0 KV — which is what makes that entry's failure a property of the MoVA
+     # path rather than of this arch, this quant or this cache config. MEASURED 108 KiB/token of KV
+     # (predicted 106 from 64 layers x 8 kv x 128), fit_ctx 70,656.
      notes: "Dense 64L, 512k native ctx, vocab 250624. Locally quantized (see model_path). Needs LLAMA_IMAGE=llama-server-cuda-k2."
 
 
