@@ -13,7 +13,7 @@
 // at a fixed ctx=65536. q8_0 is ~8.5 bits/element and q4_0 ~4.5, so halving V's precision cuts V's
 // own footprint ~47%; against the slope that reads as only ~9%, against the cache it is ~24%. Do not
 // compare this number against a bits-per-weight calculation: the denominators are different things.
-import { extraFlagsToString, LOAD_TIMEOUT_MS } from '../../runners/llamacpp-server.mjs';
+import { extraFlagsToString, LOAD_TIMEOUT_MS, modelSource } from '../../runners/llamacpp-server.mjs';
 
 const C_LOW = 8192;
 
@@ -34,7 +34,7 @@ export const bench = {
       const vramAtCtx = async (ctx) => {
          await srv.killAll();
          await srv.waitVramClear(30000);
-         await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx, extraFlags: extraFlagsToString(model.extra_flags) });
+         await srv.startServer({ ...modelSource(model), ctx, extraFlags: extraFlagsToString(model.extra_flags) });
          await srv.waitHealthy(LOAD_TIMEOUT_MS);
          return srv.snapshotVram();
       };

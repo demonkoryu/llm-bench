@@ -168,7 +168,7 @@ async function runLlamacpp({ srv, client, model, caps, vramTotalMib }) {
    await srv.killAll();
    await srv.waitVramClear(30_000);
    try {
-      await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx: plannerCtx, extraFlags: probeExtraFlags(model, 1) });
+      await srv.startServer({ ...modelSource(model), ctx: plannerCtx, extraFlags: probeExtraFlags(model, 1) });
       await srv.waitHealthy(LOAD_TIMEOUT_MS);
    } catch (e) {
       return fail(`planner load failed at ${plannerCtx}: ${(e.message ?? '').slice(0, 60)}`);
@@ -214,7 +214,7 @@ async function runLlamacpp({ srv, client, model, caps, vramTotalMib }) {
       await srv.killAll();
       await srv.waitVramClear(30_000);
       try {
-         await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx: T, extraFlags: probeExtraFlags(model, nSlots) });
+         await srv.startServer({ ...modelSource(model), ctx: T, extraFlags: probeExtraFlags(model, nSlots) });
          // Reload: the planner load above already pulled this GGUF. See RELOAD_TIMEOUT_MS.
          await srv.waitHealthy(RELOAD_TIMEOUT_MS);
       } catch {

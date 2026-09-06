@@ -45,7 +45,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
 import { loadModelsConfig, modelBaseId } from '../shared/models-config.mjs';
-import { extraFlagsToString, LOAD_TIMEOUT_MS, llamacppServer } from './llamacpp-server.mjs';
+import { extraFlagsToString, LOAD_TIMEOUT_MS, llamacppServer, modelSource } from './llamacpp-server.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const { values: flags } = parseArgs({
@@ -223,7 +223,7 @@ async function main() {
          await srv.killAll();
          await srv.waitVramClear(30_000);
          try {
-            await srv.startServer({ hf_repo: m.hf_repo, hf_file: m.hf_file, ctx: CTX, extraFlags });
+            await srv.startServer({ ...modelSource(m), ctx: CTX, extraFlags });
             await srv.waitHealthy(LOAD_TIMEOUT_MS);
          } catch (e) {
             console.log(`     load FAILED: ${e.message.slice(0, 90)} — skipping state`);

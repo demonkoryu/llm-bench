@@ -2,7 +2,7 @@
 // large prefix COLD (unique nonce → full prefill) then WARM (identical → prefill
 // skipped), median over reps. Emits prefix_cache_cold_ms / _warm_ms / _speedup.
 
-import { extraFlagsToString, LOAD_TIMEOUT_MS } from '../../runners/llamacpp-server.mjs';
+import { extraFlagsToString, LOAD_TIMEOUT_MS, modelSource } from '../../runners/llamacpp-server.mjs';
 import { makeFillPrompt } from '../../shared/codebase.mjs';
 
 const median = (xs) => {
@@ -23,7 +23,7 @@ export const bench = {
       const depth = Math.min(DEPTH, Math.max(1024, ctx - 1024));
       await srv.killAll();
       await srv.waitVramClear(30000);
-      await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx, extraFlags: extraFlagsToString(model.extra_flags) });
+      await srv.startServer({ ...modelSource(model), ctx, extraFlags: extraFlagsToString(model.extra_flags) });
       await srv.waitHealthy(LOAD_TIMEOUT_MS);
       const ttftOf = async (messages) => {
          const { timings } = await client.chat(messages, { think: null, max_tokens: 4, temperature: 0.0 }, 900000);

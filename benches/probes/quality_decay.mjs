@@ -13,7 +13,7 @@
 // warm and deliberately now. Existing ttft-0k/16k/64k rows in the store came from here; they were
 // warm, so they do not contradict the new definition, but nothing refreshes them any more.
 
-import { extraFlagsToString, LOAD_TIMEOUT_MS } from '../../runners/llamacpp-server.mjs';
+import { extraFlagsToString, LOAD_TIMEOUT_MS, modelSource } from '../../runners/llamacpp-server.mjs';
 import { makeFillPrompt } from '../../shared/codebase.mjs';
 
 const DEPTHS = [16384, 32768, 65536];
@@ -37,7 +37,7 @@ export const bench = {
       const ctx = Math.max(maxctx, 16384);
       await srv.killAll();
       await srv.waitVramClear(30000);
-      await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx, extraFlags: extraFlagsToString(model.extra_flags) });
+      await srv.startServer({ ...modelSource(model), ctx, extraFlags: extraFlagsToString(model.extra_flags) });
       await srv.waitHealthy(LOAD_TIMEOUT_MS);
       const depths = [0, ...DEPTHS.filter((d) => d + 512 < ctx)];
       // Whichever think mechanism the model declares. Hardcoding `enable_thinking` here made this

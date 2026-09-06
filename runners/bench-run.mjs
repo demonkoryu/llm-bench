@@ -36,7 +36,7 @@ import {
 } from '../shared/llm/index.mjs';
 import { deriveSubjectDims, loadModelsConfig } from '../shared/models-config.mjs';
 import { metricRowsFromResult } from '../shared/tidy-schema.mjs';
-import { extraFlagsToString, LOAD_TIMEOUT_MS, llamacppServer } from './llamacpp-server.mjs';
+import { extraFlagsToString, LOAD_TIMEOUT_MS, llamacppServer, modelSource } from './llamacpp-server.mjs';
 import { ninferServer } from './ninfer-server.mjs';
 import { optiqServer } from './optiq-server.mjs';
 
@@ -436,7 +436,7 @@ async function main() {
                .filter(Boolean)
                .join(' ');
             try {
-               await srv.startServer({ hf_repo: m.hf_repo, hf_file: m.hf_file, model_path: m.model_path, mlxModel: m.mlx_model, ctx: CTX, extraFlags });
+               await srv.startServer({ ...modelSource(m), mlxModel: m.mlx_model, ctx: CTX, extraFlags });
                await srv.waitHealthy(LOAD_TIMEOUT_MS);
             } catch (e) {
                console.error(`  load failed: ${(e.message ?? '').slice(0, 80)} — skipping`);

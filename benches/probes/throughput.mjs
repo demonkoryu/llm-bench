@@ -33,7 +33,7 @@
 //     ninfer-serve returns a standard `usage` block and nothing else, so the non-streaming path
 //     below would silently degrade it to the wall-clock e2e fallback and leave ttft/prefill null.
 
-import { extraFlagsToString, LOAD_TIMEOUT_MS } from '../../runners/llamacpp-server.mjs';
+import { extraFlagsToString, LOAD_TIMEOUT_MS, modelSource } from '../../runners/llamacpp-server.mjs';
 import { makeFillPrompt } from '../../shared/codebase.mjs';
 
 const median = (xs) => {
@@ -63,7 +63,7 @@ export const bench = {
       const streamForTimings = NO_SERVER_TIMINGS.has(model.engine ?? 'llamacpp');
       await srv.killAll();
       await srv.waitVramClear(30000);
-      await srv.startServer({ hf_repo: model.hf_repo, hf_file: model.hf_file, ctx, extraFlags: extraFlagsToString(model.extra_flags) });
+      await srv.startServer({ ...modelSource(model), ctx, extraFlags: extraFlagsToString(model.extra_flags) });
       await srv.waitHealthy(LOAD_TIMEOUT_MS);
       let nonce = 0;
       const rows = [];

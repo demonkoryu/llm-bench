@@ -101,6 +101,19 @@ const DEFAULT_PORT = 8090;
  * `hf_file` stays populated for such a model — it is the identity/label the store keys on — it
  * simply is not what the server is pointed at.
  */
+/**
+ * The serving-source fields, as one spreadable object: `...modelSource(model)`.
+ *
+ * Exists because every self-managing probe used to enumerate `{ hf_repo, hf_file }` by hand at its
+ * own startServer call, so adding a third source field silently missed all eight of them — the
+ * server launched with an --hf-repo whose file was never staged and died with exit code 1 ten
+ * seconds into the load, at every context size, which reads like an OOM and is not one. Spread this
+ * instead of listing fields, and a future source field reaches every call site by construction.
+ */
+export function modelSource(model = {}) {
+   return { hf_repo: model.hf_repo, hf_file: model.hf_file, model_path: model.model_path };
+}
+
 function modelSourceArgs({ hf_repo, hf_file, model_path }) {
    if (model_path) {
       return `--model '${model_path}'`;
@@ -327,9 +340,7 @@ export function llamacppServer({
          console.warn('  [fit_ctx] string extra_flags — KV quant not forwarded to fit-params (using its q8_0 default)');
       }
 
-      const args = [`--backend ${backend}`, dev, `--port ${port}`, modelSourceArgs(modelCfg), fitFlags]
-         .filter(Boolean)
-         .join(' ');
+      const args = [`--backend ${backend}`, dev, `--port ${port}`, modelSourceArgs(modelCfg), fitFlags].filter(Boolean).join(' ');
 
       const out = await runScript('fit-ctx.sh', args, { tolerant: true, timeout: 180_000 });
       const raw = Number.parseInt(String(out).trim(), 10);
