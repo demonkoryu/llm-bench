@@ -722,6 +722,33 @@ models:
      benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
                struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
 
+   # ── Ling-3.0-tiny (bailingmoe3 MoE) ──────────────────────────────────────────
+   # 7.9B total / 1.3B activated. Added 2026-09-09 to be compared head-to-head with
+   # Nemotron-3-Nano-4B for the menial-task slot on device 1.
+   #
+   # WHY Q4_K_M AND NOT Q8_0: the comparison is EQUAL VRAM, not equal bits. That slot's budget
+   # is whatever muse leaves free on device 1 — 6639 MiB — and Nemotron sits in it at Q8_0
+   # (4.23 GB). Ling is twice the parameter count, so the same footprint costs it four bits:
+   # Q4_K_M is 4.92 GB, Q5_K_M 5.72 GB (leaves ~1.0 GB, too tight for useful ctx) and Q8_0
+   # 8.41 GB (does not fit at all). Quantisation is therefore a CONFOUND that cannot be removed
+   # without changing the question — read this as "which model wins the slot", not "which model
+   # is better". A Q8_0 run on a freed card would separate the two and has not been done.
+   - hf_repo: bartowski/Ling-3.0-tiny-GGUF
+     hf_file: Ling-3.0-tiny-Q4_K_M.gguf
+     label: "Ling-3.0-tiny Q4_K_M"
+     family: ling3
+     type: moe
+     arch: bailingmoe3
+     total_params: 8
+     active_params: 1
+     think: optional
+     think_control: enable_thinking
+     tools: true
+     native_max_ctx: 131072
+     benches: [triage, reasoning, reasoning_hard, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
+               struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, parallel_gen]
+     notes: "bailingmoe3, supported since llama.cpp src/models/bailingmoe3.cpp. No dedicated parser in common/parsers/, so tool calls take the generic jinja path — watch toolcall_fail for format errors rather than capability failures."
+
    # ── Nemotron-3-Nano-4B (mamba-hybrid) ─────────────────────────────────────────
    # Small v3 Nemotron; Q8_0 ≈4.3GB → big KV headroom for long context. Same bug
    # class as the family: no_schema set; tool-calling blocked (llama.cpp#24081);
@@ -744,11 +771,16 @@ models:
      type: dense
      think: optional
      think_control: system_keyword
-     tools: false
-     capability_note: "tool-calling + json_schema blocked by llama.cpp#24081 class; mamba assert risk #20570"
+     # tools WAS false, gated on llama.cpp#24081. RE-TESTED 2026-09-09 on build 9cf3bf256 against
+     # the live nano container and the gate is GONE: a get_weather request came back with a proper
+     # tool_calls array and finish_reason=tool_calls. Somewhere in the 264 commits between
+     # f280b2698 and 9cf3bf256 this was fixed. The 114 stored rows for this model are all on
+     # f280b2698 and predate the fix, so they cannot be used to judge its tool calling.
+     tools: true
+     capability_note: "mamba assert risk #20570 (load-time). Tool-calling gate llama.cpp#24081 no longer reproduces on 9cf3bf256."
      no_schema: true
      native_max_ctx: 131072
-     benches: [triage, reasoning, reasoning_hard, reasoning_expert, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output,
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output,
                instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
 
    # ── Qwen3.8-27B Q6_K ─────────────────────────────────────────────────────────
@@ -1422,6 +1454,17 @@ sampling_matrix:
       no_think:
          temperature: 0.3
          top_p: 0.95
+
+   # ── Ling-3.0 (bailingmoe3) ────────────────────────────────────────────────
+   # Card publishes ONE set for both modes: temperature 1.0 / top_p 0.95 / top_k 20, with no
+   # presence or repetition penalty. Deliberately not split into think/no_think — inventing a
+   # lower no_think temperature here would be a guess, and the whole point of this entry is a
+   # clean comparison against Nemotron on published settings.
+   ling3:
+      default:
+         temperature: 1.0
+         top_p: 0.95
+         top_k: 20
 
    # ── Muse-Glimmer (always-reasoning, null think state) ──────────────────────
    # Vendor-published "Best Practices" from the model card, verified 2026-08-26:

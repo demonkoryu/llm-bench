@@ -122,7 +122,14 @@ if [[ "$extra_flags" == *"--parallel"* || "$extra_flags" == *"-np "* ]]; then
    np_flag=""
 fi
 
-# Launch container
+# Launch container.
+# NOTE on --load-mode: this was `--no-mmap --mlock` until 2026-09-09. Both flags were REMOVED
+# (not merely deprecated) in llama.cpp b10877 / #28334, so every load died instantly at arg
+# parse with the container exiting code 1 — which the harness reports only as "llama-server
+# died 10s into the load". The old pair set load_mode twice and the last flag won, so mlock
+# (mmap off, weights resident) was the effective mode; `--load-mode mlock` is the exact
+# equivalent, not a behaviour change. Comments cannot live inside the docker run continuation
+# below: a `#` line between backslash-continued lines silently truncates the command.
 echo "  [start-server] launching cuda gpu$device ctx=$ctx port=$port" >&2
 CID=$(docker run -d \
    --name "$CONTAINER" \
@@ -138,7 +145,7 @@ CID=$(docker run -d \
    -fa on \
    $np_flag \
    --split-mode layer \
-   --no-mmap --mlock \
+   --load-mode mlock \
    --prio 2 \
    --jinja \
    $rf_flag \
