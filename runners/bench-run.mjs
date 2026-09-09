@@ -552,6 +552,17 @@ async function main() {
                await markBenchesComplete(run_id, [...new Set(rawRows.map((r) => r.bench).filter(Boolean))]);
             }
             console.error(`  ${benchName.padEnd(14)} probe    → ${rawRows.length} rows${completed ? '' : ' (PARTIAL — will retry)'}`);
+            // Surface skip reasons. A probe can decline for several unrelated reasons (no
+            // vram_total_mib for the host, planner load failed, no VRAM-resident plan) and each
+            // explains itself in `notes` -- but `notes` is not a tidy column and not in the run
+            // manifest, so until now every one of them vanished and the operator saw only
+            // "agent_ctx probe -> 1 rows", indistinguishable from a real measurement. That cost an
+            // hour of blind bisection on 2026-09-09 when agent_ctx skipped on both models.
+            for (const raw of rawRows) {
+               if (raw?.status === 'skip') {
+                  console.error(`  ${' '.repeat(14)} SKIPPED ${raw.bench ?? benchName}: ${raw.notes ?? '(no reason given)'}`);
+               }
+            }
          }
          await srv.stopServer().catch(() => {});
       }

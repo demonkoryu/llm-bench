@@ -41,6 +41,24 @@
 // are not part of the fill — they define the fleet shape the capacity search is measuring — so
 // every llama.cpp agent_ctx run since has died with "PLANNER_TARGET is not defined" and recorded
 // zero rows. Values are d3609db's, verbatim.
+import { extraFlagsToString, LOAD_TIMEOUT_MS, modelSource, RELOAD_TIMEOUT_MS } from '../../runners/llamacpp-server.mjs';
+import { makeFillPrompt } from '../../shared/codebase.mjs';
+import { runMlx } from './agent_ctx_mlx.mjs';
+
+// RESTORED 2026-09-09. d3609db (2026-08-27, "drop the concurrent-coherence check") deleted this
+// file's entire import block along with the code that used makeFillPrompt concurrently, and
+// 78b3115 then introduced modelSource without noticing there was nothing to import it. The effect
+// was total and silent: `modelSource is not defined` is thrown inside the try around the planner
+// load, so it was caught and reported as `fail('planner load failed at 131072: ...')` — a skip,
+// indistinguishable on the console from a model that legitimately cannot serve a 128k planner.
+// Every llama.cpp agent_ctx run between 2026-08-27 and 2026-09-09 therefore recorded n_coders=0
+// with status='skip', including the K2-Horizon runs, and the dashboard simply showed a blank
+// agent-slots column. EST_COMPUTE_RESERVE_MIB and MAX_LOADS went the same way.
+//
+// The lesson is the one the file already learned once with PLANNER_TARGET (see below): a
+// ReferenceError inside this probe's try/catch does not look like a bug, it looks like a verdict.
+const EST_COMPUTE_RESERVE_MIB = 1024;
+const MAX_LOADS = 9; // bound the total reloads across the down-then-up boundary search
 const PLANNER_TARGET = 131072;
 const CODER_TARGET = 65536;
 

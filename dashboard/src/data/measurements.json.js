@@ -10,6 +10,14 @@
 // Also drops `status='partial'` rows: bench-run inserts every row as 'partial' and promotes it to
 // 'ok' only once its bench finished, so a partial row is a fragment of a bench that crashed
 // mid-way. Charting those would show a half-populated bench as if it were a real result.
+//
+// And drops `status='skip'` for the same reason, added 2026-09-09. A skip is a probe DECLINING to
+// measure -- no vram_total_mib for the host, the planner would not load, no VRAM-resident plan --
+// and it emits a shaped row of zeros so the caller has something to store. Published, that row is
+// indistinguishable from a measurement: agent_ctx's skip shape (n_coders=0, total_ctx=plannerCtx)
+// rendered on the leaderboard as "1 agent slot, 66k pool", which is a claim about the model rather
+// than an absence of data. K2-Horizon published exactly that for three days while the probe was
+// dead of a ReferenceError. Blank is the honest rendering of "not measured".
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findIdentityForks, formatForks } from '../../../analysis/identity-forks.mjs';
@@ -22,7 +30,7 @@ const active = new Set(loadModelsConfig(join(ROOT, 'config', 'models.yaml')).mod
 // $LATEST, not $TIDY: the store is append-only, so a re-measured config keeps its old row too and
 // the scoring average downstream would blend the superseded value into the live one. $LATEST already
 // excludes 'partial'; the filter below is kept as documentation of intent, not because it is load-bearing.
-const all = await query("SELECT * FROM $LATEST WHERE status IS DISTINCT FROM 'partial'");
+const all = await query("SELECT * FROM $LATEST WHERE status NOT IN ('partial', 'skip') OR status IS NULL");
 const rows = all.filter((r) => active.has(r.gguf_file));
 
 // Be loud about what the allowlist ate. The filter is an allowlist over models.yaml `hf_file`, so a
