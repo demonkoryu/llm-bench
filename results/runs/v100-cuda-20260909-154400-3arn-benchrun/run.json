@@ -1,0 +1,26 @@
+{
+  "run_id": "v100-cuda-20260909-154400-3arn-benchrun",
+  "kind": "benchrun",
+  "host": "rose-gpu1",
+  "gpu": "V100",
+  "backend": "cuda",
+  "llamacpp_build": "0.4.0-dev (9cf3bf256)",
+  "engine_version": "0.4.0-dev (9cf3bf256)",
+  "chat_template": "builtin",
+  "resume": false,
+  "benches": [
+    "coding_hard",
+    "coding_practical",
+    "coding_bugfix",
+    "agentic_loop",
+    "throughput",
+    "vram_per_ctx_tok",
+    "agent_ctx",
+    "fit_ctx"
+  ],
+  "samples": 1,
+  "ctx": 40960,
+  "tidy_rows": 106,
+  "started": "2026-09-09T16:23:30.164Z",
+  "status": "complete"
+}

@@ -289,5 +289,29 @@
     "vram_at_ctx": 30732,
     "source_run_id": "v100-cuda-20260906-182720-bylw-benchrun",
     "measured_at": "2026-09-06T18:29:09.805Z"
+  },
+  "Ling-3.0-tiny-Q4_K_M.gguf|Q4_K_M|∅|cuda|V100": {
+    "gguf_file": "Ling-3.0-tiny-Q4_K_M.gguf",
+    "quant": "Q4_K_M",
+    "kv_quant": null,
+    "backend": "cuda",
+    "gpu": "V100",
+    "llamacpp_build": "0.4.0-dev (9cf3bf256)",
+    "vram_bytes_per_ctx_tok": 11136,
+    "vram_at_ctx": 5598,
+    "source_run_id": "v100-cuda-20260909-154400-3arn-benchrun",
+    "measured_at": "2026-09-09T16:16:20.385Z"
+  },
+  "nvidia_Nemotron-3-Nano-4B-Q8_0.gguf|Q8_0|∅|cuda|V100": {
+    "gguf_file": "nvidia_Nemotron-3-Nano-4B-Q8_0.gguf",
+    "quant": "Q8_0",
+    "kv_quant": null,
+    "backend": "cuda",
+    "gpu": "V100",
+    "llamacpp_build": "0.4.0-dev (9cf3bf256)",
+    "vram_bytes_per_ctx_tok": 12800,
+    "vram_at_ctx": 4978,
+    "source_run_id": "v100-cuda-20260909-154400-3arn-benchrun",
+    "measured_at": "2026-09-09T16:23:28.902Z"
   }
 }

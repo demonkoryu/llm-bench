@@ -1,0 +1,26 @@
+{
+  "run_id": "v100-cuda-20260909-144017-e8kq-benchrun",
+  "kind": "benchrun",
+  "host": "rose-gpu1",
+  "gpu": "V100",
+  "backend": "cuda",
+  "llamacpp_build": "0.4.0-dev (9cf3bf256)",
+  "engine_version": "0.4.0-dev (9cf3bf256)",
+  "chat_template": "builtin",
+  "resume": false,
+  "benches": [
+    "triage",
+    "reasoning",
+    "summarization",
+    "docqa",
+    "instruction_following",
+    "struct_output",
+    "toolcalling",
+    "speed"
+  ],
+  "samples": 3,
+  "ctx": 16384,
+  "tidy_rows": 0,
+  "started": "2026-09-09T14:40:39.248Z",
+  "status": "complete"
+}
