@@ -24,9 +24,20 @@ import { ENTITY_DIMS } from './scoring-config.mjs';
 
 // The dimensions that identify WHICH MEASUREMENT this is, independent of serving details. Two live
 // rows agreeing on all of these are the same number measured twice and must not coexist.
-const MEASUREMENT_DIMS = ['gguf_file', 'quant', 'kv_quant', 'backend', 'gpu', 'host', 'bench', 'metric', 'case_id', 'think_mode'];
+const MEASUREMENT_DIMS = ['gguf_file', 'quant', 'kv_quant', 'backend', 'gpu', 'bench', 'metric', 'case_id', 'think_mode'];
 // The rest of IDENTITY_KEY: serving details whose stamping has changed before and will again.
-const DETAIL_DIMS = ['chat_template', 'sampling_hash', 'ctx', 'n_parallel', 'batch', 'ubatch', 'spec_decode'];
+//
+// `host` was a MEASUREMENT_DIM until 2026-09-09 and that was this audit's blind spot. It is in
+// pg-store's IDENTITY_KEY, so a re-measurement on a different target never supersedes; but it is NOT
+// in ENTITY_DIMS, which keys on `gpu` — and hosts.yaml deliberately gives rose and rose-gpu1 the SAME
+// `gpu: V100` slug precisely because they are the same silicon and their rows are meant to be
+// comparable. So the two row sets merge into one dashboard entity and score.mjs averages them, while
+// grouping BY host meant the audit put them in different groups and never looked. Nemotron-3-Nano-4B
+// published the mean of its 2026-08-27 rose rows and its 2026-09-09 rose-gpu1 re-measure across a
+// llama.cpp upgrade (triage_C1 think: 0.78 and 0.61) with nothing reporting it. As a DETAIL_DIM it
+// is correctly a ROW FORK. Two hosts that are genuinely different silicon still never group here,
+// because `gpu` stays a MEASUREMENT_DIM.
+const DETAIL_DIMS = ['chat_template', 'sampling_hash', 'ctx', 'n_parallel', 'batch', 'ubatch', 'spec_decode', 'host'];
 
 const key = (r, dims) => dims.map((d) => (r[d] == null ? '∅' : String(r[d]))).join('␟');
 
