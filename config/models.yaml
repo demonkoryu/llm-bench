@@ -756,10 +756,11 @@ models:
    - hf_repo: bartowski/nvidia_Nemotron-3-Nano-4B-GGUF
      hf_file: nvidia_Nemotron-3-Nano-4B-Q8_0.gguf
      label: "Nemotron-3-Nano-4B Q8_0"
-     disabled: true   # PARKED 2026-08-27 (user request): dropped from the dashboard and from active
-     # testing. Its rows stay in the store — the dashboard allowlist keys on ENABLED entries' hf_file
-     # (dashboard/src/data/measurements.json.js), so parking is what un-publishes it; nothing was
-     # deleted. Un-parking republishes the existing 95 rows without a re-measure.
+     # UN-PARKED 2026-09-09. It was parked 2026-08-27 (user request) and dropped from the dashboard;
+     # it is now the DEPLOYED menial-task model on device 1 (infra llm/docker-compose.yml, port 8092)
+     # and half of the Ling-3.0-tiny head-to-head, so it has to publish. The allowlist in
+     # dashboard/src/data/measurements.json.js keys on ENABLED entries' hf_file, so `disabled: true`
+     # is exactly what un-published it — nothing was ever deleted.
      #
      # Measured before parking, worth keeping: 22 coder lanes + a 128k planner on one V100 (2nd only
      # to Granite's 35), and its triage json_fail of 4/18 is genuine model behaviour, not a harness
