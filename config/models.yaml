@@ -837,6 +837,57 @@ models:
      benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
                struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
 
+   # ── Swift-Qwen3.8-27B Q6_K ───────────────────────────────────────────────────
+   # UkisAI's reasoning-EFFICIENCY finetune of Qwen3.8-27B (a LoRA, merged here, plus a transfer
+   # component from BottleCap AI's ThinkingCap-Qwen3.6-27B). The vendor claim is narrow and
+   # testable: -58.3% MEDIAN thinking tokens at <1% score loss, hence ~1.95x wall-clock on
+   # reasoning-heavy tasks. It is NOT a capability finetune — the interesting reading is
+   # reason_tokens / think-mode latency against the base, not a leaderboard move.
+   #
+   # Paired deliberately with the `Qwen3.8-27B Q6_K` entry above: same base weights, same size
+   # class, same serving stack, same MTP head, same family sampling. `finetune: swift` is the ONLY
+   # subject dim that separates the two (deriveSubjectDims would otherwise call both `instruct` —
+   # parseFinetune has no pattern for this name), and finetune is a dashboard FACET_DIM, so that one
+   # field is what makes base-vs-Swift a pivot rather than two unrelated rows. First entry in this
+   # file to set it explicitly.
+   #
+   # QUANT CAVEAT: this is ukisai's own imatrix Q6_K (22.88 GB); the base row is unsloth's
+   # UD-Q6_K. Nobody publishes a UD quant of Swift. Both are file_type 18 and derive to 6.6 bpw, so
+   # read the pairing as same-size-class, not bit-matched — a residual quant difference is the one
+   # confound this comparison cannot remove.
+   #
+   # MTP: VERIFIED PRESENT, not assumed from the base. The GGUF header carries
+   # `qwen35.nextn_predict_layers = 1` and block 64 holds nextn.eh_proj/enorm/hnorm/
+   # shared_head_norm, so --spec-type draft-mtp has a head to attach to exactly as on the base
+   # entry. (Checked by range-reading the remote GGUF header before staging the file — the
+   # published layouts/*.tensor-types.txt are quantization RECIPES, not tensor inventories, and
+   # cannot answer this.)
+   #
+   # Vision: the repo ships a separate mmproj-*.gguf which is simply not passed — text-only here,
+   # like every other row. No `no-mmproj` needed: the tower is a separate file, not in this GGUF.
+   - hf_repo: ukisai/Swift-Qwen3.8-27B-GGUF
+     hf_file: Swift-Qwen3.8-27B-Q6_K.gguf
+     label: "Swift-Qwen3.8-27B Q6_K"
+     family: qwen3.8
+     finetune: swift
+     type: dense
+     think: optional
+     tools: true
+     native_max_ctx: 262144
+     # Same VRAM-aware cap as the base entry, and for the same reason — 22.9 GB of weights plus the
+     # MTP draft cache on one 32 GiB V100. The base was observed to load at 65536 on a single card
+     # (rows dated 2026-08-27/28 carry vram_total 32768), so this inherits the figure rather than
+     # re-deriving it; fit_ctx/agent_ctx will correct it if Swift's footprint differs.
+     ctx_cap: 65536
+     spec_decode: draft-mtp
+     # spec-draft-type-k/v pinned to the target KV quant. Left unset the MTP draft cache allocates
+     # at f16 — measured on the base 2026-08-25 at ~75 KiB/tok against a ~10-15 KiB/tok target.
+     extra_flags: { spec-type: draft-mtp, spec-draft-type-k: q8_0, spec-draft-type-v: q8_0 }
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
+               struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
+     kv_variants: [q8_0]
+     notes: "Reasoning-token-efficiency finetune of Qwen3.8-27B; compare against the `Qwen3.8-27B Q6_K` entry on the finetune axis. Chat template adds a reasoning_effort kwarg (xhigh default / medium / low) that the harness does not set — every row here is the template default, xhigh."
+
    # ══ NInfer (engine: ninfer) ═══════════════════════════════════════════════════
    # ninfer-v100 (https://github.com/geoffwatts/ninfer-v100) — the sm_70 Volta port of a
    # from-scratch C++/CUDA engine. Both entries below are served by runners/ninfer-server.mjs on
