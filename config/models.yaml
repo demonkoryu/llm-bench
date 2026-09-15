@@ -1127,6 +1127,57 @@ models:
                struct_output, instruction_following, agentic_loop, speed, throughput, prefix_cache, quality_decay]
      notes: "FP8-recipe Swift artifact -- the like-for-like counterpart to `Qwen3.8-27B NVFP4 [ninfer vision]`. agent_ctx excluded: it skips on ninfer because --kv-capacity auto exposes no fixed pool for the probe to verify, same reason vram_per_ctx_tok/fit_ctx are excluded on the other ninfer rows."
 
+
+   # ── Swift-Qwen3.8-27B NVFP4 (FP8 recipe) · NInfer · DFlash2 ──────────────────
+   # Same artifact and same flags as the `[ninfer fp8]` entry above, differing ONLY in the
+   # speculative backend: dflash2 instead of mtp. It is a separate entry rather than a re-run
+   # because spec_decode is in IDENTITY_KEY and is a dashboard facet -- the two land as distinct
+   # rows and are meant to be read side by side, exactly like Qwen3.6-35B-A3B's none/mtp pair.
+   #
+   # The artifact carries BOTH draft mechanisms: 12 `mtp/*` objects and 66 `dflash2/*` (a 5-layer
+   # draft model plus final_norm, feature_projection and a candidate_selector codebook). Nothing
+   # extra needs staging.
+   #
+   # Why this is measurable only now: the sm_70 DFlash2 port landed in 7bf47863, and a982c408
+   # lifted the MTP width-6+ verify cap -- the correctness issue recorded for this engine at k>3
+   # draft positions. Both are in d0dfd6c4 and neither was in bceed292, so a DFlash2 arm measured
+   # on the older engine would have been untrustworthy rather than merely slower.
+   #
+   # draft-tokens stays at 3, matching the mtp arm and the base, so the comparison isolates the
+   # BACKEND. Raising it is a separate experiment and should be run as one.
+   - hf_repo: Yuuyuuyuuyuu/Swift-Qwen3.8-27B-OrcaRouter-NVFP4-DFlash2-ninfer   # provenance only
+     hf_file: swift_qwen3_8_27b_nvfp4_fp8.ninfer
+     engine: ninfer
+     label: "Swift-Qwen3.8-27B NVFP4 [ninfer fp8 · dflash2]"
+     family: qwen3.8
+     finetune: swift
+     type: dense
+     arch: gated-delta-dense
+     quant: "NVFP4"
+     effective_bpw: 6.94
+     total_params: 27
+     active_params: 27
+     think: optional
+     think_control: enable_thinking_top
+     no_schema: true
+     tools: true
+     native_max_ctx: 262144
+     ctx_cap: 32768
+     kv_variants: []
+     spec_decode: dflash2
+     extra_flags:
+        batch-size: null
+        ubatch-size: null
+        kv-dtype: int8
+        vision: true
+        max-concurrency: 1
+        spec: dflash2
+        draft-tokens: 3
+        lm-head-draft: true
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
+               struct_output, instruction_following, agentic_loop, speed, throughput, prefix_cache, quality_decay]
+     notes: "DFlash2 arm of the `[ninfer fp8]` entry -- same artifact, same flags, speculative backend only. Requires ninfer-v100 >= d0dfd6c4 for the sm_70 DFlash2 port (7bf47863)."
+
    # ── Qwen3.6-35B-A3B · NInfer · text-only · multi-lane 64k (gpu1) ─────────────
    # The gpu1 deployment: the agent-fleet row. agent_ctx sweeps --max-concurrency to find how many
    # 64k-deep lanes actually fit, bounded by ninfer's startup-fixed 1..8 (so at most 1 planner +
