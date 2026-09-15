@@ -25,8 +25,21 @@ const APPLY = process.argv.includes('--apply');
 // The served-configuration identity, plus run_id: two rows agreeing on all of these came out of
 // the same bench execution. Mirrors pg-store's IDENTITY_KEY (sans metric/case_id) + run_id.
 const GROUP = [
-   'run_id', 'gguf_file', 'kv_quant', 'chat_template', 'sampling_hash', 'ctx',
-   'n_parallel', 'batch', 'ubatch', 'spec_decode', 'host', 'backend', 'gpu', 'bench', 'think_mode',
+   'run_id',
+   'gguf_file',
+   'kv_quant',
+   'chat_template',
+   'sampling_hash',
+   'ctx',
+   'n_parallel',
+   'batch',
+   'ubatch',
+   'spec_decode',
+   'host',
+   'backend',
+   'gpu',
+   'bench',
+   'think_mode',
 ];
 // IS NOT DISTINCT FROM, not `=`: kv_quant / spec_decode / chat_template are NULL for several
 // backends, and a plain equality join drops exactly those rows (it silently reported 25 of the

@@ -36,12 +36,18 @@ rose:
 # on one. `gpu:` is deliberately the same slug as rose — same V100, so rows from either target
 # are directly comparable and neither `device` nor `port` is a measurement dimension.
 #
-# CAVEAT, and it is the reason this is not simply the default: two concurrent servers share the
-# box's CPU, RAM bandwidth and PCIe. Correctness benches are unaffected (they are graded on
-# output, not latency), but every throughput/latency probe — speed, throughput, prefix_cache,
-# parallel_gen — reads LOW under contention and is NOT comparable to the solo-measured fleet.
-# Run the quality matrix concurrently across both targets; run the timing probes one card at a
-# time with the peer idle.
+# CONTENTION, and the standing policy on it (user, 2026-09-15): RUN BOTH CARDS. Two concurrent
+# servers do share the box's CPU, RAM bandwidth and PCIe, so a timing probe measured alongside a
+# peer reads somewhat low against a solo-measured row. That is accepted. Wall-clock is the
+# scarcer resource, and halving a sweep is worth more than making timing rows bit-comparable to
+# the pre-2026-09 solo ones. Split whatever you are running across the two targets and let them
+# race — quality benches AND the timing/capacity probes alike.
+#
+# The one exception is a workload that is INHERENTLY SINGLE-LANE, i.e. the measurement itself
+# cannot be split. `parallel_gen` is NOT such a case despite the name: it sweeps llama.cpp's
+# `--parallel` inside one server on one card, so two cards can run two of them. If some future
+# comparison genuinely needs a contention-free number, make that run the explicit exception and
+# say so — do not restore solo as the default.
 rose-gpu1:
    label: "rose / Tesla V100 PCIe 32GB (2 of 2, device 1)"
    gpu: "V100"                         # same slug as rose — same card model, comparable rows

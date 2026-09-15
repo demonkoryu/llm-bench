@@ -49,5 +49,7 @@ const done = await query(`UPDATE measurements SET status = 'invalid' WHERE ${WHE
 console.error(`[invalidate-stale-think-coding] marked ${done.length} rows status='invalid'`);
 
 const left = await query(`SELECT count(*) AS n FROM $LATEST WHERE bench LIKE 'coding%' AND think_mode = 'think'`);
-console.error(`[invalidate-stale-think-coding] think-mode coding rows publishable in $LATEST: ${left[0].n} (expected 0 until the re-run lands)`);
+console.error(
+   `[invalidate-stale-think-coding] think-mode coding rows publishable in $LATEST: ${left[0].n} (expected 0 until the re-run lands)`,
+);
 process.exit(0);

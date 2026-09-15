@@ -74,8 +74,6 @@ if (!APPLY) {
 const done = await query(`UPDATE measurements SET status = 'invalid' WHERE ${WHERE} RETURNING 1`);
 console.error(`[invalidate-superseded-host] marked ${done.length} rows status='invalid'`);
 
-const left = await query(
-   `SELECT count(*) AS n FROM $LATEST WHERE gguf_file = 'nvidia_Nemotron-3-Nano-4B-Q8_0.gguf' AND host = 'rose'`,
-);
+const left = await query(`SELECT count(*) AS n FROM $LATEST WHERE gguf_file = 'nvidia_Nemotron-3-Nano-4B-Q8_0.gguf' AND host = 'rose'`);
 console.error(`[invalidate-superseded-host] rose rows still publishable in $LATEST: ${left[0].n} (expected 0)`);
 process.exit(0);

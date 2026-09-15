@@ -22,7 +22,8 @@ import { parseArgs } from 'node:util';
 import { readCap, upsertCap } from '../analysis/caps-cache.mjs';
 import { ensureSchema, insertRows, markBenchesComplete, query } from '../analysis/pg-store.mjs';
 import { BENCHES } from '../benches/index.mjs';
-import { LOCAL_HOST, runHostCmd } from '../shared/host-exec.mjs';
+import { describeFree, freeDevice, restartContainers } from '../shared/gpu-occupants.mjs';
+import { LOCAL_HOST } from '../shared/host-exec.mjs';
 import { probeHostBuild } from '../shared/host-probe.mjs';
 import { loadHostConfig } from '../shared/hosts-config.mjs';
 import {
@@ -69,7 +70,6 @@ const host = loadHostConfig(join(ROOT, 'config/hosts.yaml'), flags.target);
 const ENGINE = host.engine ?? 'llamacpp'; // 'llamacpp' (rose/llama-server) | 'ninfer' (rose/one V100 per instance) | 'optiq' (M1 Mac/MLX)
 const SSH_HOST = SSH || host.sshHost;
 const LOCAL = flags.local || LOCAL_HOST; // run host scripts locally vs over SSH
-const SUDO = LOCAL ? 'sudo -n' : 'sudo'; // non-interactive sudo when on-host
 const CTX = Number(flags.ctx);
 const SAMPLES = Math.max(1, Number(flags.samples));
 const RESUME = flags.resume && !flags['no-resume'] && !flags.force;
@@ -89,11 +89,6 @@ const std = (xs) => {
    const m = mean(xs);
    return Math.sqrt(mean(xs.map((x) => (x - m) ** 2)));
 };
-
-async function ssh(cmd) {
-   const r = await runHostCmd(cmd, { local: LOCAL, sshHost: SSH_HOST });
-   return r.stdout;
-}
 
 // The think states to RUN for a model, from the one shared implementation. This used to be a
 // second, divergent copy (it mapped think:'reasoning' to [true] where shared/llm/think.mjs maps it
@@ -208,18 +203,41 @@ async function main() {
       `[bench-run] ${models.length} models · benches=[${benchNames}] · think=${flags.think} · samples=${SAMPLES} · build=${llamacpp_build} · template=${chatTemplate} · exec=${LOCAL ? 'local' : 'ssh'}`,
    );
 
-   // Stop the production llama-server container to free GPU VRAM for the bench run. NInfer shares
-   // the same box and the same two cards, so it needs that container gone too — a resident
-   // llama-server would both steal VRAM and skew every per-device reading. OptiQ is on a different
-   // machine and runs its own persistent daemon — nothing for us to stop there.
+   // Free the card this target owns, so the bench measures the whole GPU rather than whatever was
+   // left over. NInfer shares the same box and the same two cards, so it needs the same treatment —
+   // a resident llama-server would both steal VRAM and skew every per-device reading. OptiQ is on a
+   // different machine and runs its own persistent daemon, so there is nothing to free there.
+   //
+   // This used to be `docker stop llama-server`, which was a name that stopped being true on
+   // 2026-08-29 when serving split into qwen38/muse/ling. It then succeeded loudly and freed
+   // nothing, and a run started that way silently measures throughput and every capacity ceiling
+   // against a shared card. freeDevice() asks the driver who is on `host.device` instead, so it
+   // survives renames, the next compose split, and a stale llama-server-d<dev> from a crashed run.
+   // Scoping by device is also what lets `rose` and `rose-gpu1` run at once without each tearing
+   // down the other's server.
+   let stoppedContainers = [];
    if ((ENGINE === 'llamacpp' || ENGINE === 'ninfer') && !flags['keep-router']) {
-      const r = await ssh(`docker stop llama-server 2>/dev/null; docker rm -f llama-server 2>/dev/null; echo stopped`);
-      console.error(`[bench-run] production server: ${r || 'n/a'}`);
-   }
-   const restore = async () => {
-      if (ENGINE === 'llamacpp' && !flags['no-router-restart'] && !flags['keep-router']) {
-         console.error('[bench-run] production server not auto-restarted (container lifecycle — start manually if needed)');
+      const res = await freeDevice({ device: host.device ?? 0, sshHost: SSH_HOST, local: LOCAL });
+      stoppedContainers = res.stopped;
+      console.error(`[bench-run] ${describeFree(host.device ?? 0, res)}`);
+      // A non-container process on the card is something this harness cannot identify and will not
+      // kill. Say so plainly — the run continues, but the operator needs to know these numbers were
+      // taken on a shared GPU before they are read as fleet-comparable.
+      if (res.bare.length) {
+         console.error('[bench-run] WARNING: the card is NOT exclusively ours — timing and capacity rows from this run');
+         console.error('[bench-run] WARNING: are not comparable to solo-measured rows. Stop the process(es) above and re-run.');
       }
+   }
+   // Put the host back the way it was found. This is now precise — we restart exactly the
+   // containers freeDevice() stopped, by name — where the old code could only print a note telling
+   // the operator to do it by hand, because it never knew what (if anything) it had stopped.
+   const restore = async () => {
+      if (flags['no-router-restart'] || flags['keep-router'] || !stoppedContainers.length) {
+         return;
+      }
+      const r = await restartContainers(stoppedContainers, { sshHost: SSH_HOST, local: LOCAL });
+      console.error(`[bench-run] restarted: ${r.started.join(', ')}`);
+      stoppedContainers = [];
    };
    process.on('SIGINT', async () => {
       await restore();

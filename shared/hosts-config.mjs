@@ -77,7 +77,9 @@ export function loadHostConfig(path, target, { backend } = {}) {
       backends: Object.fromEntries(
          Object.entries(host.backends ?? {}).map(([name, b]) => [
             name,
-            b && typeof b === 'object' ? { ...b, ...(b.image ? { image: resolveEnv(b.image) } : {}), ...(b.bin ? { bin: resolveEnv(b.bin) } : {}) } : b,
+            b && typeof b === 'object'
+               ? { ...b, ...(b.image ? { image: resolveEnv(b.image) } : {}), ...(b.bin ? { bin: resolveEnv(b.bin) } : {}) }
+               : b,
          ]),
       ),
       raw: host,
