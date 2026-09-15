@@ -988,6 +988,69 @@ models:
      benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
                struct_output, instruction_following, agentic_loop, speed, throughput, prefix_cache, quality_decay]
 
+
+   # ── Swift-Qwen3.8-27B NVFP4 · NInfer · 1 lane ────────────────────────────────
+   # The ninfer counterpart to the `Swift-Qwen3.8-27B Q6_K` llama.cpp row, and the ONLY published
+   # ninfer artifact of Swift worth serving: the alternative
+   # (Yuuyuuyuuyuu/...-OrcaRouter-NVFP4-DFlash2) has an empty README, zero downloads and a DFlash2
+   # companion, which on sm_70 walks into the MTP verify-cap issue. This one carries a full artifact
+   # card and ships ZERO DFlash2 objects.
+   #
+   # PROVENANCE: a multi-source graft, byte-repack with no requantization — NVFP4 text weights from
+   # ukisai's own NVFP4 partner, GDN projections from the w8g32 recipe's GDN partner, vision Q4/Q5/Q6
+   # and the 6 front-end resources from Ostfralla/Qwen3.8-27B-NVFP4-NInfer. Staged locally as
+   # swift_qwen3_8_27b_nvfp4.ninfer; sha256 verified against the card
+   # (c6cdeb1100dfc1ab9935ce975742490cdfe53cc0c232082e3841817b6ca20756).
+   #
+   # engine_env IS LOAD-BEARING AND MUST STAY PER-MODEL. This artifact and the
+   # `Qwen3.8-27B NVFP4 [ninfer vision]` entry above share the artifact identity
+   # qwen3.8-27b/nvfp4 but are different quantization GENERATIONS needing opposite weights
+   # profiles: that one is FP8 (Qwen38Nvfp4), this one is all-NVFP4 with W8G32_F16S vocabulary
+   # endpoints (Qwen36Nvfp4). ArtifactIdentity carries only model_id + weights_id, so the engine
+   # cannot tell them apart — hence the explicit selector. Without it the load dies at bind with
+   # "tensor descriptor does not match target contract: text/token_embedding"; set host-wide it
+   # would break the FP8 entry instead. Needs ninfer-v100 >= d0dfd6c4.
+   #
+   # NOT directly comparable to the FP8 ninfer row: different artifact composition (18.32 GB /
+   # 1301 tensors here vs 21.49 GB / 1118 there) AND a different engine build (d0dfd6c4 vs the
+   # bceed292 those rows were measured on, which changed MTP verify behaviour). Read Swift-vs-base
+   # on this engine as indicative until the base is re-measured on d0dfd6c4.
+   - hf_repo: knoopx/Swift-Qwen3.8-27B-NInfer   # provenance only — never fetched by the engine
+     hf_file: swift_qwen3_8_27b_nvfp4.ninfer    # local filename in the host's artifact_dir
+     engine: ninfer
+     label: "Swift-Qwen3.8-27B NVFP4 [ninfer]"
+     family: qwen3.8
+     finetune: swift
+     type: dense
+     arch: gated-delta-dense
+     quant: "NVFP4"
+     # MEASURED from the artifact card's own inventory: 18,324,067,840 bytes over 27.36B logical
+     # params (the same divisor the FP8 ninfer row uses) = 5.36 bpw. Mixed-format like that row —
+     # 247 NVFP4 + 9 W8G32 + 110 Q4/Q5/Q6G64 + 591 BF16 + 343 FP32 — so "4-bit" is wrong by ~34%.
+     effective_bpw: 5.36
+     total_params: 27
+     active_params: 27
+     think: optional
+     think_control: enable_thinking_top   # ninfer 400s the nested chat_template_kwargs spelling
+     no_schema: true                      # ninfer-serve supports only response_format {type:text}
+     tools: true
+     native_max_ctx: 262144
+     # Matches the FP8 ninfer row's cap so the two are at least depth-aligned. Weights are 16.0 GiB
+     # resident (MEASURED at load 2026-09-15, vs 20.02 GiB for the FP8 artifact), so there is more
+     # KV headroom here than that row's comment describes — raising it is a deliberate re-run.
+     ctx_cap: 32768
+     kv_variants: []
+     engine_env:
+        NINFER_QWEN3_8_NVFP4_PROFILE: w8g32
+     extra_flags:
+        batch-size: null                 # llama.cpp spellings from defaults.extra_flags
+        ubatch-size: null
+        kv-dtype: int8
+        vision: true
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
+               struct_output, instruction_following, agentic_loop, speed, throughput, agent_ctx, prefix_cache, quality_decay]
+     notes: "Reasoning-efficiency finetune on the ninfer path. Needs ninfer-v100 >= d0dfd6c4 and the engine_env selector above. fit_ctx/vram_per_ctx_tok/parallel_gen excluded for the same engine reasons as the other ninfer rows."
+
    # ── Qwen3.6-35B-A3B · NInfer · text-only · multi-lane 64k (gpu1) ─────────────
    # The gpu1 deployment: the agent-fleet row. agent_ctx sweeps --max-concurrency to find how many
    # 64k-deep lanes actually fit, bounded by ninfer's startup-fixed 1..8 (so at most 1 planner +

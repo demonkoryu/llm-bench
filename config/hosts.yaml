@@ -116,9 +116,14 @@ rose-ninfer0:
    ssh_host: "${SSH_HOST:-llm2}"
    port: 8100
    artifact_dir: "~/models/ninfer"
-   image: "ninfer-v100:latest"         # build.sh also tags :<source-commit>; engine_version reads
-                                       # the ninfer.source.commit label off the running container,
-                                       # so the floating tag never blurs which build was measured
+   # PINNED to an explicit build, not :latest (user, 2026-09-15). engine_version reads the
+   # ninfer.source.commit label off the running container, so a floating tag never mislabels a
+   # row -- but it does let a rebuild silently change which engine every ninfer target serves,
+   # and engine_version is NOT in IDENTITY_KEY, so such rows supersede their predecessors rather
+   # than sitting beside them. Pinning makes the engine a config decision with a diff.
+   # d0dfd6c4 = fork master b37d0dd3 + the NINFER_QWEN3_8_NVFP4_PROFILE selector; rows measured
+   # before 2026-09-15 came from bceed292 and are deliberately left in place (mixed store).
+   image: "ninfer-v100:d0dfd6c4"
    remote_dir: "~/llm-bench"
    vram_cmd: "nvidia-smi -i 0 --query-gpu=memory.used --format=csv,noheader,nounits"
 
@@ -133,6 +138,6 @@ rose-ninfer1:
    ssh_host: "${SSH_HOST:-llm2}"
    port: 8101
    artifact_dir: "~/models/ninfer"
-   image: "ninfer-v100:latest"
+   image: "ninfer-v100:d0dfd6c4"   # pinned -- see rose-ninfer0
    remote_dir: "~/llm-bench"
    vram_cmd: "nvidia-smi -i 1 --query-gpu=memory.used --format=csv,noheader,nounits"

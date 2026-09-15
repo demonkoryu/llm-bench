@@ -113,9 +113,16 @@ export function ninferServer({
     *   hf_file    {string} .ninfer artifact filename on the host
     *   ctx        {number} --max-context
     *   extraFlags {string} additional ninfer-serve flags (vision, spec backend, concurrency…)
+    *   engineEnv  {object} env vars for the SERVER PROCESS, not ninfer-serve flags. Needed where a
+    *              choice is read from the environment at load time rather than parsed from argv —
+    *              currently NINFER_QWEN3_8_NVFP4_PROFILE, which picks the weights profile for the
+    *              two Qwen3.8 NVFP4 artifact generations that share one artifact identity. Passing
+    *              such a value through extraFlags would abort the launch on an unknown option.
+    *              PER-MODEL by construction: the FP8 and W8G32 artifacts need opposite values, so
+    *              this must never be set host-wide.
     * @returns {string} container id
     */
-   async function startServer({ hf_file, ctx, extraFlags = '' }) {
+   async function startServer({ hf_file, ctx, extraFlags = '', engineEnv = null }) {
       if (!hf_file) {
          throw new Error('ninfer: no artifact (set hf_file to a .ninfer filename in models.yaml)');
       }
@@ -130,6 +137,7 @@ export function ninferServer({
          `--port ${new URL(inferenceUrl).port || 8100}`,
          artifactDir ? `--models-dir ${hostPath(artifactDir)}` : '',
          image ? `--image '${image}'` : '',
+         ...Object.entries(engineEnv ?? {}).map(([k, v]) => `--env '${k}=${v}'`),
          extraFlags,
       ]
          .filter(Boolean)
@@ -137,7 +145,7 @@ export function ninferServer({
 
       // Loading a 20 GiB artifact and sizing the KV pool takes minutes, not seconds.
       const cid = await runScript('start-server.sh', args, { timeout: 900_000 });
-      lastLaunch = { hf_file, ctx, extraFlags };
+      lastLaunch = { hf_file, ctx, extraFlags, engineEnv };
       console.log(`[ninfer] gpu${device}: started ${String(cid).trim().slice(0, 12)} ctx=${ctx} ${hf_file}`);
       return String(cid).trim();
    }

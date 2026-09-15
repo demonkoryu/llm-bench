@@ -3,7 +3,7 @@
 #
 # Usage:
 #   start-server.sh --device N --artifact <file.ninfer> --ctx <N> [--port P]
-#                   [--models-dir D] [--image I] [extra ninfer-serve flags...]
+#                   [--models-dir D] [--image I] [--env KEY=VALUE]... [extra ninfer-serve flags...]
 #
 # Prints the container ID on stdout. Exits 1 on failure (reason on stderr).
 #
@@ -30,6 +30,10 @@ port=""
 ctx=16384
 artifact=""
 extra_flags=""
+# Container environment, as repeated `--env KEY=VALUE`. Kept separate from extra_flags
+# because these are read by the ENGINE PROCESS at startup, not parsed by ninfer-serve --
+# passing one through as a flag would abort the launch on an unknown option.
+env_args=()
 
 while [[ $# -gt 0 ]]; do
    case "$1" in
@@ -39,6 +43,7 @@ while [[ $# -gt 0 ]]; do
       --artifact)   artifact="$2";   shift 2 ;;
       --models-dir) MODELS_DIR="$2"; shift 2 ;;
       --image)      IMAGE="$2";      shift 2 ;;
+      --env)        env_args+=(-e "$2"); shift 2 ;;
       *)            extra_flags="$extra_flags $1"; shift ;;
    esac
 done
@@ -108,6 +113,7 @@ CID=$(docker run -d \
    --gpus "device=${device}" \
    -p "${port}:8080" \
    -v "${MODELS_DIR}:/models:ro" \
+   "${env_args[@]}" \
    "$IMAGE" \
    ninfer-serve "/models/${artifact}" \
    --host 0.0.0.0 --port 8080 \
