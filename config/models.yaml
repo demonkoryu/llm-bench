@@ -1063,6 +1063,70 @@ models:
                struct_output, instruction_following, agentic_loop, speed, throughput, agent_ctx, prefix_cache, quality_decay]
      notes: "Reasoning-efficiency finetune on the ninfer path. Needs ninfer-v100 >= d0dfd6c4 and the engine_env selector above. fit_ctx/vram_per_ctx_tok/parallel_gen excluded for the same engine reasons as the other ninfer rows."
 
+
+   # ── Swift-Qwen3.8-27B NVFP4 (FP8 recipe) · NInfer · 1 lane ───────────────────
+   # THE artifact to compare against `Qwen3.8-27B NVFP4 [ninfer vision]`, and the reason the
+   # `Swift-Qwen3.8-27B NVFP4 [ninfer]` entry above is NOT that comparison.
+   #
+   # The two Swift ninfer artifacts differ by QUANTIZATION RECIPE, and on Volta the difference is
+   # worth ~20-26% of decode. Qwen3.8-27B is a GatedDeltaNet hybrid: 48 of 64 layers are GDN, only
+   # 16 full attention. This artifact (like the base) keeps those 48 layers' gdn/query_key_value_z
+   # and gdn/output in FP8_E4M3FN_ROW_BF16S, which dequantizes onto Volta's FP16 tensor cores --
+   # the reason the fork vendors CUTLASS for sm_70 at all. The W8G32 artifact puts them in NVFP4
+   # W4A4, and sm_70 has no FP4 tensor cores, so its hottest matmuls take the slow path in three
+   # quarters of the layers. VERIFIED by inventory, not inferred: NVFP4/FP8 tensor counts here are
+   # 112/146, identical to the base's, and every gdn projection above is FP8.
+   #
+   # Provenance is thin (empty README, no downloads, unknown uploader) and that was initially read
+   # as a reason to prefer the knoopx graft. Tensor-level inspection reversed it: a name diff
+   # against the base artifact shows ZERO tensors missing and exactly 66 extra, all `dflash2/*`
+   # (a 5-layer draft model + final_norm + feature_projection + candidate_selector). "OrcaRouter"
+   # contributes no tensors at all -- there is not one router object in the file. So the served
+   # model is the base recipe applied to Swift, plus draft heads.
+   #
+   # No engine_env needed, unlike the W8G32 entry: this is the FP8 generation, so the engine's
+   # default qwen3.8-27b/nvfp4 -> Qwen38Nvfp4 resolution is already correct.
+   #
+   # Flags are the base entry's, deliberately identical, so Swift-vs-base differs in the finetune
+   # and nothing else. spec: mtp rather than dflash2 for the same reason -- the artifact carries
+   # both (12 mtp objects, 66 dflash2), and a dflash2 arm is worth measuring SEPARATELY rather than
+   # inside the comparison this entry exists to make.
+   - hf_repo: Yuuyuuyuuyuu/Swift-Qwen3.8-27B-OrcaRouter-NVFP4-DFlash2-ninfer   # provenance only
+     hf_file: swift_qwen3_8_27b_nvfp4_fp8.ninfer   # local filename in the host's artifact_dir
+     engine: ninfer
+     label: "Swift-Qwen3.8-27B NVFP4 [ninfer fp8]"
+     family: qwen3.8
+     finetune: swift
+     type: dense
+     arch: gated-delta-dense
+     quant: "NVFP4"
+     # 23,719,496,192 bytes over 27.36B logical params = 6.94 bpw, the same divisor the other 3.8
+     # rows use. Higher than the base's 6.28 because of the dflash2 draft model carried alongside;
+     # the SERVED text weights are format-identical to it.
+     effective_bpw: 6.94
+     total_params: 27
+     active_params: 27
+     think: optional
+     think_control: enable_thinking_top
+     no_schema: true
+     tools: true
+     native_max_ctx: 262144
+     ctx_cap: 32768                      # matches the base entry so the two are depth-aligned
+     kv_variants: []
+     spec_decode: mtp
+     extra_flags:
+        batch-size: null
+        ubatch-size: null
+        kv-dtype: int8
+        vision: true
+        max-concurrency: 1
+        spec: mtp
+        draft-tokens: 3
+        lm-head-draft: true
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
+               struct_output, instruction_following, agentic_loop, speed, throughput, prefix_cache, quality_decay]
+     notes: "FP8-recipe Swift artifact -- the like-for-like counterpart to `Qwen3.8-27B NVFP4 [ninfer vision]`. agent_ctx excluded: it skips on ninfer because --kv-capacity auto exposes no fixed pool for the probe to verify, same reason vram_per_ctx_tok/fit_ctx are excluded on the other ninfer rows."
+
    # ── Qwen3.6-35B-A3B · NInfer · text-only · multi-lane 64k (gpu1) ─────────────
    # The gpu1 deployment: the agent-fleet row. agent_ctx sweeps --max-concurrency to find how many
    # 64k-deep lanes actually fit, bounded by ninfer's startup-fixed 1..8 (so at most 1 planner +
