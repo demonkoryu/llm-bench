@@ -1042,11 +1042,23 @@ models:
      kv_variants: []
      engine_env:
         NINFER_QWEN3_8_NVFP4_PROFILE: w8g32
+     # MTP speculative decode, matching the `Qwen3.8-27B NVFP4 [ninfer vision]` entry flag for flag.
+     # This is NOT optional detail: spec_decode is an IDENTITY dim and a dashboard facet, so an entry
+     # measured without it is a different machine from one measured with it. Omitted here at first,
+     # which made Swift look 3-4x slower than the base and sent a perf investigation after a
+     # non-existent engine regression -- the base's 154 rows all carry spec_decode=mtp and the first
+     # 134 Swift rows carried NULL. The artifact ships an MTP head (blk.64 nextn.*, per its card),
+     # so there was never a reason to leave it off.
+     spec_decode: mtp
      extra_flags:
         batch-size: null                 # llama.cpp spellings from defaults.extra_flags
         ubatch-size: null
         kv-dtype: int8
         vision: true
+        max-concurrency: 1
+        spec: mtp
+        draft-tokens: 3
+        lm-head-draft: true
      benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
                struct_output, instruction_following, agentic_loop, speed, throughput, agent_ctx, prefix_cache, quality_decay]
      notes: "Reasoning-efficiency finetune on the ninfer path. Needs ninfer-v100 >= d0dfd6c4 and the engine_env selector above. fit_ctx/vram_per_ctx_tok/parallel_gen excluded for the same engine reasons as the other ninfer rows."
