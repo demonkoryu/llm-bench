@@ -431,7 +431,10 @@ async function sweepNinferFleet({ srv, model, laneCtx, coherentWindow }) {
       // deployment's tolerance, which is not ours to overwrite.
       const pending = /--pending-timeout-ms/.test(cleaned) ? '' : `--pending-timeout-ms ${requestTimeoutMs(nSlots * laneCtx)}`;
       await srv.startServer({
-         hf_file: model.hf_file,
+         // Spread modelSource rather than naming fields: this call site listed `hf_file` by hand
+         // and so missed engineEnv when it was added -- the precise regression modelSource's own
+         // doc comment warns about.
+         ...modelSource(model),
          ctx: laneCtx,
          extraFlags: `--max-concurrency ${nSlots} --kv-capacity auto ${pending} ${cleaned}`.replace(/\s+/g, ' ').trim(),
       });

@@ -454,7 +454,7 @@ async function main() {
                .filter(Boolean)
                .join(' ');
             try {
-               await srv.startServer({ ...modelSource(m), mlxModel: m.mlx_model, ctx: CTX, extraFlags, engineEnv: m.engine_env ?? null });
+               await srv.startServer({ ...modelSource(m), mlxModel: m.mlx_model, ctx: CTX, extraFlags });
                await srv.waitHealthy(LOAD_TIMEOUT_MS);
             } catch (e) {
                console.error(`  load failed: ${(e.message ?? '').slice(0, 80)} — skipping`);

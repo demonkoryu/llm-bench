@@ -109,9 +109,21 @@ const DEFAULT_PORT = 8090;
  * server launched with an --hf-repo whose file was never staged and died with exit code 1 ten
  * seconds into the load, at every context size, which reads like an OOM and is not one. Spread this
  * instead of listing fields, and a future source field reaches every call site by construction.
+ *
+ * `engineEnv` is here for exactly that reason, and it is not merely a source field: on the ninfer
+ * engine it selects the WEIGHTS PROFILE (NINFER_QWEN3_8_NVFP4_PROFILE), so a probe that restarts
+ * the server without it loads a different model shape -- or, for the W8G32 NVFP4 artifacts, fails
+ * the bind contract and never becomes ready at all. That presents as
+ * "not ready within 600s", which reads like a hang or an OOM and is neither. Measured: it silently
+ * killed the speed and prefix_cache probes on Swift-Qwen3.8-27B before this was hoisted here.
  */
 export function modelSource(model = {}) {
-   return { hf_repo: model.hf_repo, hf_file: model.hf_file, model_path: model.model_path };
+   return {
+      hf_repo: model.hf_repo,
+      hf_file: model.hf_file,
+      model_path: model.model_path,
+      engineEnv: model.engine_env ?? null,
+   };
 }
 
 /**
