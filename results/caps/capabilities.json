@@ -313,5 +313,17 @@
     "vram_at_ctx": 4978,
     "source_run_id": "v100-cuda-20260909-154400-3arn-benchrun",
     "measured_at": "2026-09-09T16:23:28.902Z"
+  },
+  "Swift-Qwen3.8-27B-Q6_K.gguf|Q6_K|q8_0|cuda|V100": {
+    "gguf_file": "Swift-Qwen3.8-27B-Q6_K.gguf",
+    "quant": "Q6_K",
+    "kv_quant": "q8_0",
+    "backend": "cuda",
+    "gpu": "V100",
+    "llamacpp_build": "0.2.0-dev (f280b2698)",
+    "vram_bytes_per_ctx_tok": 47652.57142857143,
+    "vram_at_ctx": 25794,
+    "source_run_id": "v100-cuda-20260915-141805-si5r-benchrun",
+    "measured_at": "2026-09-15T14:18:34.115Z"
   }
 }
