@@ -53,6 +53,8 @@ const board = [...byEntity.values()]
       calls: e.m.swe_calls ?? null,
       sPerCall: e.m.swe_s_per_call ?? null,
       genTokS: e.m.swe_gen_tok_s ?? null,
+      gpuHPerResolve: e.m.swe_gpu_h_per_resolve ?? null,
+      ctxPerResolve: e.m.swe_ctx_per_resolve ?? null,
       langs: Object.fromEntries(LANGS.map((l) => [l, e.m[`swe_lang_${l}`] ?? null])),
     };
   })
@@ -84,6 +86,8 @@ const SWE_HELP = {
   "s / step": "Wall clock per agent step, including the time the container spends executing the command. It is NOT decode time: much of a step is the repository's own tooling running, which is why this varies far less between models than their token rates do.",
   "gen tok/s": "Generated tokens per second of rollout wall clock — throughput for the whole agent loop, not a decode-rate measurement. A model that thinks at length shows a high figure here without necessarily finishing sooner.",
   "rollout min": "Total wall clock spent generating patches for this configuration, GPU-bound.",
+  "GPU-h / resolve": "GPU-hours of rollout per issue actually resolved — resolve rate and speed in one figure. Stated as a COST rather than a rate because the numerator would otherwise be a 12-instance proportion, whose noise would be hidden inside what looks like a precise number; as a cost the noisy term sits in the denominator, where with 4 resolves one instance moves the figure by 25%. Blank when nothing resolved: the cost of a resolution is then undefined, not infinite.",
+  "ctx tok / resolve": "Context tokens processed across all rollouts per issue resolved — resolve rate against context appetite. A model that succeeds often on short trajectories scores far better here than one that succeeds as often only after exhausting its window. Same caveat and same blank-when-zero rule as GPU-h / resolve.",
   "eval min": "Total wall clock spent running the repositories' own test suites to judge those patches. CPU-bound and independent of the model, so it is a property of the pinned instances rather than of the configuration.",
 };
 ```
@@ -204,16 +208,19 @@ display(
   Inputs.table(
     [...board].sort((a, b) => (b.ctxMax ?? 0) - (a.ctxMax ?? 0)),
     {
-      columns: ["model", "ctxMedian", "ctxMax", "calls", "sPerCall", "genTokS", "rolloutMin", "evalMin"],
+      columns: ["model", "ctxMedian", "ctxMax", "calls", "sPerCall", "genTokS", "gpuHPerResolve", "ctxPerResolve", "rolloutMin", "evalMin"],
       header: {
         model: "config", ctxMedian: "ctx median", ctxMax: "ctx peak", calls: "agent steps",
-        sPerCall: "s / step", genTokS: "gen tok/s", rolloutMin: "rollout min", evalMin: "eval min",
+        sPerCall: "s / step", genTokS: "gen tok/s", gpuHPerResolve: "GPU-h / resolve",
+        ctxPerResolve: "ctx tok / resolve", rolloutMin: "rollout min", evalMin: "eval min",
       },
       format: {
         ctxMedian: (v) => (v == null ? "—" : v.toLocaleString()),
         ctxMax: (v) => (v == null ? "—" : v.toLocaleString()),
         sPerCall: (v) => (v == null ? "—" : v.toFixed(1)),
         genTokS: (v) => (v == null ? "—" : v.toFixed(1)),
+        gpuHPerResolve: (v) => (v == null ? "—" : v.toFixed(2)),
+        ctxPerResolve: (v) => (v == null ? "—" : v.toLocaleString()),
       },
       width: { model: 240 },
     },
@@ -222,7 +229,7 @@ display(
 ```
 
 ```js
-display(metricHelp(SWE_HELP, ["ctx median", "ctx peak", "agent steps", "s / step", "gen tok/s", "rollout min", "eval min"], { title: "column meanings" }));
+display(metricHelp(SWE_HELP, ["ctx median", "ctx peak", "agent steps", "s / step", "gen tok/s", "GPU-h / resolve", "ctx tok / resolve", "rollout min", "eval min"], { title: "column meanings" }));
 ```
 
 <div class="note">
@@ -232,6 +239,42 @@ a substantial fraction of it, so a smaller window would truncate the long trajec
 the ones with a chance of finishing — rather than merely inconveniencing them.
 
 </div>
+
+### Cost per resolved issue
+
+```js
+const eff = board.filter((d) => d.gpuHPerResolve != null && d.ctxPerResolve != null);
+```
+
+```js
+display(
+  eff.length === 0
+    ? html`<div class="muted">No configuration resolved an instance, so cost per resolve is undefined.</div>`
+    : html`<div class="scroll-x">${Plot.plot({
+        marginLeft: 56,
+        marginBottom: 42,
+        marginRight: 16,
+        width: Math.max(420, Math.min(width, 760)),
+        height: 340,
+        x: { label: "GPU-hours per resolved issue \u2192", domain: [0, Math.max(...eff.map((d) => d.gpuHPerResolve)) * 1.18], grid: true },
+        y: { label: "\u2191 context tokens per resolved issue", domain: [0, Math.max(...eff.map((d) => d.ctxPerResolve)) * 1.18], grid: true },
+        marks: [
+          Plot.ruleX([0]),
+          Plot.ruleY([0]),
+          // Radius carries the resolve rate, so a cheap-but-ineffective config cannot masquerade
+          // as a good one by sitting near the origin.
+          Plot.dot(eff, { x: "gpuHPerResolve", y: "ctxPerResolve", r: (d) => 3 + d.pct / 12, fill: "currentColor", fillOpacity: 0.75, title: (d) => `${d.model}\n${d.resolved}/${d.total} resolved\n${d.gpuHPerResolve.toFixed(2)} GPU-h and ${d.ctxPerResolve.toLocaleString()} ctx tokens per resolve` }),
+          Plot.text(eff, { x: "gpuHPerResolve", y: "ctxPerResolve", text: "model", dy: -14, fontSize: 10, fill: "currentColor", fillOpacity: 0.8 }),
+        ],
+      })}</div>`,
+);
+```
+
+Toward the origin is cheaper on both axes; the dot area grows with resolve rate, so a configuration
+that is cheap only because it rarely succeeds stays visibly small. Both axes are undefined for a
+configuration that resolved nothing, which is why such a row would be absent rather than plotted at
+zero.
+
 
 ## Per language
 

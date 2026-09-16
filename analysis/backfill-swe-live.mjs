@@ -72,7 +72,7 @@ for (const cfgDir of readdirSync(runsDir)) {
       continue;
    }
    const was = stored.find((r) => r.metric === 'swe_resolved')?.metric_value ?? null;
-   const hasStats = stored.some((r) => r.metric === 'swe_ctx_max');
+   const hasStats = stored.some((r) => r.metric === 'swe_ctx_per_resolve');
    if (was === k && hasStats) {
       console.log(`OK   ${cfgDir}: stored ${k}/${n} already correct`);
       continue;
@@ -93,8 +93,10 @@ for (const cfgDir of readdirSync(runsDir)) {
       }
    }
    const corrected = {
+      ...(k && rollout ? { swe_gpu_h_per_resolve: rollout / 3600 / k } : {}),
       ...(stats
          ? {
+              ...(k ? { swe_ctx_per_resolve: Math.round(stats.ctxTotal / k) } : {}),
               swe_ctx_median: stats.ctxMedian,
               swe_ctx_max: stats.ctxMax,
               swe_calls: stats.calls,

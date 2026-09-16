@@ -178,6 +178,9 @@ const UNIT_EXACT = {
    swe_calls: 'count',
    swe_s_per_call: 's',
    swe_gen_tok_s: 'tok_s',
+   // Efficiency: what one resolved issue cost. Null when nothing resolved.
+   swe_gpu_h_per_resolve: 'h',
+   swe_ctx_per_resolve: 'tokens',
    swe_no_patch: 'count',
    docqa_correctness: 'points',
    docqa_coverage: 'points',

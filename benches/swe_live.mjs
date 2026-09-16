@@ -272,6 +272,7 @@ export function trajectoryStats(outDir) {
    const per = [];
    let calls = 0;
    let generated = 0;
+   let total = 0;
    for (const inst of existsSync(outDir) ? readdirSync(outDir, { withFileTypes: true }) : []) {
       if (!inst.isDirectory()) {
          continue;
@@ -288,6 +289,7 @@ export function trajectoryStats(outDir) {
             .filter((m) => m.role === 'assistant')
             .reduce((a, m) => a + tok(m.content) + tok(m.reasoning_content), 0);
          per.push(ctx);
+         total += ctx;
          generated += gen;
          calls += d.info?.model_stats?.api_calls ?? 0;
       } catch {
@@ -303,6 +305,8 @@ export function trajectoryStats(outDir) {
       ctxMax: sorted[sorted.length - 1],
       calls,
       generated,
+      // Summed across rollouts: the denominator for "context processed per issue resolved".
+      ctxTotal: total,
    };
 }
 
