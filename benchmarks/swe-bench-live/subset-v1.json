@@ -206,7 +206,7 @@
     "agent": "mini-swe-agent==2.4.6",
     "ctx": 32768,
     "rollout_timeout_s": 300,
-    "step_limit": 30
+    "step_limit": 80
   },
   "schema": "llm-bench.swe-bench-live.subset",
   "seed": 20260916,

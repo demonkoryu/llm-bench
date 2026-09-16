@@ -83,13 +83,58 @@ async function servedModelId(inferenceUrl) {
  * A timed-out rollout is a real outcome (no patch), not an error — it is recorded and scored as
  * unresolved, exactly as the benchmark intends for an agent that ran out of budget.
  */
+/**
+ * The agent's own packaged SWE-bench config.
+ *
+ * Resolved from the installed package rather than hardcoded: the manifest pins the agent VERSION
+ * (mini-swe-agent==2.4.6) and this is that version's config, which is also the SWE-agent-style
+ * prompt SWE-bench-Live's README names as protocol-compliant. Passing `-c` REPLACES the default
+ * config entirely, so a path that does not resolve does not fall back -- it produces an agent with
+ * no prompt at all, which fails in about a second and looks exactly like a model that declined to
+ * produce a patch. That is precisely how it failed the first time.
+ */
+let cachedCfg = null;
+async function agentConfig() {
+   if (cachedCfg) {
+      return cachedCfg;
+   }
+   // MSWEA_SILENT_STARTUP because importing minisweagent prints a three-line version banner to
+   // STDOUT, which would otherwise be captured as part of the path. Last line as well, belt and
+   // braces: a future banner that ignores the flag still leaves the path as the final line.
+   const { stdout } = await execP(
+      PY,
+      [
+         '-c',
+         "import minisweagent,pathlib;print(pathlib.Path(minisweagent.__file__).parent/'config'/'benchmarks'/'swebench.yaml')",
+      ],
+      { env: { ...process.env, MSWEA_SILENT_STARTUP: '1' } },
+   );
+   cachedCfg = stdout.trim().split('\n').pop().trim();
+   if (!existsSync(cachedCfg)) {
+      throw new Error(`swe_live: agent config not found at ${cachedCfg}`);
+   }
+   return cachedCfg;
+}
+
 async function rollout({ instance, modelId, inferenceUrl, params, outDir }) {
-   const cfg = join(HARNESS, 'mini-swebench.yaml');
+   const cfg = await agentConfig();
    const args = [
       '-m',
       'minisweagent.run.benchmarks.swebench',
+      // The AGENT reads the dataset from the hub; only the EVALUATION harness reads our local
+      // subset.jsonl (its own loader handles a file path fine). mini-swe-agent calls
+      // load_dataset(path, split=split), and datasets 5.x no longer accepts a bare file path there
+      // -- it requires load_dataset('json', data_files=...) -- so a local file fails with a
+      // "Couldn't find any data file" error pointing at a file that is present and valid.
+      //
+      // Pinning is unaffected: --filter below fixes the exact instance id, and the manifest records
+      // the dataset revision. The residual exposure is that a rollout reads the CURRENT
+      // problem_statement rather than the revision we pinned; build-subset.py regeneration is what
+      // would surface such a change, since it would no longer reproduce subset-v1.json.
       '--subset',
-      DATASET,
+      'SWE-bench-Live/MultiLang',
+      '--split',
+      instance.language,
       '--filter',
       `^${instance.instance_id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
       '-m',
@@ -118,6 +163,7 @@ async function rollout({ instance, modelId, inferenceUrl, params, outDir }) {
    };
    const started = Date.now();
    let timedOut = false;
+   let failed = false;
    try {
       await execP(PY, args, {
          cwd: HARNESS,
@@ -128,6 +174,14 @@ async function rollout({ instance, modelId, inferenceUrl, params, outDir }) {
       });
    } catch (e) {
       timedOut = e.killed === true || e.signal === 'SIGKILL';
+      if (!timedOut) {
+         // A non-timeout failure is a HARNESS problem, not a model result. Reporting it as an empty
+         // patch would quietly score the model zero for our own bug — which is what happened when
+         // the config path was wrong: twelve instances "produced no patch" in one second each.
+         const detail = `${e.stderr ?? ''}${e.stdout ?? ''}`.trim().slice(-600) || e.message;
+         console.error(`  [swe_live] HARNESS FAILURE on ${instance.instance_id}: ${detail}`);
+         failed = true;
+      }
    }
    const traj = join(outDir, instance.instance_id, `${instance.instance_id}.traj.json`);
    let patch = '';
@@ -143,7 +197,10 @@ async function rollout({ instance, modelId, inferenceUrl, params, outDir }) {
          // A trajectory truncated by the SIGKILL is expected on a timeout; treat it as no patch.
       }
    }
-   return { patch, exitStatus, seconds: Math.round((Date.now() - started) / 1000) };
+   if (failed && !patch) {
+      exitStatus = 'HarnessError';
+   }
+   return { patch, exitStatus, failed, seconds: Math.round((Date.now() - started) / 1000) };
 }
 
 export const bench = {
@@ -175,6 +232,12 @@ export const bench = {
          console.error(
             `  [swe_live] ${inst.language.padEnd(4)} ${inst.instance_id.padEnd(42)} ${String(r.seconds).padStart(4)}s ` +
                `${r.patch ? `${r.patch.length}B patch` : 'no patch'} (${r.exitStatus})`,
+         );
+      }
+      if (outcomes.HarnessError === instances.length) {
+         throw new Error(
+            'swe_live: every rollout failed for harness reasons (not one reached the model). ' +
+               'Refusing to score this as 0/N — fix the harness and re-run.',
          );
       }
       const predFile = join(outDir, 'predictions.json');
@@ -225,7 +288,10 @@ export const bench = {
 
       const n = instances.length;
       const k = instances.filter((i) => resolved.has(i.instance_id)).length;
-      return {
+      // An ARRAY: bench-run treats a probe's return as a list of sub-bench rows (rawRows.flatMap).
+      // Returning the bare object throws "rawRows.flatMap is not a function" after every rollout
+      // has already been paid for.
+      return [{
          bench: 'swe_live',
          swe_resolved: k,
          swe_total: n,
@@ -240,7 +306,7 @@ export const bench = {
          swe_no_patch: Object.entries(predictions).filter(([, p]) => !p.model_patch).length,
          ...Object.fromEntries(Object.entries(byLang).map(([l, v]) => [`swe_lang_${l}`, v.n ? v.resolved / v.n : null])),
          status: 'ok',
-      };
+      }];
    },
 };
 

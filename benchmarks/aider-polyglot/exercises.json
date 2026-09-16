@@ -1,0 +1,76 @@
+{
+   "source": "https://github.com/Aider-AI/polyglot-benchmark",
+   "tree_sha_ref": "main",
+   "seed": 20260828,
+   "per_language": 5,
+   "total": 30,
+   "selection_rule": "sorted(pool); random.Random(f'{seed}:{lang}').sample(pool,10); take first 5 IN DRAW ORDER; sorted. Strict nested subset of the 10-per-language set.",
+   "pool_sizes": {
+      "cpp": 26,
+      "go": 39,
+      "java": 47,
+      "javascript": 49,
+      "python": 34,
+      "rust": 30
+   },
+   "exercises": {
+      "cpp": ["complex-numbers", "grade-school", "kindergarten-garden", "meetup", "robot-name"],
+      "go": ["bottle-song", "food-chain", "forth", "sublist", "variable-length-quantity"],
+      "java": ["bowling", "kindergarten-garden", "pythagorean-triplet", "react", "zipper"],
+      "javascript": ["alphametics", "binary", "complex-numbers", "react", "word-search"],
+      "python": ["food-chain", "forth", "paasio", "pig-latin", "tree-building"],
+      "rust": ["decimal", "robot-name", "two-bucket", "word-count", "xorcism"]
+   },
+   "superset_10_per_language": {
+      "cpp": [
+         "allergies",
+         "circular-buffer",
+         "complex-numbers",
+         "grade-school",
+         "kindergarten-garden",
+         "meetup",
+         "phone-number",
+         "queen-attack",
+         "robot-name",
+         "yacht"
+      ],
+      "go": [
+         "bottle-song",
+         "dominoes",
+         "food-chain",
+         "forth",
+         "kindergarten-garden",
+         "palindrome-products",
+         "sublist",
+         "tree-building",
+         "variable-length-quantity",
+         "wordy"
+      ],
+      "java": [
+         "book-store",
+         "bowling",
+         "go-counting",
+         "kindergarten-garden",
+         "ocr-numbers",
+         "pig-latin",
+         "pythagorean-triplet",
+         "react",
+         "transpose",
+         "zipper"
+      ],
+      "javascript": [
+         "alphametics",
+         "binary",
+         "complex-numbers",
+         "connect",
+         "parallel-letter-frequency",
+         "queen-attack",
+         "react",
+         "triangle",
+         "variable-length-quantity",
+         "word-search"
+      ],
+      "python": ["book-store", "connect", "food-chain", "forth", "hangman", "paasio", "pig-latin", "tree-building", "two-bucket", "zipper"],
+      "rust": ["decimal", "forth", "grep", "poker", "react", "robot-name", "two-bucket", "word-count", "wordy", "xorcism"]
+   }
+}

@@ -141,7 +141,13 @@ manifest = {
         # worker per lane. Sizing the rollout cap without that half is how the first plan reached
         # ~14h against an 8h budget.
         "rollout_timeout_s": 300,
-        "step_limit": 30,
+        # Deliberately ABOVE what the wall clock allows, so TIME is the binding constraint and the
+        # step count never is. The budget you are given is 5 minutes; at the ~7-9s/step measured on
+        # this fleet that is roughly 35-40 steps, so a limit of 30 was quietly throttling models
+        # below their own budget -- qwen3.8-27b exhausted it without submitting on the first real
+        # rollout. A model that runs out of time has spent its budget; a model stopped at step 30
+        # with two minutes left has been cut short by a number nobody chose on purpose.
+        "step_limit": 80,
         "ctx": 32768,
         "agent": "mini-swe-agent==2.4.6",
     },
