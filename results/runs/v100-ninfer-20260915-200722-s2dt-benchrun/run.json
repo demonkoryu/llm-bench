@@ -1,0 +1,19 @@
+{
+  "run_id": "v100-ninfer-20260915-200722-s2dt-benchrun",
+  "kind": "benchrun",
+  "host": "rose-ninfer0",
+  "gpu": "V100",
+  "backend": "ninfer",
+  "llamacpp_build": null,
+  "engine_version": "ninfer-v100 d0dfd6c4 (sm_70, CUDA 12.8)",
+  "chat_template": "builtin",
+  "resume": true,
+  "benches": [
+    "speed"
+  ],
+  "samples": 1,
+  "ctx": 32768,
+  "tidy_rows": 10,
+  "started": "2026-09-15T20:09:12.864Z",
+  "status": "complete"
+}
