@@ -22,6 +22,10 @@ Selection rules, in order:
   * ties broken by instance_id sort, then a seeded shuffle
 """
 import hashlib, json, random, sys
+from pathlib import Path
+
+# The current pin, carried forward for stability (see the selection loop).
+PRIOR = Path(__file__).with_name("subset-v1.json")
 from datasets import load_dataset
 from huggingface_hub import dataset_info
 
@@ -33,8 +37,47 @@ MIN_PS, MAX_PS = 200, 8000
 MAX_F2P = 50      # resolution requires ALL of them to pass
 MAX_P2P = 2000    # bounds how long one evaluation takes
 
+# Instances removed after measurement, with the reason. Each one was drawn by the rules above and
+# then disqualified by something only running it could reveal, so the rules alone cannot express it
+# -- hence an explicit list rather than a cleverer filter.
+#
+# Excluding on COST is a budget decision, not a quality one: evaluation runs once per model, so a
+# 20-minute instance costs 20 min x every model benchmarked, forever. Two of them were consuming
+# ~2.7h of an 8h budget between them while the other six finished in ~8 min combined.
+#
+# Excluding a GOLD-INVALID instance additionally saves its rollout: an instance that fails with the
+# reference patch cannot be resolved by anyone, so every model would spend its full per-instance
+# rollout budget earning a guaranteed zero.
+# Cost exclusions are BY REPOSITORY, not by instance. Evaluation cost is a property of the repo's
+# build and test suite, so swapping gwt-10054 for gwt-10153 would buy nothing -- the first attempt at
+# this excluded by instance and drew the same repository straight back in.
+EXCLUDE_REPOS = {
+    "gwtproject/gwt": "evaluation cost: >20 min for one instance (2026-09-16 gold pass); the cost is the build, not the issue",
+    "ghostfolio/ghostfolio": "evaluation cost: >20 min for one instance (2026-09-16 gold pass); the cost is the build, not the issue",
+}
+# Gold-invalid is instance-specific: the reference patch fails HERE, so no model can resolve it and
+# every model would spend a full rollout earning a guaranteed zero. Another instance from the same
+# repo may be perfectly fine, so this does not generalise to the repository.
+EXCLUDE_INSTANCES = {
+    "NVIDIA__OpenShell-695": "gold-invalid: fails with the reference patch on this machine",
+}
+
 rev = dataset_info(DATASET).sha
 ds = load_dataset(DATASET)
+# STABILITY. A pinned set that reshuffles when one instance is removed is not pinned. Previously
+# chosen instances are carried forward untouched (minus exclusions) and only the resulting GAPS are
+# filled, so dropping one instance costs one replacement -- not a new subset. Without this, removing
+# three instances displaced six, including two that had already been gold-validated at real cost.
+prior = []
+if PRIOR.exists():
+    prior = json.loads(PRIOR.read_text()).get("instances", [])
+kept = [
+    i for i in prior
+    if i["instance_id"] not in EXCLUDE_INSTANCES and i["repo"] not in EXCLUDE_REPOS
+]
+kept_ids = {i["instance_id"] for i in kept}
+kept_repos = {i["repo"] for i in kept}
+
 out, stats = [], {}
 for lang in LANGS:
     rows = [
@@ -42,18 +85,22 @@ for lang in LANGS:
         if MIN_PS <= len(r.get("problem_statement") or "") <= MAX_PS
         and 1 <= len(r["FAIL_TO_PASS"]) <= MAX_F2P
         and len(r["PASS_TO_PASS"]) <= MAX_P2P
+        and r["instance_id"] not in EXCLUDE_INSTANCES
+        and r["repo"] not in EXCLUDE_REPOS
     ]
     rows.sort(key=lambda r: r["instance_id"])          # deterministic base order
     random.Random(f"{SEED}:{lang}").shuffle(rows)      # seeded, per-language
-    picked, seen_repos = [], set()
+    carried = [i for i in kept if i["language"] == lang][:PER_LANG]
+    picked, seen_repos = [], set(kept_repos)
     for r in rows:
-        if r["repo"] in seen_repos:
+        if len(carried) + len(picked) >= PER_LANG:
+            break
+        if r["repo"] in seen_repos or r["instance_id"] in kept_ids:
             continue
         seen_repos.add(r["repo"])
         picked.append(r)
-        if len(picked) == PER_LANG:
-            break
-    stats[lang] = {"eligible": len(rows), "picked": len(picked)}
+    stats[lang] = {"eligible": len(rows), "carried": len(carried), "new": len(picked)}
+    out.extend(carried)
     for r in picked:
         out.append({
             "language": lang,
@@ -77,6 +124,8 @@ manifest = {
     "per_language": PER_LANG,
     "filters": {"problem_statement_chars": [MIN_PS, MAX_PS], "fail_to_pass_max": MAX_F2P,
                 "pass_to_pass_max": MAX_P2P, "max_one_instance_per_repo": True},
+    "excluded_repos": EXCLUDE_REPOS,
+    "excluded_instances": EXCLUDE_INSTANCES,
     # Pinned RUN parameters: these bound the measurement as much as the instance list does, so a
     # later run with a different cap is not comparable and must not silently look like one.
     "run_params": {

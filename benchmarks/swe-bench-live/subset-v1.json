@@ -1,7 +1,14 @@
 {
-  "content_sha256": "26e388df676fd7444dc6e3abc03bea369c074c812dd1660408d5f5e3d3cbd8b7",
+  "content_sha256": "87169b98c09e4a3b65320d6220e17b2b2d0b67f8174e56a0ab49508a33dfa66d",
   "dataset": "SWE-bench-Live/MultiLang",
   "dataset_revision": "22091f6ce331c5c60c241d76512d4be7ee1a555b",
+  "excluded_instances": {
+    "NVIDIA__OpenShell-695": "gold-invalid: fails with the reference patch on this machine"
+  },
+  "excluded_repos": {
+    "ghostfolio/ghostfolio": "evaluation cost: >20 min for one instance (2026-09-16 gold pass); the cost is the build, not the issue",
+    "gwtproject/gwt": "evaluation cost: >20 min for one instance (2026-09-16 gold pass); the cost is the build, not the issue"
+  },
   "filters": {
     "fail_to_pass_max": 50,
     "max_one_instance_per_repo": true,
@@ -64,23 +71,23 @@
       "repo": "gitlab4j/gitlab4j-api"
     },
     {
-      "base_commit": "c2229e7557450cd2842269f5fe9cb8586e90b50c",
-      "docker_image": "starryzhang/sweb.eval.x86_64.gwtproject_1776_gwt-10054",
-      "fail_to_pass": 38,
-      "instance_id": "gwtproject__gwt-10054",
+      "base_commit": "010c1a4e4658139890bf9c34121300a120b3539d",
+      "docker_image": "starryzhang/sweb.eval.x86_64.iflytek_1776_skillhub-253",
+      "fail_to_pass": 4,
+      "instance_id": "iflytek__skillhub-253",
       "language": "java",
-      "pass_to_pass": 672,
-      "problem_statement_chars": 676,
-      "repo": "gwtproject/gwt"
+      "pass_to_pass": 852,
+      "problem_statement_chars": 2672,
+      "repo": "iflytek/skillhub"
     },
     {
-      "base_commit": "ed74a19a6112dbde2555d27870fd70254247a8a1",
-      "docker_image": "starryzhang/sweb.eval.x86_64.nvidia_1776_openshell-695",
-      "fail_to_pass": 2,
-      "instance_id": "NVIDIA__OpenShell-695",
+      "base_commit": "3dd6d51c26a338bee3a7f7017ad4121d0adef529",
+      "docker_image": "starryzhang/sweb.eval.x86_64.nvidia_1776_openshell-810",
+      "fail_to_pass": 1,
+      "instance_id": "NVIDIA__OpenShell-810",
       "language": "rust",
-      "pass_to_pass": 1075,
-      "problem_statement_chars": 2384,
+      "pass_to_pass": 1188,
+      "problem_statement_chars": 6408,
       "repo": "NVIDIA/OpenShell"
     },
     {
@@ -124,32 +131,36 @@
       "repo": "excalidraw/excalidraw"
     },
     {
-      "base_commit": "6d6a6816e83b284980a27b13624c4fafe24b33ef",
-      "docker_image": "starryzhang/sweb.eval.x86_64.ghostfolio_1776_ghostfolio-5093",
+      "base_commit": "c07478ba8480b24c4c967dd660a39b844f3900fc",
+      "docker_image": "starryzhang/sweb.eval.x86_64.withastro_1776_starlight-3293",
       "fail_to_pass": 1,
-      "instance_id": "ghostfolio__ghostfolio-5093",
+      "instance_id": "withastro__starlight-3293",
       "language": "ts",
-      "pass_to_pass": 48,
-      "problem_statement_chars": 818,
-      "repo": "ghostfolio/ghostfolio"
+      "pass_to_pass": 472,
+      "problem_statement_chars": 706,
+      "repo": "withastro/starlight"
     }
   ],
   "language_stats": {
     "go": {
+      "carried": 3,
       "eligible": 50,
-      "picked": 3
+      "new": 0
     },
     "java": {
-      "eligible": 41,
-      "picked": 3
+      "carried": 2,
+      "eligible": 39,
+      "new": 1
     },
     "rust": {
-      "eligible": 48,
-      "picked": 3
+      "carried": 2,
+      "eligible": 47,
+      "new": 1
     },
     "ts": {
-      "eligible": 49,
-      "picked": 3
+      "carried": 2,
+      "eligible": 48,
+      "new": 1
     }
   },
   "languages": [
