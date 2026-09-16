@@ -24,6 +24,7 @@
 // would not be conservative, it would be wrong — and at the 66% weight this bench carries in the
 // coding group, a wrong denominator moves the whole leaderboard.
 import { execFile } from 'node:child_process';
+import { capabilityClass, thinkStates } from '../shared/llm/index.mjs';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -116,8 +117,45 @@ async function agentConfig() {
    return cachedCfg;
 }
 
-async function rollout({ instance, modelId, inferenceUrl, params, outDir }) {
+/**
+ * Per-model overlay carrying the THINK TOGGLE into the agent's requests.
+ *
+ * This is not a tuning knob, it is a correctness fix. swe_live is `thinkDependent: false`, so
+ * bench-run resolves it to the single non-thinking state for hybrids exactly as it does for every
+ * other n/a-scope bench. But mini-swe-agent does not use our client — it talks to the endpoint
+ * through litellm — so `think_control` never reached the server and the chat template's default
+ * (thinking ON) applied instead.
+ *
+ * MEASURED COST of that gap, on the first real rollout: 44 calls, ~344 generated tokens each, of
+ * which 95% were reasoning_content — 14,348 reasoning tokens against 811 tokens of actual answer.
+ * The model spent ~11s of every 21s step thinking, to emit a one-line shell command, and then ran
+ * out of wall clock two thirds of the way through the issue.
+ *
+ * The two spellings mirror shared/llm/think.mjs: nested chat_template_kwargs for llama.cpp, and
+ * TOP-LEVEL enable_thinking for NInfer, which 400s the nested form. An always-reasoning model
+ * (reasoning_only, e.g. Muse-Glimmer) has no toggle, so it gets no overlay — sending one would be
+ * a lie about what the model is doing.
+ */
+function thinkOverlay(model) {
+   const state = thinkStates(capabilityClass(model))[0] ?? null;
+   if (state === null) {
+      return null; // no toggle to set
+   }
+   const body =
+      (model.think_control ?? 'enable_thinking') === 'enable_thinking_top'
+         ? { enable_thinking: state }
+         : { chat_template_kwargs: { enable_thinking: state } };
+   return `model:\n  model_kwargs:\n    extra_body: ${JSON.stringify(body)}\n`;
+}
+
+async function rollout({ instance, model, modelId, inferenceUrl, params, outDir }) {
    const cfg = await agentConfig();
+   const overlay = thinkOverlay(model);
+   let thinkCfg = null;
+   if (overlay) {
+      thinkCfg = join(outDir, 'think-overlay.yaml');
+      writeFileSync(thinkCfg, overlay);
+   }
    const args = [
       '-m',
       'minisweagent.run.benchmarks.swebench',
@@ -146,6 +184,7 @@ async function rollout({ instance, modelId, inferenceUrl, params, outDir }) {
       // the trajectory unfittable at any served context.
       '-c',
       join(ROOT, 'benchmarks', 'swe-bench-live', 'agent-overlay.yaml'),
+      ...(thinkCfg ? ['-c', thinkCfg] : []),
       '-c',
       `agent.step_limit=${params.step_limit}`,
       '-c',
@@ -239,7 +278,7 @@ export const bench = {
       const outcomes = {};
       let rolloutSeconds = 0;
       for (const inst of instances) {
-         const r = await rollout({ instance: inst, modelId, inferenceUrl, params, outDir });
+         const r = await rollout({ instance: inst, model, modelId, inferenceUrl, params, outDir });
          predictions[inst.instance_id] = { model_patch: r.patch, model_name_or_path: tag };
          outcomes[r.exitStatus] = (outcomes[r.exitStatus] ?? 0) + 1;
          rolloutSeconds += r.seconds;
