@@ -162,6 +162,15 @@ const UNIT_EXACT = {
    summ_area: 'ratio',
    summ_tags: 'ratio',
    summ_length: 'ratio',
+   // SWE-bench-Live. swe_total is the GOLD-VALIDATED instance count, not the pinned one — the
+   // denominator has to exclude instances that fail with the reference patch on this machine.
+   swe_resolved: 'count',
+   swe_total: 'count',
+   swe_rate: 'ratio',
+   swe_rollout_s: 's',
+   swe_eval_s: 's',
+   swe_timeouts: 'count',
+   swe_no_patch: 'count',
    docqa_correctness: 'points',
    docqa_coverage: 'points',
    docqa_faithfulness: 'points',
@@ -198,6 +207,9 @@ function unitFor(bench, field) {
    }
    if (/^triage_[RC]\d+$/.test(field)) {
       return 'ratio'; // per-rule 0..1 rubric scores
+   }
+   if (/^swe_lang_/.test(field)) {
+      return 'ratio'; // per-language resolve rate, n=3 each — read the aggregate, not these
    }
    if (/_ms$/.test(field)) {
       return 'ms';

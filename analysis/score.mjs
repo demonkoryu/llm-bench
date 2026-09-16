@@ -33,6 +33,26 @@ const ratio = (rows, a, b) => {
    return t ? sum(vals(rows, (r) => r.metric === a)) / t : null;
 };
 
+/**
+ * Wilson score interval for k successes out of n, at ~95% (z=1.96).
+ *
+ * Exported because swe_live's rate is a small-sample proportion that the dashboard must show with
+ * its uncertainty: at n≈11 a single instance is ~9pp, and the bench is 66% of the coding group.
+ * Wilson rather than the normal approximation because the latter misbehaves badly near 0 and 1 —
+ * and 0/11 is an entirely plausible result for a local 30B model on real repository issues, where
+ * the naive interval would be [0,0] and imply certainty we do not have.
+ */
+export function wilson(k, n, z = 1.96) {
+   if (!n || n <= 0) {
+      return null;
+   }
+   const p = k / n;
+   const d = 1 + (z * z) / n;
+   const centre = p + (z * z) / (2 * n);
+   const halfWidth = z * Math.sqrt((p * (1 - p)) / n + (z * z) / (4 * n * n));
+   return { lo: Math.max(0, (centre - halfWidth) / d), hi: Math.min(1, (centre + halfWidth) / d), p };
+}
+
 function codingGrade(rows) {
    let wsum = 0,
       acc = 0;
@@ -41,9 +61,18 @@ function codingGrade(rows) {
       if (!sub.length) {
          continue;
       }
-      const pass = ratio(sub, 'coding_pass_at_1', 'coding_total'); // count → pass@1 rate
-      const rate = ratio(sub, 'coding_tests_passed', 'coding_tests_total');
-      const g = 0.4 * (pass ?? 0) + 0.6 * (rate ?? pass ?? 0);
+      // swe_live is graded differently because it measures a different thing: an instance either
+      // resolves or it does not, so there is no partial test-rate credit to blend in. Using the
+      // synthetic formula here would read its missing coding_* metrics as zeros and score every
+      // model 0 on the bench carrying two thirds of the group.
+      const g =
+         bench === 'swe_live'
+            ? (ratio(sub, 'swe_resolved', 'swe_total') ?? 0)
+            : (() => {
+                 const pass = ratio(sub, 'coding_pass_at_1', 'coding_total'); // count → pass@1 rate
+                 const rate = ratio(sub, 'coding_tests_passed', 'coding_tests_total');
+                 return 0.4 * (pass ?? 0) + 0.6 * (rate ?? pass ?? 0);
+              })();
       acc += w * g;
       wsum += w;
    }

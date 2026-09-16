@@ -542,6 +542,12 @@ async function main() {
                // shared-KV-pool search on it; passing it instead of a literal keeps the probe
                // honest when the same code runs on a different GPU.
                vramTotalMib: host.vramTotalMib ?? null,
+               // Base URL of the instance serving THIS config. Needed by any probe that drives an
+               // external harness rather than our own client -- swe_live shells out to
+               // mini-swe-agent, which has to be pointed at an OpenAI-compatible endpoint. Taken
+               // from the normalized host field both engines already receive, so it cannot drift
+               // from the URL the client itself is talking to.
+               inferenceUrl: host.llamaUrl,
                upsertCap: (v) => upsertCap(RESULTS, capKeyFields, { ...v, source_run_id: run_id }),
             };
             // A probe emits MANY sub-bench rows (speed → speed_short, speed_prefill-4k,

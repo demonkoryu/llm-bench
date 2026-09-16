@@ -884,7 +884,7 @@ models:
      # at f16 — measured on the base 2026-08-25 at ~75 KiB/tok against a ~10-15 KiB/tok target.
      extra_flags: { spec-type: draft-mtp, spec-draft-type-k: q8_0, spec-draft-type-v: q8_0 }
      benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
-               struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
+               struct_output, instruction_following, agentic_loop, swe_live, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
      kv_variants: [q8_0]
      notes: "Reasoning-token-efficiency finetune of Qwen3.8-27B; compare against the `Qwen3.8-27B Q6_K` entry on the finetune axis. Chat template adds a reasoning_effort kwarg (xhigh default / medium / low) that the harness does not set — every row here is the template default, xhigh."
 
@@ -986,7 +986,7 @@ models:
      spec_decode: mtp                    # recorded dimension; the extra_flags entries above are what reach the server
      capability_note: "vision-language model served WITH vision enabled (unlike the OptiQ 3.8 row, which serves the same base text-only) — so image input is actually exercised. The 32768 window is a memory choice awaiting measurement, NOT an engine ceiling -- see the corrected ctx_cap note above; the 32,768 merged-token Vision envelope bounds media expansion, not the text window. Perf probes report client-clocked TTFT/decode from SSE: ninfer-serve emits a standard usage block and no llama.cpp timings object, so there is no server-measured prefill/decode split. JSON benches run UNCONSTRAINED (no_schema): response_format is 400 response_format_not_supported on this engine, so triage/reasoning* adherence is not comparable to a constrained llama.cpp row."
      benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
-               struct_output, instruction_following, agentic_loop, speed, throughput, prefix_cache, quality_decay]
+               struct_output, instruction_following, agentic_loop, swe_live, speed, throughput, prefix_cache, quality_decay]
 
 
    # ── Swift-Qwen3.8-27B NVFP4 · NInfer · 1 lane ────────────────────────────────
@@ -1124,7 +1124,7 @@ models:
         draft-tokens: 3
         lm-head-draft: true
      benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
-               struct_output, instruction_following, agentic_loop, speed, throughput, prefix_cache, quality_decay]
+               struct_output, instruction_following, agentic_loop, swe_live, speed, throughput, prefix_cache, quality_decay]
      notes: "FP8-recipe Swift artifact -- the like-for-like counterpart to `Qwen3.8-27B NVFP4 [ninfer vision]`. agent_ctx excluded: it skips on ninfer because --kv-capacity auto exposes no fixed pool for the probe to verify, same reason vram_per_ctx_tok/fit_ctx are excluded on the other ninfer rows."
 
 
@@ -1251,7 +1251,7 @@ models:
      spec_decode: mtp                 # k=3, matching the 27B row's tag; was dflash at k=7 (sm_70 verify path is correct only to k=3 -- see the extra_flags note above)
      capability_note: "served text-only BY CHOICE, not by constraint: this row measures the concurrent text agent fleet, and --vision is frozen-startup residency that would shrink it. The artifact does carry a vision tower (334 objects, same count as the 27B), and the DFlash/--vision mutual exclusion that used to force text-only no longer applies now that speculation is MTP -- the 27B row runs --vision and --spec mtp together. Enabling vision here is therefore possible and would be a separate measurement. Lane count is startup-fixed 1..8 on this engine, so agent_ctx reports a lane-capped result rather than a memory-bound one when it hits 8 lanes. Its fleets are FLAT (planner_ctx == coder_ctx): --max-context is one per-sequence ceiling for every lane, so a wide planner beside narrow coders is not expressible here the way --kv-unified makes it on llama.cpp. Same NInfer caveats as the 27B row: client-clocked SSE timings only (no server timings object), and JSON benches run unconstrained (no_schema) because response_format is rejected."
      benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
-               struct_output, instruction_following, agentic_loop, speed, throughput, agent_ctx, prefix_cache, quality_decay]
+               struct_output, instruction_following, agentic_loop, swe_live, speed, throughput, agent_ctx, prefix_cache, quality_decay]
 
    # ── Muse-Glimmer-30B UD-Q5_K_XL (Meta Superintelligence Labs, dense VLM) ───
    # 29.6B dense causal transformer + a frozen ~1.8B ViT-G/14 perception encoder, distilled from
@@ -1332,7 +1332,7 @@ models:
         spec-type: draft-dflash
         spec-draft-n-max: 16   # match DFlash's block_size; the build default of 3 costs ~1.4x on structured output
      benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
-               struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
+               struct_output, instruction_following, agentic_loop, swe_live, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
      notes: "Text-only by choice (--no-mmproj); the perception encoder is a separate measurement. Always-reasoning at the template's default strength `high`. DFlash verified correct on sm_70 2026-08-26 by agreement with the spec-off baseline, not by greedy self-reproducibility -- this model is nondeterministic at temperature 0.0 with speculation OFF too."
 
 
@@ -1417,7 +1417,7 @@ models:
      extra_flags:
         cache-type-k: q8_0
         cache-type-v: q4_0
-     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, swe_live, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
      # MEASURED 2026-09-06, and the reason this entry's usable window is far below its fitted one:
      # needle retrieval is UNRELIABLE past ~16k. quality_decay scored 100/100/0 at 0k/16k/32k while
      # the dense 32B entry below scored 100/100/100 on the same probe, same quant, same KV.
@@ -1472,7 +1472,7 @@ models:
      extra_flags:
         cache-type-k: q8_0
         cache-type-v: q4_0
-     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, swe_live, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
      # SPECULATIVE DECODING: EVALUATED 2026-09-06 AND REJECTED — do not re-add without new evidence.
      # There is no self-draft path to begin with: neither K2 model has an MTP/EAGLE head (no nextn
      # or mtp config keys, zero draft tensors in the safetensors index, layer indices exactly
@@ -1501,8 +1501,75 @@ models:
      # (predicted 106 from 64 layers x 8 kv x 128), fit_ctx 70,656.
      notes: "Dense 64L, 512k native ctx, vocab 250624. Locally quantized (see model_path). Needs LLAMA_IMAGE=llama-server-cuda-k2."
 
+   # ── Tiel-Coder-35B-A3B Q4_K_XL ───────────────────────────────────────────────
+   # A coder finetune of Ornith-1.5-35B-A3B (MIT), added 2026-09-16 alongside the SWE-bench-Live
+   # work. Architecturally it is the same shape as `Qwen3.6-35B-A3B [ninfer]`: GGUF arch
+   # `qwen35moe`, 256 experts with 8 used, GatedDeltaNet hybrid (ssm.* keys, full_attention_interval
+   # 4, so 30 of 40 layers are recurrent) -- hence arch pinned to gated-delta-moe rather than the
+   # bare `moe` deriveArch() infers from an unknown family. 3B active of 35B total, so it should
+   # decode fast for its size.
+   #
+   # MTP VERIFIED, not assumed from the repo name: the header carries
+   # `qwen35moe.nextn_predict_layers = 1` and block 40 (of 0..40) holds
+   # nextn.eh_proj/enorm/hnorm/shared_head_norm. The MTP head ships INSIDE this GGUF, so
+   # --spec-type draft-mtp needs no separate draft model.
+   #
+   # Quant choice: UD-Q4_K_XL at 22.75 GB. Q5_K_XL (27 GB) plus the ~5 GB KV the model card quotes
+   # would sit exactly at the 32 GiB card limit, and Q4_K_XL keeps it in the same Q4/Q5 band the
+   # rest of the fleet is measured at.
+   #
+   # CHAT TEMPLATE CAVEAT: the baked-in template identifies itself as `qwen3.8-froggeric-v22.5.0` --
+   # a community template, not a vendor one -- and it defines `auto_disable_thinking_with_tools`.
+   # So on tool-carrying benches this model may silently serve no_think where the others think.
+   # Left as-is (it is what the artifact ships and what a user would get), but any think/no_think
+   # comparison involving toolcalling or agentic_loop should be read with that in mind.
+   - hf_repo: peculiar-ragdoll/Tiel-Coder-35B-A3B-GGUF-MTP
+     hf_file: Tiel-Coder-35B-A3B-MTP-UD-Q4_K_XL.gguf
+     label: "Tiel-Coder-35B-A3B Q4_K_XL"
+     family: tiel
+     type: moe
+     arch: gated-delta-moe
+     think: optional
+     tools: true
+     native_max_ctx: 262144
+     # Same cap as the other 30-36B entries pending a capacity probe; fit_ctx/agent_ctx will
+     # correct it once measured.
+     ctx_cap: 65536
+     spec_decode: draft-mtp
+     extra_flags:
+        spec-type: draft-mtp
+        spec-draft-type-k: q8_0
+        spec-draft-type-v: q8_0
+        no-mmproj: true   # repo ships mmproj-BF16.gguf -- skip it, text-only like every other row
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix,
+               struct_output, instruction_following, agentic_loop, swe_live, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
+     kv_variants: [q8_0]
+     notes: "Coder finetune of Ornith-1.5-35B-A3B. MTP head embedded (verified in the GGUF header). Ships a froggeric-derived chat template that can auto-disable thinking when tools are present."
+
+
 
 sampling_matrix:
+   # ── Tiel-Coder (Ornith-1.5-35B-A3B coder finetune) ────────────────────────
+   # Taken from the GGUF's own general.sampling.* keys rather than guessed: temp 1.0, top_k 20,
+   # top_p 0.95. A family MUST appear here -- resolveSampling() returns {} with no warning for an
+   # unknown one, and the model would then run on bare server defaults while every other row used
+   # its tuned sampling, which is a silent confound rather than a visible gap.
+   #
+   # No presence_penalty: the 1.5 the qwen3.x blocks carry is a fix for a looping bug observed on
+   # THOSE models, and applying it here would be cargo-culting a correction for a defect this
+   # model has not been shown to have.
+   tiel:
+      default:
+         top_k: 20
+         min_p: 0
+      think:
+         temperature: 1.0
+         top_p: 0.95
+      no_think:
+         temperature: 0.7
+         top_p: 0.8
+
+
 
    # Overrides live under `per_profile:` and key on a bench's declared samplingProfile, never on a
    # bench name — see shared/llm/sampling.mjs. Unknown profiles fail the run at startup.

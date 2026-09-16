@@ -19,6 +19,7 @@ import { bench as reasoning_expert } from './reasoning_expert.mjs';
 import { bench as reasoning_hard } from './reasoning_hard.mjs';
 import { bench as struct_output } from './struct_output.mjs';
 import { bench as summarization } from './summarization.mjs';
+import { bench as swe_live } from './swe_live.mjs';
 import { bench as toolcalling } from './toolcalling.mjs';
 import { bench as triage } from './triage.mjs';
 
@@ -34,6 +35,7 @@ const all = [
    agentic_loop,
    struct_output,
    instruction_following,
+   swe_live,
    agent_ctx,
    fit_ctx,
    vram_per_ctx_tok,

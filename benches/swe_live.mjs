@@ -1,0 +1,270 @@
+// Bench module: swe_live — SWE-bench-Live/MultiLang on a PINNED subset.
+//
+// Unlike every other bench here, this one does not talk to the model through our client. It shells
+// out to mini-swe-agent, which drives a real repository inside the instance's own Docker container
+// and produces a git diff; the SWE-bench-Live harness then runs that repo's test suite to decide
+// whether the patch resolved the issue. Our role is to point the agent at the endpoint serving the
+// config under test and to turn the harness's verdict into measurement rows.
+//
+// WHY IT IS A PROBE. It emits one row per config (think_mode 'n/a') rather than a think/no_think
+// pair. That is a budget decision, not a claim that thinking is irrelevant to coding: a second pass
+// would double the most expensive bench in the suite, and the run has a fixed 8-hour envelope. The
+// think state used is whatever bench-run's server is already serving.
+//
+// WHAT IS PINNED, AND WHY ALL OF IT HAS TO BE. benchmarks/swe-bench-live/subset-v1.json fixes the
+// dataset revision, the instance list, AND the run parameters (rollout timeout, step limit, ctx,
+// agent version). A SWE-bench score is only comparable against another score taken with the same
+// instances *and* the same budget — a model given 10 minutes per instance is not competing with one
+// given 5. Changing any of it means a new subset version, not a silent re-run.
+//
+// THE DENOMINATOR IS THE GOLD-VALIDATED SET, NOT THE PINNED SET. The SWE-bench-Live maintainers are
+// explicit that tests rot and Docker does not fully isolate, so a reported rate must be over
+// "instances that passed with the gold patch on this machine". Our own first gold pass proved the
+// point by failing NVIDIA__OpenShell-695, which no model could have resolved. Scoring against it
+// would not be conservative, it would be wrong — and at the 66% weight this bench carries in the
+// coding group, a wrong denominator moves the whole leaderboard.
+import { execFile } from 'node:child_process';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
+
+const execP = promisify(execFile);
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+const MANIFEST = join(ROOT, 'benchmarks', 'swe-bench-live', 'subset-v1.json');
+
+// Where the harness, its venv and the pinned local dataset live. Outside the repo on purpose: it is
+// a multi-GB working area (venv, cloned harness, per-instance logs and trajectories), machine-local
+// and reproducible from the manifest, so it has no business in git.
+const WORK = process.env.SWE_LIVE_WORK ?? '/home/demonkoryu/.local/state/swe-live';
+const PY = join(WORK, 'venv', 'bin', 'python');
+const HARNESS = join(WORK, 'SWE-bench-Live');
+const DATASET = join(WORK, 'subset.jsonl');
+
+const loadManifest = () => JSON.parse(readFileSync(MANIFEST, 'utf8'));
+
+/** Instances that count: pinned AND confirmed resolvable here by the gold pass. */
+function scoredInstances(manifest) {
+   const valid = manifest.gold_validated?.resolvable;
+   if (!Array.isArray(valid) || valid.length === 0) {
+      throw new Error(
+         'swe_live: subset-v1.json carries no gold_validated.resolvable list. Run the gold pass ' +
+            '(benchmarks/swe-bench-live/README.md) and record its result before benchmarking — ' +
+            'without it the denominator would include instances no model can resolve.',
+      );
+   }
+   const validSet = new Set(valid);
+   return manifest.instances.filter((i) => validSet.has(i.instance_id));
+}
+
+/**
+ * The model id the endpoint actually advertises.
+ *
+ * Asked rather than assumed: NInfer requires an EXACT match on the `model` field and 404s otherwise
+ * (the id comes from the artifact's own identity, not from our label), while llama.cpp is relaxed
+ * about it. One code path that works on both beats two that each work on one.
+ */
+async function servedModelId(inferenceUrl) {
+   const res = await globalThis.fetch(`${inferenceUrl}/v1/models`, { signal: AbortSignal.timeout(15_000) });
+   const body = await res.json();
+   const id = body?.data?.[0]?.id;
+   if (!id) {
+      throw new Error(`swe_live: ${inferenceUrl}/v1/models advertised no model`);
+   }
+   return id;
+}
+
+/**
+ * One agent rollout. Returns the patch it produced (possibly empty) plus how it ended.
+ *
+ * The wall-clock cap is enforced HERE rather than left to the agent's own limits. mini-swe-agent
+ * bounds steps and dollar cost; against a local model cost is always zero, so the only thing that
+ * would stop a slow model looping to its step limit is time, and the whole budget depends on it.
+ * A timed-out rollout is a real outcome (no patch), not an error — it is recorded and scored as
+ * unresolved, exactly as the benchmark intends for an agent that ran out of budget.
+ */
+async function rollout({ instance, modelId, inferenceUrl, params, outDir }) {
+   const cfg = join(HARNESS, 'mini-swebench.yaml');
+   const args = [
+      '-m',
+      'minisweagent.run.benchmarks.swebench',
+      '--subset',
+      DATASET,
+      '--filter',
+      `^${instance.instance_id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
+      '-m',
+      `openai/${modelId}`,
+      '-c',
+      cfg,
+      '-c',
+      `agent.step_limit=${params.step_limit}`,
+      '-c',
+      'agent.cost_limit=0',
+      '-o',
+      outDir,
+      '-w',
+      '1',
+      '--environment-class',
+      'docker',
+      '--redo-existing',
+   ];
+   const env = {
+      ...process.env,
+      OPENAI_API_BASE: `${inferenceUrl}/v1`,
+      OPENAI_API_KEY: 'EMPTY',
+      MSWEA_SILENT_STARTUP: '1',
+      // Local models are not in litellm's price table, and its cost tracker treats that as fatal.
+      MSWEA_COST_TRACKING: 'ignore_errors',
+   };
+   const started = Date.now();
+   let timedOut = false;
+   try {
+      await execP(PY, args, {
+         cwd: HARNESS,
+         env,
+         timeout: params.rollout_timeout_s * 1000,
+         killSignal: 'SIGKILL',
+         maxBuffer: 32 * 1024 * 1024,
+      });
+   } catch (e) {
+      timedOut = e.killed === true || e.signal === 'SIGKILL';
+   }
+   const traj = join(outDir, instance.instance_id, `${instance.instance_id}.traj.json`);
+   let patch = '';
+   let exitStatus = timedOut ? 'Timeout' : 'Unknown';
+   if (existsSync(traj)) {
+      try {
+         const t = JSON.parse(readFileSync(traj, 'utf8'));
+         patch = t?.info?.submission ?? '';
+         if (!timedOut) {
+            exitStatus = t?.info?.exit_status ?? 'Unknown';
+         }
+      } catch {
+         // A trajectory truncated by the SIGKILL is expected on a timeout; treat it as no patch.
+      }
+   }
+   return { patch, exitStatus, seconds: Math.round((Date.now() - started) / 1000) };
+}
+
+export const bench = {
+   name: 'swe_live',
+   kind: 'probe',
+   thinkDependent: false,
+   async run({ model, inferenceUrl }) {
+      const manifest = loadManifest();
+      const params = manifest.run_params;
+      const instances = scoredInstances(manifest);
+      const modelId = await servedModelId(inferenceUrl);
+      const tag = (model.hf_file ?? model.label ?? 'model').replace(/[^\w.-]+/g, '_');
+      const outDir = join(WORK, 'runs', tag);
+      mkdirSync(outDir, { recursive: true });
+
+      // ── rollouts: sequential, one container at a time ────────────────────────────────────────
+      // Not parallel even though the box has 32 cores: two lanes already run concurrently on the
+      // two GPUs, and each rollout's container plus the harness's own memory would multiply against
+      // the 16 GB/instance the maintainers quote. The GPU is the bottleneck anyway — a second
+      // concurrent rollout against the same server halves both their token rates.
+      const predictions = {};
+      const outcomes = {};
+      let rolloutSeconds = 0;
+      for (const inst of instances) {
+         const r = await rollout({ instance: inst, modelId, inferenceUrl, params, outDir });
+         predictions[inst.instance_id] = { model_patch: r.patch, model_name_or_path: tag };
+         outcomes[r.exitStatus] = (outcomes[r.exitStatus] ?? 0) + 1;
+         rolloutSeconds += r.seconds;
+         console.error(
+            `  [swe_live] ${inst.language.padEnd(4)} ${inst.instance_id.padEnd(42)} ${String(r.seconds).padStart(4)}s ` +
+               `${r.patch ? `${r.patch.length}B patch` : 'no patch'} (${r.exitStatus})`,
+         );
+      }
+      const predFile = join(outDir, 'predictions.json');
+      writeFileSync(predFile, JSON.stringify(predictions, null, 2));
+
+      // ── evaluation: run each patch's test suite ──────────────────────────────────────────────
+      // workers=1 because a peer lane is doing the same thing on the other card and the quoted
+      // requirement is 16 GB per instance against 47 GB of host RAM, most of which the two model
+      // servers have already pinned.
+      const evalDir = join(outDir, 'eval');
+      mkdirSync(evalDir, { recursive: true });
+      const evalStart = Date.now();
+      await execP(
+         PY,
+         [
+            '-m',
+            'evaluation.evaluation',
+            '--dataset',
+            DATASET,
+            '--patch_dir',
+            predFile,
+            '--platform',
+            'linux',
+            '--workers',
+            '1',
+            '--output_dir',
+            evalDir,
+            '--overwrite',
+            '1',
+         ],
+         { cwd: HARNESS, timeout: 3 * 3600_000, maxBuffer: 64 * 1024 * 1024 },
+      ).catch((e) => {
+         // A harness crash must not discard the rollouts, which cost real GPU time. Report zero
+         // resolved for what could not be judged rather than failing the whole bench.
+         console.error(`  [swe_live] evaluation error: ${String(e.message).slice(0, 300)}`);
+      });
+      const evalSeconds = Math.round((Date.now() - evalStart) / 1000);
+
+      const resolved = readResolved(evalDir);
+      const byLang = {};
+      for (const inst of instances) {
+         byLang[inst.language] ??= { n: 0, resolved: 0 };
+         byLang[inst.language].n += 1;
+         if (resolved.has(inst.instance_id)) {
+            byLang[inst.language].resolved += 1;
+         }
+      }
+
+      const n = instances.length;
+      const k = instances.filter((i) => resolved.has(i.instance_id)).length;
+      return {
+         bench: 'swe_live',
+         swe_resolved: k,
+         swe_total: n,
+         // Rate as a fraction. The dashboard pairs it with a Wilson interval computed from
+         // (k, n) — at n=12 the interval is wide, and this bench carries 66% of the coding
+         // group, so the uncertainty has to travel with the number rather than be recoverable
+         // only by someone who remembers n.
+         swe_rate: n ? k / n : null,
+         swe_rollout_s: rolloutSeconds,
+         swe_eval_s: evalSeconds,
+         swe_timeouts: outcomes.Timeout ?? 0,
+         swe_no_patch: Object.entries(predictions).filter(([, p]) => !p.model_patch).length,
+         ...Object.fromEntries(Object.entries(byLang).map(([l, v]) => [`swe_lang_${l}`, v.n ? v.resolved / v.n : null])),
+         status: 'ok',
+      };
+   },
+};
+
+/** Instance ids the harness judged resolved. */
+function readResolved(evalDir) {
+   const out = new Set();
+   for (const name of ['results.json', 'report.json']) {
+      const p = join(evalDir, name);
+      if (!existsSync(p)) {
+         continue;
+      }
+      try {
+         const j = JSON.parse(readFileSync(p, 'utf8'));
+         for (const id of j.resolved ?? j.resolved_ids ?? []) {
+            out.add(id);
+         }
+         for (const [id, v] of Object.entries(j)) {
+            if (v && typeof v === 'object' && v.resolved === true) {
+               out.add(id);
+            }
+         }
+      } catch {
+         // fall through to the next candidate file
+      }
+   }
+   return out;
+}

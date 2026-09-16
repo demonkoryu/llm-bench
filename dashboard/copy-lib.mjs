@@ -20,6 +20,18 @@ for (const name of ['scoring-config', 'score', 'query-engine']) {
 }
 console.error('[copy-lib] engine → dashboard/src/lib/{scoring-config,score,query-engine}.js');
 
+// The pinned SWE-bench-Live subset, copied in for the same reason as the engine: Framework's
+// FileAttachment can only reach inside src/, and the manifest is authored under benchmarks/ where
+// the bench runner reads it. Copying on every build keeps the page's "what is pinned" table and the
+// list the benchmark actually ran from one source — a page that documented a different subset than
+// the one measured would be worse than no page.
+mkdirSync(join(here, 'src', 'data'), { recursive: true });
+writeFileSync(
+   join(here, 'src', 'data', 'swe-subset.json'),
+   readFileSync(join(here, '..', 'benchmarks', 'swe-bench-live', 'subset-v1.json'), 'utf8'),
+);
+console.error('[copy-lib] pinned subset → dashboard/src/data/swe-subset.json');
+
 // Drop the cached data-loader output before every dev/build.
 //
 // Framework's build passes useStale:true to the loader, and that path returns the CACHED file
