@@ -8,6 +8,7 @@ Real GitHub issues, resolved (or not) in the repository's own container. An inst
 import * as Plot from "npm:@observablehq/plot";
 import { wilson } from "./lib/score.js";
 import { modelName } from "./components/board.js";
+import { metricHelp } from "./components/metric-help.js";
 
 const rows = await FileAttachment("data/measurements.json").json();
 const modelLabels = await FileAttachment("data/model-labels.json").json();
@@ -59,6 +60,32 @@ const board = [...byEntity.values()]
 
 const nInst = subset.instance_count;
 const perInstancePoints = nInst ? 100 / nInst : 0;
+```
+
+```js
+// Page-local glossary, rendered with the shared metric-help component so it looks like the rest of
+// the dashboard. Local rather than added to analysis/query-engine.mjs's METRIC_HELP because these
+// columns are not in the dashboard's metric catalog — no other view can show them, and the shared
+// map is what the pivot and leaderboard select from.
+const SWE_HELP = {
+  // outcome
+  resolved: "Instances whose patch made every FAIL_TO_PASS test pass without breaking any PASS_TO_PASS test. All-or-nothing per instance; there is no partial credit.",
+  total: "Instances scored — the gold-validated set, i.e. those that pass here with the benchmark's own reference patch. Instances that fail with the reference patch are excluded, since no model could resolve them.",
+  rate: "resolved ÷ total. At this sample size one instance is worth about 8 points, so read it together with the interval.",
+  "95% lo": "Lower bound of the 95% Wilson confidence interval for the rate. Wilson rather than the normal approximation because the latter misbehaves near 0 and 1 — where a small-sample result most often lands.",
+  "95% hi": "Upper bound of the same interval. If two configurations' [lo, hi] ranges overlap, the ordering between them is not supported by this data.",
+  "no patch": "Rollouts that ended without producing any diff at all — the model never reached an edit it was willing to submit. Scored as unresolved, but a different failure from submitting a wrong patch.",
+  timeouts: "Rollouts stopped at the pinned wall clock with work still in progress. Also scored as unresolved: under a fixed budget, running out of time is the result.",
+
+  // cost and context
+  "ctx median": "Median context the agent accumulated over a rollout, in tokens, across all scored instances. The agent's history is linear — every command and its output stays in the prompt — so this grows monotonically within a rollout and is what the server must actually hold.",
+  "ctx peak": "Largest context any single rollout reached. This, not the median, is what decides whether a served window is adequate: exceed it and the longest trajectories are truncated, and those are the ones still making progress when they run long.",
+  "agent steps": "Total model calls across all scored instances — one per think-act cycle. Divided by the instance count it gives the steps a model averaged before finishing or running out of budget.",
+  "s / step": "Wall clock per agent step, including the time the container spends executing the command. It is NOT decode time: much of a step is the repository's own tooling running, which is why this varies far less between models than their token rates do.",
+  "gen tok/s": "Generated tokens per second of rollout wall clock — throughput for the whole agent loop, not a decode-rate measurement. A model that thinks at length shows a high figure here without necessarily finishing sooner.",
+  "rollout min": "Total wall clock spent generating patches for this configuration, GPU-bound.",
+  "eval min": "Total wall clock spent running the repositories' own test suites to judge those patches. CPU-bound and independent of the model, so it is a property of the pinned instances rather than of the configuration.",
+};
 ```
 
 <div class="warning">
@@ -123,6 +150,10 @@ display(
     width: { model: 240 },
   }),
 );
+```
+
+```js
+display(metricHelp(SWE_HELP, ["resolved", "total", "rate", "95% lo", "95% hi", "no patch", "timeouts"], { title: "column meanings" }));
 ```
 
 **`no patch`** counts rollouts that ended without producing a diff at all; **`timeouts`** counts
@@ -190,10 +221,9 @@ display(
 );
 ```
 
-`agent steps` is the total model calls across all ${nInst} instances, so `s / step` is wall-clock
-per step including the time the container spends running the command. `gen tok/s` is generated
-tokens over rollout wall clock — a throughput figure for the whole loop, not a decode-rate
-measurement, since much of each step is not generation.
+```js
+display(metricHelp(SWE_HELP, ["ctx median", "ctx peak", "agent steps", "s / step", "gen tok/s", "rollout min", "eval min"], { title: "column meanings" }));
+```
 
 <div class="note">
 
