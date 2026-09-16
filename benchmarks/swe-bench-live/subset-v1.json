@@ -204,7 +204,8 @@
   "per_language": 3,
   "run_params": {
     "agent": "mini-swe-agent==2.4.6",
-    "ctx": 32768,
+    "agent_overlay": "benchmarks/swe-bench-live/agent-overlay.yaml (observation cap 4000 chars)",
+    "ctx": 65536,
     "rollout_timeout_s": 300,
     "step_limit": 80
   },

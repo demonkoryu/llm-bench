@@ -148,7 +148,10 @@ manifest = {
         # rollout. A model that runs out of time has spent its budget; a model stopped at step 30
         # with two minutes left has been cut short by a number nobody chose on purpose.
         "step_limit": 80,
-        "ctx": 32768,
+        # 65536, not the fleet's usual 32768. The agent's history is linear and even with the
+        # tightened observation cap a 40-step rollout lands near 50k tokens; at 32k every model
+        # exhausts context before it can finish, which measures the window rather than the model.
+        "ctx": 65536,
         "agent": "mini-swe-agent==2.4.6",
     },
     "instance_count": len(out),

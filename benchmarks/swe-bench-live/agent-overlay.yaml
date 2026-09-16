@@ -1,0 +1,44 @@
+# Overlay merged on top of mini-swe-agent's packaged swebench.yaml (configs merge recursively, so
+# the stock SWE-agent-style prompt — the one SWE-bench-Live's README names as protocol-compliant —
+# is untouched; only the observation truncation changes).
+#
+# WHY. The stock template inlines command output up to 10,000 characters and otherwise keeps
+# 5,000 head + 5,000 tail. That is ~2,500 tokens PER OBSERVATION, and the agent's history is linear,
+# so a 40-step rollout accumulates 75-100k tokens. Served at 32k this cannot fit for any model at
+# any speed, and the first real rollout duly died with ContextWindowExceededError after burning 242
+# of its 300 seconds. A benchmark where every model exhausts its context measures the context
+# window, not the model.
+#
+# 4,000 characters (~1,000 tokens) keeps a 40-step trajectory near 50k, which fits the 65,536 this
+# bench now pins. It is a general setting, not a task-specific hint, so it stays within the
+# benchmark's protocol — and it is committed here rather than passed as a CLI string so the exact
+# prompt every measurement used is auditable.
+model:
+  observation_template: |
+    {% if output.exception_info -%}
+    <exception>{{output.exception_info}}</exception>
+    {% endif -%}
+    <returncode>{{output.returncode}}</returncode>
+    {% if output.output | length < 4000 -%}
+    <output>
+    {{ output.output -}}
+    </output>
+    {%- else -%}
+    <warning>
+    The output of your last command was too long.
+    Please try a different command that produces less output.
+    If you're looking at a file you can try use head, tail or sed to view a smaller number of lines selectively.
+    If you're using grep or find and it produced too much output, you can use a more selective search pattern.
+    If you really need to see something from the full command's output, you can redirect output to a file and then search in that file.
+    </warning>
+    {%- set elided_chars = output.output | length - 4000 -%}
+    <output_head>
+    {{ output.output[:2000] }}
+    </output_head>
+    <elided_chars>
+    {{ elided_chars }} characters elided
+    </elided_chars>
+    <output_tail>
+    {{ output.output[-2000:] }}
+    </output_tail>
+    {%- endif -%}

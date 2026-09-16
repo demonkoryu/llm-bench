@@ -969,7 +969,13 @@ models:
      # quality_decay-32k) are absent purely because we launched it at 32768. Raising the cap is a
      # deliberate re-run, not a blocked one: it costs every depth-comparable number this model
      # already has, so it stays at 32768 until we choose to re-measure the whole row.
-     ctx_cap: 32768
+     # RAISED from 32768 to 65536 on 2026-09-16 for swe_live. ctx_cap CLAMPS, so leaving it would
+     # have run this config at half the context of the other six in the same comparison -- an
+     # unequal budget that would read as a model difference. The headroom is already established
+     # above/for this artifact class (131,072 served and needle-verified on one card), so this is
+     # half of what was measured, not a guess. Existing rows are unaffected: ctx_cap only bounds
+     # what a future run may request.
+     ctx_cap: 65536
      kv_variants: []
      extra_flags:
         batch-size: null                 # llama.cpp spellings from defaults.extra_flags — see note 2 above
@@ -1111,7 +1117,11 @@ models:
      no_schema: true
      tools: true
      native_max_ctx: 262144
-     ctx_cap: 32768                      # matches the base entry so the two are depth-aligned
+     # RAISED from 32768 to 65536 on 2026-09-16 for swe_live, in step with the base entry it is
+     # depth-aligned to. ctx_cap CLAMPS, so leaving it would have run this config at half the
+     # context of the other six in the same comparison -- an unequal budget that would read as a
+     # model difference. Existing rows are unaffected; ctx_cap only bounds a future request.
+     ctx_cap: 65536                      # matches the base entry so the two are depth-aligned
      kv_variants: []
      spec_decode: mtp
      extra_flags:

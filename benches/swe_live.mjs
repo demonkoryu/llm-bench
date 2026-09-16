@@ -141,10 +141,22 @@ async function rollout({ instance, modelId, inferenceUrl, params, outDir }) {
       `openai/${modelId}`,
       '-c',
       cfg,
+      // Merged on top of the packaged config: tightens observation truncation only. See
+      // benchmarks/swe-bench-live/agent-overlay.yaml for why the stock 10k-char observations make
+      // the trajectory unfittable at any served context.
+      '-c',
+      join(ROOT, 'benchmarks', 'swe-bench-live', 'agent-overlay.yaml'),
       '-c',
       `agent.step_limit=${params.step_limit}`,
       '-c',
       'agent.cost_limit=0',
+      // The agent enforces its own wall clock and then STOPS CLEANLY, writing its trajectory --
+      // which is how a timed-out rollout still yields whatever patch it had produced. Killing the
+      // process from outside at the same deadline (the original design) discards the trajectory
+      // entirely, so every slow model's work vanished and read as "no patch": the cap would have
+      // silently zeroed precisely the models it was meant to bound.
+      '-c',
+      `agent.wall_time_limit_seconds=${params.rollout_timeout_s}`,
       '-o',
       outDir,
       '-w',
@@ -168,7 +180,9 @@ async function rollout({ instance, modelId, inferenceUrl, params, outDir }) {
       await execP(PY, args, {
          cwd: HARNESS,
          env,
-         timeout: params.rollout_timeout_s * 1000,
+         // Backstop only, well past the agent's own limit: if the agent honours its wall clock we
+         // never reach this, and if it hangs somewhere outside its own loop we still bound the run.
+         timeout: (params.rollout_timeout_s + 120) * 1000,
          killSignal: 'SIGKILL',
          maxBuffer: 32 * 1024 * 1024,
       });
