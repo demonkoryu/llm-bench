@@ -253,6 +253,59 @@ async function rollout({ instance, model, modelId, inferenceUrl, params, outDir 
    return { patch, exitStatus, failed, seconds: Math.round((Date.now() - started) / 1000) };
 }
 
+
+/**
+ * Context and step cost, read back from the trajectories the agent just wrote.
+ *
+ * Recorded because they answer the two questions the resolve rate cannot: how much context an
+ * agentic rollout actually consumes on real repositories, and what a step costs on this hardware.
+ * The first decides whether a served context is adequate or merely generous — this run peaked at
+ * 103,818 tokens against a 131,072 window, so 64k would have truncated the longest trajectories
+ * rather than merely inconveniencing them. The second is the difference between a model that is
+ * slow and one that is incapable, which the rate alone conflates.
+ *
+ * Derived from the trajectory rather than from the server: the agent's own history IS the context,
+ * and no per-request telemetry reconstructs it as directly.
+ */
+export function trajectoryStats(outDir) {
+   const tok = (s) => Math.round(String(s ?? '').length / 4);
+   const per = [];
+   let calls = 0;
+   let generated = 0;
+   for (const inst of existsSync(outDir) ? readdirSync(outDir, { withFileTypes: true }) : []) {
+      if (!inst.isDirectory()) {
+         continue;
+      }
+      const f = join(outDir, inst.name, `${inst.name}.traj.json`);
+      if (!existsSync(f)) {
+         continue;
+      }
+      try {
+         const d = JSON.parse(readFileSync(f, 'utf8'));
+         const msgs = d.messages ?? [];
+         const ctx = msgs.reduce((a, m) => a + tok(m.content) + tok(m.reasoning_content), 0);
+         const gen = msgs
+            .filter((m) => m.role === 'assistant')
+            .reduce((a, m) => a + tok(m.content) + tok(m.reasoning_content), 0);
+         per.push(ctx);
+         generated += gen;
+         calls += d.info?.model_stats?.api_calls ?? 0;
+      } catch {
+         // one unreadable trajectory should not lose the rest
+      }
+   }
+   if (!per.length) {
+      return null;
+   }
+   const sorted = [...per].sort((a, b) => a - b);
+   return {
+      ctxMedian: sorted[Math.floor(sorted.length / 2)],
+      ctxMax: sorted[sorted.length - 1],
+      calls,
+      generated,
+   };
+}
+
 export const bench = {
    name: 'swe_live',
    kind: 'probe',
@@ -338,6 +391,7 @@ export const bench = {
 
       const n = instances.length;
       const k = instances.filter((i) => resolved.has(i.instance_id)).length;
+      const stats = trajectoryStats(outDir);
       // An ARRAY: bench-run treats a probe's return as a list of sub-bench rows (rawRows.flatMap).
       // Returning the bare object throws "rawRows.flatMap is not a function" after every rollout
       // has already been paid for.

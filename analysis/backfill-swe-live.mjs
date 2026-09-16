@@ -17,6 +17,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { trajectoryStats } from '../benches/swe_live.mjs';
 import { insertRows, query } from './pg-store.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -71,10 +72,17 @@ for (const cfgDir of readdirSync(runsDir)) {
       continue;
    }
    const was = stored.find((r) => r.metric === 'swe_resolved')?.metric_value ?? null;
-   if (was === k) {
+   const hasStats = stored.some((r) => r.metric === 'swe_ctx_max');
+   if (was === k && hasStats) {
       console.log(`OK   ${cfgDir}: stored ${k}/${n} already correct`);
       continue;
    }
+
+   // Context and step cost, read from the trajectories. Added after the first full sweep, so
+   // configurations measured before the bench emitted them get them here rather than by re-running
+   // 10 hours of rollouts to recover numbers the trajectories already contain.
+   const stats = trajectoryStats(join(runsDir, cfgDir));
+   const rollout = stored.find((r) => r.metric === 'swe_rollout_s')?.metric_value ?? null;
 
    const byLang = {};
    for (const i of instances) {
@@ -85,20 +93,32 @@ for (const cfgDir of readdirSync(runsDir)) {
       }
    }
    const corrected = {
+      ...(stats
+         ? {
+              swe_ctx_median: stats.ctxMedian,
+              swe_ctx_max: stats.ctxMax,
+              swe_calls: stats.calls,
+              swe_s_per_call: stats.calls && rollout ? rollout / stats.calls : null,
+              swe_gen_tok_s: rollout ? stats.generated / rollout : null,
+           }
+         : {}),
       swe_resolved: k,
       swe_total: n,
       swe_rate: n ? k / n : null,
       ...Object.fromEntries(Object.entries(byLang).map(([l, v]) => [`swe_lang_${l}`, v.n ? v.k / v.n : null])),
    };
 
-   console.log(`FIX  ${cfgDir}: stored ${was}/${n} → actual ${k}/${n}` + (APPLY ? '' : '   (dry run)'));
+   const what = was === k ? `${k}/${n} correct, adding context/speed metrics` : `stored ${was}/${n} → actual ${k}/${n}`;
+   console.log(`FIX  ${cfgDir}: ${what}` + (APPLY ? '' : '   (dry run)'));
    if (!APPLY) {
       continue;
    }
    const template = stored[0];
    const ts = new Date().toISOString();
+   // NOT filtered to metrics already present: the context/speed metrics are new, so requiring a
+   // pre-existing row would silently drop exactly the ones this pass exists to add.
    const rows = Object.entries(corrected)
-      .filter(([m]) => stored.some((r) => r.metric === m))
+      .filter(([, v]) => v != null)
       .map(([metric, value]) => {
          const base = stored.find((r) => r.metric === metric) ?? template;
          return { ...base, metric, metric_value: value, ts, run_id: `${base.run_id}-swefix` };

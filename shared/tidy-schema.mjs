@@ -170,6 +170,14 @@ const UNIT_EXACT = {
    swe_rollout_s: 's',
    swe_eval_s: 's',
    swe_timeouts: 'count',
+   // Context and step cost. swe_ctx_* is the agent's accumulated history, which IS the context the
+   // server must hold; swe_s_per_call is wall-clock per agent step, the number that decides whether
+   // a fixed time budget buys enough steps to finish.
+   swe_ctx_median: 'tokens',
+   swe_ctx_max: 'tokens',
+   swe_calls: 'count',
+   swe_s_per_call: 's',
+   swe_gen_tok_s: 'tok_s',
    swe_no_patch: 'count',
    docqa_correctness: 'points',
    docqa_coverage: 'points',

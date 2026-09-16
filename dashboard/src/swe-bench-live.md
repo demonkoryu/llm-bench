@@ -47,6 +47,11 @@ const board = [...byEntity.values()]
       timeouts: e.m.swe_timeouts ?? 0,
       rolloutMin: e.m.swe_rollout_s != null ? Math.round(e.m.swe_rollout_s / 60) : null,
       evalMin: e.m.swe_eval_s != null ? Math.round(e.m.swe_eval_s / 60) : null,
+      ctxMedian: e.m.swe_ctx_median ?? null,
+      ctxMax: e.m.swe_ctx_max ?? null,
+      calls: e.m.swe_calls ?? null,
+      sPerCall: e.m.swe_s_per_call ?? null,
+      genTokS: e.m.swe_gen_tok_s ?? null,
       langs: Object.fromEntries(LANGS.map((l) => [l, e.m[`swe_lang_${l}`] ?? null])),
     };
   })
@@ -124,6 +129,79 @@ display(
 those stopped at the pinned wall clock. Both score as unresolved — under a fixed budget, running out
 is the result — but they separate "tried and was wrong" from "never got as far as an edit", which
 the rate alone hides.
+
+## Context and speed
+
+How much context an agentic rollout actually consumes, and what a step costs. These answer the two
+questions the resolve rate cannot: whether the served window is adequate rather than merely
+generous, and whether a low score means slow or means incapable.
+
+```js
+const ctxLimit = subset.run_params.ctx;
+const haveCost = board.filter((d) => d.ctxMax != null);
+```
+
+```js
+const mgC = Math.min(300, Math.max(120, Math.round((board.length ? Math.max(...board.map((d) => d.model.length)) : 0) * 6.4) + 12));
+display(
+  haveCost.length === 0
+    ? html`<div class="muted">No context/speed data recorded yet.</div>`
+    : html`<div class="scroll-x">${Plot.plot({
+        marginLeft: mgC,
+        marginRight: 30,
+        width: Math.max(mgC + 320, width),
+        height: Math.max(150, haveCost.length * 32 + 56),
+        x: { label: "context used (tokens) \u2192", domain: [0, Math.max(ctxLimit, ...haveCost.map((d) => d.ctxMax)) * 1.02], grid: true },
+        y: { label: null, domain: [...haveCost].sort((a, b) => b.ctxMax - a.ctxMax).map((d) => d.model) },
+        marks: [
+          Plot.ruleX([0]),
+          // The served window, so "how close did we come" is readable without arithmetic.
+          Plot.ruleX([ctxLimit], { stroke: "currentColor", strokeOpacity: 0.55, strokeDasharray: "4 3" }),
+          Plot.text([{ x: ctxLimit }], { x: "x", frameAnchor: "top", dy: -6, dx: -4, textAnchor: "end", text: () => `served ${(ctxLimit / 1024).toFixed(0)}k`, fill: "currentColor", fillOpacity: 0.7, fontSize: 11 }),
+          Plot.ruleY(haveCost, { y: "model", x1: "ctxMedian", x2: "ctxMax", stroke: "currentColor", strokeOpacity: 0.3, strokeWidth: 7 }),
+          Plot.dot(haveCost, { y: "model", x: "ctxMedian", r: 4, fill: "currentColor", title: (d) => `median ${d.ctxMedian.toLocaleString()} tokens` }),
+          Plot.dot(haveCost, { y: "model", x: "ctxMax", r: 4.5, fill: "currentColor", fillOpacity: 0.55, symbol: "diamond", title: (d) => `peak ${d.ctxMax.toLocaleString()} tokens` }),
+        ],
+      })}</div>`,
+);
+```
+
+Filled circle is the median rollout, hollow diamond the peak; the dashed line is the served window.
+
+```js
+display(
+  Inputs.table(
+    [...board].sort((a, b) => (b.ctxMax ?? 0) - (a.ctxMax ?? 0)),
+    {
+      columns: ["model", "ctxMedian", "ctxMax", "calls", "sPerCall", "genTokS", "rolloutMin", "evalMin"],
+      header: {
+        model: "config", ctxMedian: "ctx median", ctxMax: "ctx peak", calls: "agent steps",
+        sPerCall: "s / step", genTokS: "gen tok/s", rolloutMin: "rollout min", evalMin: "eval min",
+      },
+      format: {
+        ctxMedian: (v) => (v == null ? "—" : v.toLocaleString()),
+        ctxMax: (v) => (v == null ? "—" : v.toLocaleString()),
+        sPerCall: (v) => (v == null ? "—" : v.toFixed(1)),
+        genTokS: (v) => (v == null ? "—" : v.toFixed(1)),
+      },
+      width: { model: 240 },
+    },
+  ),
+);
+```
+
+`agent steps` is the total model calls across all ${nInst} instances, so `s / step` is wall-clock
+per step including the time the container spends running the command. `gen tok/s` is generated
+tokens over rollout wall clock — a throughput figure for the whole loop, not a decode-rate
+measurement, since much of each step is not generation.
+
+<div class="note">
+
+Peak context is the reason the served window is pinned where it is. The longest rollout here reached
+a substantial fraction of it, so a smaller window would truncate the long trajectories — which are
+the ones with a chance of finishing — rather than merely inconveniencing them.
+
+</div>
 
 ## Per language
 
