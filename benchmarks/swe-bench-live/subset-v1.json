@@ -1,11 +1,9 @@
 {
-  "content_sha256": "87169b98c09e4a3b65320d6220e17b2b2d0b67f8174e56a0ab49508a33dfa66d",
   "dataset": "SWE-bench-Live/MultiLang",
   "dataset_revision": "22091f6ce331c5c60c241d76512d4be7ee1a555b",
-  "excluded_instances": {
-    "NVIDIA__OpenShell-695": "gold-invalid: fails with the reference patch on this machine"
-  },
+  "excluded_instances": {},
   "excluded_repos": {
+    "NVIDIA/OpenShell": "gold-invalid twice (OpenShell-695 and -810 both fail with the reference patch here)",
     "ghostfolio/ghostfolio": "evaluation cost: >20 min for one instance (2026-09-16 gold pass); the cost is the build, not the issue",
     "gwtproject/gwt": "evaluation cost: >20 min for one instance (2026-09-16 gold pass); the cost is the build, not the issue"
   },
@@ -17,6 +15,40 @@
       200,
       8000
     ]
+  },
+  "gold_validated": {
+    "eval_seconds": {
+      "NVlabs__cuda-oxide-381": 111,
+      "antvis__G2-7076": 444,
+      "bpg__terraform-provider-proxmox-2122": 36,
+      "btraceio__btrace-897": 192,
+      "excalidraw__excalidraw-9760": 164,
+      "gitlab4j__gitlab4j-api-1266": 40,
+      "h4ckf0r0day__obscura-414": 65,
+      "iflytek__skillhub-253": 110,
+      "kubernetes__kops-17519": 252,
+      "kumahq__kuma-15918": 443,
+      "nearai__ironclaw-6712": 70,
+      "withastro__starlight-3293": 71
+    },
+    "eval_seconds_total": 1998,
+    "harness_commit": "9a27349",
+    "host": "rose (62 GB RAM, 32 CPU)",
+    "resolvable": [
+      "bpg__terraform-provider-proxmox-2122",
+      "kubernetes__kops-17519",
+      "kumahq__kuma-15918",
+      "btraceio__btrace-897",
+      "gitlab4j__gitlab4j-api-1266",
+      "iflytek__skillhub-253",
+      "NVlabs__cuda-oxide-381",
+      "h4ckf0r0day__obscura-414",
+      "nearai__ironclaw-6712",
+      "antvis__G2-7076",
+      "excalidraw__excalidraw-9760",
+      "withastro__starlight-3293"
+    ],
+    "validated_at": "2026-09-16"
   },
   "instance_count": 12,
   "instances": [
@@ -81,14 +113,14 @@
       "repo": "iflytek/skillhub"
     },
     {
-      "base_commit": "3dd6d51c26a338bee3a7f7017ad4121d0adef529",
-      "docker_image": "starryzhang/sweb.eval.x86_64.nvidia_1776_openshell-810",
+      "base_commit": "2b1269964beaeab789a1512d0089fe42d9336e14",
+      "docker_image": "starryzhang/sweb.eval.x86_64.nvlabs_1776_cuda-oxide-381",
       "fail_to_pass": 1,
-      "instance_id": "NVIDIA__OpenShell-810",
+      "instance_id": "NVlabs__cuda-oxide-381",
       "language": "rust",
-      "pass_to_pass": 1188,
-      "problem_statement_chars": 6408,
-      "repo": "NVIDIA/OpenShell"
+      "pass_to_pass": 1595,
+      "problem_statement_chars": 1974,
+      "repo": "NVlabs/cuda-oxide"
     },
     {
       "base_commit": "99ece0e12dd2cace768b5caa76fcbe1b5233f0f6",
@@ -148,19 +180,19 @@
       "new": 0
     },
     "java": {
-      "carried": 2,
+      "carried": 3,
       "eligible": 39,
-      "new": 1
+      "new": 0
     },
     "rust": {
       "carried": 2,
-      "eligible": 47,
+      "eligible": 46,
       "new": 1
     },
     "ts": {
-      "carried": 2,
+      "carried": 3,
       "eligible": 48,
-      "new": 1
+      "new": 0
     }
   },
   "languages": [

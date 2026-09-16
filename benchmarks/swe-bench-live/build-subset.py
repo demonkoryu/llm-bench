@@ -54,12 +54,18 @@ MAX_P2P = 2000    # bounds how long one evaluation takes
 EXCLUDE_REPOS = {
     "gwtproject/gwt": "evaluation cost: >20 min for one instance (2026-09-16 gold pass); the cost is the build, not the issue",
     "ghostfolio/ghostfolio": "evaluation cost: >20 min for one instance (2026-09-16 gold pass); the cost is the build, not the issue",
+    # Promoted from an instance exclusion after a SECOND instance from this repo also failed gold.
+    # One gold failure is an instance; two out of two is the repository's environment on this
+    # machine, and drawing a third from it would just spend another pull and another validation to
+    # learn the same thing.
+    "NVIDIA/OpenShell": "gold-invalid twice (OpenShell-695 and -810 both fail with the reference patch here)",
 }
 # Gold-invalid is instance-specific: the reference patch fails HERE, so no model can resolve it and
 # every model would spend a full rollout earning a guaranteed zero. Another instance from the same
 # repo may be perfectly fine, so this does not generalise to the repository.
 EXCLUDE_INSTANCES = {
-    "NVIDIA__OpenShell-695": "gold-invalid: fails with the reference patch on this machine",
+    # (NVIDIA__OpenShell-695 moved to EXCLUDE_REPOS once a second instance from the same repo
+    # failed the same way -- kept here as a comment so the history of the decision is readable.)
 }
 
 rev = dataset_info(DATASET).sha
