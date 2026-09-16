@@ -878,7 +878,10 @@ models:
      # MTP draft cache on one 32 GiB V100. The base was observed to load at 65536 on a single card
      # (rows dated 2026-08-27/28 carry vram_total 32768), so this inherits the figure rather than
      # re-deriving it; fit_ctx/agent_ctx will correct it if Swift's footprint differs.
-     ctx_cap: 65536
+     # 131072 VERIFIED to load and serve on one V100 (ctx probe, 2026-09-16). SWE-bench-Live
+     # pins 128k because an agent on a real repository accumulates file contents linearly, and
+     # anything smaller measures the context window rather than the model.
+     ctx_cap: 131072
      spec_decode: draft-mtp
      # spec-draft-type-k/v pinned to the target KV quant. Left unset the MTP draft cache allocates
      # at f16 — measured on the base 2026-08-25 at ~75 KiB/tok against a ~10-15 KiB/tok target.
@@ -975,7 +978,10 @@ models:
      # above/for this artifact class (131,072 served and needle-verified on one card), so this is
      # half of what was measured, not a guess. Existing rows are unaffected: ctx_cap only bounds
      # what a future run may request.
-     ctx_cap: 65536
+     # 131072 VERIFIED to load and serve on one V100 (ctx probe, 2026-09-16). SWE-bench-Live
+     # pins 128k because an agent on a real repository accumulates file contents linearly, and
+     # anything smaller measures the context window rather than the model.
+     ctx_cap: 131072
      kv_variants: []
      extra_flags:
         batch-size: null                 # llama.cpp spellings from defaults.extra_flags — see note 2 above
@@ -1121,7 +1127,10 @@ models:
      # depth-aligned to. ctx_cap CLAMPS, so leaving it would have run this config at half the
      # context of the other six in the same comparison -- an unequal budget that would read as a
      # model difference. Existing rows are unaffected; ctx_cap only bounds a future request.
-     ctx_cap: 65536                      # matches the base entry so the two are depth-aligned
+     # 131072 VERIFIED to load and serve on one V100 (ctx probe, 2026-09-16). SWE-bench-Live
+     # pins 128k because an agent on a real repository accumulates file contents linearly, and
+     # anything smaller measures the context window rather than the model.
+     ctx_cap: 131072
      kv_variants: []
      spec_decode: mtp
      extra_flags:
@@ -1222,7 +1231,10 @@ models:
      # smaller fleet of deep agents fit" is a separate question from "how many working agents fit".
      # 128k exceeds this ceiling, so that row's coherence fill is what says whether the resident
      # tokens are usable as well as allocated.
-     ctx_cap: 65536
+     # 131072 VERIFIED to load and serve on one V100 (ctx probe, 2026-09-16). SWE-bench-Live
+     # pins 128k because an agent on a real repository accumulates file contents linearly, and
+     # anything smaller measures the context window rather than the model.
+     ctx_cap: 131072
      kv_variants: []
      extra_flags:
         batch-size: null
@@ -1292,7 +1304,10 @@ models:
      # VRAM-aware cap: 102400 is the largest window observed to load on rose (2026-08-26,
      # q8_0 KV at the measured 39 KiB/tok = ~4.0 GiB KV). Without it, maxctx falls through
      # to the run's --ctx flag and every depth probe collapses to depth 0.
-     ctx_cap: 102400
+     # 131072 VERIFIED to load and serve on one V100 (ctx probe, 2026-09-16). SWE-bench-Live
+     # pins 128k because an agent on a real repository accumulates file contents linearly, and
+     # anything smaller measures the context window rather than the model.
+     ctx_cap: 131072
      # MEASURED, not estimated: vram_per_ctx_tok on rose returned 39 KiB/token (2026-08-26, q8_0 KV,
      # 2-GPU). Re-measured single-GPU 2026-08-27.
      # The original estimate here was 7.1 KiB, assuming only the 13 GLOBAL layers grow with context
@@ -1427,7 +1442,10 @@ models:
      extra_flags:
         cache-type-k: q8_0
         cache-type-v: q4_0
-     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, swe_live, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
+     # NOT in swe_live: this config cannot serve the 128k context that bench pins -- llama-server
+     # dies ~20s into the load at 131072 on one V100 (ctx probe, 2026-09-16). Every other bench
+     # is unaffected; it is excluded from SWE-bench-Live only.
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
      # MEASURED 2026-09-06, and the reason this entry's usable window is far below its fitted one:
      # needle retrieval is UNRELIABLE past ~16k. quality_decay scored 100/100/0 at 0k/16k/32k while
      # the dense 32B entry below scored 100/100/100 on the same probe, same quant, same KV.
@@ -1482,7 +1500,10 @@ models:
      extra_flags:
         cache-type-k: q8_0
         cache-type-v: q4_0
-     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, swe_live, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
+     # NOT in swe_live: this config cannot serve the 128k context that bench pins -- llama-server
+     # dies ~20s into the load at 131072 on one V100 (ctx probe, 2026-09-16). Every other bench
+     # is unaffected; it is excluded from SWE-bench-Live only.
+     benches: [triage, reasoning, reasoning_hard, reasoning_expert, toolcalling, summarization, docqa, coding_hard, coding_practical, coding_bugfix, struct_output, instruction_following, agentic_loop, speed, throughput, vram_per_ctx_tok, agent_ctx, fit_ctx, prefix_cache, quality_decay, parallel_gen]
      # SPECULATIVE DECODING: EVALUATED 2026-09-06 AND REJECTED — do not re-add without new evidence.
      # There is no self-draft path to begin with: neither K2 model has an MTP/EAGLE head (no nextn
      # or mtp config keys, zero draft tensors in the safetensors index, layer indices exactly
@@ -1544,7 +1565,10 @@ models:
      native_max_ctx: 262144
      # Same cap as the other 30-36B entries pending a capacity probe; fit_ctx/agent_ctx will
      # correct it once measured.
-     ctx_cap: 65536
+     # 131072 VERIFIED to load and serve on one V100 (ctx probe, 2026-09-16). SWE-bench-Live
+     # pins 128k because an agent on a real repository accumulates file contents linearly, and
+     # anything smaller measures the context window rather than the model.
+     ctx_cap: 131072
      spec_decode: draft-mtp
      extra_flags:
         spec-type: draft-mtp

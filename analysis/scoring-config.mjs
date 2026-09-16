@@ -41,27 +41,13 @@ export const GROUPS = {
    speed: { kind: 'additive', members: ['e2e_throughput', 'ttft', 'decode_retention'] },
 };
 
-// Coding grade blend. The synthetic coding benches score 0.4·pass@1 + 0.6·test-rate; swe_live
-// scores its resolve rate over the gold-validated instances (see codingGrade in score.mjs).
+// Coding grade blend across the synthetic coding benches (each = 0.4·pass@1 + 0.6·test-rate).
 //
-// swe_live carries 0.66 by request: resolving a real issue in a real repository is the thing the
-// synthetic benches are a proxy for. The other three are rescaled by 0.425 (0.34/0.80) so they keep
-// their relative proportions to each other while summing to the remaining 0.34.
-//
-// The blend normalizes by the weights of benches that actually HAVE rows, so a model without
-// swe_live rows is still graded on the other three rather than collapsing to zero — it just is not
-// comparable to one that has them.
-//
-// READ THE INTERVAL, NOT JUST THE RANK. swe_live is 12 pinned instances minus whatever the gold
-// pass invalidates, so n is around 11 and one instance moves the rate by ~9pp. At 0.66 of the
-// coding group that is enough to reorder the leaderboard on noise, which is why the dashboard
-// publishes a Wilson interval beside every rate (wilson() in score.mjs) instead of the bare number.
-export const CODING_WEIGHTS = {
-   swe_live: 0.66,
-   coding_hard: 0.14875,
-   coding_practical: 0.10625,
-   coding_bugfix: 0.085,
-};
+// swe_live is deliberately NOT here. It is measured and published on its own dashboard page, but it
+// does not enter the composite yet (user, 2026-09-16): it is a new bench on a 12-instance subset,
+// and folding a metric that small into the ranking before its behaviour is understood would move
+// the leaderboard on noise. Re-adding it is a one-line change plus a rescale of the three below.
+export const CODING_WEIGHTS = { coding_hard: 0.35, coding_practical: 0.25, coding_bugfix: 0.2 };
 
 // Default dial values (the documented baseline; dashboard overrides live).
 export const DEFAULT_DIALS = {

@@ -53,7 +53,10 @@ const board = [...byEntity.values()]
 any the gold pass invalidated), so one instance moves a rate by roughly
 ${(100 / Math.max(1, subset.instance_count)).toFixed(0)} points. The bars below are 95% Wilson
 intervals; where two overlap, the ordering between those two models is not evidence of anything.
-This bench carries **66%** of the coding group, so that uncertainty propagates to the leaderboard.
+
+These results are **reported here only** — they do not feed the leaderboard, the Pareto view or any
+composite score. That is deliberate while the bench is new and the subset is small: a 12-instance
+proportion is not yet something to rank models by.
 
 </div>
 
@@ -96,6 +99,10 @@ Inputs.table(board, {
 `no patch` counts rollouts that ended without producing a diff at all. Both are scored as
 unresolved — under a fixed budget, running out of time *is* the result — but they separate "tried
 and was wrong" from "never got as far as an edit", which the rate alone hides.
+
+Only configurations that can serve the pinned ${(subset.run_params.ctx/1024).toFixed(0)}k context
+appear here. Both K2-Horizon rows are absent for that reason: `llama-server` dies during the load at
+that width on a single V100. They remain in every other bench.
 
 ## Per language
 

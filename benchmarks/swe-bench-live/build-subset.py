@@ -135,23 +135,21 @@ manifest = {
     # Pinned RUN parameters: these bound the measurement as much as the instance list does, so a
     # later run with a different cap is not comparable and must not silently look like one.
     "run_params": {
-        # 12 x 5min = 60min of rollout, leaving the rest of the ~120min/model budget for Docker
-        # evaluation, which is NOT free: every patch has to be tested, and host RAM (16 GB per
-        # instance against 47 GB available, minus what the model server pins) allows only ONE eval
-        # worker per lane. Sizing the rollout cap without that half is how the first plan reached
-        # ~14h against an 8h budget.
-        "rollout_timeout_s": 300,
+        # 15 minutes per instance (user, 2026-09-16): the fleet's strongest models are also its
+        # slowest, and a cap tight enough to exclude them measures decode speed rather than coding.
+        # 12 x 15min = 180min of rollout plus ~32min of evaluation puts a model near 212min, so six
+        # configs across two cards is ~10.6h -- above the original 8h envelope, accepted so that a
+        # capable-but-slow model is not scored as incapable.
+        "rollout_timeout_s": 900,
         # Deliberately ABOVE what the wall clock allows, so TIME is the binding constraint and the
-        # step count never is. The budget you are given is 5 minutes; at the ~7-9s/step measured on
-        # this fleet that is roughly 35-40 steps, so a limit of 30 was quietly throttling models
-        # below their own budget -- qwen3.8-27b exhausted it without submitting on the first real
-        # rollout. A model that runs out of time has spent its budget; a model stopped at step 30
-        # with two minutes left has been cut short by a number nobody chose on purpose.
-        "step_limit": 80,
+        # step count never is. At the ~7-9s/step this fleet achieves, 900s is roughly 100-128 steps,
+        # so 80 would have started binding again the moment the time limit was raised. 250 is
+        # mini-swe-agent's own default and is out of reach within the budget for every model here.
+        "step_limit": 250,
         # 65536, not the fleet's usual 32768. The agent's history is linear and even with the
         # tightened observation cap a 40-step rollout lands near 50k tokens; at 32k every model
         # exhausts context before it can finish, which measures the window rather than the model.
-        "ctx": 65536,
+        "ctx": 131072,
         "agent": "mini-swe-agent==2.4.6",
     },
     "instance_count": len(out),
