@@ -20,3 +20,7 @@ logs/
 
 # ephemeral top-level run summary stubs (empty results[]; raw data lives in results/runs/*/run.json)
 /results/run-*.json
+
+# python bytecode
+__pycache__/
+*.pyc
