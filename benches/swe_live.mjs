@@ -24,11 +24,11 @@
 // would not be conservative, it would be wrong — and at the 66% weight this bench carries in the
 // coding group, a wrong denominator moves the whole leaderboard.
 import { execFile } from 'node:child_process';
-import { capabilityClass, thinkStates } from '../shared/llm/index.mjs';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
+import { capabilityClass, thinkStates } from '../shared/llm/index.mjs';
 
 const execP = promisify(execFile);
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -104,10 +104,7 @@ async function agentConfig() {
    // braces: a future banner that ignores the flag still leaves the path as the final line.
    const { stdout } = await execP(
       PY,
-      [
-         '-c',
-         "import minisweagent,pathlib;print(pathlib.Path(minisweagent.__file__).parent/'config'/'benchmarks'/'swebench.yaml')",
-      ],
+      ['-c', "import minisweagent,pathlib;print(pathlib.Path(minisweagent.__file__).parent/'config'/'benchmarks'/'swebench.yaml')"],
       { env: { ...process.env, MSWEA_SILENT_STARTUP: '1' } },
    );
    cachedCfg = stdout.trim().split('\n').pop().trim();
@@ -344,46 +341,89 @@ export const bench = {
       // An ARRAY: bench-run treats a probe's return as a list of sub-bench rows (rawRows.flatMap).
       // Returning the bare object throws "rawRows.flatMap is not a function" after every rollout
       // has already been paid for.
-      return [{
-         bench: 'swe_live',
-         swe_resolved: k,
-         swe_total: n,
-         // Rate as a fraction. The dashboard pairs it with a Wilson interval computed from
-         // (k, n) — at n=12 the interval is wide, and this bench carries 66% of the coding
-         // group, so the uncertainty has to travel with the number rather than be recoverable
-         // only by someone who remembers n.
-         swe_rate: n ? k / n : null,
-         swe_rollout_s: rolloutSeconds,
-         swe_eval_s: evalSeconds,
-         swe_timeouts: outcomes.Timeout ?? 0,
-         swe_no_patch: Object.entries(predictions).filter(([, p]) => !p.model_patch).length,
-         ...Object.fromEntries(Object.entries(byLang).map(([l, v]) => [`swe_lang_${l}`, v.n ? v.resolved / v.n : null])),
-         status: 'ok',
-      }];
+      return [
+         {
+            bench: 'swe_live',
+            swe_resolved: k,
+            swe_total: n,
+            // Rate as a fraction. The dashboard pairs it with a Wilson interval computed from
+            // (k, n) — at n=12 the interval is wide, and this bench carries 66% of the coding
+            // group, so the uncertainty has to travel with the number rather than be recoverable
+            // only by someone who remembers n.
+            swe_rate: n ? k / n : null,
+            swe_rollout_s: rolloutSeconds,
+            swe_eval_s: evalSeconds,
+            swe_timeouts: outcomes.Timeout ?? 0,
+            swe_no_patch: Object.entries(predictions).filter(([, p]) => !p.model_patch).length,
+            ...Object.fromEntries(Object.entries(byLang).map(([l, v]) => [`swe_lang_${l}`, v.n ? v.resolved / v.n : null])),
+            status: 'ok',
+         },
+      ];
    },
 };
 
-/** Instance ids the harness judged resolved. */
+/**
+ * Instance ids the harness judged resolved.
+ *
+ * The SWE-bench-Live harness writes results.json with `success_ids` (plus failure_ids, error_ids
+ * and empty_patch_ids). An earlier version of this function guessed at `resolved`/`resolved_ids`,
+ * found neither, and returned an EMPTY SET — which is not an error, it is a plausible-looking 0/12
+ * for a configuration that had actually resolved 8. A parser that cannot find its field must say so
+ * rather than report zero, so this cross-checks two independent sources and refuses to guess.
+ */
 function readResolved(evalDir) {
-   const out = new Set();
-   for (const name of ['results.json', 'report.json']) {
-      const p = join(evalDir, name);
-      if (!existsSync(p)) {
-         continue;
-      }
+   const fromResults = new Set();
+   const resultsFile = join(evalDir, 'results.json');
+   let sawResultsFile = false;
+   if (existsSync(resultsFile)) {
       try {
-         const j = JSON.parse(readFileSync(p, 'utf8'));
-         for (const id of j.resolved ?? j.resolved_ids ?? []) {
-            out.add(id);
-         }
-         for (const [id, v] of Object.entries(j)) {
-            if (v && typeof v === 'object' && v.resolved === true) {
-               out.add(id);
+         const j = JSON.parse(readFileSync(resultsFile, 'utf8'));
+         const ids = j.success_ids ?? j.resolved_ids ?? j.resolved;
+         if (Array.isArray(ids)) {
+            sawResultsFile = true;
+            for (const id of ids) {
+               fromResults.add(id);
             }
          }
       } catch {
-         // fall through to the next candidate file
+         // fall through to the per-instance reports
       }
    }
-   return out;
+
+   // Independent source: each instance directory carries its own report.json with `resolved`.
+   const fromReports = new Set();
+   let sawReports = false;
+   for (const entry of readdirSync(evalDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) {
+         continue;
+      }
+      const rf = join(evalDir, entry.name, 'report.json');
+      if (!existsSync(rf)) {
+         continue;
+      }
+      try {
+         const r = JSON.parse(readFileSync(rf, 'utf8'));
+         sawReports = true;
+         if (r.resolved === true) {
+            fromReports.add(r.instance_id ?? entry.name);
+         }
+      } catch {
+         // ignore one unreadable report rather than lose the rest
+      }
+   }
+
+   if (!sawResultsFile && !sawReports) {
+      throw new Error(
+         `swe_live: could not read any verdict from ${evalDir} — neither results.json nor any ` +
+            'per-instance report.json was parseable. Refusing to report 0 resolved for an ' +
+            'evaluation that may well have succeeded.',
+      );
+   }
+   if (sawResultsFile && sawReports && fromResults.size !== fromReports.size) {
+      console.error(
+         `  [swe_live] WARNING: results.json says ${fromResults.size} resolved, per-instance ` +
+            `reports say ${fromReports.size}. Using the union and flagging the disagreement.`,
+      );
+   }
+   return new Set([...fromResults, ...fromReports]);
 }
