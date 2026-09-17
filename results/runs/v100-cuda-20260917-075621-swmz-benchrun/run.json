@@ -1,0 +1,19 @@
+{
+  "run_id": "v100-cuda-20260917-075621-swmz-benchrun",
+  "kind": "benchrun",
+  "host": "rose-gpu1",
+  "gpu": "V100",
+  "backend": "cuda",
+  "llamacpp_build": "0.2.0-dev (f280b2698)",
+  "engine_version": "0.2.0-dev (f280b2698)",
+  "chat_template": "builtin",
+  "resume": false,
+  "benches": [
+    "swe_live"
+  ],
+  "samples": 1,
+  "ctx": 131072,
+  "tidy_rows": 18,
+  "started": "2026-09-17T08:27:13.800Z",
+  "status": "complete"
+}
