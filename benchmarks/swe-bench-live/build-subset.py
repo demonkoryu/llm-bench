@@ -6,16 +6,21 @@ so the selection is fully deterministic (fixed seed, sorted inputs) and the resu
 re-running this must reproduce subset-v{VERSION}.json byte-for-byte, and if the upstream dataset
 changes it will not, which is exactly the signal we want.
 
-VERSIONS. v1 was 3 instances per language (n=12). v2 is 4 (n=16), requested 2026-09-17 to tighten
-the interval: at n=12 one instance is worth 8.3 points, at n=16 it is 6.25, and the 95% Wilson
-interval narrows by about an eighth. It is a real improvement and a modest one -- the honest way to
-buy a much tighter interval is another doubling, not another instance. The earlier version's file
-stays checked in: it is what the pre-2026-09-17 numbers were measured against, and deleting it would
-leave those results describing a set nobody can reconstruct.
+VERSIONS. v1 was 3 instances per language (n=12), v2 was 4 (n=16), v3 is 5 (n=20) -- all three on
+2026-09-17, each a request to tighten the interval. One instance was worth 8.3 points, then 6.25,
+now 5.0, and the 95% Wilson half-width has gone 25 -> 22 -> 20 points. Each step is real and each is
+small, because interval width falls with the square root of n: halving it costs four times the
+instances, and the eligible pool (java is the binding language at 24 distinct repos) caps an
+equal-per-language pin at n=96.
 
-A version bump is NOT a re-run. The carry-forward below keeps every v1 instance in v2, so a v1
-result stays valid for the 12 instances it covers and only the 4 new ones have to be rolled out --
-which is what makes extending the pin affordable rather than a full re-sweep of every model.
+Every earlier version's file stays checked in. Each is what some published result was measured
+against, and deleting one would leave those numbers describing a set nobody can reconstruct.
+
+A version bump is NOT a re-run. The carry-forward below keeps every previous instance, so an older
+result stays valid for the instances it covers and only the new ones have to be rolled out -- which
+is what makes extending the pin affordable rather than a full re-sweep of every model. Measured on
+the v2 bump: four new instances across six configurations took 98 minutes, against the ~6 hours a
+full re-sweep of sixteen would have cost.
 
 Selection rules, in order:
   * four languages (go, java, ts, rust), PER_LANG instances each
@@ -40,8 +45,8 @@ from huggingface_hub import dataset_info
 
 DATASET = "SWE-bench-Live/MultiLang"
 LANGS = ["go", "java", "ts", "rust"]
-VERSION = 2
-PER_LANG = 4
+VERSION = 3
+PER_LANG = 5
 SEED = 20260916
 
 # The pin to carry forward (see the selection loop). Prefer this version's own file so that
@@ -81,6 +86,11 @@ EXCLUDE_REPOS = {
     # machine, and drawing a third from it would just spend another pull and another validation to
     # learn the same thing.
     "NVIDIA/OpenShell": "gold-invalid twice (OpenShell-695 and -810 both fail with the reference patch here)",
+    # Drawn for v3 and disqualified by its own gold pass at 1611s -- 27 minutes for ONE instance,
+    # against a median of 79s across the rest of the pin, and 72% of what evaluating all sixteen
+    # existing instances costs put together. PASS_TO_PASS is 4, so almost none of that is tests:
+    # it is cargo building the project, which is a property of the repository and will not improve.
+    "ProvableHQ/leo": "evaluation cost: 1611s for one instance (2026-09-17 gold pass); the cost is the Rust build, not the issue",
 }
 # Gold-invalid is instance-specific: the reference patch fails HERE, so no model can resolve it and
 # every model would spend a full rollout earning a guaranteed zero. Another instance from the same

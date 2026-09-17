@@ -31,10 +31,26 @@ const APPLY = process.argv.includes('--apply');
 const manifest = loadManifest();
 const instances = scoredInstances(manifest);
 
-// Evaluation wall clock as it stood under the PREVIOUS pin, captured before the sweep that filled
-// in the new instances. Absent on a machine that never ran an older pin, which is the normal case.
-const SNAPSHOT_FILE = join(WORK, 'eval-seconds-v1.json');
-const EVAL_SNAPSHOT = existsSync(SNAPSHOT_FILE) ? JSON.parse(readFileSync(SNAPSHOT_FILE, 'utf8')) : { eval_seconds: {} };
+/**
+ * The ledger's accumulated evaluation cost, one entry per pin version.
+ *
+ * Migrates the flat `{total, parts}` record the first (one-shot) version of this merge wrote. Its
+ * two parts were, by construction, the v1 pass and the v2 pass — that record only ever existed for
+ * the 2026-09-17 v1-to-v2 bump — so they are read back under those version keys rather than
+ * guessed at. A ledger with neither shape starts empty, which is correct for a configuration whose
+ * first measurement is against the current pin.
+ */
+function evalLedger(ledger) {
+   if (ledger.eval_seconds?.passes) {
+      return ledger.eval_seconds;
+   }
+   const legacy = ledger.eval_seconds_merged;
+   if (legacy?.parts) {
+      const [prior, current] = Object.values(legacy.parts);
+      return { passes: { 1: prior, 2: current }, published_total: legacy.total, at: legacy.at };
+   }
+   return { passes: {}, published_total: null };
+}
 
 /** Same two-source read as the fixed bench: results.json success_ids, cross-checked per instance. */
 function resolvedFrom(evalDir) {
@@ -101,29 +117,34 @@ for (const cfgDir of readdirSync(runsDir)) {
 
    const outDir = join(runsDir, cfgDir);
    // eval_seconds is NOT recomputed from disk: it is a wall clock only the process that ran the
-   // evaluation observed, and nothing on disk reconstructs it.
+   // evaluation observed, and nothing on disk reconstructs it. It is instead ACCUMULATED, one entry
+   // per pin version, in the rollout ledger.
    //
-   // It does, however, need MERGING once, and only once. Evaluation is incremental like the
-   // rollouts: a pin bump evaluates just the patches for the instances it added, so the bench
-   // stores the cost of judging four patches over what was the cost of judging twelve. Published
-   // unmerged, "eval min" would report a configuration's 16-instance evaluation as cheaper than its
-   // 12-instance one. The pre-bump figures were snapshotted before the sweep (nothing on disk
-   // holds them afterwards), and the merge is recorded in the ledger so a second backfill pass does
-   // not add them again.
+   // Why accumulate. Evaluation is incremental for the same reason the rollouts are: a pin bump
+   // judges only the patches for the instances it added. So after a bump the bench stores the cost
+   // of evaluating four patches where the row had held the cost of evaluating twelve, and "eval
+   // min" would report a configuration's larger evaluation as a fraction of its smaller one.
+   //
+   // Keyed by PIN VERSION rather than merged once. The first version of this merged a single
+   // snapshot exactly once and recorded a boolean, which was right for one bump and silently wrong
+   // for the second: the flag was already set, so the v3 pass would have replaced the accumulated
+   // total with its own four-instance figure. A per-version map is idempotent (re-running writes
+   // the same key) and survives any number of bumps.
    const ledger = loadLedger(outDir, manifest.run_params);
    const storedEvalS = stored.find((r) => r.metric === 'swe_eval_s')?.metric_value ?? null;
+   const ev = evalLedger(ledger);
    let evalSeconds = null;
-   const priorEvalS = EVAL_SNAPSHOT.eval_seconds?.[cfgDir];
-   // storedEvalS === priorEvalS means no new evaluation pass has been recorded yet — the row still
-   // holds the previous pin's figure — so there is nothing to merge and adding the snapshot would
-   // simply double it. This is what a backfill run BEFORE the sweep looks like.
-   if (priorEvalS != null && storedEvalS != null && storedEvalS !== priorEvalS && !ledger.eval_seconds_merged) {
-      evalSeconds = priorEvalS + storedEvalS;
-      ledger.eval_seconds_merged = {
-         total: evalSeconds,
-         parts: { [EVAL_SNAPSHOT.pin]: priorEvalS, 'this pin': storedEvalS },
-         at: new Date().toISOString(),
-      };
+   const pin = String(manifest.version);
+   // Skipped when this pin's pass is already recorded (idempotent re-run), and when the stored row
+   // already holds the accumulated total — which is what a backfill run BEFORE a sweep looks like,
+   // and adding the row to itself is the one way to get this badly wrong.
+   if (storedEvalS != null && ev.passes[pin] == null && storedEvalS !== ev.published_total) {
+      ev.passes[pin] = storedEvalS;
+      ev.published_total = Object.values(ev.passes).reduce((a, b) => a + b, 0);
+      ev.at = new Date().toISOString();
+      evalSeconds = ev.published_total;
+      ledger.eval_seconds = ev;
+      ledger.eval_seconds_merged = undefined; // superseded by the per-version map
       if (APPLY) {
          writeFileSync(join(outDir, 'rollouts.json'), `${JSON.stringify(ledger, null, 2)}\n`);
       }
