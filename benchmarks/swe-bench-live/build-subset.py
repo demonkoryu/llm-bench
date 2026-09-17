@@ -7,7 +7,10 @@ re-running this must reproduce subset-v{VERSION}.json byte-for-byte, and if the 
 changes it will not, which is exactly the signal we want.
 
 VERSIONS. v1 was 3 instances per language (n=12), v2 was 4 (n=16), v3 is 5 (n=20) -- all three on
-2026-09-17, each a request to tighten the interval. One instance was worth 8.3 points, then 6.25,
+2026-09-17, each a request to tighten the interval. v4 has the SAME twenty instances as v3 and
+differs only in run_params: the step limit goes 250 -> 1000. A version bump is required anyway,
+because run_params are pinned exactly as the instance list is -- a score is comparable only against
+one taken with the same instances AND the same budget. One instance was worth 8.3 points, then 6.25,
 now 5.0, and the 95% Wilson half-width has gone 25 -> 22 -> 20 points. Each step is real and each is
 small, because interval width falls with the square root of n: halving it costs four times the
 instances, and the eligible pool (java is the binding language at 24 distinct repos) caps an
@@ -45,7 +48,7 @@ from huggingface_hub import dataset_info
 
 DATASET = "SWE-bench-Live/MultiLang"
 LANGS = ["go", "java", "ts", "rust"]
-VERSION = 3
+VERSION = 4
 PER_LANG = 5
 SEED = 20260916
 
@@ -174,10 +177,16 @@ manifest = {
         # capable-but-slow model is not scored as incapable.
         "rollout_timeout_s": 900,
         # Deliberately ABOVE what the wall clock allows, so TIME is the binding constraint and the
-        # step count never is. At the ~7-9s/step this fleet achieves, 900s is roughly 100-128 steps,
-        # so 80 would have started binding again the moment the time limit was raised. 250 is
-        # mini-swe-agent's own default and is out of reach within the budget for every model here.
-        "step_limit": 250,
+        # step count never is.
+        #
+        # 250 (mini-swe-agent's default) was chosen on the assumption of ~7-9s/step, which put 900s
+        # at 100-128 steps. That assumption was wrong for the NInfer configs: they sustain ~3.6s/step
+        # and hit exactly 250 steps INSIDE the wall clock on three rollouts, which were then killed
+        # by the one limit this bench had promised would never bind -- and killed hardest the fastest
+        # models, the opposite of the intent. 1000 would require 0.9s/step to bind, which is below
+        # the cost of a single container exec, so it is unreachable for any agent loop rather than
+        # merely unlikely.
+        "step_limit": 1000,
         # 65536, not the fleet's usual 32768. The agent's history is linear and even with the
         # tightened observation cap a 40-step rollout lands near 50k tokens; at 32k every model
         # exhausts context before it can finish, which measures the window rather than the model.

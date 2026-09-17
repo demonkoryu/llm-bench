@@ -36,7 +36,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 // an older version stay valid for the instances the new one carries forward, and every configuration
 // has to roll out the instances the bump added before its published rate is over the new
 // denominator. See build-subset.py for how a version carries its predecessor forward.
-const MANIFEST = join(ROOT, 'benchmarks', 'swe-bench-live', 'subset-v3.json');
+const MANIFEST = join(ROOT, 'benchmarks', 'swe-bench-live', 'subset-v4.json');
 
 // Where the harness, its venv and the pinned local dataset live. Outside the repo on purpose: it is
 // a multi-GB working area (venv, cloned harness, per-instance logs and trajectories), machine-local
@@ -369,12 +369,46 @@ export function loadLedger(outDir, params) {
    // A rollout taken under a different budget is not the same measurement. Discarding the ledger
    // makes the next run re-roll everything, which is expensive and correct; reusing it would
    // publish a rate mixing 10-minute and 15-minute attempts as if they were one run.
-   if (JSON.stringify(d.budget) !== JSON.stringify(budgetOf(params))) {
-      console.error(
-         `  [swe_live] rollouts.json was recorded under a different budget (${JSON.stringify(d.budget)}); ` +
-            'ignoring it and re-rolling every instance',
+   //
+   // EXCEPT for a bound that was RAISED and never bound the rollout in question. A cap only
+   // participates in a measurement when it actually stops something: a rollout that submitted at 65
+   // steps is the same rollout whether the cap behind it was 250 or 1000. Discarding those too
+   // would mean a full re-sweep of the fleet every time an unreachable limit is made more
+   // unreachable -- paying ten GPU-hours to reproduce results the change cannot have altered.
+   // Rollouts the OLD cap did stop are dropped, because those genuinely would have continued.
+   const want = budgetOf(params);
+   if (JSON.stringify(d.budget) !== JSON.stringify(want)) {
+      const loosenedOnly =
+         d.budget != null &&
+         Object.keys(want).every((k) => (k === 'step_limit' ? want[k] >= d.budget[k] : want[k] === d.budget[k]));
+      if (!loosenedOnly) {
+         console.error(
+            `  [swe_live] rollouts.json was recorded under a different budget (${JSON.stringify(d.budget)}); ` +
+               'ignoring it and re-rolling every instance',
+         );
+         return empty;
+      }
+      const kept = Object.fromEntries(
+         Object.entries(d.instances ?? {}).filter(([, v]) => v.exit_status !== 'LimitsExceeded'),
       );
-      return empty;
+      // The CARRIED bucket records only instance ids and a combined wall clock, so it cannot say
+      // which of its rollouts the old cap stopped. The trajectories can, and they are the authority
+      // here — without this, a capped rollout that happens to predate the per-instance ledger would
+      // be carried forward as if the raised cap had not changed anything for it. Two of the three
+      // were exactly that.
+      const carriedIds = d.carried?.instances ?? [];
+      const carriedKept = carriedIds.filter((id) => trajectoryOutcome(outDir, id).exitStatus !== 'LimitsExceeded');
+      const dropped = Object.keys(d.instances ?? {}).length - Object.keys(kept).length + (carriedIds.length - carriedKept.length);
+      console.error(
+         `  [swe_live] step limit raised ${d.budget.step_limit} -> ${want.step_limit}; carrying forward ` +
+            `${Object.keys(kept).length + carriedKept.length} rollout(s) the old cap never bound, re-rolling ${dropped} it did`,
+      );
+      // carried.seconds is NOT reduced for the re-rolled ones: it is a single total that was never
+      // split per instance, so there is nothing to subtract. swe_rollout_s therefore includes the
+      // superseded attempt as well as its replacement for those instances — an over-count bounded by
+      // the few rollouts a raised cap can affect, and honest about GPU time actually spent, which is
+      // the lesser of the two errors available here.
+      return { ...empty, ...d, budget: want, instances: kept, carried: { ...d.carried, instances: carriedKept } };
    }
    return { ...empty, ...d, instances: d.instances ?? {} };
 }
