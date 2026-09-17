@@ -32,7 +32,11 @@ import { capabilityClass, thinkStates } from '../shared/llm/index.mjs';
 
 const execP = promisify(execFile);
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const MANIFEST = join(ROOT, 'benchmarks', 'swe-bench-live', 'subset-v1.json');
+// The ACTIVE pin. Bumping this is a deliberate act with a cost attached: results measured against
+// an older version stay valid for the instances the new one carries forward, and every configuration
+// has to roll out the instances the bump added before its published rate is over the new
+// denominator. See build-subset.py for how a version carries its predecessor forward.
+const MANIFEST = join(ROOT, 'benchmarks', 'swe-bench-live', 'subset-v2.json');
 
 // Where the harness, its venv and the pinned local dataset live. Outside the repo on purpose: it is
 // a multi-GB working area (venv, cloned harness, per-instance logs and trajectories), machine-local
@@ -42,10 +46,14 @@ const PY = join(WORK, 'venv', 'bin', 'python');
 const HARNESS = join(WORK, 'SWE-bench-Live');
 const DATASET = join(WORK, 'subset.jsonl');
 
-const loadManifest = () => JSON.parse(readFileSync(MANIFEST, 'utf8'));
+// Exported so anything that has to SHOW the pin (the dashboard's build-time copy) reads the same
+// file the bench scores against, rather than naming a version of its own. The page documenting one
+// subset while the numbers came from another is a failure that looks like success.
+export { MANIFEST as MANIFEST_PATH };
+export const loadManifest = () => JSON.parse(readFileSync(MANIFEST, 'utf8'));
 
 /** Instances that count: pinned AND confirmed resolvable here by the gold pass. */
-function scoredInstances(manifest) {
+export function scoredInstances(manifest) {
    const valid = manifest.gold_validated?.resolvable;
    if (!Array.isArray(valid) || valid.length === 0) {
       throw new Error(
@@ -267,7 +275,7 @@ async function rollout({ instance, model, modelId, inferenceUrl, params, outDir 
  * Derived from the trajectory rather than from the server: the agent's own history IS the context,
  * and no per-request telemetry reconstructs it as directly.
  */
-export function trajectoryStats(outDir) {
+export function trajectoryStats(outDir, only = null) {
    const tok = (s) => Math.round(String(s ?? '').length / 4);
    const per = [];
    let calls = 0;
@@ -275,6 +283,12 @@ export function trajectoryStats(outDir) {
    let total = 0;
    for (const inst of existsSync(outDir) ? readdirSync(outDir, { withFileTypes: true }) : []) {
       if (!inst.isDirectory()) {
+         continue;
+      }
+      // `only` is the SCORED set. A trajectory directory outlives the pin that created it — an
+      // instance dropped for a gold failure leaves its rollout on disk — and counting it would put
+      // context the denominator knows nothing about into ctx tokens per resolve.
+      if (only && !only.has(inst.name)) {
          continue;
       }
       const f = join(outDir, inst.name, `${inst.name}.traj.json`);
@@ -310,6 +324,183 @@ export function trajectoryStats(outDir) {
    };
 }
 
+/**
+ * Per-configuration ROLLOUT LEDGER: what this config has already attempted, and what it cost.
+ *
+ * Why it exists. Extending the pin (v1's 12 instances to v2's 16) must not mean re-rolling the 12 a
+ * configuration already did — that is six configurations x 12 instances x 15 minutes of GPU to
+ * reproduce results that are already on disk. The trajectories themselves carry the patch and the
+ * exit status, so the only thing a re-run would recover is the WALL CLOCK each rollout took, and
+ * that is precisely what this file records.
+ *
+ * It is a cost record, not a verdict. Nothing here decides whether an instance resolved; the
+ * evaluation harness does, and its per-instance reports persist in eval/ independently.
+ *
+ * CARRIED is a bucket, not a per-instance figure. The twelve v1 rollouts predate the ledger, so
+ * their individual durations are unrecoverable and only their total was stored. Recording the
+ * instance list alongside the total lets a later read notice if the pin drifts out from under the
+ * bucket (an instance it covers dropping out of the scored set), which would otherwise silently
+ * overstate the rollout time.
+ */
+const LEDGER_SCHEMA = 'llm-bench.swe-bench-live.rollouts';
+
+/** The pinned parameters that make two rollouts comparable. A change to any of them invalidates reuse. */
+const budgetOf = (params) => ({
+   rollout_timeout_s: params.rollout_timeout_s,
+   step_limit: params.step_limit,
+   ctx: params.ctx,
+   agent: params.agent,
+   agent_overlay: params.agent_overlay ?? null,
+});
+
+export function loadLedger(outDir, params) {
+   const f = join(outDir, 'rollouts.json');
+   const empty = { schema: LEDGER_SCHEMA, budget: budgetOf(params), instances: {} };
+   if (!existsSync(f)) {
+      return empty;
+   }
+   let d;
+   try {
+      d = JSON.parse(readFileSync(f, 'utf8'));
+   } catch {
+      console.error('  [swe_live] rollouts.json is unreadable — treating every instance as unattempted');
+      return empty;
+   }
+   // A rollout taken under a different budget is not the same measurement. Discarding the ledger
+   // makes the next run re-roll everything, which is expensive and correct; reusing it would
+   // publish a rate mixing 10-minute and 15-minute attempts as if they were one run.
+   if (JSON.stringify(d.budget) !== JSON.stringify(budgetOf(params))) {
+      console.error(
+         `  [swe_live] rollouts.json was recorded under a different budget (${JSON.stringify(d.budget)}); ` +
+            'ignoring it and re-rolling every instance',
+      );
+      return empty;
+   }
+   return { ...empty, ...d, instances: d.instances ?? {} };
+}
+
+const saveLedger = (outDir, ledger) => writeFileSync(join(outDir, 'rollouts.json'), `${JSON.stringify(ledger, null, 2)}\n`);
+
+/** Whether this config's rollout for `instanceId` is already done and recoverable from disk. */
+function alreadyRolledOut(ledger, outDir, instanceId) {
+   // Both conditions, because they answer different questions: the ledger says the rollout was
+   // accounted for, the trajectory is where the patch and the exit status actually live. A ledger
+   // entry without a trajectory would reuse a patch we cannot read, i.e. score an empty one.
+   const accounted = ledger.instances[instanceId] != null || (ledger.carried?.instances ?? []).includes(instanceId);
+   return accounted && existsSync(join(outDir, instanceId, `${instanceId}.traj.json`));
+}
+
+/** Patch and exit status for an instance, read back from its trajectory. */
+function trajectoryOutcome(outDir, instanceId) {
+   const f = join(outDir, instanceId, `${instanceId}.traj.json`);
+   try {
+      const t = JSON.parse(readFileSync(f, 'utf8'));
+      return { patch: t?.info?.submission ?? '', exitStatus: t?.info?.exit_status ?? 'Unknown' };
+   } catch {
+      return { patch: '', exitStatus: 'Unknown' };
+   }
+}
+
+/**
+ * Exit statuses that mean "ran out of wall clock", for the timeouts metric.
+ *
+ * BOTH spellings, and that is the whole point. The agent enforces the pinned wall clock itself and
+ * stops cleanly with `TimeExceeded`; only a rollout that ignored its own limit and had to be killed
+ * from outside reports `Timeout`. Counting just the latter — which is what this did until
+ * 2026-09-17 — published `timeouts: 0` for every configuration while Muse-Glimmer and Tiel-Coder
+ * were each timing out on half their rollouts. The number was not merely imprecise, it said the
+ * opposite of what happened, and it said it about exactly the models the wall clock binds hardest.
+ */
+const TIMEOUT_STATUSES = new Set(['Timeout', 'TimeExceeded']);
+
+/**
+ * Wall clock spent rolling out the whole scored set: per-instance entries plus the carried bucket.
+ *
+ * The bucket is all-or-nothing by construction, so it is only added when every instance it covers is
+ * still scored. If the pin has moved out from under it — an instance it covers dropped for a gold
+ * failure, say — adding it would charge the configuration for work on an instance no longer in the
+ * denominator, and every derived cost (GPU-h per resolve, seconds per step) would be quietly high.
+ * Dropping it instead makes the number visibly LOW and says so, which is the failure that gets
+ * noticed rather than believed.
+ */
+function totalRolloutSeconds(ledger, instances) {
+   const scored = new Set(instances.map((i) => i.instance_id));
+   let seconds = 0;
+   for (const id of scored) {
+      seconds += ledger.instances[id]?.seconds ?? 0;
+   }
+   const carriedIds = ledger.carried?.instances ?? [];
+   if (carriedIds.length === 0) {
+      return seconds;
+   }
+   const orphans = carriedIds.filter((id) => !scored.has(id));
+   if (orphans.length > 0) {
+      console.error(
+         `  [swe_live] WARNING: the carried rollout bucket covers ${orphans.length} instance(s) no longer ` +
+            `scored (${orphans.join(', ')}); omitting the whole bucket, so swe_rollout_s understates the cost`,
+      );
+      return seconds;
+   }
+   return seconds + (ledger.carried.seconds ?? 0);
+}
+
+/**
+ * Every swe_live metric, from the evidence on disk plus a verdict set.
+ *
+ * ONE function, called by both the bench and analysis/backfill-swe-live.mjs, because the two used
+ * to compute this separately and drifted: the backfill emitted context and step-cost metrics the
+ * bench did not, so those numbers reached the dashboard only when someone remembered to run the
+ * backfill. Two implementations of one formula is one implementation and one bug waiting.
+ *
+ * `resolved` is passed in rather than read here: the bench reads it from the evaluation it just ran,
+ * the backfill from evaluation output already on disk, and that is the only difference between them.
+ */
+export function sweMetrics({ outDir, instances, resolved, ledger, evalSeconds = null }) {
+   const scored = new Set(instances.map((i) => i.instance_id));
+   const outcome = Object.fromEntries(instances.map((i) => [i.instance_id, trajectoryOutcome(outDir, i.instance_id)]));
+   const byLang = {};
+   for (const i of instances) {
+      byLang[i.language] ??= { n: 0, k: 0 };
+      byLang[i.language].n += 1;
+      if (resolved.has(i.instance_id)) {
+         byLang[i.language].k += 1;
+      }
+   }
+   const n = instances.length;
+   const k = instances.filter((i) => resolved.has(i.instance_id)).length;
+   const rolloutSeconds = totalRolloutSeconds(ledger, instances);
+   const stats = trajectoryStats(outDir, scored);
+   return {
+      swe_resolved: k,
+      swe_total: n,
+      // Rate as a fraction. The dashboard pairs it with a Wilson interval computed from (k, n) — at
+      // n=16 the interval is still wide, and this bench carries 66% of the coding group, so the
+      // uncertainty has to travel with the number rather than be recoverable only by someone who
+      // remembers n.
+      swe_rate: n ? k / n : null,
+      ...(rolloutSeconds ? { swe_rollout_s: rolloutSeconds } : {}),
+      ...(evalSeconds != null ? { swe_eval_s: evalSeconds } : {}),
+      // Over ALL scored instances, carried rollouts included — these describe the configuration's
+      // result on the pinned set, not on whichever slice of it one process happened to run.
+      swe_timeouts: instances.filter((i) => TIMEOUT_STATUSES.has(outcome[i.instance_id]?.exitStatus)).length,
+      swe_no_patch: instances.filter((i) => !outcome[i.instance_id]?.patch).length,
+      // Costs PER RESOLVE are omitted, not zero, when nothing resolved: the cost of a resolution is
+      // undefined then, and 0 would read as "free".
+      ...(k && rolloutSeconds ? { swe_gpu_h_per_resolve: rolloutSeconds / 3600 / k } : {}),
+      ...(stats
+         ? {
+              ...(k ? { swe_ctx_per_resolve: Math.round(stats.ctxTotal / k) } : {}),
+              swe_ctx_median: stats.ctxMedian,
+              swe_ctx_max: stats.ctxMax,
+              swe_calls: stats.calls,
+              ...(stats.calls && rolloutSeconds ? { swe_s_per_call: rolloutSeconds / stats.calls } : {}),
+              ...(rolloutSeconds ? { swe_gen_tok_s: stats.generated / rolloutSeconds } : {}),
+           }
+         : {}),
+      ...Object.fromEntries(Object.entries(byLang).map(([l, v]) => [`swe_lang_${l}`, v.n ? v.k / v.n : null])),
+   };
+}
+
 export const bench = {
    name: 'swe_live',
    kind: 'probe',
@@ -328,36 +519,77 @@ export const bench = {
       // two GPUs, and each rollout's container plus the harness's own memory would multiply against
       // the 16 GB/instance the maintainers quote. The GPU is the bottleneck anyway — a second
       // concurrent rollout against the same server halves both their token rates.
-      const predictions = {};
-      const outcomes = {};
-      let rolloutSeconds = 0;
+      //
+      // INCREMENTAL. An instance this configuration has already rolled out under the same budget is
+      // not rolled out again; its patch and exit status are read back from the trajectory. That is
+      // what makes extending the pin cost only the instances the extension added — the alternative
+      // is spending the whole fleet's GPU time reproducing results already sitting on disk.
+      const evalDir = join(outDir, 'eval');
+      mkdirSync(evalDir, { recursive: true });
+      const ledger = loadLedger(outDir, params);
+      const outcome = {};            // instance_id -> { patch, exitStatus }
+      const toEvaluate = {};         // predictions for this evaluation pass only
+      const failures = [];
+      let fresh = 0;
       for (const inst of instances) {
-         const r = await rollout({ instance: inst, model, modelId, inferenceUrl, params, outDir });
-         predictions[inst.instance_id] = { model_patch: r.patch, model_name_or_path: tag };
-         outcomes[r.exitStatus] = (outcomes[r.exitStatus] ?? 0) + 1;
-         rolloutSeconds += r.seconds;
+         const id = inst.instance_id;
+         let line;
+         const carried = alreadyRolledOut(ledger, outDir, id);
+         if (carried) {
+            outcome[id] = trajectoryOutcome(outDir, id);
+            const secs = ledger.instances[id]?.seconds;
+            line = `${secs != null ? `${String(secs).padStart(4)}s` : '   —'} carried`;
+         } else {
+            const r = await rollout({ instance: inst, model, modelId, inferenceUrl, params, outDir });
+            outcome[id] = { patch: r.patch, exitStatus: r.exitStatus };
+            if (r.failed) {
+               failures.push(id);
+            }
+            fresh += 1;
+            // Recorded even when the rollout produced nothing: a rollout that ends empty still
+            // consumed its budget, and leaving it out of the ledger would both understate the cost
+            // and make the next run repeat it.
+            ledger.instances[id] = {
+               seconds: r.seconds,
+               exit_status: r.exitStatus,
+               patch_bytes: r.patch.length,
+               at: new Date().toISOString(),
+            };
+            // Written per instance rather than at the end: a sweep interrupted after nine rollouts
+            // should keep nine rollouts, not none.
+            saveLedger(outDir, ledger);
+            line = `${String(r.seconds).padStart(4)}s`;
+         }
+         // A fresh rollout always: its patch is new, so the verdict sitting in eval/ (if any) is
+         // about a different patch. A carried one only when its verdict is missing — a rollout that
+         // was never judged, say because an evaluation was interrupted, must not be silently
+         // counted unresolved.
+         if (!carried || !existsSync(join(evalDir, id, 'report.json'))) {
+            toEvaluate[id] = { model_patch: outcome[id].patch, model_name_or_path: tag };
+         }
          console.error(
-            `  [swe_live] ${inst.language.padEnd(4)} ${inst.instance_id.padEnd(42)} ${String(r.seconds).padStart(4)}s ` +
-               `${r.patch ? `${r.patch.length}B patch` : 'no patch'} (${r.exitStatus})`,
+            `  [swe_live] ${inst.language.padEnd(4)} ${id.padEnd(42)} ${line} ` +
+               `${outcome[id].patch ? `${outcome[id].patch.length}B patch` : 'no patch'} (${outcome[id].exitStatus})`,
          );
       }
-      if (outcomes.HarnessError === instances.length) {
+      if (fresh > 0 && failures.length === fresh) {
          throw new Error(
-            'swe_live: every rollout failed for harness reasons (not one reached the model). ' +
-               'Refusing to score this as 0/N — fix the harness and re-run.',
+            'swe_live: every rollout attempted this run failed for harness reasons (not one reached ' +
+               'the model). Refusing to score this — fix the harness and re-run.',
          );
       }
+      console.error(`  [swe_live] ${fresh} rolled out this run, ${instances.length - fresh} carried from earlier runs`);
       const predFile = join(outDir, 'predictions.json');
-      writeFileSync(predFile, JSON.stringify(predictions, null, 2));
+      writeFileSync(predFile, JSON.stringify(toEvaluate, null, 2));
 
       // ── evaluation: run each patch's test suite ──────────────────────────────────────────────
       // workers=1 because a peer lane is doing the same thing on the other card and the quoted
       // requirement is 16 GB per instance against 47 GB of host RAM, most of which the two model
       // servers have already pinned.
-      const evalDir = join(outDir, 'eval');
-      mkdirSync(evalDir, { recursive: true });
       const evalStart = Date.now();
-      await execP(
+      // Skipped entirely when nothing new needs judging: --overwrite on an empty prediction set
+      // does no work, and the verdicts already in eval/ are what readResolved reads anyway.
+      await (Object.keys(toEvaluate).length === 0 ? Promise.resolve() : execP(
          PY,
          [
             '-m',
@@ -376,6 +608,7 @@ export const bench = {
             '1',
          ],
          { cwd: HARNESS, timeout: 3 * 3600_000, maxBuffer: 64 * 1024 * 1024 },
+      )
       ).catch((e) => {
          // A harness crash must not discard the rollouts, which cost real GPU time. Report zero
          // resolved for what could not be judged rather than failing the whole bench.
@@ -383,37 +616,13 @@ export const bench = {
       });
       const evalSeconds = Math.round((Date.now() - evalStart) / 1000);
 
-      const resolved = readResolved(evalDir);
-      const byLang = {};
-      for (const inst of instances) {
-         byLang[inst.language] ??= { n: 0, resolved: 0 };
-         byLang[inst.language].n += 1;
-         if (resolved.has(inst.instance_id)) {
-            byLang[inst.language].resolved += 1;
-         }
-      }
-
-      const n = instances.length;
-      const k = instances.filter((i) => resolved.has(i.instance_id)).length;
-      const stats = trajectoryStats(outDir);
       // An ARRAY: bench-run treats a probe's return as a list of sub-bench rows (rawRows.flatMap).
       // Returning the bare object throws "rawRows.flatMap is not a function" after every rollout
       // has already been paid for.
       return [
          {
             bench: 'swe_live',
-            swe_resolved: k,
-            swe_total: n,
-            // Rate as a fraction. The dashboard pairs it with a Wilson interval computed from
-            // (k, n) — at n=12 the interval is wide, and this bench carries 66% of the coding
-            // group, so the uncertainty has to travel with the number rather than be recoverable
-            // only by someone who remembers n.
-            swe_rate: n ? k / n : null,
-            swe_rollout_s: rolloutSeconds,
-            swe_eval_s: evalSeconds,
-            swe_timeouts: outcomes.Timeout ?? 0,
-            swe_no_patch: Object.entries(predictions).filter(([, p]) => !p.model_patch).length,
-            ...Object.fromEntries(Object.entries(byLang).map(([l, v]) => [`swe_lang_${l}`, v.n ? v.resolved / v.n : null])),
+            ...sweMetrics({ outDir, instances, resolved: readResolved(evalDir), ledger, evalSeconds }),
             status: 'ok',
          },
       ];
@@ -477,10 +686,16 @@ function readResolved(evalDir) {
             'evaluation that may well have succeeded.',
       );
    }
-   if (sawResultsFile && sawReports && fromResults.size !== fromReports.size) {
+   // results.json describes the LAST evaluation pass only, and with incremental rollouts that pass
+   // may cover just the instances a pin bump added — so it being smaller than the per-instance
+   // reports is the normal case, not a disagreement. What would be a real disagreement is
+   // results.json naming an instance resolved that has no report saying so, which means the two
+   // sources are describing different runs.
+   const unreported = [...fromResults].filter((id) => !fromReports.has(id));
+   if (sawResultsFile && sawReports && unreported.length > 0) {
       console.error(
-         `  [swe_live] WARNING: results.json says ${fromResults.size} resolved, per-instance ` +
-            `reports say ${fromReports.size}. Using the union and flagging the disagreement.`,
+         `  [swe_live] WARNING: results.json calls ${unreported.length} instance(s) resolved that no ` +
+            `per-instance report confirms (${unreported.join(', ')}). Using the union and flagging it.`,
       );
    }
    return new Set([...fromResults, ...fromReports]);

@@ -1,0 +1,264 @@
+{
+  "dataset": "SWE-bench-Live/MultiLang",
+  "dataset_revision": "22091f6ce331c5c60c241d76512d4be7ee1a555b",
+  "excluded_instances": {},
+  "excluded_repos": {
+    "NVIDIA/OpenShell": "gold-invalid twice (OpenShell-695 and -810 both fail with the reference patch here)",
+    "ghostfolio/ghostfolio": "evaluation cost: >20 min for one instance (2026-09-16 gold pass); the cost is the build, not the issue",
+    "gwtproject/gwt": "evaluation cost: >20 min for one instance (2026-09-16 gold pass); the cost is the build, not the issue"
+  },
+  "filters": {
+    "fail_to_pass_max": 50,
+    "max_one_instance_per_repo": true,
+    "pass_to_pass_max": 2000,
+    "problem_statement_chars": [
+      200,
+      8000
+    ]
+  },
+  "gold_validated": {
+    "eval_seconds": {
+      "NVlabs__cuda-oxide-381": 111,
+      "antvis__G2-7076": 444,
+      "bpg__terraform-provider-proxmox-2122": 36,
+      "btraceio__btrace-897": 192,
+      "danielmiessler__Fabric-2098": 61,
+      "ether__etherpad-7445": 47,
+      "excalidraw__excalidraw-9760": 164,
+      "floci-io__floci-57": 65,
+      "gitlab4j__gitlab4j-api-1266": 40,
+      "h4ckf0r0day__obscura-414": 65,
+      "iflytek__skillhub-253": 110,
+      "immunant__c2rust-1322": 79,
+      "kubernetes__kops-17519": 252,
+      "kumahq__kuma-15918": 443,
+      "nearai__ironclaw-6712": 70,
+      "withastro__starlight-3293": 71
+    },
+    "eval_seconds_total": 2250,
+    "harness_commit": "9a27349",
+    "host": "rose (62 GB RAM, 32 CPU)",
+    "note": "The reference patch was run on this machine for every pinned instance; all 16 pass, so the scored denominator is the full pin. The four v2 instances cost 252s to evaluate between them, well under the v1 average, so extending the pin did not make an evaluation pass materially more expensive.",
+    "resolvable": [
+      "bpg__terraform-provider-proxmox-2122",
+      "kubernetes__kops-17519",
+      "kumahq__kuma-15918",
+      "btraceio__btrace-897",
+      "gitlab4j__gitlab4j-api-1266",
+      "iflytek__skillhub-253",
+      "NVlabs__cuda-oxide-381",
+      "h4ckf0r0day__obscura-414",
+      "nearai__ironclaw-6712",
+      "antvis__G2-7076",
+      "excalidraw__excalidraw-9760",
+      "withastro__starlight-3293",
+      "danielmiessler__Fabric-2098",
+      "floci-io__floci-57",
+      "immunant__c2rust-1322",
+      "ether__etherpad-7445"
+    ],
+    "validated_at": "2026-09-16 (v1 instances) / 2026-09-17 (the four v2 adds)"
+  },
+  "instance_count": 16,
+  "instances": [
+    {
+      "base_commit": "9d179dde724604d3b2f297fd805c7c2cb8f723b4",
+      "docker_image": "starryzhang/sweb.eval.x86_64.bpg_1776_terraform-provider-proxmox-2122",
+      "fail_to_pass": 5,
+      "instance_id": "bpg__terraform-provider-proxmox-2122",
+      "language": "go",
+      "pass_to_pass": 381,
+      "problem_statement_chars": 1417,
+      "repo": "bpg/terraform-provider-proxmox"
+    },
+    {
+      "base_commit": "99dcff0f365ad8fe0a7e14fe10e232ef6f3f90ad",
+      "docker_image": "starryzhang/sweb.eval.x86_64.danielmiessler_1776_fabric-2098",
+      "fail_to_pass": 1,
+      "instance_id": "danielmiessler__Fabric-2098",
+      "language": "go",
+      "pass_to_pass": 841,
+      "problem_statement_chars": 3675,
+      "repo": "danielmiessler/Fabric"
+    },
+    {
+      "base_commit": "5f564fe1abc5526e4554845a5518f14443cae5e7",
+      "docker_image": "starryzhang/sweb.eval.x86_64.kubernetes_1776_kops-17519",
+      "fail_to_pass": 1,
+      "instance_id": "kubernetes__kops-17519",
+      "language": "go",
+      "pass_to_pass": 1249,
+      "problem_statement_chars": 851,
+      "repo": "kubernetes/kops"
+    },
+    {
+      "base_commit": "06fed354e554d643612c46de3b1a090ff8ac8188",
+      "docker_image": "starryzhang/sweb.eval.x86_64.kumahq_1776_kuma-15918",
+      "fail_to_pass": 2,
+      "instance_id": "kumahq__kuma-15918",
+      "language": "go",
+      "pass_to_pass": 265,
+      "problem_statement_chars": 764,
+      "repo": "kumahq/kuma"
+    },
+    {
+      "base_commit": "eb177a6d893b3126ef520ac76ee314148c9486e2",
+      "docker_image": "starryzhang/sweb.eval.x86_64.btraceio_1776_btrace-897",
+      "fail_to_pass": 1,
+      "instance_id": "btraceio__btrace-897",
+      "language": "java",
+      "pass_to_pass": 1321,
+      "problem_statement_chars": 1339,
+      "repo": "btraceio/btrace"
+    },
+    {
+      "base_commit": "a1c488994fb89d18f2907eb329b17fff0622c7bb",
+      "docker_image": "starryzhang/sweb.eval.x86_64.floci-io_1776_floci-57",
+      "fail_to_pass": 5,
+      "instance_id": "floci-io__floci-57",
+      "language": "java",
+      "pass_to_pass": 920,
+      "problem_statement_chars": 2611,
+      "repo": "floci-io/floci"
+    },
+    {
+      "base_commit": "39cbdc75efaf441e8f4430677749673fd3a3090f",
+      "docker_image": "starryzhang/sweb.eval.x86_64.gitlab4j_1776_gitlab4j-api-1266",
+      "fail_to_pass": 1,
+      "instance_id": "gitlab4j__gitlab4j-api-1266",
+      "language": "java",
+      "pass_to_pass": 229,
+      "problem_statement_chars": 278,
+      "repo": "gitlab4j/gitlab4j-api"
+    },
+    {
+      "base_commit": "010c1a4e4658139890bf9c34121300a120b3539d",
+      "docker_image": "starryzhang/sweb.eval.x86_64.iflytek_1776_skillhub-253",
+      "fail_to_pass": 4,
+      "instance_id": "iflytek__skillhub-253",
+      "language": "java",
+      "pass_to_pass": 852,
+      "problem_statement_chars": 2672,
+      "repo": "iflytek/skillhub"
+    },
+    {
+      "base_commit": "2b1269964beaeab789a1512d0089fe42d9336e14",
+      "docker_image": "starryzhang/sweb.eval.x86_64.nvlabs_1776_cuda-oxide-381",
+      "fail_to_pass": 1,
+      "instance_id": "NVlabs__cuda-oxide-381",
+      "language": "rust",
+      "pass_to_pass": 1595,
+      "problem_statement_chars": 1974,
+      "repo": "NVlabs/cuda-oxide"
+    },
+    {
+      "base_commit": "99ece0e12dd2cace768b5caa76fcbe1b5233f0f6",
+      "docker_image": "starryzhang/sweb.eval.x86_64.h4ckf0r0day_1776_obscura-414",
+      "fail_to_pass": 1,
+      "instance_id": "h4ckf0r0day__obscura-414",
+      "language": "rust",
+      "pass_to_pass": 329,
+      "problem_statement_chars": 2655,
+      "repo": "h4ckf0r0day/obscura"
+    },
+    {
+      "base_commit": "290e366477454399f773c2e66ad6bceea4ca5160",
+      "docker_image": "starryzhang/sweb.eval.x86_64.immunant_1776_c2rust-1322",
+      "fail_to_pass": 7,
+      "instance_id": "immunant__c2rust-1322",
+      "language": "rust",
+      "pass_to_pass": 100,
+      "problem_statement_chars": 1840,
+      "repo": "immunant/c2rust"
+    },
+    {
+      "base_commit": "6f930f2bc039f93a2d79c269a48eec8e5296240b",
+      "docker_image": "starryzhang/sweb.eval.x86_64.nearai_1776_ironclaw-6712",
+      "fail_to_pass": 1,
+      "instance_id": "nearai__ironclaw-6712",
+      "language": "rust",
+      "pass_to_pass": 591,
+      "problem_statement_chars": 968,
+      "repo": "nearai/ironclaw"
+    },
+    {
+      "base_commit": "7c2b94e40e7508af316ed7da2f48a33df9f24f1a",
+      "docker_image": "starryzhang/sweb.eval.x86_64.antvis_1776_g2-7076",
+      "fail_to_pass": 1,
+      "instance_id": "antvis__G2-7076",
+      "language": "ts",
+      "pass_to_pass": 804,
+      "problem_statement_chars": 762,
+      "repo": "antvis/G2"
+    },
+    {
+      "base_commit": "5199319ceaa3466113f8793cf891d1c0756a9929",
+      "docker_image": "starryzhang/sweb.eval.x86_64.ether_1776_etherpad-7445",
+      "fail_to_pass": 2,
+      "instance_id": "ether__etherpad-7445",
+      "language": "ts",
+      "pass_to_pass": 1092,
+      "problem_statement_chars": 3115,
+      "repo": "ether/etherpad"
+    },
+    {
+      "base_commit": "8492b144b05b56634fa020ec278adc7936fbfc4e",
+      "docker_image": "starryzhang/sweb.eval.x86_64.excalidraw_1776_excalidraw-9760",
+      "fail_to_pass": 6,
+      "instance_id": "excalidraw__excalidraw-9760",
+      "language": "ts",
+      "pass_to_pass": 310,
+      "problem_statement_chars": 1649,
+      "repo": "excalidraw/excalidraw"
+    },
+    {
+      "base_commit": "c07478ba8480b24c4c967dd660a39b844f3900fc",
+      "docker_image": "starryzhang/sweb.eval.x86_64.withastro_1776_starlight-3293",
+      "fail_to_pass": 1,
+      "instance_id": "withastro__starlight-3293",
+      "language": "ts",
+      "pass_to_pass": 472,
+      "problem_statement_chars": 706,
+      "repo": "withastro/starlight"
+    }
+  ],
+  "language_stats": {
+    "go": {
+      "carried": 3,
+      "eligible": 50,
+      "new": 1
+    },
+    "java": {
+      "carried": 3,
+      "eligible": 39,
+      "new": 1
+    },
+    "rust": {
+      "carried": 3,
+      "eligible": 46,
+      "new": 1
+    },
+    "ts": {
+      "carried": 3,
+      "eligible": 48,
+      "new": 1
+    }
+  },
+  "languages": [
+    "go",
+    "java",
+    "ts",
+    "rust"
+  ],
+  "per_language": 4,
+  "run_params": {
+    "agent": "mini-swe-agent==2.4.6",
+    "agent_overlay": "benchmarks/swe-bench-live/agent-overlay.yaml (observation cap 4000 chars)",
+    "ctx": 131072,
+    "rollout_timeout_s": 900,
+    "step_limit": 250
+  },
+  "schema": "llm-bench.swe-bench-live.subset",
+  "seed": 20260916,
+  "version": 2
+}

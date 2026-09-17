@@ -12,21 +12,24 @@
 // history. Editing metric_value in place would erase the evidence that the store ever held a bad
 // number, which is exactly the thing worth keeping.
 //
+// The metrics themselves come from the BENCH (sweMetrics), not from a copy of its formulas kept
+// here. The copy is how this file came to emit context and step-cost metrics the bench did not,
+// which meant those numbers reached the dashboard only when someone remembered to run this script.
+//
 // Usage: node analysis/backfill-swe-live.mjs [--apply]
 //        (dry run by default — prints what would change)
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { trajectoryStats } from '../benches/swe_live.mjs';
+import { join } from 'node:path';
+import { loadLedger, loadManifest, scoredInstances, sweMetrics } from '../benches/swe_live.mjs';
 import { insertRows, query } from './pg-store.mjs';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WORK = process.env.SWE_LIVE_WORK ?? '/home/demonkoryu/.local/state/swe-live';
-const MANIFEST = join(ROOT, 'benchmarks', 'swe-bench-live', 'subset-v1.json');
 const APPLY = process.argv.includes('--apply');
 
-const manifest = JSON.parse(readFileSync(MANIFEST, 'utf8'));
-const instances = manifest.instances.filter((i) => manifest.gold_validated.resolvable.includes(i.instance_id));
+// The ACTIVE pin, via the bench, so this can never score against a different instance list than the
+// one the bench rolls out against.
+const manifest = loadManifest();
+const instances = scoredInstances(manifest);
 
 /** Same two-source read as the fixed bench: results.json success_ids, cross-checked per instance. */
 function resolvedFrom(evalDir) {
@@ -71,46 +74,29 @@ for (const cfgDir of readdirSync(runsDir)) {
       console.log(`SKIP ${cfgDir}: eval output present but no stored rows yet (config still running?)`);
       continue;
    }
+
+   const outDir = join(runsDir, cfgDir);
+   // eval_seconds is NOT recomputed: it is a wall clock only the process that ran the evaluation
+   // observed, and nothing on disk reconstructs it. Leaving it out keeps the stored row's value
+   // live rather than replacing a measurement with a guess.
+   const corrected = sweMetrics({ outDir, instances, resolved, ledger: loadLedger(outDir, manifest.run_params) });
+
    const was = stored.find((r) => r.metric === 'swe_resolved')?.metric_value ?? null;
-   const hasStats = stored.some((r) => r.metric === 'swe_ctx_per_resolve');
-   if (was === k && hasStats) {
+   const differs = Object.entries(corrected).filter(([metric, v]) => {
+      const had = stored.find((r) => r.metric === metric)?.metric_value;
+      // Float metrics never compare exactly across a recomputation; anything under a part in a
+      // million is the same number arrived at twice, not a change worth superseding a row for.
+      return had == null || (typeof v === 'number' && typeof had === 'number' ? Math.abs(v - had) > Math.abs(v) * 1e-9 + 1e-9 : v !== had);
+   });
+   if (differs.length === 0) {
       console.log(`OK   ${cfgDir}: stored ${k}/${n} already correct`);
       continue;
    }
 
-   // Context and step cost, read from the trajectories. Added after the first full sweep, so
-   // configurations measured before the bench emitted them get them here rather than by re-running
-   // 10 hours of rollouts to recover numbers the trajectories already contain.
-   const stats = trajectoryStats(join(runsDir, cfgDir));
-   const rollout = stored.find((r) => r.metric === 'swe_rollout_s')?.metric_value ?? null;
-
-   const byLang = {};
-   for (const i of instances) {
-      byLang[i.language] ??= { n: 0, k: 0 };
-      byLang[i.language].n += 1;
-      if (resolved.has(i.instance_id)) {
-         byLang[i.language].k += 1;
-      }
-   }
-   const corrected = {
-      ...(k && rollout ? { swe_gpu_h_per_resolve: rollout / 3600 / k } : {}),
-      ...(stats
-         ? {
-              ...(k ? { swe_ctx_per_resolve: Math.round(stats.ctxTotal / k) } : {}),
-              swe_ctx_median: stats.ctxMedian,
-              swe_ctx_max: stats.ctxMax,
-              swe_calls: stats.calls,
-              swe_s_per_call: stats.calls && rollout ? rollout / stats.calls : null,
-              swe_gen_tok_s: rollout ? stats.generated / rollout : null,
-           }
-         : {}),
-      swe_resolved: k,
-      swe_total: n,
-      swe_rate: n ? k / n : null,
-      ...Object.fromEntries(Object.entries(byLang).map(([l, v]) => [`swe_lang_${l}`, v.n ? v.k / v.n : null])),
-   };
-
-   const what = was === k ? `${k}/${n} correct, adding context/speed metrics` : `stored ${was}/${n} → actual ${k}/${n}`;
+   const what =
+      was === k
+         ? `${k}/${n} correct, ${differs.length} metric(s) to update (${differs.map(([m]) => m).join(', ')})`
+         : `stored ${was}/${n} → actual ${k}/${n}`;
    console.log(`FIX  ${cfgDir}: ${what}` + (APPLY ? '' : '   (dry run)'));
    if (!APPLY) {
       continue;

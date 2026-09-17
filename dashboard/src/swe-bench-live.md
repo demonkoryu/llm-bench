@@ -73,11 +73,11 @@ const SWE_HELP = {
   // outcome
   resolved: "Instances whose patch made every FAIL_TO_PASS test pass without breaking any PASS_TO_PASS test. All-or-nothing per instance; there is no partial credit.",
   total: "Instances scored — the gold-validated set, i.e. those that pass here with the benchmark's own reference patch. Instances that fail with the reference patch are excluded, since no model could resolve them.",
-  rate: "resolved ÷ total. At this sample size one instance is worth about 8 points, so read it together with the interval.",
+  rate: `resolved ÷ total. At this sample size one instance is worth about ${perInstancePoints.toFixed(0)} points, so read it together with the interval.`,
   "95% lo": "Lower bound of the 95% Wilson confidence interval for the rate. Wilson rather than the normal approximation because the latter misbehaves near 0 and 1 — where a small-sample result most often lands.",
   "95% hi": "Upper bound of the same interval. If two configurations' [lo, hi] ranges overlap, the ordering between them is not supported by this data.",
   "no patch": "Rollouts that ended without producing any diff at all — the model never reached an edit it was willing to submit. Scored as unresolved, but a different failure from submitting a wrong patch.",
-  timeouts: "Rollouts stopped at the pinned wall clock with work still in progress. Also scored as unresolved: under a fixed budget, running out of time is the result.",
+  timeouts: "Rollouts stopped at the pinned wall clock with work still in progress. Also scored as unresolved: under a fixed budget, running out of time is the result. Counts the agent's own clean stop at its wall clock as well as a rollout killed from outside — before 2026-09-17 only the latter was counted, which published a flat zero here for every configuration.",
 
   // cost and context
   "ctx median": "Median context the agent accumulated over a rollout, in tokens, across all scored instances. The agent's history is linear — every command and its output stays in the prompt — so this grows monotonically within a rollout and is what the server must actually hold.",
@@ -86,7 +86,7 @@ const SWE_HELP = {
   "s / step": "Wall clock per agent step, including the time the container spends executing the command. It is NOT decode time: much of a step is the repository's own tooling running, which is why this varies far less between models than their token rates do.",
   "gen tok/s": "Generated tokens per second of rollout wall clock — throughput for the whole agent loop, not a decode-rate measurement. A model that thinks at length shows a high figure here without necessarily finishing sooner.",
   "rollout min": "Total wall clock spent generating patches for this configuration, GPU-bound.",
-  "GPU-h / resolve": "GPU-hours of rollout per issue actually resolved — resolve rate and speed in one figure. Stated as a COST rather than a rate because the numerator would otherwise be a 12-instance proportion, whose noise would be hidden inside what looks like a precise number; as a cost the noisy term sits in the denominator, where with 4 resolves one instance moves the figure by 25%. Blank when nothing resolved: the cost of a resolution is then undefined, not infinite.",
+  "GPU-h / resolve": `GPU-hours of rollout per issue actually resolved — resolve rate and speed in one figure. Stated as a COST rather than a rate because the numerator would otherwise be a ${nInst}-instance proportion, whose noise would be hidden inside what looks like a precise number; as a cost the noisy term sits in the denominator, where with 4 resolves one instance moves the figure by 25%. Blank when nothing resolved: the cost of a resolution is then undefined, not infinite.`,
   "ctx tok / resolve": "Context tokens processed across all rollouts per issue resolved — resolve rate against context appetite. A model that succeeds often on short trajectories scores far better here than one that succeeds as often only after exhausting its window. Same caveat and same blank-when-zero rule as GPU-h / resolve.",
   "eval min": "Total wall clock spent running the repositories' own test suites to judge those patches. CPU-bound and independent of the model, so it is a property of the pinned instances rather than of the configuration.",
 };
@@ -102,6 +102,23 @@ not feed the leaderboard, the Pareto view, or any composite score.
 </div>
 
 ## Resolve rate
+
+```js
+// A configuration measured against FEWER instances than the pin currently holds is called out
+// rather than quietly plotted beside the others. Its rate is over a different denominator, so the
+// bar is honest about itself while the comparison between bars is not. This is what the state looks
+// like between a pin bump and the sweep that fills it in, and an unlabelled chart in that window
+// would put a 12-instance rate and a 16-instance rate on one axis with nothing to say so.
+const understated = board.filter((d) => d.total > 0 && d.total < nInst);
+display(
+  understated.length === 0
+    ? html``
+    : html`<div class="warning"><b>Measured against an older, smaller pin.</b> ${understated
+        .map((d) => `${d.model} (${d.total} of ${nInst})`)
+        .join(", ")} — the rate is over a different denominator, so it is not comparable with the rest
+        until those instances are rolled out.</div>`,
+);
+```
 
 ```js
 // House pattern: fill the page on desktop, keep a readable minimum and scroll inside the card on a
@@ -333,8 +350,8 @@ display(
         color: { legend: true, domain: LANGS, scheme: "tableau10" },
         marks: [
           Plot.ruleX([0]),
-          // Offset within the y band: with three instances per language the rates collapse onto a
-          // handful of values, so exact overlap is the common case and one visible dot would stand
+          // Offset within the y band: with a handful of instances per language the rates collapse
+          // onto a few values, so exact overlap is the common case and one visible dot would stand
           // for four. A slightly untidy row beats a hidden one.
           Plot.dot(langRows, {
             y: "model", x: "pct", fill: "lang", r: 4.5,

@@ -4,7 +4,7 @@
 // so the copy is ALWAYS fresh from the single source — it can't drift. src/lib/ is git-ignored.
 // The only rewrite: sibling import specifiers .mjs -> .js (Framework serves .js modules).
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -25,12 +25,14 @@ console.error('[copy-lib] engine → dashboard/src/lib/{scoring-config,score,que
 // the bench runner reads it. Copying on every build keeps the page's "what is pinned" table and the
 // list the benchmark actually ran from one source — a page that documented a different subset than
 // the one measured would be worse than no page.
+//
+// The PATH comes from the bench rather than being written out here. It used to name subset-v1.json
+// directly, which meant a pin bump published a page describing the old instance list beside numbers
+// measured on the new one — the exact failure the copy exists to prevent, reintroduced by the copy.
+const { MANIFEST_PATH } = await import(join(here, '..', 'benches', 'swe_live.mjs'));
 mkdirSync(join(here, 'src', 'data'), { recursive: true });
-writeFileSync(
-   join(here, 'src', 'data', 'swe-subset.json'),
-   readFileSync(join(here, '..', 'benchmarks', 'swe-bench-live', 'subset-v1.json'), 'utf8'),
-);
-console.error('[copy-lib] pinned subset → dashboard/src/data/swe-subset.json');
+writeFileSync(join(here, 'src', 'data', 'swe-subset.json'), readFileSync(MANIFEST_PATH, 'utf8'));
+console.error(`[copy-lib] pinned subset (${basename(MANIFEST_PATH)}) → dashboard/src/data/swe-subset.json`);
 
 // Drop the cached data-loader output before every dev/build.
 //

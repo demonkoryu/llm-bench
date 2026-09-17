@@ -1,13 +1,24 @@
 #!/usr/bin/env python3
-"""Build the PINNED SWE-bench-Live subset. Run once; the output is committed and never regenerated.
+"""Build the PINNED SWE-bench-Live subset. Run once per version; the output is committed.
 
 Comparability is the whole point of this file. Every model must attempt the identical instance list,
 so the selection is fully deterministic (fixed seed, sorted inputs) and the result is checked in --
-re-running this must reproduce subset-v1.json byte-for-byte, and if the upstream dataset changes it
-will not, which is exactly the signal we want.
+re-running this must reproduce subset-v{VERSION}.json byte-for-byte, and if the upstream dataset
+changes it will not, which is exactly the signal we want.
+
+VERSIONS. v1 was 3 instances per language (n=12). v2 is 4 (n=16), requested 2026-09-17 to tighten
+the interval: at n=12 one instance is worth 8.3 points, at n=16 it is 6.25, and the 95% Wilson
+interval narrows by about an eighth. It is a real improvement and a modest one -- the honest way to
+buy a much tighter interval is another doubling, not another instance. The earlier version's file
+stays checked in: it is what the pre-2026-09-17 numbers were measured against, and deleting it would
+leave those results describing a set nobody can reconstruct.
+
+A version bump is NOT a re-run. The carry-forward below keeps every v1 instance in v2, so a v1
+result stays valid for the 12 instances it covers and only the 4 new ones have to be rolled out --
+which is what makes extending the pin affordable rather than a full re-sweep of every model.
 
 Selection rules, in order:
-  * four languages (go, java, ts, rust), three instances each = 12
+  * four languages (go, java, ts, rust), PER_LANG instances each
   * problem_statement between 200 and 8000 chars -- shorter than 200 is not a usable brief, and
     longer than 8000 crowds the context window of a 32k-served model once the agent adds file
     contents on top
@@ -24,15 +35,26 @@ Selection rules, in order:
 import hashlib, json, random, sys
 from pathlib import Path
 
-# The current pin, carried forward for stability (see the selection loop).
-PRIOR = Path(__file__).with_name("subset-v1.json")
 from datasets import load_dataset
 from huggingface_hub import dataset_info
 
 DATASET = "SWE-bench-Live/MultiLang"
 LANGS = ["go", "java", "ts", "rust"]
-PER_LANG = 3
+VERSION = 2
+PER_LANG = 4
 SEED = 20260916
+
+# The pin to carry forward (see the selection loop). Prefer this version's own file so that
+# re-running an already-built version reproduces it; fall back to the previous version's file, which
+# is the state when a bump is being built for the first time. The seed is deliberately NOT bumped
+# with the version: the shuffle order has to stay fixed, or "carry v1 forward and fill the gaps"
+# would fill them from a differently-ordered candidate list and the extension would not be
+# reproducible from the previous pin.
+_HERE = Path(__file__).parent
+PRIOR = next(
+    (p for p in (_HERE / f"subset-v{VERSION}.json", _HERE / f"subset-v{VERSION - 1}.json") if p.exists()),
+    _HERE / f"subset-v{VERSION}.json",
+)
 MIN_PS, MAX_PS = 200, 8000
 MAX_F2P = 50      # resolution requires ALL of them to pass
 MAX_P2P = 2000    # bounds how long one evaluation takes
@@ -122,7 +144,7 @@ for lang in LANGS:
 out.sort(key=lambda x: (x["language"], x["instance_id"]))
 manifest = {
     "schema": "llm-bench.swe-bench-live.subset",
-    "version": 1,
+    "version": VERSION,
     "dataset": DATASET,
     "dataset_revision": rev,
     "seed": SEED,
@@ -151,6 +173,11 @@ manifest = {
         # exhausts context before it can finish, which measures the window rather than the model.
         "ctx": 131072,
         "agent": "mini-swe-agent==2.4.6",
+        # Part of the pinned budget, not a detail: the overlay tightens observation truncation from
+        # the stock 10k chars to 4k, which is what makes a long trajectory fit the window at all.
+        # A run without it is not comparable to one with it, so it belongs in run_params rather than
+        # only in the bench that happens to pass it.
+        "agent_overlay": "benchmarks/swe-bench-live/agent-overlay.yaml (observation cap 4000 chars)",
     },
     "instance_count": len(out),
     "language_stats": stats,
