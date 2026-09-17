@@ -18,7 +18,7 @@
 //
 // Usage: node analysis/backfill-swe-live.mjs [--apply]
 //        (dry run by default — prints what would change)
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { loadLedger, loadManifest, scoredInstances, sweMetrics } from '../benches/swe_live.mjs';
 import { insertRows, query } from './pg-store.mjs';
@@ -30,6 +30,11 @@ const APPLY = process.argv.includes('--apply');
 // one the bench rolls out against.
 const manifest = loadManifest();
 const instances = scoredInstances(manifest);
+
+// Evaluation wall clock as it stood under the PREVIOUS pin, captured before the sweep that filled
+// in the new instances. Absent on a machine that never ran an older pin, which is the normal case.
+const SNAPSHOT_FILE = join(WORK, 'eval-seconds-v1.json');
+const EVAL_SNAPSHOT = existsSync(SNAPSHOT_FILE) ? JSON.parse(readFileSync(SNAPSHOT_FILE, 'utf8')) : { eval_seconds: {} };
 
 /** Same two-source read as the fixed bench: results.json success_ids, cross-checked per instance. */
 function resolvedFrom(evalDir) {
@@ -76,10 +81,35 @@ for (const cfgDir of readdirSync(runsDir)) {
    }
 
    const outDir = join(runsDir, cfgDir);
-   // eval_seconds is NOT recomputed: it is a wall clock only the process that ran the evaluation
-   // observed, and nothing on disk reconstructs it. Leaving it out keeps the stored row's value
-   // live rather than replacing a measurement with a guess.
-   const corrected = sweMetrics({ outDir, instances, resolved, ledger: loadLedger(outDir, manifest.run_params) });
+   // eval_seconds is NOT recomputed from disk: it is a wall clock only the process that ran the
+   // evaluation observed, and nothing on disk reconstructs it.
+   //
+   // It does, however, need MERGING once, and only once. Evaluation is incremental like the
+   // rollouts: a pin bump evaluates just the patches for the instances it added, so the bench
+   // stores the cost of judging four patches over what was the cost of judging twelve. Published
+   // unmerged, "eval min" would report a configuration's 16-instance evaluation as cheaper than its
+   // 12-instance one. The pre-bump figures were snapshotted before the sweep (nothing on disk
+   // holds them afterwards), and the merge is recorded in the ledger so a second backfill pass does
+   // not add them again.
+   const ledger = loadLedger(outDir, manifest.run_params);
+   const storedEvalS = stored.find((r) => r.metric === 'swe_eval_s')?.metric_value ?? null;
+   let evalSeconds = null;
+   const priorEvalS = EVAL_SNAPSHOT.eval_seconds?.[cfgDir];
+   // storedEvalS === priorEvalS means no new evaluation pass has been recorded yet — the row still
+   // holds the previous pin's figure — so there is nothing to merge and adding the snapshot would
+   // simply double it. This is what a backfill run BEFORE the sweep looks like.
+   if (priorEvalS != null && storedEvalS != null && storedEvalS !== priorEvalS && !ledger.eval_seconds_merged) {
+      evalSeconds = priorEvalS + storedEvalS;
+      ledger.eval_seconds_merged = {
+         total: evalSeconds,
+         parts: { [EVAL_SNAPSHOT.pin]: priorEvalS, 'this pin': storedEvalS },
+         at: new Date().toISOString(),
+      };
+      if (APPLY) {
+         writeFileSync(join(outDir, 'rollouts.json'), `${JSON.stringify(ledger, null, 2)}\n`);
+      }
+   }
+   const corrected = sweMetrics({ outDir, instances, resolved, ledger, evalSeconds });
 
    const was = stored.find((r) => r.metric === 'swe_resolved')?.metric_value ?? null;
    const differs = Object.entries(corrected).filter(([metric, v]) => {
