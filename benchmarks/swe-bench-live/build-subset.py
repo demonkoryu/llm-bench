@@ -8,7 +8,8 @@ changes it will not, which is exactly the signal we want.
 
 VERSIONS. v1 was 3 instances per language (n=12), v2 was 4 (n=16), v3 is 5 (n=20) -- all three on
 2026-09-17, each a request to tighten the interval. v4 has the SAME twenty instances as v3 and
-differs only in run_params: the step limit goes 250 -> 1000. A version bump is required anyway,
+differs only in run_params: the step limit goes 250 -> 1000. v5 keeps those twenty and drops the
+observation-truncation overlay, restoring the agent's stock 10,000-character cap. A version bump is required anyway,
 because run_params are pinned exactly as the instance list is -- a score is comparable only against
 one taken with the same instances AND the same budget. One instance was worth 8.3 points, then 6.25,
 now 5.0, and the 95% Wilson half-width has gone 25 -> 22 -> 20 points. Each step is real and each is
@@ -48,7 +49,7 @@ from huggingface_hub import dataset_info
 
 DATASET = "SWE-bench-Live/MultiLang"
 LANGS = ["go", "java", "ts", "rust"]
-VERSION = 4
+VERSION = 5
 PER_LANG = 5
 SEED = 20260916
 
@@ -192,11 +193,23 @@ manifest = {
         # exhausts context before it can finish, which measures the window rather than the model.
         "ctx": 131072,
         "agent": "mini-swe-agent==2.4.6",
-        # Part of the pinned budget, not a detail: the overlay tightens observation truncation from
-        # the stock 10k chars to 4k, which is what makes a long trajectory fit the window at all.
-        # A run without it is not comparable to one with it, so it belongs in run_params rather than
-        # only in the bench that happens to pass it.
-        "agent_overlay": "benchmarks/swe-bench-live/agent-overlay.yaml (observation cap 4000 chars)",
+        # NONE since v5 (user, 2026-09-17). v1-v4 merged an overlay that cut observation truncation
+        # from the agent's stock 10,000 characters to 4,000, and that deviation has now outlived its
+        # reason twice over. It was sized for a 32k-then-64k served window; the pin has served
+        # 131,072 since v1 was measured, and the overlay was never revisited. Reconstructing the
+        # true output sizes from the `characters elided` counts the template records shows the stock
+        # cap peaks at 114k tokens on the hungriest configuration -- inside the window, measured
+        # rather than assumed.
+        #
+        # It was also not free. The tightened cap fired 71-173 times per configuration, each firing a
+        # warning telling the model to go and read the file again, which costs steps in a benchmark
+        # whose binding constraint is time. The worst-performing configuration had the most
+        # truncations.
+        #
+        # So the overlay is dropped entirely rather than set to match the stock value: the run now
+        # uses mini-swe-agent's packaged config unmodified, which is what SWE-bench-Live's README
+        # names as protocol-compliant, and there is no local deviation left to explain.
+        "agent_overlay": None,
     },
     "instance_count": len(out),
     "language_stats": stats,

@@ -36,7 +36,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 // an older version stay valid for the instances the new one carries forward, and every configuration
 // has to roll out the instances the bump added before its published rate is over the new
 // denominator. See build-subset.py for how a version carries its predecessor forward.
-const MANIFEST = join(ROOT, 'benchmarks', 'swe-bench-live', 'subset-v4.json');
+const MANIFEST = join(ROOT, 'benchmarks', 'swe-bench-live', 'subset-v5.json');
 
 // Where the harness, its venv and the pinned local dataset live. Outside the repo on purpose: it is
 // a multi-GB working area (venv, cloned harness, per-instance logs and trajectories), machine-local
@@ -184,11 +184,13 @@ async function rollout({ instance, model, modelId, inferenceUrl, params, outDir 
       `openai/${modelId}`,
       '-c',
       cfg,
-      // Merged on top of the packaged config: tightens observation truncation only. See
-      // benchmarks/swe-bench-live/agent-overlay.yaml for why the stock 10k-char observations make
-      // the trajectory unfittable at any served context.
-      '-c',
-      join(ROOT, 'benchmarks', 'swe-bench-live', 'agent-overlay.yaml'),
+      // NO observation overlay since v5. The packaged config is used unmodified, which is the
+      // arrangement SWE-bench-Live's README calls protocol-compliant. v1-v4 merged an overlay that
+      // cut observation truncation to 4,000 characters for a 32k-then-64k served window; the pin has
+      // served 131,072 throughout, the stock cap measurably fits it, and the tightened one was
+      // costing steps to re-read files it had elided. Driven by `agent_overlay` in the manifest, so
+      // a run's prompt is fully described by the pin it names.
+      ...(params.agent_overlay ? ['-c', join(ROOT, params.agent_overlay.split(' ')[0])] : []),
       ...(thinkCfg ? ['-c', thinkCfg] : []),
       '-c',
       `agent.step_limit=${params.step_limit}`,
