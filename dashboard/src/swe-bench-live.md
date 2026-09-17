@@ -247,33 +247,67 @@ const eff = board.filter((d) => d.gpuHPerResolve != null && d.ctxPerResolve != n
 ```
 
 ```js
+// Colour + legend rather than text labels next to each point. Two configurations sit at
+// (0.18, 39,952) and (0.20, 41,453) — closer together than their own labels are wide — so NO text
+// placement separates them; the first version overplotted them into an unreadable smear. Colour
+// carries identity, the legend carries the names, and a short index on each dot keeps the mapping
+// readable in a screenshot where hovering is not possible.
+const effRanked = [...eff].sort((a, b) => a.gpuHPerResolve - b.gpuHPerResolve).map((d, i) => ({ ...d, idx: i + 1 }));
+```
+
+```js
 display(
-  eff.length === 0
+  effRanked.length === 0
     ? html`<div class="muted">No configuration resolved an instance, so cost per resolve is undefined.</div>`
     : html`<div class="scroll-x">${Plot.plot({
-        marginLeft: 56,
-        marginBottom: 42,
-        marginRight: 16,
-        width: Math.max(420, Math.min(width, 760)),
-        height: 340,
-        x: { label: "GPU-hours per resolved issue \u2192", domain: [0, Math.max(...eff.map((d) => d.gpuHPerResolve)) * 1.18], grid: true },
-        y: { label: "\u2191 context tokens per resolved issue", domain: [0, Math.max(...eff.map((d) => d.ctxPerResolve)) * 1.18], grid: true },
+        marginLeft: 62,
+        marginBottom: 44,
+        marginRight: 18,
+        marginTop: 10,
+        width: Math.max(420, Math.min(width, 720)),
+        height: 330,
+        x: { label: "GPU-hours per resolved issue \u2192", domain: [0, Math.max(...effRanked.map((d) => d.gpuHPerResolve)) * 1.15], grid: true },
+        y: { label: "\u2191 context tokens per resolved issue", domain: [0, Math.max(...effRanked.map((d) => d.ctxPerResolve)) * 1.15], grid: true, tickFormat: (v) => `${(v / 1000).toFixed(0)}k` },
+        color: { legend: true, domain: effRanked.map((d) => `${d.idx}. ${d.model}`), scheme: "tableau10" },
         marks: [
           Plot.ruleX([0]),
           Plot.ruleY([0]),
-          // Radius carries the resolve rate, so a cheap-but-ineffective config cannot masquerade
-          // as a good one by sitting near the origin.
-          Plot.dot(eff, { x: "gpuHPerResolve", y: "ctxPerResolve", r: (d) => 3 + d.pct / 12, fill: "currentColor", fillOpacity: 0.75, title: (d) => `${d.model}\n${d.resolved}/${d.total} resolved\n${d.gpuHPerResolve.toFixed(2)} GPU-h and ${d.ctxPerResolve.toLocaleString()} ctx tokens per resolve` }),
-          Plot.text(eff, { x: "gpuHPerResolve", y: "ctxPerResolve", text: "model", dy: -14, fontSize: 10, fill: "currentColor", fillOpacity: 0.8 }),
+          // Area carries the resolve rate, so a configuration that is cheap only because it rarely
+          // succeeds cannot sit near the origin looking good.
+          Plot.dot(effRanked, {
+            x: "gpuHPerResolve", y: "ctxPerResolve",
+            r: (d) => 6 + d.pct / 8,
+            fill: (d) => `${d.idx}. ${d.model}`,
+            fillOpacity: 0.85, stroke: "currentColor", strokeOpacity: 0.35,
+            title: (d) => `${d.model}\n${d.resolved}/${d.total} resolved (${d.pct.toFixed(0)}%)\n${d.gpuHPerResolve.toFixed(2)} GPU-h per resolve\n${d.ctxPerResolve.toLocaleString()} ctx tokens per resolve`,
+          }),
+          // The index sits INSIDE the dot, so it cannot collide with a neighbour's label.
+          Plot.text(effRanked, { x: "gpuHPerResolve", y: "ctxPerResolve", text: "idx", fill: "black", fillOpacity: 0.8, fontSize: 10, fontWeight: "bold" }),
         ],
       })}</div>`,
 );
 ```
 
-Toward the origin is cheaper on both axes; the dot area grows with resolve rate, so a configuration
-that is cheap only because it rarely succeeds stays visibly small. Both axes are undefined for a
-configuration that resolved nothing, which is why such a row would be absent rather than plotted at
-zero.
+```js
+display(
+  Inputs.table(effRanked, {
+    columns: ["idx", "model", "resolved", "pct", "gpuHPerResolve", "ctxPerResolve"],
+    header: { idx: "#", model: "config", pct: "rate", gpuHPerResolve: "GPU-h / resolve", ctxPerResolve: "ctx tok / resolve" },
+    format: {
+      pct: (v) => `${v.toFixed(0)}%`,
+      gpuHPerResolve: (v) => v.toFixed(2),
+      ctxPerResolve: (v) => v.toLocaleString(),
+    },
+    width: { model: 240 },
+    sort: "idx",
+  }),
+);
+```
+
+Toward the origin is cheaper on both axes, and dot area grows with resolve rate — so a
+configuration that is cheap only because it rarely succeeds stays visibly small. Numbers match the
+table above, ordered by GPU-hours per resolve. A configuration that resolved nothing is absent
+rather than plotted at zero, because both costs are undefined for it.
 
 
 ## Per language
