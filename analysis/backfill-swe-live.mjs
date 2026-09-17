@@ -74,10 +74,28 @@ for (const cfgDir of readdirSync(runsDir)) {
    const n = instances.length;
 
    // The stored rows for this artifact, so the corrected ones land at the SAME identity.
-   const stored = await query(`SELECT * FROM $LATEST WHERE bench = 'swe_live' AND gguf_file = '${cfgDir}' AND status = 'ok'`);
-   if (!stored.length) {
+   //
+   // NARROWED TO THE NEWEST HOST, and that is load-bearing. `host` is part of pg-store's identity
+   // key, so a configuration measured on `rose` in one sweep and `rose-gpu1` in the next has TWO
+   // live row sets — which V100 lane claimed it is not supposed to be a property of the result, but
+   // the store cannot know that. Taking them together made `stored.find(metric)` return whichever
+   // host sorted first, so the corrected rows were written onto the OTHER host's template: a third,
+   // phantom entity carrying a mix of both. That is what happened to Tiel-Coder here, and it also
+   // silently defeated the eval-seconds merge, which compares against `stored`.
+   //
+   // The newest host is the one this sweep actually ran on. Older hosts' rows are left alone rather
+   // than corrected: they describe a superseded measurement and belong to
+   // analysis/retire-superseded-swe-pins.mjs, not here.
+   const allStored = await query(`SELECT * FROM $LATEST WHERE bench = 'swe_live' AND gguf_file = '${cfgDir}' AND status = 'ok'`);
+   if (!allStored.length) {
       console.log(`SKIP ${cfgDir}: eval output present but no stored rows yet (config still running?)`);
       continue;
+   }
+   const newestHost = allStored.reduce((a, b) => (new Date(b.ts) > new Date(a.ts) ? b : a)).host;
+   const stored = allStored.filter((r) => r.host === newestHost);
+   if (stored.length !== allStored.length) {
+      const others = [...new Set(allStored.filter((r) => r.host !== newestHost).map((r) => r.host))];
+      console.log(`     ${cfgDir}: correcting host '${newestHost}'; ${others.join(', ')} also hold rows (retire them separately)`);
    }
 
    const outDir = join(runsDir, cfgDir);
