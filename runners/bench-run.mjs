@@ -294,7 +294,11 @@ async function main() {
       writtenTotal += r.rows;
    };
    const platformBase = {
-      host: host.raw?.label ? flags.target : flags.target,
+      // The MACHINE, not the lane. `host` is part of pg-store's IDENTITY_KEY, and which of the two
+      // identical V100s a sweep's shared queue handed this configuration is not a property of the
+      // result — stamping the target name made a re-measurement on the other card sit beside its
+      // predecessor instead of superseding it. The lane is still recorded, in run.json below.
+      host: host.machine,
       gpu: host.gpu,
       vram_total: host.vramTotalMib,
       backend: host.backend,
@@ -604,7 +608,10 @@ async function main() {
          {
             run_id,
             kind: 'benchrun',
-            host: flags.target,
+            host: host.machine,
+            // The LANE this run used. Provenance only — deliberately not a measurement dimension,
+            // so it lives in the manifest rather than on the rows.
+            target: flags.target,
             gpu: host.gpu,
             backend: host.backend,
             llamacpp_build,

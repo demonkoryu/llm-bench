@@ -43,7 +43,7 @@ export function resolveEnv(s) {
  * @param {string} path   path to hosts.yaml
  * @param {string} target host key (e.g. 'rose')
  * @param {{ backend?: string }} [opts] override the recorded inference backend
- * @returns {{ engine, llamaUrl, sshHost, backend, gpu, vramTotalMib, port, vramCmd, device, artifactDir, image, backends, raw }}
+ * @returns {{ engine, llamaUrl, sshHost, backend, machine, gpu, vramTotalMib, port, vramCmd, device, artifactDir, image, backends, raw }}
  */
 export function loadHostConfig(path, target, { backend } = {}) {
    const hosts = yaml.load(readFileSync(path, 'utf8')) ?? {};
@@ -59,6 +59,11 @@ export function loadHostConfig(path, target, { backend } = {}) {
       llamaUrl: resolveEnv(host.mlx ?? host.ninfer ?? host.llamacpp),
       sshHost: resolveEnv(host.ssh_host),
       backend: backend ?? host.backend ?? (engine === 'llamacpp' ? 'cuda' : engine),
+      // The MACHINE, which is what a measurement row's `host` identity must be. Falls back to the
+      // target name so a host entry that declares no machine behaves exactly as before; every
+      // entry in hosts.yaml declares one. Two targets on one box (two cards) share a machine on
+      // purpose — see the rose-gpu1 block in hosts.yaml.
+      machine: host.machine ?? target,
       gpu: host.gpu ?? target,
       vramTotalMib: host.vram_total_mib ?? null,
       port: host.port ?? null,

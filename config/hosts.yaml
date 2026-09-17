@@ -17,6 +17,11 @@ rose:
    # same identity rather than sitting beside it — deliberate here, but it means the two cannot be
    # compared from $LATEST. Declare a second host entry if both are ever wanted at once.
    label: "rose / Tesla V100 PCIe 32GB (1 of 2, device 0)"
+   # The MACHINE this target measures on, and the name stamped into a row's `host` identity.
+   # Deliberately NOT the target name: a target is a lane (which card, which port, which
+   # container), and which lane claimed a configuration is an accident of the sweep's shared work
+   # queue, not a property of the result. See the block above rose-gpu1 for what that cost.
+   machine: rose
    gpu: "V100"                         # slugged into result CSV filenames (→ v100)
    vram_total_mib: 32768               # ONE card. Was 65536 (2x32768) through 2026-08-26.
    llamacpp: "${LLAMA_URL:-http://192.168.1.120:8090}"
@@ -30,6 +35,18 @@ rose:
    vram_cmd: "nvidia-smi -i 0 --query-gpu=memory.used --format=csv,noheader,nounits"
 
 # ── rose-gpu1 / the second V100, llama.cpp ──────────────────────────────────────
+# A LANE, NOT A MACHINE (user, 2026-09-17: "i don't care which of 2 identical gpus something ran
+# on"). Both this target and `rose` declare `machine: rose`, and it is `machine` — not the target
+# name — that bench-run stamps into a row's `host`, which pg-store's IDENTITY_KEY keys on.
+#
+# Why that had to change. The sweeps use a shared work queue so whichever card frees up next takes
+# the next configuration; the lane assignment is therefore scheduling noise that can differ between
+# two runs of the SAME configuration. With the target name in the identity, such a re-measurement
+# did not supersede its predecessor, it sat down beside it — two complete row sets live at once.
+# That published a wrong number: after the SWE-bench-Live subset-v2 sweep, Muse-Glimmer drew the
+# other card and the dashboard served its superseded 12-instance result next to everyone else's
+# 16-instance ones, because nothing downstream keys on host and last-writer-won per metric.
+#
 # Identical silicon and identical serving stack to `rose` — it differs ONLY in which card it
 # owns (device 1) and therefore in port and container. It exists for the same reason the two
 # ninfer targets do: so TWO models can be measured at once, one per card, instead of queueing
@@ -50,6 +67,7 @@ rose:
 # say so — do not restore solo as the default.
 rose-gpu1:
    label: "rose / Tesla V100 PCIe 32GB (2 of 2, device 1)"
+   machine: rose                       # SAME identity as `rose` — see below
    gpu: "V100"                         # same slug as rose — same card model, comparable rows
    vram_total_mib: 32768               # ONE card
    llamacpp: "${LLAMA_URL_GPU1:-http://192.168.1.120:8091}"
@@ -80,6 +98,7 @@ rose-gpu1:
 # (Replaced RapidMLX 2026-07-22; the archived RapidMLX runner/serve script live under archive/rapidmlx/.)
 m1:
    label: "m1 / Apple M1 (32 GB unified)"
+   machine: m1                         # a genuinely different box — its own identity
    gpu: "M1"
    engine: optiq
    backend: optiq                     # distinct from purged omlx (backend: mlx) and archived rapidmlx rows
@@ -107,6 +126,7 @@ m1:
 # a valid measurement, just not a parallel one.
 rose-ninfer0:
    label: "rose / Tesla V100 #0 — NInfer"
+   machine: rose                       # same box, same silicon; `backend` is what separates ninfer rows
    gpu: "V100"                         # same slug as the llama.cpp rows: same silicon, comparable
    vram_total_mib: 32768               # ONE card — this instance cannot reach the peer's memory
    engine: ninfer
@@ -129,6 +149,7 @@ rose-ninfer0:
 
 rose-ninfer1:
    label: "rose / Tesla V100 #1 — NInfer"
+   machine: rose                       # see rose-ninfer0
    gpu: "V100"
    vram_total_mib: 32768
    engine: ninfer

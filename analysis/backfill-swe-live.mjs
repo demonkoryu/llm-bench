@@ -83,9 +83,10 @@ for (const cfgDir of readdirSync(runsDir)) {
    // phantom entity carrying a mix of both. That is what happened to Tiel-Coder here, and it also
    // silently defeated the eval-seconds merge, which compares against `stored`.
    //
-   // The newest host is the one this sweep actually ran on. Older hosts' rows are left alone rather
-   // than corrected: they describe a superseded measurement and belong to
-   // analysis/retire-superseded-swe-pins.mjs, not here.
+   // Since 2026-09-17 a row's `host` is the MACHINE, not the lane, so the two V100 targets can no
+   // longer split one configuration in two and this normally finds exactly one host. The guard
+   // stays because the store is not single-machine by design — m1 is its own machine — and picking
+   // arbitrarily among genuinely different machines would be the same bug wearing a different hat.
    const allStored = await query(`SELECT * FROM $LATEST WHERE bench = 'swe_live' AND gguf_file = '${cfgDir}' AND status = 'ok'`);
    if (!allStored.length) {
       console.log(`SKIP ${cfgDir}: eval output present but no stored rows yet (config still running?)`);
