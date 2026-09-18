@@ -24,12 +24,12 @@ against, and deleting one would leave those numbers describing a set nobody can 
 | v3 | 20 | 5 each |
 | v4 | 20 | same instances; step limit 250 → 1000 |
 | v5 | 20 | same instances; dropped the 4,000-char observation overlay |
-| v6 | 25 | adds cpp at 5 |
+| v6 | 23 | adds cpp at 3 — see below |
 
 A bump is **not** a re-sweep. `build-subset.py` carries every prior instance forward and fills only
 the gaps, and the bench's rollout ledger (`rollouts.json` per configuration) skips any instance
-already attempted under the same budget. So v5 → v6 costs five rollouts per configuration, not
-twenty-five. A bump that changes `run_params` is the expensive kind — it invalidates every stored
+already attempted under the same budget. So v5 → v6 costs three rollouts per configuration, not
+twenty-three. A bump that changes `run_params` is the expensive kind — it invalidates every stored
 rollout, which is why v5 took 8h16m and v6 takes about two hours.
 
 ## Building a version
@@ -82,11 +82,22 @@ repo may be fine. If a *second* instance from the same repo also fails, promote 
 `EXCLUDE_REPOS` — one failure is an instance, two out of two is that repo's environment on this
 machine (the `NVIDIA/OpenShell` precedent).
 
-**Gate 2 — cost.** The pin's median is ~79s. Anything past ~20 minutes, or grossly out of line, goes
-to `EXCLUDE_REPOS` — by **repository**, not by instance, because evaluation cost is a property of the
-build and test suite. The first attempt at this excluded by instance and drew the same repository
-straight back in. Precedents: `gwtproject/gwt` and `ghostfolio/ghostfolio` at >20 min,
-`ProvableHQ/leo` at 1611s.
+**Gate 2 — cost.** Goes to `EXCLUDE_REPOS` — by **repository**, not by instance, because evaluation
+cost is a property of the build and test suite. The first attempt at this excluded by instance and
+drew the same repository straight back in.
+
+The working bar is **the pin's own worst kept instance**, currently `antvis__G2-7076` at 444s: past
+what the pin already tolerates is out of line by the pin's own standard, which beats an invented
+number. Precedents: `gwtproject/gwt` and `ghostfolio/ghostfolio` at >20 min, `ProvableHQ/leo` at
+1611s, and the four cpp repos at 590–951s.
+
+**A language may simply have fewer affordable instances, and that is a result, not a failure.** The
+v6 cpp draw needed nine gold evaluations: three cost 29–111s, four cost 590–951s, two were
+gold-invalid. The distribution is bimodal because in C++ the build *is* the cost — an image either
+ships usable artifacts or recompiles — so redrawing within the expensive band never converges. cpp
+was capped at its three affordable instances via `PER_LANG_OVERRIDE` rather than buying two more at
+roughly a third of the pin's entire evaluation budget. `per_language` is a map from v6 on, and the
+page states the uneven counts and the coarser per-language step that follows.
 
 **Redraw loop.** Add the exclusion to the builder and regenerate. The carry-forward keeps everything
 that already passed and fills only the new gap, so a redraw costs one image and one validation, not

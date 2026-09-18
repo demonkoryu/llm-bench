@@ -23,14 +23,15 @@ small, because interval width falls with the square root of n: halving it costs 
 instances, and the eligible pool (java is the binding language at 24 distinct repos) caps an
 equal-per-language pin at n=96.
 
-v6 adds a FIFTH LANGUAGE, cpp, at the same 5 per language (n=25). run_params are unchanged from v5,
-which is the whole point: the rollout ledger's budget covers the run parameters and not the instance
-list, so every one of the twenty v5 rollouts carries forward from disk and only the five new ones
-have to run -- five rollouts per configuration rather than twenty-five.
+v6 adds a FIFTH LANGUAGE, cpp, at 3 instances rather than 5 (n=23) -- see PER_LANG_OVERRIDE for why.
+run_params are unchanged from v5, which is the whole point: the rollout ledger's budget covers the
+run parameters and not the instance list, so every one of the twenty v5 rollouts carries forward from
+disk and only the three new ones have to run -- three rollouts per configuration rather than
+twenty-three.
 
-Its value is COVERAGE, not precision, and the distinction is worth being honest about. n=25 moves
-one instance from 5.0 to 4.0 points and narrows the half-width by about a ninth; it does not make
-any pair of models distinguishable. On the v5 results the best-separated pair (11/20 against 7/20)
+Its value is COVERAGE, not precision, and the distinction is worth being honest about. n=23 moves
+one instance from 5.0 to 4.3 points and narrows the half-width by about a fourteenth; it does not
+make any pair of models distinguishable. On the v5 results the best-separated pair (11/20 against 7/20)
 differs on 6 instances against 2, which is McNemar p=0.29, and separating it at 80% power would take
 roughly 72 instances. Only 8 of the 20 v5 instances discriminate between the six configurations at
 all: 7 were solved by none of them and 5 by all of them. What cpp adds instead is a build-and-link
@@ -71,6 +72,26 @@ DATASET = "SWE-bench-Live/MultiLang"
 LANGS = ["go", "java", "ts", "rust", "cpp"]
 VERSION = 6
 PER_LANG = 5
+# Languages whose target differs from PER_LANG, with the reason it does.
+#
+# cpp is 3, not 5, and that asymmetry is a FINDING rather than a compromise. Nine cpp candidates were
+# gold-evaluated: three cost 29-111s, four cost 590-951s, and two were gold-invalid. Evaluation runs
+# once per configuration benchmarked, forever, so the four expensive ones would have added ~54-74% to
+# the whole pin's evaluation cost for two of its instances. Holding the pin's own cost bar (444s, its
+# worst kept instance) simply leaves cpp with three affordable instances, and that is the honest shape
+# of this language in this dataset -- go/java/ts/rust each had five at a median of ~79s.
+#
+# The cost: a cpp rate moves in steps of 33 points instead of 20. The page says so, and an uneven pin
+# that states its unevenness beats an even one that had to spend a third of the evaluation budget on
+# one language to get there.
+PER_LANG_OVERRIDE = {"cpp": 3}
+
+
+def target_for(lang):
+    """How many instances this language should contribute."""
+    return PER_LANG_OVERRIDE.get(lang, PER_LANG)
+
+
 SEED = 20260916
 
 # The pin to carry forward (see the selection loop). Prefer this version's own file so that
@@ -128,6 +149,31 @@ EXCLUDE_REPOS = {
     # machine, and drawing a third from it would just spend another pull and another validation to
     # learn the same thing.
     "NVIDIA/OpenShell": "gold-invalid twice (OpenShell-695 and -810 both fail with the reference patch here)",
+    # The v6 cpp draw, on cost (2026-09-18, user decision). Both PASSED gold and both sit under the
+    # ~20-minute bar that excluded gwt and ghostfolio -- they are excluded on the AGGREGATE instead.
+    # Together they cost 1703s, which would have taken the pin's evaluation total from 2572s to
+    # 4470s (+74%) for two of twenty-five instances, i.e. ~2.8h of extra evaluation per six-config
+    # sweep, forever.
+    #
+    # The working bar for this round is the pin's own worst KEPT instance, antvis__G2-7076 at 444s:
+    # anything materially above what the pin already tolerates is out of line by the pin's own
+    # standard, which is a defensible threshold rather than an invented one. In C++ the BUILD is the
+    # cost, so this is a repository exclusion -- swapping one instance for another from the same repo
+    # would buy nothing.
+    "WasmEdge/WasmEdge": "evaluation cost: 752s for WasmEdge-4772 (2026-09-18 v6 cpp gold pass); gold-valid, excluded on cost",
+    "kvcache-ai/Mooncake": "evaluation cost: 951s for Mooncake-2892 (2026-09-18 v6 cpp gold pass); gold-valid, excluded on cost",
+    # The second cost round, and the one that settled the question (2026-09-18, user decision). Both
+    # passed gold and came in cheaper than WasmEdge/Mooncake, but still 590-609s against the pin's
+    # worst kept instance at 444s. By then NINE cpp candidates had been evaluated and the
+    # distribution was plainly bimodal: three at 29-111s, four at 590-951s, two gold-invalid. In C++
+    # the BUILD is the cost, so a cheap instance means a repository whose image ships usable
+    # artifacts and an expensive one means a repository that recompiles -- which is a property of the
+    # repository, not of the issue, and no amount of redrawing within a repo changes it.
+    #
+    # Rather than keep probing a 1-in-3 hit rate, cpp was capped at its three affordable instances
+    # (see PER_LANG_OVERRIDE). That is the honest shape of this language in this dataset.
+    "duckdb/ducklake": "evaluation cost: 609s for ducklake-1340 (2026-09-18 v6 cpp gold pass); gold-valid, excluded on cost",
+    "stephenberry/glaze": "evaluation cost: 590s for glaze-2611 (2026-09-18 v6 cpp gold pass); gold-valid, excluded on cost",
     # Drawn for v3 and disqualified by its own gold pass at 1611s -- 27 minutes for ONE instance,
     # against a median of 79s across the rest of the pin, and 72% of what evaluating all sixteen
     # existing instances costs put together. PASS_TO_PASS is 4, so almost none of that is tests:
@@ -140,6 +186,14 @@ EXCLUDE_REPOS = {
 EXCLUDE_INSTANCES = {
     # (NVIDIA__OpenShell-695 moved to EXCLUDE_REPOS once a second instance from the same repo
     # failed the same way -- kept here as a comment so the history of the decision is readable.)
+    #
+    # The v6 cpp draw failed gold on TWO of its five (2026-09-18), against zero for the go/java/ts/rust
+    # draws before it. Both are cheap to evaluate, so this is not a cost exclusion: the reference patch
+    # simply does not make the tests pass on this machine, which means no model can resolve them and
+    # every model would spend a full rollout earning a guaranteed zero. Instance-scoped, not
+    # repo-scoped -- another instance from either repo may be perfectly fine.
+    "actor-framework__actor-framework-2300": "gold-invalid (2026-09-18 v6 cpp pass; 29s, resolved=False with the reference patch)",
+    "OpenRCT2__OpenRCT2-26315": "gold-invalid (2026-09-18 v6 cpp pass; 67s, resolved=False with the reference patch)",
 }
 
 rev = dataset_info(DATASET).sha
@@ -170,10 +224,11 @@ for lang in LANGS:
     ]
     rows.sort(key=lambda r: r["instance_id"])          # deterministic base order
     random.Random(f"{SEED}:{lang}").shuffle(rows)      # seeded, per-language
-    carried = [i for i in kept if i["language"] == lang][:PER_LANG]
+    want = target_for(lang)
+    carried = [i for i in kept if i["language"] == lang][:want]
     picked, seen_repos = [], set(kept_repos)
     for r in rows:
-        if len(carried) + len(picked) >= PER_LANG:
+        if len(carried) + len(picked) >= want:
             break
         if r["repo"] in seen_repos or r["instance_id"] in kept_ids:
             continue
@@ -201,7 +256,9 @@ manifest = {
     "dataset_revision": rev,
     "seed": SEED,
     "languages": LANGS,
-    "per_language": PER_LANG,
+    # A MAP, not a scalar, since v6: cpp contributes 3 where the others contribute 5. Consumers
+    # must handle both shapes -- v1-v5 emitted a bare int and those files stay checked in.
+    "per_language": {lang: target_for(lang) for lang in LANGS},
     "filters": {"problem_statement_chars": [MIN_PS, MAX_PS], "fail_to_pass_max": MAX_F2P,
                 "pass_to_pass_max": MAX_P2P, "max_one_instance_per_repo": True},
     "excluded_repos": EXCLUDE_REPOS,

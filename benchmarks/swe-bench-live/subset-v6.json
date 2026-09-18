@@ -1,12 +1,19 @@
 {
   "dataset": "SWE-bench-Live/MultiLang",
   "dataset_revision": "22091f6ce331c5c60c241d76512d4be7ee1a555b",
-  "excluded_instances": {},
+  "excluded_instances": {
+    "OpenRCT2__OpenRCT2-26315": "gold-invalid (2026-09-18 v6 cpp pass; 67s, resolved=False with the reference patch)",
+    "actor-framework__actor-framework-2300": "gold-invalid (2026-09-18 v6 cpp pass; 29s, resolved=False with the reference patch)"
+  },
   "excluded_repos": {
     "NVIDIA/OpenShell": "gold-invalid twice (OpenShell-695 and -810 both fail with the reference patch here)",
     "ProvableHQ/leo": "evaluation cost: 1611s for one instance (2026-09-17 gold pass); the cost is the Rust build, not the issue",
+    "WasmEdge/WasmEdge": "evaluation cost: 752s for WasmEdge-4772 (2026-09-18 v6 cpp gold pass); gold-valid, excluded on cost",
+    "duckdb/ducklake": "evaluation cost: 609s for ducklake-1340 (2026-09-18 v6 cpp gold pass); gold-valid, excluded on cost",
     "ghostfolio/ghostfolio": "evaluation cost: >20 min for one instance (2026-09-16 gold pass); the cost is the build, not the issue",
-    "gwtproject/gwt": "evaluation cost: >20 min for one instance (2026-09-16 gold pass); the cost is the build, not the issue"
+    "gwtproject/gwt": "evaluation cost: >20 min for one instance (2026-09-16 gold pass); the cost is the build, not the issue",
+    "kvcache-ai/Mooncake": "evaluation cost: 951s for Mooncake-2892 (2026-09-18 v6 cpp gold pass); gold-valid, excluded on cost",
+    "stephenberry/glaze": "evaluation cost: 590s for glaze-2611 (2026-09-18 v6 cpp gold pass); gold-valid, excluded on cost"
   },
   "filters": {
     "fail_to_pass_max": 50,
@@ -17,8 +24,75 @@
       8000
     ]
   },
-  "instance_count": 25,
+  "gold_validated": {
+    "eval_seconds": {
+      "BYVoid__OpenCC-1310": 29,
+      "FastLED__FastLED-2691": 111,
+      "NVlabs__cuda-oxide-381": 111,
+      "antvis__G2-7076": 444,
+      "apache__inlong-11947": 132,
+      "bpg__terraform-provider-proxmox-2122": 36,
+      "btraceio__btrace-897": 192,
+      "danielmiessler__Fabric-2098": 61,
+      "ether__etherpad-7445": 47,
+      "excalidraw__excalidraw-9760": 164,
+      "floci-io__floci-57": 65,
+      "gitlab4j__gitlab4j-api-1266": 40,
+      "gpbl__react-day-picker-2816": 76,
+      "h4ckf0r0day__obscura-414": 65,
+      "iflytek__skillhub-253": 110,
+      "immunant__c2rust-1322": 79,
+      "kubernetes__kops-17519": 252,
+      "kumahq__kuma-15918": 443,
+      "modelcontextprotocol__rust-sdk-1021": 77,
+      "musescore__MuseScore-33064": 55,
+      "nearai__ironclaw-6712": 70,
+      "open-telemetry__opentelemetry-go-8133": 37,
+      "withastro__starlight-3293": 71
+    },
+    "eval_seconds_total": 2767,
+    "harness_commit": "9a27349",
+    "host": "rose (62 GB RAM, 32 CPU)",
+    "note": "Every pinned instance passes with the reference patch on this machine, so the scored denominator is the full pin. The cpp adds cost 195s to evaluate between them (29 + 55 + 111), which is why they are the three that stayed. NINE cpp candidates were gold-evaluated on 2026-09-18 to get there: actor-framework-2300 (29s) and OpenRCT2-26315 (67s) failed with the reference patch and are in excluded_instances; WasmEdge-4772 (752s), Mooncake-2892 (951s), ducklake-1340 (609s) and glaze-2611 (590s) all PASSED but were excluded on cost, by repository, and are in excluded_repos. The distribution is bimodal because in C++ the build is the cost: an image either ships usable artifacts or recompiles. Holding the pin's own bar (444s, its worst kept instance) leaves cpp with three affordable instances rather than five, so per_language is 3 for cpp and 5 for the rest.",
+    "resolvable": [
+      "bpg__terraform-provider-proxmox-2122",
+      "kubernetes__kops-17519",
+      "kumahq__kuma-15918",
+      "btraceio__btrace-897",
+      "gitlab4j__gitlab4j-api-1266",
+      "iflytek__skillhub-253",
+      "NVlabs__cuda-oxide-381",
+      "h4ckf0r0day__obscura-414",
+      "nearai__ironclaw-6712",
+      "antvis__G2-7076",
+      "excalidraw__excalidraw-9760",
+      "withastro__starlight-3293",
+      "danielmiessler__Fabric-2098",
+      "floci-io__floci-57",
+      "immunant__c2rust-1322",
+      "ether__etherpad-7445",
+      "open-telemetry__opentelemetry-go-8133",
+      "apache__inlong-11947",
+      "gpbl__react-day-picker-2816",
+      "modelcontextprotocol__rust-sdk-1021",
+      "BYVoid__OpenCC-1310",
+      "musescore__MuseScore-33064",
+      "FastLED__FastLED-2691"
+    ],
+    "validated_at": "2026-09-16 (v1) / 2026-09-17 (the v2 and v3 adds) / 2026-09-18 (the three cpp adds)"
+  },
+  "instance_count": 23,
   "instances": [
+    {
+      "base_commit": "f1e3d25c9f0b265c58f0631105b5a3a9f4e9ef9a",
+      "docker_image": "starryzhang/sweb.eval.x86_64.byvoid_1776_opencc-1310",
+      "fail_to_pass": 1,
+      "instance_id": "BYVoid__OpenCC-1310",
+      "language": "cpp",
+      "pass_to_pass": 141,
+      "problem_statement_chars": 1083,
+      "repo": "BYVoid/OpenCC"
+    },
     {
       "base_commit": "9e3b9eb2183fd8111926ac28e6798e7a0c6afa93",
       "docker_image": "starryzhang/sweb.eval.x86_64.fastled_1776_fastled-2691",
@@ -28,36 +102,6 @@
       "pass_to_pass": 485,
       "problem_statement_chars": 2559,
       "repo": "FastLED/FastLED"
-    },
-    {
-      "base_commit": "02c18b61b6b6837e79ea429ec3a8be4c16fe8585",
-      "docker_image": "starryzhang/sweb.eval.x86_64.openrct2_1776_openrct2-26315",
-      "fail_to_pass": 25,
-      "instance_id": "OpenRCT2__OpenRCT2-26315",
-      "language": "cpp",
-      "pass_to_pass": 333,
-      "problem_statement_chars": 1202,
-      "repo": "OpenRCT2/OpenRCT2"
-    },
-    {
-      "base_commit": "dd847a2ca02f74b7020d3d307cdc3241f5886475",
-      "docker_image": "starryzhang/sweb.eval.x86_64.wasmedge_1776_wasmedge-4772",
-      "fail_to_pass": 2,
-      "instance_id": "WasmEdge__WasmEdge-4772",
-      "language": "cpp",
-      "pass_to_pass": 957,
-      "problem_statement_chars": 3322,
-      "repo": "WasmEdge/WasmEdge"
-    },
-    {
-      "base_commit": "263d8d465ff54be37e3658d387cd8a048d9be811",
-      "docker_image": "starryzhang/sweb.eval.x86_64.actor-framework_1776_actor-framework-2300",
-      "fail_to_pass": 1,
-      "instance_id": "actor-framework__actor-framework-2300",
-      "language": "cpp",
-      "pass_to_pass": 239,
-      "problem_statement_chars": 412,
-      "repo": "actor-framework/actor-framework"
     },
     {
       "base_commit": "b669ca8efc40e6baefb0d3ff1ba4dea0155f02d8",
@@ -272,9 +316,9 @@
   ],
   "language_stats": {
     "cpp": {
-      "carried": 0,
-      "eligible": 51,
-      "new": 5
+      "carried": 3,
+      "eligible": 38,
+      "new": 0
     },
     "go": {
       "carried": 5,
@@ -304,7 +348,13 @@
     "rust",
     "cpp"
   ],
-  "per_language": 5,
+  "per_language": {
+    "cpp": 3,
+    "go": 5,
+    "java": 5,
+    "rust": 5,
+    "ts": 5
+  },
   "run_params": {
     "agent": "mini-swe-agent==2.4.6",
     "agent_overlay": null,

@@ -28,6 +28,23 @@ for (const r of swe) {
 }
 
 const LANGS = subset.languages;
+// `per_language` is a MAP from v6 on (cpp contributes 3 where the others contribute 5) and was a
+// bare int in v1-v5. Those older files stay checked in and can legitimately be the active pin, so
+// both shapes are normalised here rather than assumed away. Interpolating an object straight into
+// the prose below rendered "[object Object] instances" and "NaN points", which is how a schema
+// change shows up on a page: not as an error, as a sentence that has stopped meaning anything.
+const perLangCount = Object.fromEntries(
+  LANGS.map((l) => [l, typeof subset.per_language === "number" ? subset.per_language : subset.per_language[l]]),
+);
+// Languages grouped by their instance count, so the prose can say "5 each for go/java/ts/rust, 3 for
+// cpp" instead of one number that is wrong for at least one language.
+const perLangGroups = [...new Set(Object.values(perLangCount))]
+  .sort((a, b) => b - a)
+  .map((n) => ({ n, langs: LANGS.filter((l) => perLangCount[l] === n) }));
+const perLangPhrase = perLangGroups.map((g) => `${g.n} × ${g.langs.join("/")}`).join(", ");
+// The COARSEST step, i.e. the least precise language, because that is the figure a reader needs in
+// order not to over-read the smallest one.
+const worstLangStep = Math.max(...Object.values(perLangCount).map((n) => 100 / n));
 const board = [...byEntity.values()]
   .map((e) => {
     const k = e.m.swe_resolved ?? 0;
@@ -372,10 +389,12 @@ display(
 
 <div class="caution">
 
-Each language is only ${subset.per_language} instances, so a per-language rate moves in steps of
-${(100 / subset.per_language).toFixed(0)} points and is at best directional. It is shown to expose
+Each language is only a handful of instances — ${perLangPhrase} — so a per-language rate moves in
+steps of up to ${worstLangStep.toFixed(0)} points and is at best directional. It is shown to expose
 gross asymmetries — a model that solves nothing in one language and most of another — not to rank
-languages against each other.
+languages against each other. The counts differ because cpp has only three instances whose
+evaluation fits the pin's cost bar: of nine candidates, four took 590–951s against a ~79s median for
+the rest, and evaluation cost is paid once per configuration benchmarked, forever.
 
 </div>
 
@@ -402,7 +421,7 @@ one.
 const rp = subset.run_params;
 display(html`<div class="tip">
   <b>dataset</b> ${subset.dataset} at revision <code>${subset.dataset_revision}</code><br>
-  <b>selection</b> seed ${subset.seed}, ${subset.per_language} per language, one instance per
+  <b>selection</b> seed ${subset.seed}, ${perLangPhrase}, one instance per
   repository, F2P ≤ ${subset.filters.fail_to_pass_max}, P2P ≤ ${subset.filters.pass_to_pass_max}<br>
   <b>budget</b> ${rp.rollout_timeout_s}s and ${rp.step_limit} steps per instance at ctx
   ${rp.ctx.toLocaleString()}<br>
