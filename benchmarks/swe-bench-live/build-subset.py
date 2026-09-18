@@ -23,6 +23,13 @@ small, because interval width falls with the square root of n: halving it costs 
 instances, and the eligible pool (java is the binding language at 24 distinct repos) caps an
 equal-per-language pin at n=96.
 
+v8 adds a SIXTH LANGUAGE, c, at 5 instances (n=30). Note its pool shape: 71 eligible instances but
+only 18 distinct repositories, the narrowest of the eight splits, and one-instance-per-repo is a
+GLOBAL constraint. Exclusions therefore bite harder here than in cpp (28 repos) -- each cost or
+validity rejection removes a whole repository from a pool of 18, so the room for redraws is real but
+finite. If it ever runs out, that is a fact about the dataset to report, not a reason to quietly
+shrink the language.
+
 v7 takes cpp from 3 back to 5 (n=25), by user decision after v6 published. It is a genuine trade
 against v6's reasoning rather than a correction of it: the two extra instances are worth whatever
 they cost to evaluate, because a language contributing 3 where the others contribute 5 moves its rate
@@ -75,8 +82,8 @@ from datasets import load_dataset
 from huggingface_hub import dataset_info
 
 DATASET = "SWE-bench-Live/MultiLang"
-LANGS = ["go", "java", "ts", "rust", "cpp"]
-VERSION = 7
+LANGS = ["go", "java", "ts", "rust", "cpp", "c"]
+VERSION = 8
 PER_LANG = 5
 # Languages whose target differs from PER_LANG, with the reason it does.
 #
@@ -183,6 +190,25 @@ EXCLUDE_REPOS = {
     # (see PER_LANG_OVERRIDE). That is the honest shape of this language in this dataset.
     "duckdb/ducklake": "evaluation cost: 609s for ducklake-1340 (2026-09-18 v6 cpp gold pass); gold-valid, excluded on cost",
     "stephenberry/glaze": "evaluation cost: 590s for glaze-2611 (2026-09-18 v6 cpp gold pass); gold-valid, excluded on cost",
+    # The v8 C draw, on cost (2026-09-18). Neither was allowed to finish, and that is the point: an
+    # exclusion needs "too expensive", not an exact figure. dynamorio spent 52 MINUTES building
+    # before being stopped, having established nothing beyond what the first twenty minutes already
+    # said -- at six configurations per sweep that is five hours of evaluation for one instance.
+    # zmk was stopped earlier still, on the user's knowledge of the repository plus the clearest
+    # structural signal in the pool: a 30.8 GB image, the largest of any candidate seen, against a
+    # 3-4 GB median. Image size is not evaluation cost, but for a C or C++ repository it is the
+    # cheapest available proxy for "this one rebuilds the world", and it is free to check before
+    # spending an hour finding out.
+    "DynamoRIO/dynamorio": "evaluation cost: still building at 3148s (52.5 min) when stopped, no verdict (2026-09-18 v8 C gold pass)",
+    "zmkfirmware/zmk": "evaluation cost: 30.8 GB image (largest in the pool), still building at 355s when stopped (2026-09-18 v8 C gold pass)",
+    # Two more from the v8 C draw, both capped without producing a verdict. varnish-cache is the one
+    # that killed the image-size heuristic: 0.8 GB compressed and 3.2 GB on disk, the same class as
+    # the three C instances that were KEPT at 62-322s, and it was still building at 1200s. Size
+    # predicts nothing in either direction -- MuseScore is 8.5 GB on disk and evaluates in 55s --
+    # so it is only good for deciding how hard to cap.
+    "varnishcache/varnish-cache": "evaluation cost: still building at 1201s when capped, no verdict (2026-09-18 v8 C gold pass)",
+    "fluent/fluent-bit": "evaluation cost: still building at 604s when capped, no verdict (2026-09-18 v8 C gold pass)",
+    "cilium/tetragon": "evaluation cost: still building at 500s when capped, no verdict (2026-09-18 v8 C gold pass)",
     # Drawn for v3 and disqualified by its own gold pass at 1611s -- 27 minutes for ONE instance,
     # against a median of 79s across the rest of the pin, and 72% of what evaluating all sixteen
     # existing instances costs put together. PASS_TO_PASS is 4, so almost none of that is tests:
