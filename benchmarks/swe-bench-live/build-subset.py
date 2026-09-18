@@ -23,6 +23,12 @@ small, because interval width falls with the square root of n: halving it costs 
 instances, and the eligible pool (java is the binding language at 24 distinct repos) caps an
 equal-per-language pin at n=96.
 
+v7 takes cpp from 3 back to 5 (n=25), by user decision after v6 published. It is a genuine trade
+against v6's reasoning rather than a correction of it: the two extra instances are worth whatever
+they cost to evaluate, because a language contributing 3 where the others contribute 5 moves its rate
+in 33-point steps and reads as an afterthought on the page. v6 stays checked in and is what the
+2026-09-18 n=23 results were measured against.
+
 v6 adds a FIFTH LANGUAGE, cpp, at 3 instances rather than 5 (n=23) -- see PER_LANG_OVERRIDE for why.
 run_params are unchanged from v5, which is the whole point: the rollout ledger's budget covers the
 run parameters and not the instance list, so every one of the twenty v5 rollouts carries forward from
@@ -70,7 +76,7 @@ from huggingface_hub import dataset_info
 
 DATASET = "SWE-bench-Live/MultiLang"
 LANGS = ["go", "java", "ts", "rust", "cpp"]
-VERSION = 6
+VERSION = 7
 PER_LANG = 5
 # Languages whose target differs from PER_LANG, with the reason it does.
 #
@@ -84,7 +90,10 @@ PER_LANG = 5
 # The cost: a cpp rate moves in steps of 33 points instead of 20. The page says so, and an uneven pin
 # that states its unevenness beats an even one that had to spend a third of the evaluation budget on
 # one language to get there.
-PER_LANG_OVERRIDE = {"cpp": 3}
+# EMPTY as of v7: cpp is back to the common 5. The override and its reasoning are kept above as the
+# history of the decision -- the four expensive cpp repos remain excluded in EXCLUDE_REPOS, so v7
+# fills the two restored slots from the rest of the pool and pays whatever they cost.
+PER_LANG_OVERRIDE = {}
 
 
 def target_for(lang):

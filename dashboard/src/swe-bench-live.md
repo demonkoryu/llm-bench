@@ -42,6 +42,13 @@ const perLangGroups = [...new Set(Object.values(perLangCount))]
   .sort((a, b) => b - a)
   .map((n) => ({ n, langs: LANGS.filter((l) => perLangCount[l] === n) }));
 const perLangPhrase = perLangGroups.map((g) => `${g.n} × ${g.langs.join("/")}`).join(", ");
+// Explain an uneven pin only WHEN it is uneven. v6 capped cpp at 3 on evaluation cost and the page
+// said so; v7 restored it to 5, at which point that sentence became a confident falsehood. A note
+// derived from the data cannot outlive the condition it describes.
+const perLangNote =
+  perLangGroups.length > 1
+    ? " The counts differ because some languages have fewer instances whose evaluation fits the pin's cost bar, and evaluation cost is paid once per configuration benchmarked, forever."
+    : "";
 // The COARSEST step, i.e. the least precise language, because that is the figure a reader needs in
 // order not to over-read the smallest one.
 const worstLangStep = Math.max(...Object.values(perLangCount).map((n) => 100 / n));
@@ -392,9 +399,7 @@ display(
 Each language is only a handful of instances — ${perLangPhrase} — so a per-language rate moves in
 steps of up to ${worstLangStep.toFixed(0)} points and is at best directional. It is shown to expose
 gross asymmetries — a model that solves nothing in one language and most of another — not to rank
-languages against each other. The counts differ because cpp has only three instances whose
-evaluation fits the pin's cost bar: of nine candidates, four took 590–951s against a ~79s median for
-the rest, and evaluation cost is paid once per configuration benchmarked, forever.
+languages against each other.${perLangNote}
 
 </div>
 
