@@ -220,7 +220,7 @@ function unitFor(bench, field) {
       return 'ratio'; // per-rule 0..1 rubric scores
    }
    if (/^swe_lang_/.test(field)) {
-      return 'ratio'; // per-language resolve rate, n=3 each — read the aggregate, not these
+      return 'ratio'; // per-language resolve rate, n=5 each — read the aggregate, not these
    }
    if (/_ms$/.test(field)) {
       return 'ms';

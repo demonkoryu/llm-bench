@@ -61,7 +61,14 @@ const board = [...byEntity.values()]
   .sort((a, b) => b.pct - a.pct || a.model.localeCompare(b.model));
 
 const nInst = subset.instance_count;
-const perInstancePoints = nInst ? 100 / nInst : 0;
+// TWO counts, and conflating them is a live bug rather than a nicety. `nInst` is how many instances
+// the pin NAMES; `nScored` is how many a rate is actually over -- the gold-validated set, i.e. those
+// that pass here with the benchmark's own reference patch. They are equal whenever every pinned
+// instance validates, which is the normal case and why this went unnoticed. The moment one does not,
+// `swe_total` (gold-validated) drops below `instance_count` (pinned) for EVERY configuration, and the
+// stale-pin filter below would flag all of them as measured against an older pin, permanently.
+const nScored = subset.gold_validated?.resolvable?.length ?? nInst;
+const perInstancePoints = nScored ? 100 / nScored : 0;
 ```
 
 ```js
@@ -109,12 +116,12 @@ not feed the leaderboard, the Pareto view, or any composite score.
 // bar is honest about itself while the comparison between bars is not. This is what the state looks
 // like between a pin bump and the sweep that fills it in, and an unlabelled chart in that window
 // would put a 12-instance rate and a 16-instance rate on one axis with nothing to say so.
-const understated = board.filter((d) => d.total > 0 && d.total < nInst);
+const understated = board.filter((d) => d.total > 0 && d.total < nScored);
 display(
   understated.length === 0
     ? html``
     : html`<div class="warning"><b>Measured against an older, smaller pin.</b> ${understated
-        .map((d) => `${d.model} (${d.total} of ${nInst})`)
+        .map((d) => `${d.model} (${d.total} of ${nScored})`)
         .join(", ")} — the rate is over a different denominator, so it is not comparable with the rest
         until those instances are rolled out.</div>`,
 );

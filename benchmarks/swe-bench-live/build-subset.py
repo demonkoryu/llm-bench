@@ -3,8 +3,14 @@
 
 Comparability is the whole point of this file. Every model must attempt the identical instance list,
 so the selection is fully deterministic (fixed seed, sorted inputs) and the result is checked in --
-re-running this must reproduce subset-v{VERSION}.json byte-for-byte, and if the upstream dataset
-changes it will not, which is exactly the signal we want.
+re-running this must reproduce the committed subset-v{VERSION}.json's INSTANCE LIST exactly, and if
+the upstream dataset changes it will not, which is exactly the signal we want.
+
+The one field that legitimately differs on a rebuild is `language_stats`, and knowing that saves
+mistaking a benign diff for a real one. It records how the build WENT, not what the pin IS: on the
+first build of a bump the new language reads carried=0/new=5, and on any rebuild it reads
+carried=5/new=0, because PRIOR is by then the bump's own file. Nothing consumes it; it is provenance.
+Compare `instances` when you want the real answer.
 
 VERSIONS. v1 was 3 instances per language (n=12), v2 was 4 (n=16), v3 is 5 (n=20) -- all three on
 2026-09-17, each a request to tighten the interval. v4 has the SAME twenty instances as v3 and
@@ -16,6 +22,20 @@ now 5.0, and the 95% Wilson half-width has gone 25 -> 22 -> 20 points. Each step
 small, because interval width falls with the square root of n: halving it costs four times the
 instances, and the eligible pool (java is the binding language at 24 distinct repos) caps an
 equal-per-language pin at n=96.
+
+v6 adds a FIFTH LANGUAGE, cpp, at the same 5 per language (n=25). run_params are unchanged from v5,
+which is the whole point: the rollout ledger's budget covers the run parameters and not the instance
+list, so every one of the twenty v5 rollouts carries forward from disk and only the five new ones
+have to run -- five rollouts per configuration rather than twenty-five.
+
+Its value is COVERAGE, not precision, and the distinction is worth being honest about. n=25 moves
+one instance from 5.0 to 4.0 points and narrows the half-width by about a ninth; it does not make
+any pair of models distinguishable. On the v5 results the best-separated pair (11/20 against 7/20)
+differs on 6 instances against 2, which is McNemar p=0.29, and separating it at 80% power would take
+roughly 72 instances. Only 8 of the 20 v5 instances discriminate between the six configurations at
+all: 7 were solved by none of them and 5 by all of them. What cpp adds instead is a build-and-link
+toolchain that none of go, java, ts or rust exercises -- the dataset carries eight languages and the
+pin had been silent about half of them (c, cpp, js, cs).
 
 Every earlier version's file stays checked in. Each is what some published result was measured
 against, and deleting one would leave those numbers describing a set nobody can reconstruct.
@@ -48,8 +68,8 @@ from datasets import load_dataset
 from huggingface_hub import dataset_info
 
 DATASET = "SWE-bench-Live/MultiLang"
-LANGS = ["go", "java", "ts", "rust"]
-VERSION = 5
+LANGS = ["go", "java", "ts", "rust", "cpp"]
+VERSION = 6
 PER_LANG = 5
 SEED = 20260916
 
@@ -60,8 +80,26 @@ SEED = 20260916
 # would fill them from a differently-ordered candidate list and the extension would not be
 # reproducible from the previous pin.
 _HERE = Path(__file__).parent
+
+
+def _usable(path):
+    """A candidate PRIOR that actually parses and carries instances.
+
+    Existence is not enough, because the documented invocation is
+    `build-subset.py > subset-v{VERSION}.json` and the SHELL CREATES THAT FILE, EMPTY, BEFORE python
+    starts. A plain exists() check then resolves PRIOR to the empty output file rather than falling
+    back to the previous version, and the run dies on a JSONDecodeError pointing at the file it was
+    about to write. Treating an empty or unparseable candidate as absent makes the documented usage
+    work; a HALF-WRITTEN prior from an interrupted run is caught the same way.
+    """
+    try:
+        return bool(json.loads(path.read_text()).get("instances")) if path.exists() else False
+    except (json.JSONDecodeError, OSError):
+        return False
+
+
 PRIOR = next(
-    (p for p in (_HERE / f"subset-v{VERSION}.json", _HERE / f"subset-v{VERSION - 1}.json") if p.exists()),
+    (p for p in (_HERE / f"subset-v{VERSION}.json", _HERE / f"subset-v{VERSION - 1}.json") if _usable(p)),
     _HERE / f"subset-v{VERSION}.json",
 )
 MIN_PS, MAX_PS = 200, 8000
