@@ -36,7 +36,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 // an older version stay valid for the instances the new one carries forward, and every configuration
 // has to roll out the instances the bump added before its published rate is over the new
 // denominator. See build-subset.py for how a version carries its predecessor forward.
-const MANIFEST = join(ROOT, 'benchmarks', 'swe-bench-live', 'subset-v8.json');
+const MANIFEST = join(ROOT, 'benchmarks', 'swe-bench-live', 'subset-v9.json');
 
 // Where the harness, its venv and the pinned local dataset live. Outside the repo on purpose: it is
 // a multi-GB working area (venv, cloned harness, per-instance logs and trajectories), machine-local

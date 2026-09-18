@@ -23,6 +23,11 @@ small, because interval width falls with the square root of n: halving it costs 
 instances, and the eligible pool (java is the binding language at 24 distinct repos) caps an
 equal-per-language pin at n=96.
 
+v9 adds a SEVENTH LANGUAGE, js, at 5 instances (n=35). Of the eight splits only cs then remains.
+js should be the cheap one: 32 distinct repositories, second-widest pool, and a managed runtime, so
+evaluation should look like ts (which needed no exclusions at all) rather than like c, where the
+build dominated and five repositories had to be dropped on cost.
+
 v8 adds a SIXTH LANGUAGE, c, at 5 instances (n=30). Note its pool shape: 71 eligible instances but
 only 18 distinct repositories, the narrowest of the eight splits, and one-instance-per-repo is a
 GLOBAL constraint. Exclusions therefore bite harder here than in cpp (28 repos) -- each cost or
@@ -82,8 +87,8 @@ from datasets import load_dataset
 from huggingface_hub import dataset_info
 
 DATASET = "SWE-bench-Live/MultiLang"
-LANGS = ["go", "java", "ts", "rust", "cpp", "c"]
-VERSION = 8
+LANGS = ["go", "java", "ts", "rust", "cpp", "c", "js"]
+VERSION = 9
 PER_LANG = 5
 # Languages whose target differs from PER_LANG, with the reason it does.
 #
@@ -229,6 +234,10 @@ EXCLUDE_INSTANCES = {
     # repo-scoped -- another instance from either repo may be perfectly fine.
     "actor-framework__actor-framework-2300": "gold-invalid (2026-09-18 v6 cpp pass; 29s, resolved=False with the reference patch)",
     "OpenRCT2__OpenRCT2-26315": "gold-invalid (2026-09-18 v6 cpp pass; 67s, resolved=False with the reference patch)",
+    # The one js rejection (2026-09-18 v9 pass), and notably NOT a cost one -- it evaluated in 300s,
+    # inside the bar. The reference patch simply does not make the tests pass here. Instance-scoped:
+    # TryGhost/Ghost may well have other instances that are fine.
+    "TryGhost__Ghost-24345": "gold-invalid (2026-09-18 v9 js pass; 300s, resolved=False with the reference patch)",
 }
 
 rev = dataset_info(DATASET).sha
