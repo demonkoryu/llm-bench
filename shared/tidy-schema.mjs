@@ -182,6 +182,15 @@ const UNIT_EXACT = {
    swe_gpu_h_per_resolve: 'h',
    swe_ctx_per_resolve: 'tokens',
    swe_no_patch: 'count',
+   // IFEval-FC. The three funnel stages are counts on purpose: a configuration that scores zero
+   // because it never emitted a tool call is failing at something entirely different from one that
+   // called correctly and then miscounted commas, and a single rate hides which.
+   ifeval_fc_pass: 'count',
+   ifeval_fc_total: 'count',
+   ifeval_fc_rate: 'ratio',
+   ifeval_fc_called: 'count',
+   ifeval_fc_param: 'count',
+   ifeval_fc_req_fail: 'count',
    docqa_correctness: 'points',
    docqa_coverage: 'points',
    docqa_faithfulness: 'points',
@@ -221,6 +230,9 @@ function unitFor(bench, field) {
    }
    if (/^swe_lang_/.test(field)) {
       return 'ratio'; // per-language resolve rate, n=5 each — read the aggregate, not these
+   }
+   if (/^ifeval_fc_chk_/.test(field)) {
+      return 'ratio'; // per-checker pass rate, n=10 each — directional, read the aggregate
    }
    if (/_ms$/.test(field)) {
       return 'ms';

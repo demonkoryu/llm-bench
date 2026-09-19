@@ -4,6 +4,7 @@
 import { bench as agentic_loop } from './agentic_loop.mjs';
 import { benches as codingBenches } from './coding.mjs';
 import { bench as docqa } from './docqa.mjs';
+import { bench as ifeval_fc } from './ifeval_fc.mjs';
 import { bench as instruction_following } from './instruction_following.mjs';
 // performance/capacity probes (kind: 'probe' — self-manage the server)
 import { bench as agent_ctx } from './probes/agent_ctx.mjs';
@@ -35,6 +36,7 @@ const all = [
    agentic_loop,
    struct_output,
    instruction_following,
+   ifeval_fc,
    swe_live,
    agent_ctx,
    fit_ctx,

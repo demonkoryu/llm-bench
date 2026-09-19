@@ -1,0 +1,1605 @@
+{
+  "case_count": 150,
+  "cases": [
+    {
+      "args": {
+        "script": "greek"
+      },
+      "case_id": "generate_content_summary__param_content_text__fmt_CyrillicGreekChecker",
+      "checker": "CyrillicGreekChecker",
+      "chosen_param": "content_text",
+      "description": "The argument value must be written entirely in Greek letters. No letters from other scripts are allowed.",
+      "fn_schema": {
+        "description": "Generates a concise summary of a given text content, highlighting key points.",
+        "name": "generate_content_summary",
+        "parameters": {
+          "properties": {
+            "content_text": {
+              "description": "The full text content that needs to be summarized. The argument value must be written entirely in Greek letters, with no letters from other scripts allowed.",
+              "type": "string"
+            },
+            "highlight_keywords": {
+              "description": "Whether to highlight key terms and phrases in the summary.",
+              "type": "boolean"
+            },
+            "summary_length": {
+              "description": "The desired length of the generated summary, in number of sentences.",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "content_text",
+            "summary_length",
+            "highlight_keywords"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "generate_content_summary",
+      "group": "LANGUAGE",
+      "user_queries": [
+        "I've recently read this comprehensive article about climate change and its global impact, and I need a summary to better understand the main ideas. The text is: \"Climate change refers to long-term shifts in temperatures and weather patterns, primarily caused by human activities, especially the burning of fossil fuels. These changes have resulted in rising sea levels, more frequent extreme weather events, changes in precipitation patterns, and threats to biodiversity worldwide. Scientists warn that urgent action is needed to reduce greenhouse gas emissions and transition to renewable energy sources. Governments, organizations, and individuals all have a role to play in mitigating these effects and adapting to new environmental realities.\" Can you summarize this article into just 3 sentences, and please make sure that important keywords and phrases stand out?",
+        "I have this passage that discusses the evolution of artificial intelligence: \"The rapid advancement of artificial intelligence over the past decade has led to numerous breakthroughs in fields like natural language processing, computer vision, and robotics. AI technologies are increasingly being integrated into everyday life, from smart assistants to autonomous vehicles. While AI offers tremendous potential for societal benefits, it also raises ethical and privacy concerns that must be addressed. Regulatory frameworks and responsible development practices are essential for maximizing the positive impact of AI while minimizing risks.\" I'd like a summary that's 2 sentences long. Also, can you highlight the key terms for me in the summary?",
+        "Here's an excerpt from a business report that I need to review: \"Company XYZ experienced a 20% increase in revenue in the first quarter of 2023, driven by strong sales in the technology sector. International expansion contributed to growth, especially in emerging markets across Asia and South America. Despite increased operating costs, net profits remained steady due to cost-cutting measures and efficient supply chain management. Looking ahead, the company plans to invest in R&D to maintain its competitive edge in the market.\" Please provide a summary in 4 sentences and emphasize any significant keywords or important concepts in the summary.",
+        "I have to write a brief summary for the following book introduction: \"In this groundbreaking work, Dr. Jane Smith explores the psychological effects of social media on young adults. The book delves into issues such as self-esteem, online peer pressure, and digital addiction, using real-life case studies and the latest research to highlight both positive and negative outcomes. Smith also offers practical advice for healthy technology use and strategies for parents and educators.\" Can you give me a 3-sentence summary, and make sure you highlight the main keywords and phrases when you generate the summary?",
+        "I'm preparing for a debate and, for reference, I need a concise summary of this scientific article: \"Recent studies on renewable energy have shown significant advancements in solar and wind power efficiency. Researchers have developed new materials that increase energy conversion rates and lower production costs. Governments are investing in large-scale infrastructure projects to facilitate the transition to clean energy sources. These efforts are expected to reduce carbon emissions globally and support sustainable economic growth.\" Please summarize the main points in 2 sentences and highlight the essential terms and phrases in the summary."
+      ]
+    },
+    {
+      "args": {
+        "script": "cyrillic"
+      },
+      "case_id": "summarize_news_article__param_article_text__fmt_CyrillicGreekChecker",
+      "checker": "CyrillicGreekChecker",
+      "chosen_param": "article_text",
+      "description": "The argument value must be written entirely in Cyrillic letters. No letters from other scripts are allowed.",
+      "fn_schema": {
+        "description": "Summarizes the content of a news article to capture main points and key information.",
+        "name": "summarize_news_article",
+        "parameters": {
+          "properties": {
+            "article_text": {
+              "description": "The full text of the news article that needs to be summarized. The argument value must be written entirely in Cyrillic letters, and no letters from other scripts are allowed.",
+              "type": "string"
+            },
+            "include_keywords": {
+              "description": "Whether to include key terms and phrases in the summary. Defaults to false.",
+              "type": "boolean"
+            },
+            "summary_length": {
+              "description": "Indicates the desired length of the summary: short, medium, or long.",
+              "enum": [
+                "short",
+                "medium",
+                "long"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "article_text",
+            "summary_length",
+            "include_keywords"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "summarize_news_article",
+      "group": "LANGUAGE",
+      "user_queries": [
+        "Hi, I just finished reading this news article and would like your help in summarizing it. The article reads: 'Amazon has unveiled plans to build a new distribution center near Dallas, promising to create over 1,200 new jobs. Local government officials are hailing this as a significant boost to the regional economy. Construction is expected to begin this fall, with completion anticipated by late next year. Amazon representatives noted that the facility will prioritize energy efficiency and automation. Some community members expressed concerns about increased traffic and environmental impacts, but city leaders say they are working closely with the company to mitigate any negative effects. Residents hope that job training programs will be offered to ensure local participation in the hiring process.' I'd really appreciate a short summary, and please make sure to include the key terms and phrases used in the article.",
+        "Could you provide me with a detailed summary of the following news article? I want a medium-length summary and it\u2019s important that you include the main keywords and key phrases in your reply. Here\u2019s the article: 'The European Union has announced new climate regulations aimed at reducing carbon emissions by 55% before 2030. The regulations propose strict emission targets for industries such as automotive and energy production. Environmental groups praised the plan, while several business leaders warned about increased costs and possible job losses. The EU commission argued that the long-term benefits outweigh short-term challenges. Negotiations are expected to continue over the next several months as member states finalize the legislation.' Thank you!",
+        "I have just read a lengthy news article and would love a comprehensive summary that touches on all the crucial points. Please generate a long summary and incorporate important keywords and phrases for greater clarity. Here is the article: 'In a historic move, the United States and China agreed to a joint framework for reducing methane emissions, marking a rare moment of environmental cooperation between the two countries. The agreement, announced at the United Nations Climate Conference, sets out targets for both countries to cut methane output over the next decade. Experts highlight the deal as a significant step towards achieving global climate goals. However, skeptics caution that enforcement remains a challenge given both nations' economic interests. The pact is expected to influence other countries ahead of the G20 summit.'",
+        "I'd like your help creating a summary of this recent news article. Please generate a medium-length summary and ensure you include all major keywords and phrases mentioned in the story. Here\u2019s the article: 'SpaceX successfully launched four astronauts to the International Space Station last night in its Crew Dragon spacecraft. The mission, overseen by NASA, marks the company\u2019s third crewed launch this year and reflects deepening public-private partnerships in space exploration. Onboard are two American astronauts, one from the European Space Agency, and a Japanese flight engineer. The launch was delayed due to unfavorable weather but proceeded smoothly once conditions cleared. The crew will spend six months conducting scientific experiments in microgravity.'",
+        "Can you read the following article and give me a concise summary, ideally a short one? Also, do include any especially relevant keywords or phrases that appear in the article. This is the article text: 'Pfizer announced today that it will seek emergency use authorization from the FDA for its new COVID-19 vaccine targeting the Omicron variant. Early trial data shows the vaccine is highly effective in preventing severe illness. Health officials are hopeful that a targeted booster shot will help curb rising case counts, particularly as winter approaches. The company expects to distribute doses within weeks pending regulatory approval. Experts say widespread booster adoption could reduce hospitalizations substantially.'"
+      ]
+    },
+    {
+      "args": {
+        "N": 1,
+        "comparison_option": "at most"
+      },
+      "case_id": "find_best_travel_deals__param_search_criteria__fmt_HighlightedSectionsCountChecker",
+      "checker": "HighlightedSectionsCountChecker",
+      "chosen_param": "search_criteria",
+      "description": "The argument value must contain at most 1 section highlighted using markdown syntax (e.g., *highlighted section* or **highlighted section**). Each section must not be empty.",
+      "fn_schema": {
+        "description": "Finds the best travel deals available for flights and accommodations at a specified destination.",
+        "name": "find_best_travel_deals",
+        "parameters": {
+          "properties": {
+            "departure_date": {
+              "description": "The date of departure for the travel in YYYY-MM-DD format.",
+              "type": "string"
+            },
+            "destination": {
+              "description": "The destination for which travel deals are being searched.",
+              "type": "string"
+            },
+            "search_criteria": {
+              "description": "Criteria specified by the user to find the best travel deals, including budget constraints and preferences. The argument value must contain at most one section highlighted using markdown syntax (such as *highlighted section* or **highlighted section**), and each highlighted section must not be empty.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "search_criteria",
+            "destination",
+            "departure_date"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "find_best_travel_deals",
+      "group": "DETECTABLE FORMAT",
+      "user_queries": [
+        "I'm planning a trip to Rome and I want to find the absolute best travel deals available for both flights and hotels. My main criteria are that I would like a round-trip flight departing on 2024-09-15, and I'm hoping to keep the total cost under $1,200. I prefer direct flights if possible, and for accommodations, I would like to stay in a hotel with at least 4 stars and breakfast included. Can you help me find the most attractive options based on these preferences for my Rome adventure?",
+        "I'm looking for help finding the top travel deals for a vacation to Bangkok. I want to leave on 2024-11-03, and my budget for the entire trip (flight and accommodation) is $2,000. I don't mind a stopover flight as long as the layover isn't more than 4 hours. I'd also love it if the accommodation is near the city center and offers free Wi-Fi. Could you search for any packages or deals that fit all these criteria for my upcoming trip?",
+        "Could you assist me in finding the best deals for travel to New York City? I need to depart on 2024-07-10, and my search parameters include flights that leave in the evening, ideally after 5 PM, and I'd like to stay at a hotel rated at least 3 stars with access to a gym. My maximum total budget is $1,500. I'm not loyal to any specific airline or hotel, but I do care about good reviews and free cancellation. Please suggest the best options fulfilling my requirements.",
+        "I'm considering a vacation in Sydney and want to find the top-value offers available for both flights and hotels. I'm planning to travel on 2024-12-20. My search criteria are as follows: the total cost should not exceed $2,500, I require a window seat on the flight, and the hotel should have a swimming pool and be child-friendly, since I'll be traveling with my family. Please help me discover the best deals that meet all these needs for my Sydney trip.",
+        "Can you help me discover the best possible travel deals for Tokyo? I plan to depart from my location on 2024-10-05. For my search preferences, I want the cheapest flights possible, even if they're basic economy, and I'm happy to stay at hostels or budget hotels as long as they're within 2 kilometers of major train stations. My budget for both airfare and accommodation should be no more than $900. Please find options that best align with these details."
+      ]
+    },
+    {
+      "args": {
+        "N": 7,
+        "comparison_option": "exactly"
+      },
+      "case_id": "schedule_weekly_activities__param_activities_description__fmt_HighlightedSectionsCountChecker",
+      "checker": "HighlightedSectionsCountChecker",
+      "chosen_param": "activities_description",
+      "description": "The argument value must contain exactly 7 sections highlighted using markdown syntax (e.g., *highlighted section* or **highlighted section**). Each section must not be empty.",
+      "fn_schema": {
+        "description": "Organizes and schedules activities or meetings for the week based on user input.",
+        "name": "schedule_weekly_activities",
+        "parameters": {
+          "properties": {
+            "activities_description": {
+              "description": "Description of activities or meetings planned for the week. The argument value must contain exactly 7 sections, each highlighted using markdown syntax (e.g., *highlighted section* or **highlighted section**), and each section must not be empty.",
+              "type": "string"
+            },
+            "days_of_week": {
+              "description": "Days of the week for which the activities are being planned.",
+              "items": {
+                "description": "A day of the week",
+                "enum": [
+                  "Monday",
+                  "Tuesday",
+                  "Wednesday",
+                  "Thursday",
+                  "Friday",
+                  "Saturday",
+                  "Sunday"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "recurring": {
+              "description": "Indicates whether the activities are recurring weekly.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "activities_description",
+            "days_of_week",
+            "recurring"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "schedule_weekly_activities",
+      "group": "DETECTABLE FORMAT",
+      "user_queries": [
+        "I need help creating a structured schedule for my weekly fitness routine. Every Monday, Wednesday, and Friday, I want to do a 45-minute cardio session at 7 AM, focusing on running or cycling. On Tuesdays and Thursdays, I plan to dedicate an hour to strength training in the evenings, and on Saturdays, I want to take a yoga class in the morning. Can you organize these activities for me, and also, please set it so that this plan recurs every week?",
+        "I'm looking to organize my week by setting up regular team meetings and project update sessions. Please schedule our main team meeting on Monday mornings, a quick check-in on Wednesdays, and a project review session every Friday afternoon. I want these meetings to occur at the same time every week. Can you draft a weekly schedule for these activities for Monday, Wednesday, and Friday and make sure it's set as a recurring routine?",
+        "Could you please help me plan out a weekly schedule for my kids\u2019 extracurricular activities? They have soccer practice on Tuesday afternoons, piano lessons every Thursday evening, and swimming lessons on Saturday mornings. I want to make sure these are neatly organized and happen every single week without forgetting. Can you set up this recurring plan for Tuesdays, Thursdays, and Saturdays and include a description for each activity?",
+        "I am trying to ensure my self-care and social interaction time is properly scheduled throughout the week. I want to block out an hour every Sunday for meditation and relaxation, and meet with my friends for coffee every Wednesday afternoon. Both of these should repeat weekly. Can you help me organize these recurring activities and provide a structured view of what my Wednesdays and Sundays look like?",
+        "Let\u2019s get my workweek a bit more efficient by planning out my recurring tasks. I need a reminder to do my administrative paperwork every Monday, review progress with my supervisor every Thursday, and submit weekly reports each Friday. These activities have to happen on the same days each week without fail. Can you schedule these activities for Monday, Thursday, and Friday and make sure it's set up as a recurring schedule?"
+      ]
+    },
+    {
+      "args": {},
+      "case_id": "fn39__0__museum_info_get_info__param_location__fmt_JsonFormatChecker",
+      "checker": "JsonFormatChecker",
+      "chosen_param": "location",
+      "description": "The argument value must be a valid JSON object. The JSON must be syntactically correct and parseable.",
+      "fn_schema": {
+        "description": "Retrieve specific details about museums, such as opening hours and ticket prices.",
+        "name": "fn39__0__museum_info_get_info",
+        "parameters": {
+          "description": "",
+          "properties": {
+            "details": {
+              "items": {
+                "description": "List of details to retrieve about the museum.",
+                "enum": [
+                  "Opening hours",
+                  "Adult tickets",
+                  "Child tickets"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "location": {
+              "description": "City where the museum is located. The argument value must be a valid JSON object; the JSON must be syntactically correct and parseable.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "location",
+            "details"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "fn39__0__museum_info_get_info",
+      "group": "DETECTABLE FORMAT",
+      "user_queries": [
+        "I'm planning a trip to London soon and I'm really interested in exploring some of the city's most famous museums. However, I'd like to know ahead of time about their specific opening hours, as well as how much it would cost for both adults and children to enter. Could you please provide me with detailed information on the opening hours, adult ticket prices, and child ticket prices for museums located in London?",
+        "My family is visiting Paris next month and we'd love to spend a day visiting museums there. To plan our itinerary and budget accordingly, it would be incredibly helpful if you could gather and share the opening hours, adult ticket costs, and child ticket costs for museums in Paris. This way, we can choose which museums to visit based on the best fit for our schedule and budget.",
+        "I'm organizing a field trip for kids to museums in New York City, and I need to make sure we're informed about all logistics in advance. Could you help me by providing detailed information on the operating hours for museums in New York, as well as up-to-date ticket prices for both adults and children? Knowing both timings and ticketing details would be critical for our planning.",
+        "I want to surprise my parents with a cultural weekend in Rome, and part of the plan includes visiting several renowned museums. However, we have limited time and need to stick to a budget. Can you give me comprehensive information on the museums in Rome, specifically their opening hours and what the ticket prices are for adults and children?",
+        "For an upcoming school project focusing on the arts and history of Madrid, I need to gather detailed information for a local museum. Could you provide me with all relevant details about museums in Madrid, such as their daily opening hours, the price of admission for adult visitors, and also how much children are charged for tickets? This would greatly assist with my project planning."
+      ]
+    },
+    {
+      "args": {},
+      "case_id": "fn59__1__lawyer_finder__param_location__fmt_JsonFormatChecker",
+      "checker": "JsonFormatChecker",
+      "chosen_param": "location",
+      "description": "The argument value must be a valid JSON object. The JSON must be syntactically correct and parseable.",
+      "fn_schema": {
+        "description": "Locate lawyers near you based on their specialization.",
+        "name": "fn59__1__lawyer_finder",
+        "parameters": {
+          "description": "",
+          "properties": {
+            "experience": {
+              "description": "Experience in years that lawyer has. Default 1",
+              "type": "integer"
+            },
+            "location": {
+              "description": "Your location. The argument value must be a valid JSON object. The JSON must be syntactically correct and parseable.",
+              "type": "string"
+            },
+            "specialization": {
+              "items": {
+                "description": "Specializations of lawyer that you are looking for.",
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "location",
+            "specialization"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "fn59__1__lawyer_finder",
+      "group": "DETECTABLE FORMAT",
+      "user_queries": [
+        "I'm planning to start a new business venture in Los Angeles, California, and I really want to ensure that all my legal documents are handled by someone with a keen insight into business law. It's critical for me to find a lawyer who specializes in business law or corporate law. I would appreciate it if you could help me identify a few options nearby. The legal aspects of setting up a company can be quite complex, and while I'm not too concerned about how much experience they have, I do think a general familiarity with small business laws is vital.",
+        "As someone who's just moved to New York City, I'm really trying to get everything in place for my young family. One of my immediate needs is finding a lawyer who specializes in family law or child custody issues. I need someone who is ideally nearby and who has at least a few years of experience, though I'm flexible on the exact number of years. The city is large, and I'm feeling a bit overwhelmed trying to get settled, so having some professional legal assistance will be absolutely invaluable to me and my family.",
+        "Living in Miami, Florida has been fantastic so far, but I've come across a few legal issues relating to real estate that I need help with. I would really like to find a lawyer who is well-versed in property law or real estate law. It's important for me that they're located within the city so we can discuss any paperwork or negotiations easily. While I don't necessarily require someone with decades of experience, having a lawyer who has handled several cases of similar nature would definitely put my mind at ease.",
+        "Recently, in Chicago, Illinois, I've started to look into making some personal plans about my estate and future financial planning. I've been told it's wise to have a lawyer guide me through this, particularly someone who is skilled in either estate planning law or elder law. It's crucial they are operating in my area as I may need multiple consultations. Although years of experience are not my primary concern, I consider finding a lawyer who has a good track record in dealing with these specific matters is necessary to make sure everything is in order.",
+        "As a recent college graduate settling in Austin, Texas looking for job opportunities, I've been advised to patent an innovative product idea. I need a lawyer specializing in intellectual property law or patent law to navigate this process. It would be best if they were located nearby, so in-person meetings can happen seamlessly and without excessive travel. Since I am new to patenting, I am flexible about their years of experience, but their proficiency in patent law is something I highly value to protect my idea effectively."
+      ]
+    },
+    {
+      "args": {
+        "N": 1,
+        "comparison_option": "exactly",
+        "keyword": "universal"
+      },
+      "case_id": "fn151__0__geometry_area_triangle__param_unit__fmt_KeywordFrequencyChecker",
+      "checker": "KeywordFrequencyChecker",
+      "chosen_param": "unit",
+      "description": "The argument value must contain the word 'universal' exactly 1 time. The occurrences may be anywhere in the string. Case does not matter.",
+      "fn_schema": {
+        "description": "Calculate the area of a triangle.",
+        "name": "fn151__0__geometry_area_triangle",
+        "parameters": {
+          "description": "",
+          "properties": {
+            "base": {
+              "description": "The length of the base of the triangle.",
+              "type": "integer"
+            },
+            "height": {
+              "description": "The height of the triangle from the base.",
+              "type": "integer"
+            },
+            "unit": {
+              "description": "The measurement unit for the area. Defaults to square meters. The argument value must contain the word 'universal' exactly once, in any position within the string and regardless of case.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "base",
+            "height",
+            "unit"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "fn151__0__geometry_area_triangle",
+      "group": "KEYWORDS",
+      "user_queries": [
+        "I'm working on my home renovation project and I came across a triangular piece of land that I want to put grass on. The base of the triangle measures 12 meters and the height running perpendicular from the base is 20 meters. Could you please help me figure out the exact area of this triangular plot in square meters? I need this information so that I can purchase the correct amount of sod.",
+        "For a geometry assignment, I need to determine the total area of a triangular-shaped garden bed. The base of the triangle is 15 feet long, and the height from the base to the topmost point is 9 feet. Can you calculate the area in square feet for me? I want to make sure I'm getting the answer right before I submit my homework.",
+        "As part of an architectural design, I have a triangular section on the floor plan where the base of the triangle is 250 centimeters and the vertical height from the base is 120 centimeters. Could you tell me what the total area would be in square centimeters? I need the precise measurement for fitting in custom tiles.",
+        "While planning a section in my backyard, there's a triangular patio area I'm going to pour concrete into. The base of the triangle is exactly 8 yards and the height from the base up is 15 yards. Can you please calculate the exact area in square yards so I know how much concrete to order?",
+        "I'm organizing a community fair and one of the booths is going to be set up on a triangular tarp. The tarp has a base that measures 30 inches and the height from the base straight up is 25 inches. Could you please calculate the area in square inches so I can be certain the booth will fit on it comfortably?"
+      ]
+    },
+    {
+      "args": {
+        "N": 1,
+        "comparison_option": "exactly",
+        "keyword": "universal"
+      },
+      "case_id": "fn210__0__Movies_3_FindMovies__param_directed_by__fmt_KeywordFrequencyChecker",
+      "checker": "KeywordFrequencyChecker",
+      "chosen_param": "directed_by",
+      "description": "The argument value must contain the word 'universal' exactly 1 time. The occurrences may be anywhere in the string. Case does not matter.",
+      "fn_schema": {
+        "description": "Retrieves a list of movies based on the director, genre, and cast specified by the user.",
+        "name": "fn210__0__Movies_3_FindMovies",
+        "parameters": {
+          "description": "",
+          "properties": {
+            "cast": {
+              "description": "Names of leading actors or actresses in the movie. Use 'dontcare' if the cast is not a specific search criterion.",
+              "type": "string"
+            },
+            "directed_by": {
+              "description": "Director of the movie. The argument value must contain the word 'universal' exactly once, in any position within the string; case is not important. Use 'dontcare' if the director is not a specific search criterion.",
+              "type": "string"
+            },
+            "genre": {
+              "description": "Genre of the movie. Use 'dontcare' to include all genres or genre is not specified by user",
+              "enum": [
+                "Offbeat",
+                "Fantasy",
+                "World",
+                "Mystery",
+                "Thriller",
+                "Comedy",
+                "Comedy-drama",
+                "Horror",
+                "Animation",
+                "Sci-fi",
+                "Cult",
+                "Drama",
+                "Anime",
+                "Family",
+                "Action",
+                "dontcare"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "directed_by"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "fn210__0__Movies_3_FindMovies",
+      "group": "KEYWORDS",
+      "user_queries": [
+        "I'm working on a film studies project and I need to compile a comprehensive list of movies directed by Christopher Nolan. If possible, I'm specifically interested in those films that fall under the thriller genre, as I'm examining his approach to suspense and storytelling. Additionally, I'd like to focus on the ones that feature Leonardo DiCaprio or Christian Bale as part of the main cast, since their performances often add a unique dimension to his movies. Could you help me find all the movies that meet these criteria, directed by Christopher Nolan, in the thriller genre, starring those actors?",
+        "Could you help me find all the films directed by Sofia Coppola? I'm particularly looking for movies that are classified as drama, since I'm gathering material for a women's studies seminar focusing on female-directed dramas. Also, if you could narrow it down to films featuring Scarlett Johansson or Bill Murray in the cast, that would be great, as their performances have a special resonance in Coppola's work. Please provide a list including all pertinent details you can find.",
+        "I'm searching for a list of action movies directed by James Cameron. I've been a huge fan of his blockbuster films, especially those featuring Arnold Schwarzenegger or Linda Hamilton in leading roles. Can you provide a detailed list of all the action genre movies helmed by James Cameron where either Arnold Schwarzenegger or Linda Hamilton had a starring role? This is for a movie marathon I'm planning with friends who love classic action films.",
+        "I need your help finding every anime film directed by Hayao Miyazaki, but I am not particular about the actors providing voices in these movies. For a cultural analysis assignment, I'm compiling films from a specific director in the anime genre. Could you please give me a comprehensive list of all anime genre movies directed by Hayao Miyazaki, regardless of who is in the cast?",
+        "Can you provide a list of family genre movies directed by Chris Columbus? I'm particularly interested in titles that feature Daniel Radcliffe or Emma Watson in the cast, as my kids are big fans of those actors. We're looking to organize a family movie week and need suggestions that fit this criteria\u2014movies suitable for all ages, directed by Chris Columbus, and starring either of those two actors."
+      ]
+    },
+    {
+      "args": {
+        "list_of_keywords": [
+          "separate",
+          "odd",
+          "bad",
+          "usual",
+          "sudden"
+        ],
+        "must_include": true
+      },
+      "case_id": "fn44__0__unit_conversion_convert__param_from_unit__fmt_KeywordsPresenceChecker",
+      "checker": "KeywordsPresenceChecker",
+      "chosen_param": "from_unit",
+      "description": "The argument value must include the keywords: ['separate', 'odd', 'bad', 'usual', 'sudden']. Each keyword must appear at least once, in any order. Case does not matter.",
+      "fn_schema": {
+        "description": "Convert a value from one unit to another.",
+        "name": "fn44__0__unit_conversion_convert",
+        "parameters": {
+          "description": "",
+          "properties": {
+            "from_unit": {
+              "description": "The unit to convert from. The argument value must include the keywords: separate, odd, bad, usual, sudden. Each keyword must appear at least once, in any order. Case does not matter.",
+              "type": "string"
+            },
+            "to_unit": {
+              "description": "The unit to convert to.",
+              "type": "string"
+            },
+            "value": {
+              "description": "The value to be converted.",
+              "type": "number"
+            }
+          },
+          "required": [
+            "value",
+            "from_unit",
+            "to_unit"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "fn44__0__unit_conversion_convert",
+      "group": "KEYWORDS",
+      "user_queries": [
+        "I'm trying to follow a recipe from a British cookbook, and it calls for 250 grams of flour, but all I have is a measuring cup with units in ounces. Could you please help me convert 250 grams to ounces so I know how much flour to use?",
+        "For a science experiment, I need to measure 3.5 liters of water, but my measuring instrument is marked only in gallons. Could you tell me what 3.5 liters is when converted to gallons so I can be accurate?",
+        "I have a fitness tracking app that measures my running distance in miles, but I'm more familiar with kilometers. For my morning run today, I covered 4.7 miles. Can you convert 4.7 miles into kilometers so I know exactly how far I ran?",
+        "While working on my home improvement project, I'm required to cut a piece of wood to be 120 centimeters long, but my tape measure uses inches. Could you convert 120 centimeters to inches for me so I can measure it out correctly?",
+        "I bought a large package of apples that weighs 10 pounds, but my recipe only calls for 4.5 kilograms of apples. Could you please convert 10 pounds into kilograms so I know if I have enough apples for my recipe?"
+      ]
+    },
+    {
+      "args": {
+        "list_of_keywords": [
+          "subtle",
+          "permanent",
+          "specific",
+          "unstable",
+          "deep"
+        ],
+        "must_include": false
+      },
+      "case_id": "provide_dietary_advice__param_dietary_preferences__fmt_KeywordsPresenceChecker",
+      "checker": "KeywordsPresenceChecker",
+      "chosen_param": "dietary_preferences",
+      "description": "The argument value must not include the keywords: ['subtle', 'permanent', 'specific', 'unstable', 'deep']. None of these words should appear anywhere in the value. Case does not matter.",
+      "fn_schema": {
+        "description": "Offers dietary advice based on user input, considering dietary restrictions and health goals.",
+        "name": "provide_dietary_advice",
+        "parameters": {
+          "properties": {
+            "current_health_conditions": {
+              "description": "List of current health conditions affecting dietary choices.",
+              "items": {
+                "description": "Specific health condition affecting the diet.",
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "dietary_preferences": {
+              "description": "Description of dietary preferences, restrictions, or goals such as vegan, gluten-free, or weight loss. The value must not include any of the following keywords: 'subtle', 'permanent', 'specific', 'unstable', or 'deep'\u2014none of these words should appear anywhere in the value, regardless of case.",
+              "type": "string"
+            },
+            "include_recipe_suggestions": {
+              "description": "Whether to include recipe suggestions in the dietary advice. Defaults to False.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "dietary_preferences",
+            "current_health_conditions",
+            "include_recipe_suggestions"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "provide_dietary_advice",
+      "group": "KEYWORDS",
+      "user_queries": [
+        "Hi, I've recently switched to a plant-based vegan lifestyle because I'm trying to lose some weight and improve my overall health. However, I also have high blood pressure and type 2 diabetes, which makes it a bit challenging to plan my meals, as I need to watch my sodium and sugar intake. Could you provide me with some detailed dietary advice that takes my preferences and health conditions into account, and if possible, I'd love to get some recipe suggestions that fit these criteria as well?",
+        "I am a 35-year-old woman who follows a gluten-free and dairy-free diet due to celiac disease and lactose intolerance. Additionally, I've been diagnosed with hypothyroidism and irritable bowel syndrome, which further complicates my meal planning. My main goal is to maintain a balanced diet that supports my energy levels and digestive health. Could you please give me comprehensive dietary recommendations and include some recipe ideas tailored to all of these requirements?",
+        "Over the last few years, I've shifted towards a Mediterranean diet because I want to improve my heart health. I have a history of high cholesterol and mild kidney disease, so I need to be careful about my intake of saturated fats and protein, especially certain animal proteins. I would appreciate some dietary guidance specific to these needs, and I would like to have some recipes included that are suitable for my heart and kidney health concerns.",
+        "As a busy professional trying to build muscle and lose fat, I've been aiming for a high-protein, low-carb diet, but I also have gout and prediabetes, which restrict what I can safely eat. I\u2019m finding it hard to come up with satisfying meal options that fit all these requirements. Can you offer me some thorough advice on how to structure my diet, keeping these health issues in mind, and provide me with practical recipe recommendations too?",
+        "I'm interested in adopting a pescatarian diet both for health and ethical reasons, but I have hypertension and acid reflux that present dietary challenges, especially when it comes to seasoning and food choices. My goal is to lower my blood pressure and reduce acid reflux symptoms through my eating habits. Can you give me personalized dietary advice for a pescatarian lifestyle with these health conditions, and please include recipe suggestions that I can try?"
+      ]
+    },
+    {
+      "args": {
+        "N": 7,
+        "comparison_option": "exactly",
+        "letter": "n"
+      },
+      "case_id": "fn15__0__get_current_weather__param_location__fmt_LetterFrequencyChecker",
+      "checker": "LetterFrequencyChecker",
+      "chosen_param": "location",
+      "description": "The argument value must contain the letter 'n' exactly 7 times. Case does not matter.",
+      "fn_schema": {
+        "description": "Retrieves the current weather conditions for a specified city and state. If using state, then use short form like CA.",
+        "name": "fn15__0__get_current_weather",
+        "parameters": {
+          "description": "",
+          "properties": {
+            "location": {
+              "description": "The location for which to get the weather, in the format of 'City, State', such as 'San Francisco, CA' if State for the city exists. 'City, Country' if State for the city doesn't exist. The argument value must contain the letter 'n' exactly 7 times, regardless of case.",
+              "type": "string"
+            },
+            "unit": {
+              "description": "The unit of temperature for the weather report.",
+              "enum": [
+                "celsius",
+                "fahrenheit"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "location"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "fn15__0__get_current_weather",
+      "group": "KEYWORDS",
+      "user_queries": [
+        "Hey there! I've been planning this trip and right now, I'm trying to sort out what the weather is like in a couple of my stopover locations. Can you fetch the current weather conditions for me in Miami, FL? I need to know if it's suitable for sightseeing. Also, I'm setting my preferences to primarily use celsius as the temperature unit since I've been doing a lot of traveling lately and want to keep everything consistent.",
+        "Hello! I'm organizing a virtual event for people across different parts of the world. It's quite exciting, but requires some logistical considerations. One thing I absolutely need right now is the current weather condition in Cape Town, South Africa, in celsius. Knowing what the weather is like will help us coordinate better with local participants and make informed decisions about scheduling and planning for any weather-related disruptions. I've gotta make sure we are well-prepared no matter what comes our way.",
+        "Good afternoon! I'm in charge of preparing a comprehensive weather analysis for our project, and I need some precise data for a start. Could you assist me by getting the latest weather update for Paris, France? It's crucial that you provide the temperature in degrees celsius, as our team uses metric system measurements for our reporting. This will be particularly useful for our current segment on European climates and help us draw comparisons accurately across different regions.",
+        "Hi! My friend is hosting this amazing outdoor party in Austin, TX, and I'm in charge of being the unofficial weather consultant! It's quite the responsibility, and I could really use some help here. Can you tell me what the current weather situation is there? Of course, since I'm the one supposed to be providing precise info, I'd really appreciate it if you could give me the temperature in fahrenheit. It will help us determine what potential weather conditions party-goers might have to deal with today.",
+        "Greetings! I'm looking into a few places where I might want to move next year and trying to get a feel for their current climate. One city that's caught my interest is Sydney, Australia. Before I delve further into my research, it would be great to get the current weather report from there. Please present the temperature in celsius for me since I've always used this measurement in all my evaluations. This information will be invaluable as I consider all the factors involved in making a move like this."
+      ]
+    },
+    {
+      "args": {
+        "N": 7,
+        "comparison_option": "exactly",
+        "letter": "n"
+      },
+      "case_id": "fn224__0__Movies_3_FindMovies__param_directed_by__fmt_LetterFrequencyChecker",
+      "checker": "LetterFrequencyChecker",
+      "chosen_param": "directed_by",
+      "description": "The argument value must contain the letter 'n' exactly 7 times. Case does not matter.",
+      "fn_schema": {
+        "description": "Retrieves a list of movies based on the director, genre, and cast specified by the user.",
+        "name": "fn224__0__Movies_3_FindMovies",
+        "parameters": {
+          "description": "",
+          "properties": {
+            "cast": {
+              "description": "Names of leading actors or actresses in the movie. Use 'dontcare' if the cast is not a specific search criterion.",
+              "type": "string"
+            },
+            "directed_by": {
+              "description": "Director of the movie. Use 'dontcare' if the director is not a specific search criterion. The provided name must contain the letter 'n' exactly 7 times, regardless of case.",
+              "type": "string"
+            },
+            "genre": {
+              "description": "Genre of the movie. Use 'dontcare' to include all genres or genre is not specified by user",
+              "enum": [
+                "Offbeat",
+                "Fantasy",
+                "World",
+                "Mystery",
+                "Thriller",
+                "Comedy",
+                "Comedy-drama",
+                "Horror",
+                "Animation",
+                "Sci-fi",
+                "Cult",
+                "Drama",
+                "Anime",
+                "Family",
+                "Action",
+                "dontcare"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "directed_by"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "fn224__0__Movies_3_FindMovies",
+      "group": "KEYWORDS",
+      "user_queries": [
+        "I'm planning a weekend movie marathon and I'm really in the mood to explore some films directed by Sofia Coppola. I love her unique style and the way she captures emotional depth and authentic stories. However, I'm not really picky about the genre, so any type of movie is fine as long as it's directed by her. Also, cast doesn't matter to me at this point, so don't worry about specifying any actors or actresses. Please help me compile a list of such movies as I'm eager to dive into her work and experience more of her storytelling magic.",
+        "There have been so many thrillers recommended to me lately, and I've realized that thrillers by Alfred Hitchcock always seem to captivate my interest. I'm looking to watch some of his films because I've heard so much about his legendary work in the thriller genre. I'm not picky about the actors or actresses in these movies, just that Hitchcock is at the helm. So, I would love a little help putting together a list of thrilling masterpieces directed by Alfred Hitchcock, to experience his groundbreaking techniques in suspense and tension.",
+        "I'd like to find films that boast the incredible directorial talents of Quentin Tarantino, as I've become quite fascinated with his unique approach to storytelling and cinematic style. I'm particularly interested in action or drama genres, but I'm not strict about it, any genre will do for a Tarantino film. I'm curious to delve deep into his filmography and see what unexpected twists and memorable dialogues await in his movies. However, the cast isn't crucial, so focus on the director for this search.",
+        "I've recently watched a fantastic performance from Leonardo DiCaprio and I\u2019m eager to explore more films where he played leading roles. However, I want these films to be directed by Martin Scorsese, whose partnership with DiCaprio I find intriguing and compelling. I'm not too concerned about the genre; whether it's drama, action, or anything else, doesn't matter. What captivates me is how Scorsese brings characters to life through his storytelling. Please help compile a list of such films for my next movie night.",
+        "Lately, I have been yearning to explore the fantasy world through films that bear the hallmark of Peter Jackson\u2019s directing genius. I've heard he has an unparalleled ability to transport viewers into fantastical realms with epic narratives and breathtaking visuals. But I'm not really interested in specifying the cast for this search study. I just need to know which movies directed by Peter Jackson fit within the fantasy genre, as I'm looking to witness and get lost in his fantastical worlds that people can't stop talking about."
+      ]
+    },
+    {
+      "args": {
+        "N": 7,
+        "comparison_option": "exactly"
+      },
+      "case_id": "compose_custom_poem__param_theme_description__fmt_NAllCapitalWordsChecker",
+      "checker": "NAllCapitalWordsChecker",
+      "chosen_param": "theme_description",
+      "description": "The argument value must contain exactly 7 words written entirely in capital (uppercase) letters.",
+      "fn_schema": {
+        "description": "Creates a personalized poem based on user's input and preferences.",
+        "name": "compose_custom_poem",
+        "parameters": {
+          "properties": {
+            "poetic_form": {
+              "description": "The specific poetic form to use in composing the poem.",
+              "enum": [
+                "sonnet",
+                "haiku",
+                "free_verse",
+                "limerick"
+              ],
+              "type": "string"
+            },
+            "theme_description": {
+              "description": "A free-form explanation of the theme or subject for the poem. The argument value must contain exactly 7 words written entirely in capital (uppercase) letters.",
+              "type": "string"
+            },
+            "tone": {
+              "description": "The tone wanted for the poem.",
+              "enum": [
+                "romantic",
+                "melancholic",
+                "joyful",
+                "mysterious"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "theme_description",
+            "poetic_form",
+            "tone"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "compose_custom_poem",
+      "group": "CASE",
+      "user_queries": [
+        "I\u2019m planning a special gift for my partner and would love your help to make it truly unique. Could you please write a romantic poem in sonnet form, capturing the deep connection we share? The theme should revolve around the journey we've had together, from our very first meeting to the moments when we overcame challenges and how our love has grown stronger with time. I want the poem to convey the warmth, the support, and the beautiful adventure of our relationship. Please make it heartfelt and really focus on the sense of enduring love.",
+        "I have always been fascinated by the mysterious beauty of the ocean at night\u2014the way moonlight dances on the waves, the haunting calls of nocturnal creatures, and the endless unknown that lies beneath the surface. Could you compose a mysterious haiku that captures the enigmatic atmosphere of a midnight seashore, filled with both calm and a sense of wonder about what might be hidden in the depths? I want the tone to evoke curiosity and awe, reflecting the allure and secrets of the nighttime sea.",
+        "I would like a poem that truly celebrates the simple joys of everyday life. Can you write a joyful limerick based on the theme of a neighborhood coming together for a festive block party, with laughter, games, delicious food, and children playing under the sun? Capture the vibrant energy, the sense of community, and the happiness of people sharing stories and making memories together. Please use a joyful tone throughout to make the reader feel like they\u2019re experiencing the event.",
+        "Could you please help me by crafting a melancholic free verse poem? The theme I\u2019d like you to explore is the solitude experienced in a bustling city, where a person feels isolated despite being surrounded by thousands. Touch on the feeling of longing for connection, the endless streets, and the quiet moments spent gazing out of a rainy window, watching people rush by. Bring out the bittersweet nature of being alone in such a vibrant place, using a melancholic tone to convey the depth of emotion involved.",
+        "I'm looking for a truly special poem to include in my friend\u2019s graduation card. Could you compose a joyful sonnet that revolves around the theme of personal growth and the excitement for the future after years of dedication and hard work? Highlight the triumphs over obstacles, the friendships made along the way, and the hopeful anticipation of new beginnings. Please make the tone uplifting and joyful, capturing the spirit of achievement and optimism as my friend embarks on this next chapter."
+      ]
+    },
+    {
+      "args": {
+        "N": 1,
+        "comparison_option": "at most"
+      },
+      "case_id": "craft_job_application__param_user_details__fmt_NAllCapitalWordsChecker",
+      "checker": "NAllCapitalWordsChecker",
+      "chosen_param": "user_details",
+      "description": "The argument value must contain at most 1 word written entirely in capital (uppercase) letters.",
+      "fn_schema": {
+        "description": "Generates a tailored job application including cover letter and resume based on user-provided details.",
+        "name": "craft_job_application",
+        "parameters": {
+          "properties": {
+            "format": {
+              "description": "Format in which the application documents should be generated.",
+              "enum": [
+                "pdf",
+                "doc"
+              ],
+              "type": "string"
+            },
+            "highlight_areas": {
+              "description": "Specific areas or achievements the user wants to highlight in the application.",
+              "items": {
+                "description": "An area or achievement to highlight.",
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "job_description": {
+              "description": "The job description provided by the employer outlining required skills and responsibilities.",
+              "type": "string"
+            },
+            "user_details": {
+              "description": "Detailed background information about the user, including skills, experience, and employment history. The argument value must contain at most 1 word written entirely in capital (uppercase) letters.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "user_details",
+            "job_description",
+            "format"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "craft_job_application",
+      "group": "CASE",
+      "user_queries": [
+        "I'm getting ready to apply for a Software Engineer role at a large technology company, and I would like your help generating both a cover letter and an updated resume tailored to their job description. My background: I have a Bachelor\u2019s in Computer Science from the University of Washington (2016), and I\u2019ve been working as a backend engineer at TechInnovate since 2017, focusing on Java, Spring Boot, and REST API development. My main accomplishments include leading the migration of our monolithic platform to microservices, improving backend response times by 25%, and mentoring two junior engineers. I also enjoy contributing to open-source projects. The job description states they are seeking a team player proficient in Java, experience migrating legacy systems, strong mentoring skills, and passionate about continuous learning and improvement. Please make the application documents in PDF format, and be sure to highlight my leadership in migration projects and my experience improving system performance.",
+        "I want to apply to this job I found for a Marketing Manager position at GreenWave Solutions. Here\u2019s the job description: \u2018Looking for a results-driven Marketing Manager to lead a dynamic team, plan campaigns, manage social media accounts, and drive B2B customer engagement. Must have experience with digital marketing strategies, analytics, budget oversight, and strong communication skills.\u2019 For my background: I have 8 years of experience in marketing, currently managing a 5-person team at BlueSky Digital, where I launched a cross-platform campaign that increased lead gen by 40%. I\u2019m Google Analytics certified, skilled in content marketing, and have a knack for building strong client relationships. Please provide both the resume and cover letter in DOC format. Please emphasize my team leadership experience and my record of successful campaign strategy.",
+        "Could you help me write a job application, including a new resume and cover letter, for this Project Coordinator opening at BuildRight Inc? The job description specifies that they need someone with strong organizational skills, experience coordinating multiple projects, excellent problem-solving, and familiarity with construction management software. I graduated in Civil Engineering from Ohio State in 2018, worked two years as an assistant at ConstructPro, then joined UrbanBuilders as a junior project coordinator, where I spearheaded scheduling for three major renovations and implemented a digital project tracking system. Please make these documents in PDF format, highlighting my expertise in digital project tracking and my initiative in scheduling complex projects.",
+        "I'm looking for assistance in preparing an application package for a new job as a Data Analyst at FinVista. The employer\u2019s description says: \u2018We need a data-driven professional who can develop dashboards, interpret complex data, visualize trends, and communicate findings to non-technical stakeholders. SQL, Python, and data visualization experience required. Finance industry background is a plus.\u2019 My details: I have a Master\u2019s in Data Science from UC Berkeley (2022), worked for 3 years as a Research Assistant using Python and Tableau, and recently finished a contract at QuickNumbers as a Junior Data Analyst, building SQL queries and Power BI dashboards for financial clients. Please prepare the resume and cover letter in DOC format, focusing on my technical proficiency with data visualization and experience presenting insights to non-technical teams.",
+        "I\u2019m preparing to apply for a Human Resources Specialist position at New Horizons Inc., and I\u2019d like you to create a tailored resume and cover letter for me. Here\u2019s my professional background: I graduated from Michigan State in 2015, spent three years in recruitment at PeopleFirst Agency, and have since been an HR generalist at FutureGrowth Ltd., handling onboarding, benefits administration, and employee engagement initiatives. I hold a SHRM-CP certification and introduced a recognition program that improved staff retention by 15%. The employer\u2019s listing includes \u2018proven record in staff development, experience with HRIS systems, and designing employee engagement programs.\u2019 Please generate the application documents in PDF format and make sure my leadership in employee engagement programs and retention improvement stand out."
+      ]
+    },
+    {
+      "args": {
+        "N": 3,
+        "comparison_option": "at most"
+      },
+      "case_id": "evaluate_energy_efficiency__param_current_setup__fmt_NCommasChecker",
+      "checker": "NCommasChecker",
+      "chosen_param": "current_setup",
+      "description": "The argument value must contain at most 3 commas. The commas may appear anywhere in the value.",
+      "fn_schema": {
+        "description": "Evaluates the energy efficiency of a household based on user's input and provides suggestions for improvement.",
+        "name": "evaluate_energy_efficiency",
+        "parameters": {
+          "properties": {
+            "average_monthly_consumption": {
+              "description": "Average monthly energy consumption in kilowatt-hours (kWh).",
+              "type": "number"
+            },
+            "current_setup": {
+              "description": "Detailed description of the current household energy setup and consumption patterns. The argument value must contain at most 3 commas; the commas may appear anywhere in the value.",
+              "type": "string"
+            },
+            "household_size": {
+              "description": "Number of people living in the household.",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "current_setup",
+            "average_monthly_consumption",
+            "household_size"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "evaluate_energy_efficiency",
+      "group": "PUNCTUATION",
+      "user_queries": [
+        "My home has central gas heating, and most of the lighting consists of traditional incandescent bulbs, although in the living room we've recently switched to LED. The kitchen runs on electric appliances like the stove, refrigerator (which is about 8 years old), and dishwasher. We don't have solar panels or any renewable energy sources installed. On average, we use about 540 kilowatt-hours of electricity each month. There are 3 people in the household, and someone is usually at home during the day since one of us works remotely. Could you please evaluate how energy efficient my household is and suggest improvements?",
+        "I would like a detailed assessment of my apartment's energy use. We live in a two-bedroom flat with double-glazed windows, a programmable thermostat, and mainly use energy-efficient appliances except for an old washing machine. We rely on electric heating and have an air conditioning unit that's used throughout summer. Our monthly energy usage hovers around 380 kWh. With 2 adults and 2 kids residing here (so a household size of 4), can you analyze our setup and give us advice on how to improve our energy efficiency?",
+        "Could you review the energy efficiency of my household based on the following information? We have a detached house equipped with solar panels that provide up to 20% of our needs, gas heating, and an electric oven. All the lighting is LED, and there are two refrigerators (one quite old). There's no insulation in the attic yet. Our average electricity consumption is 670 kilowatt-hours per month. Three people, including a child, live here. I'd appreciate specific suggestions on how to further reduce our energy consumption and make the house more environmentally friendly.",
+        "I\u2019d like some assistance evaluating and improving my home\u2019s energy efficiency. Currently, we have baseboard electric heaters in each room, and mostly CFL bulbs throughout the house. Our hot water heater is electric, and all our kitchen appliances are less than five years old. We don\u2019t have smart thermostats or timers for anything. We do laundry about three times a week and tend to use the dryer often. Our average monthly energy consumption is 420 kWh, and we are a household of just 2 people. Can you provide an efficiency analysis and actionable suggestions?",
+        "I want to find ways to reduce my home's energy consumption based on our setup: the house is heated by a modern gas furnace, all of our lighting is LED, and we have Energy Star-rated appliances except the dryer, which is old. We cook most meals at home using an electric stove. Three people live here including myself, and our typical monthly energy use is around 580 kWh. Please give me an evaluation of my home\u2019s current energy efficiency along with any improvements you recommend."
+      ]
+    },
+    {
+      "args": {
+        "N": 4,
+        "comparison_option": "at least"
+      },
+      "case_id": "extract_product_information__param_product_description__fmt_NCommasChecker",
+      "checker": "NCommasChecker",
+      "chosen_param": "product_description",
+      "description": "The argument value must contain at least 4 commas. The commas may appear anywhere in the value.",
+      "fn_schema": {
+        "description": "Extracts detailed product information from a given product description text.",
+        "name": "extract_product_information",
+        "parameters": {
+          "properties": {
+            "fields_to_extract": {
+              "description": "List of specific fields to extract, such as 'dimensions', 'weight', 'materials'.",
+              "items": {
+                "description": "A specific field to extract.",
+                "enum": [
+                  "dimensions",
+                  "weight",
+                  "materials",
+                  "brand",
+                  "model",
+                  "color"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "include_price": {
+              "description": "Indicates whether to extract price information from the text.",
+              "type": "boolean"
+            },
+            "product_description": {
+              "description": "Detailed textual description of the product. The value must contain at least 4 commas, which may appear anywhere in the text.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "product_description",
+            "include_price",
+            "fields_to_extract"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "extract_product_information",
+      "group": "PUNCTUATION",
+      "user_queries": [
+        "I have this product description for a laptop that I need you to analyze: \"The Dell XPS 15 features a 15.6-inch 4K OLED display, is constructed with an aluminum chassis and carbon fiber palm rest, and comes in a sleek platinum silver color. Weighing just 4 pounds, it's easy to carry. It is powered by an Intel Core i7 processor, 16GB RAM, and a 512GB SSD. The dimensions are 13.6 x 9.1 x 0.7 inches.\" Can you extract the brand, model, weight, dimensions, color, and materials for me? Please also tell me if you find any price information in the description.",
+        "Here\u2019s a detailed product description I found online: \"Introducing the Nike Air Zoom Pegasus 38, designed for runners seeking comfort and style. This shoe is made with a lightweight mesh upper and features a durable rubber sole. The color offered is Midnight Black with electric red accents. Model number BQ9646-002. It weighs approximately 10 ounces and measures 11 x 4 x 5 inches.\" I want you to extract everything regarding brand, model, color, weight, materials, and dimensions, and also include the price if there is any listed in the text.",
+        "Please help me analyze the following product description: \"The Samsung QN90A Neo QLED TV boasts extraordinary 4K picture quality, with a slim design made from brushed titanium. The TV comes in graphite silver, and the brand is clearly identified as Samsung. Model code is QN65QN90AAFXZA. Its dimensions are 56.9 x 32.7 x 1.1 inches, and the weight without stand is 53.6 lbs.\" I am interested in knowing the brand, model, dimensions, weight, color, and materials. Also let me know if any price info is provided.",
+        "I'd like you to extract detailed information from this product description: \"The KitchenAid Artisan Series 5-Quart Stand Mixer, available in Empire Red, is constructed from die-cast metal and features a stainless steel bowl. The appliance weighs 26 pounds and measures 14 x 9 x 14 inches. Model number KSM150PSER. Renowned for its durability and powerful motor, the Artisan Series comes from the trusted KitchenAid brand.\" Could you pull out the brand, model, materials, color, weight, and dimensions for me? If a price is mentioned, please include that too.",
+        "Can you please extract specific information from this product write-up: \"The Patagonia Nano Puff Jacket combines lightweight warmth with eco-conscious materials, featuring a recycled polyester shell and insulation. The jacket is navy blue, and its brand is Patagonia. The model is Nano Puff. Weight is about 11 ounces, and it packs down small. Dimensions when folded are approximately 8 x 4 x 4 inches.\" I need details for brand, model, color, materials, weight, and dimensions, and let me know if the text mentions any price as well."
+      ]
+    },
+    {
+      "args": {
+        "N": 6,
+        "comparison_option": "exactly"
+      },
+      "case_id": "process_customer_complaint__param_extracted_complaint__fmt_PlaceholderCountChecker",
+      "checker": "PlaceholderCountChecker",
+      "chosen_param": "extracted_complaint",
+      "description": "The argument value must contain exactly 6 placeholders, each enclosed in square brackets (e.g., [address]).",
+      "fn_schema": {
+        "description": "Processes a customer complaint to provide an appropriate response.",
+        "name": "process_customer_complaint",
+        "parameters": {
+          "properties": {
+            "customer_id": {
+              "description": "Unique identifier of the customer submitting the complaint.",
+              "type": "string"
+            },
+            "extracted_complaint": {
+              "description": "Detailed description of the customer's complaint or issue. The argument value must contain exactly 6 placeholders, each enclosed in square brackets (e.g., [address]).",
+              "type": "string"
+            },
+            "priority_level": {
+              "description": "Priority level of the complaint indicating urgency.",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "extracted_complaint",
+            "customer_id",
+            "priority_level"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "process_customer_complaint",
+      "group": "DETECTABLE CONTENT",
+      "user_queries": [
+        "Hello, my name is Emily Stevens, and my customer ID is CUST20230987. I would like to file a high-priority complaint regarding an issue I've been having with my recent laptop order. After waiting for two weeks for the device to arrive, I received a completely different model than the one I ordered, and it was missing the accessories that were supposed to be included. Additionally, when I reached out to customer support last week, my emails were not answered promptly, and I feel that's unacceptable given the high cost and urgency of my situation. Please treat this with urgency and help resolve it.",
+        "I am writing on behalf of customer number 7814562, James Rodriguez. We are extremely dissatisfied with the service we received on our last invoice. The complaint is that despite repeated assurances from your team, our order shipped two weeks late without any updates, causing severe disruption to our operations. Furthermore, the package was damaged upon delivery, and several items were missing. We expect immediate action and compensation for these repeated failures. Due to the consequences, kindly consider this complaint as high priority.",
+        "This is customer 99881177. I want to express my frustration with a recurring problem: for the past three months, I have been charged twice for my phone subscription, and every time I call to resolve it, I am told the issue will be fixed, but it never is. My bank account reflects these double charges, and it is causing financial strain as well as inconvenience. I consider this a medium priority because the payments are manageable but it needs to be resolved soon. Please look into this complaint and provide a permanent solution.",
+        "My customer ID is CLIENT-50123, and I would like to raise a low-priority complaint about the delivery process for my recent book order. The delivery person left the package at the wrong building, and I only found it after my neighbor contacted me. While nothing was damaged and I did eventually get my books, this is not the first time this has happened. I wanted to let you know so your team can improve delivery accuracy, but it\u2019s not urgent as I have received my order safely.",
+        "Good afternoon, my name is Linda Park and my customer ID is A34422. I am submitting a complaint that I would categorize as medium priority. I recently visited your pharmacy to fill a prescription, and not only was my medication out of stock unexpectedly, but I was also not notified until I arrived, despite signing up for text alerts. This caused an unnecessary trip and delay in my treatment. I expect better communication from your staff regarding inventory issues. Please review and address this concern appropriately."
+      ]
+    },
+    {
+      "args": {
+        "N": 3,
+        "comparison_option": "exactly"
+      },
+      "case_id": "review_and_assess_task__param_task_description__fmt_PlaceholderCountChecker",
+      "checker": "PlaceholderCountChecker",
+      "chosen_param": "task_description",
+      "description": "The argument value must contain exactly 3 placeholders, each enclosed in square brackets (e.g., [address]).",
+      "fn_schema": {
+        "description": "Reviews and assesses the completion status of a specific task and provides feedback based on the assessment.",
+        "name": "review_and_assess_task",
+        "parameters": {
+          "properties": {
+            "completion_status": {
+              "description": "The completion percentage of the task, ranging from 0 to 100.",
+              "type": "integer"
+            },
+            "feedback_required": {
+              "description": "Indicates whether detailed feedback is required after the assessment. Defaults to True.",
+              "type": "boolean"
+            },
+            "task_description": {
+              "description": "A comprehensive description of the task being reviewed, including any context or specifications. The argument value must contain exactly 3 placeholders, each enclosed in square brackets (e.g., [address]).",
+              "type": "string"
+            }
+          },
+          "required": [
+            "task_description",
+            "completion_status",
+            "feedback_required"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "review_and_assess_task",
+      "group": "DETECTABLE CONTENT",
+      "user_queries": [
+        "I've been working on the quarterly report for our marketing department, which includes gathering data on all our campaigns over the last three months, analyzing conversion rates, and summarizing budget expenditures versus returns on investment. I have compiled around 90% of the required data, but there are a few graphs and the executive summary section that still need to be polished. Could you please review the progress of this task, considering it's about 85% complete, and let me know if my work so far meets the expected standards? Also, I would like to receive detailed feedback on areas for improvement.",
+        "Our team has been tasked with redesigning the main homepage for our company's website to improve user navigation, modernize the visual branding, and increase lead generation. So far, we've implemented the new navigation menus and updated the layout, but we're still missing some of the final touch-ups on graphics and haven't yet tested it thoroughly on mobile devices. Currently, I would estimate the completion status to be roughly 70%. Can you assess this project's progress and achievements? I do not require detailed feedback; a brief summary is sufficient.",
+        "I'm responsible for planning the annual company retreat this year, which involves booking the venue, arranging transportation, organizing team-building activities, and setting up catering for all attendees. At the moment, I have finished the venue selection and most transportation arrangements, but the activities schedule and catering menu are still under consideration. I would assess the completion status at about 60%. Can you review the efforts I\u2019ve made on this task and provide complete, detailed feedback based on what has been achieved so far and what is left to be done?",
+        "I was assigned the task of migrating our shared drive files over to the new cloud-based storage system, making sure all important documents are organized and proper user access permissions are in place. Right now, I've transferred about 95% of the files and set up most of the permissions, although a few team folders still require review. If you could assess this project\u2014which I estimate is 90% complete\u2014and let me know how it's progressing as well as offer concise feedback, that would be appreciated. Please note that detailed feedback is not needed; a quick overview is enough.",
+        "My goal has been to create a comprehensive employee onboarding manual, covering all policies, benefits information, workflow procedures, and frequently asked questions. I have already drafted introductory sections, compiled most policies, and developed the benefits overview, but a few workflow diagrams and FAQ answers are still missing. The completion status would be at roughly 75%. Could you please review the onboarding manual task as it stands? I want to receive in-depth, detailed feedback about the overall quality, completeness, and anything I might have overlooked."
+      ]
+    },
+    {
+      "args": {},
+      "case_id": "fn156__0__generate_architecture_plan__param_style__fmt_PythonListFormatChecker",
+      "checker": "PythonListFormatChecker",
+      "chosen_param": "style",
+      "description": "The argument value must be a valid python list of strings. The list must be syntactically correct and parseable with ast.literal_eval().",
+      "fn_schema": {
+        "description": "Generate a custom architecture plan for a building based on given parameters.",
+        "name": "fn156__0__generate_architecture_plan",
+        "parameters": {
+          "description": "",
+          "properties": {
+            "building_type": {
+              "description": "The type of the building e.g. Church, Residential.",
+              "type": "string"
+            },
+            "extra_features": {
+              "items": {
+                "description": "Additional features to be added in the design.",
+                "enum": [
+                  "Pool",
+                  "Garage",
+                  "Garden",
+                  "Elevator"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "style": {
+              "description": "The architecture style, e.g. Gothic, Roman. The argument value must be a valid python list of strings. The list must be syntactically correct and parseable with ast.literal_eval().",
+              "type": "string"
+            }
+          },
+          "required": [
+            "style",
+            "building_type"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "fn156__0__generate_architecture_plan",
+      "group": "DETECTABLE FORMAT",
+      "user_queries": [
+        "Hey there, I'm in the beginning phases of planning an exciting new project and need a bit of assistance. I'm looking to have an architecture plan generated for a building that will serve as a residential property. In terms of style, I am very much drawn to the timeless elegance and intricate detailing of the Gothic style; I think it will give the place a unique character and charm that's hard to find in modern constructions. Additionally, I have some extra features in mind. It would be fantastic to incorporate a pool for relaxation and leisure, and a garden that adds a touch of natural beauty. These features are really important to my vision for the property. Could you help me make this a reality?",
+        "I'm working on a new building project and I need a custom architecture plan, but I want to make sure that the design really stands out and has a rich historical flair. So, the style I'm most interested in is Roman, known for its classic and majestic elements. This project is for a public structure, specifically a grand church that can accommodate a large congregation. I've got some ideas for additional features that could enhance the site's functionality and user experience. I think including an elevator would greatly improve access for everyone, especially those with mobility challenges, and a garage to provide adequate parking space for staff and visitors. Could you create a plan that caters to these requirements?",
+        "Greetings! I am embarking on an ambitious project to build a new type of residential complex, and I need an exceptional architecture plan that leans into a bold and recognizable style. I've always admired the grand and powerful look of Roman architecture, so I'd like the complex to reflect this style. The building will be primarily residential, but I'd like it to include some luxurious conveniences. Specifically, a private swimming pool for the residents would be a perfect touch for relaxation. Additionally, a beautifully landscaped garden where they can enjoy nature would be amazing. Can you assist me in crafting an architecture plan that incorporates these elements?",
+        "Good day! I hope you can assist me with a fascinating architectural project I'm planning. I intend to create an innovative space that harmonizes with historical design principles. I'm envisioning a commercial building that features the exquisite and rich characteristics of the Gothic architectural style, which I believe will bring a sense of grandeur and historic gravitas to the environment. The building will be primarily an office complex, and I hope to elevate its functionality and appeal with some modern enhancements. I'm thinking of including a garage for convenient parking, and a lush garden area that offers a tranquil escape for employees during breaks. How can we make this vision come to life through an architecture plan?",
+        "Hello! I'm in the conceptual phase of designing a new residential building and am eager to incorporate a design style that has a bit of historical flavor combined with modern utility. I find the Gothic style incredibly appealing because of its dramatic and ornate features. The building will serve a residential purpose and I'm intrigued by the idea of adding some extra features that would enhance the lifestyle of its occupants. I'm particularly interested in a garden where residents can unwind in a natural setting, and a state-of-the-art garage facility for vehicle safety and convenience. With these ideas in mind, I'm seeking a detailed architecture plan that brings my vision to fruition. Could you provide expert guidance on this?"
+      ]
+    },
+    {
+      "args": {},
+      "case_id": "fn22__2__sports_data_basketball_most_points_single_game__param_league__fmt_PythonListFormatChecker",
+      "checker": "PythonListFormatChecker",
+      "chosen_param": "league",
+      "description": "The argument value must be a valid python list of strings. The list must be syntactically correct and parseable with ast.literal_eval().",
+      "fn_schema": {
+        "description": "Returns the record for the most points scored by a single player in one game of NBA, including the player name, points scored, and game date.",
+        "name": "fn22__2__sports_data_basketball_most_points_single_game",
+        "parameters": {
+          "description": "",
+          "properties": {
+            "league": {
+              "description": "The specific basketball league for which to fetch the record. In this case, 'NBA'. The argument value must be a valid Python list of strings, which should be syntactically correct and parseable with ast.literal_eval().",
+              "type": "string"
+            }
+          },
+          "required": [
+            "league"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "fn22__2__sports_data_basketball_most_points_single_game",
+      "group": "DETECTABLE FORMAT",
+      "user_queries": [
+        "I'm really curious about basketball records, and specifically, I want to know about the individual accomplishments in the game's history. Can you tell me about the record for the most points scored by a single player in one game during NBA history? I mean, who was the player who managed to put up the most points in a single match, the total number of points they scored, and on what date this phenomenal achievement took place? It's such a fascinating statistic, and I'd love to get all the specific details of this incredible performance in the NBA.",
+        "As an avid basketball fan, I'm delving into some of the most legendary moments and performances within the NBA. Can you give me detailed information on who holds the record for the most points scored by a player in a single NBA match? I'm interested in knowing which player accomplished this feat, the exact number of points he scored, and the specific date on which this extraordinary game occurred. I'm compiling these records for a personal project, so any comprehensive details you can provide about the highest-scoring performance in NBA history would be incredibly helpful.",
+        "I've always been fascinated by records in sports, particularly those in basketball as it's one of my favorite sports. I'd love to learn more about some standout individual NBA performances. Can you inform me about the record for the most points scored by a basketball player in a single game within the NBA? I'm eager to know the name of the player who set this record, the amount of points he scored, and the date this record was set. These details are really interesting and I'd like to have a bit of historical knowledge about this remarkable NBA game.",
+        "Basketball history is filled with incredible individual achievements, and I'm particularly interested in scoring records. Can you tell me which NBA player scored the most points in one game, the number of points he scored, and the specific date of this game? I'm adding this to my collection of fascinating NBA facts, so a full account of this record-breaking performance would be very much appreciated. It's amazing how some players can single-handedly change the course of a game with their scoring ability, and I want to know about the best example of such a feat in NBA history.",
+        "From time to time, I enjoy exploring the rich history of the NBA and the amazing feats accomplished by the players. I'm currently seeking information on the highest individual scoring performance in an NBA game. Can you provide details about who the player was that holds this record, the exact number of points scored, and the date on which this historic game was played? This kind of information helps deepen my understanding of the game and its legendary moments. A full recounting of this top scoring NBA achievement would be both interesting and informative."
+      ]
+    },
+    {
+      "args": {
+        "quotation_type": "double"
+      },
+      "case_id": "diagnose_technical_issue__param_extracted_user_problem__fmt_QuotationChecker",
+      "checker": "QuotationChecker",
+      "chosen_param": "extracted_user_problem",
+      "description": "The argument value must be wrapped in double quotation marks.\n No additional characters should appear outside the quotes.",
+      "fn_schema": {
+        "description": "Diagnoses and provides solutions for technical issues described by the user.",
+        "name": "diagnose_technical_issue",
+        "parameters": {
+          "properties": {
+            "device_type": {
+              "description": "Type of device where the issue is occurring, such as 'mobile', 'computer', or 'tablet'.",
+              "type": "string"
+            },
+            "extracted_user_problem": {
+              "description": "Detailed description of the technical issue reported by the user. The argument value must be wrapped in double quotation marks, and no additional characters should appear outside the quotes.",
+              "type": "string"
+            },
+            "urgency_level": {
+              "description": "User-specified urgency level of the issue.",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "extracted_user_problem",
+            "device_type",
+            "urgency_level"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "diagnose_technical_issue",
+      "group": "START_END",
+      "user_queries": [
+        "Hi, I'm having a pretty serious problem with my laptop computer and I need your help urgently. For the past few days, whenever I try to turn it on, it makes a beeping noise and the screen stays completely black. I\u2019ve tried removing the battery and plugging it back in, but nothing works. I really need my computer for work and I'm worried I might lose important files. Can you please diagnose what\u2019s going on and suggest what I should do? I would rate the urgency as high because my job depends on getting this fixed as soon as possible.",
+        "Hello, I noticed something odd with my mobile phone lately and would appreciate your help. Over the last week, my phone has been freezing randomly, especially when I try to open certain apps or when multiple apps are running at once. Sometimes, it even restarts by itself. I have tried clearing the cache and uninstalling unused apps but the issue persists. It\u2019s not stopping me from using my phone completely, but it\u2019s becoming increasingly annoying. I would say the urgency is medium right now, but I want to avoid it getting worse. Could you please guide me on what steps I should take to resolve this?",
+        "I urgently need assistance with my tablet device. Yesterday, I attempted to update the operating system, but during the update, the tablet suddenly shut off and now it won't turn on no matter how long I press the power button. The charging indicator also doesn\u2019t show up even after being plugged in for hours. I rely on this tablet for taking notes in my classes, and I have an important exam coming up. This is a high-priority issue for me. Can you help me figure out what might have happened and how I can possibly fix it as soon as possible?",
+        "For the past several days, I have been experiencing a recurring problem on my desktop computer at home. Every time I try to connect to the internet, the computer says there is no network connection even though other devices in the house are connected without any issues. I\u2019ve tried restarting the computer, checking all the cables, and even resetting my router, but nothing seems to help. This problem is not urgent right now since I can use my phone as a temporary solution, so the urgency is low. Can you help me diagnose what could be causing this and how I might resolve it?",
+        "I\u2019m reaching out because I have a persistent issue with my mobile device that I need help with. My phone frequently overheats, especially when I\u2019m making video calls or playing games. Sometimes the device gets so hot that it automatically shuts down to protect itself. I have already removed the case, closed background apps, and limited usage, but the overheating continues. This isn\u2019t an emergency yet, so I\u2019d say the urgency is medium, but I\u2019d like to prevent it from causing any permanent damage. What might be causing this and what steps can I take to fix the issue?"
+      ]
+    },
+    {
+      "args": {
+        "quotation_type": "single"
+      },
+      "case_id": "extract_key_points_from_feedback__param_summarized_text__fmt_QuotationChecker",
+      "checker": "QuotationChecker",
+      "chosen_param": "summarized_text",
+      "description": "The argument value must be wrapped in single quotation marks.\n No additional characters should appear outside the quotes.",
+      "fn_schema": {
+        "description": "Extracts key points, issues, and features from user feedback for product improvement purposes.",
+        "name": "extract_key_points_from_feedback",
+        "parameters": {
+          "properties": {
+            "feedback_type": {
+              "description": "The overall type of feedback provided by the user.",
+              "enum": [
+                "positive",
+                "negative",
+                "neutral"
+              ],
+              "type": "string"
+            },
+            "product_version": {
+              "description": "The version of the product about which feedback is provided.",
+              "type": "string"
+            },
+            "summarized_text": {
+              "description": "Original user feedback that needs to be analyzed to extract key points. The argument value must be wrapped in single quotation marks, with no additional characters outside the quotes.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "summarized_text",
+            "feedback_type",
+            "product_version"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "extract_key_points_from_feedback",
+      "group": "START_END",
+      "user_queries": [
+        "I just wanted to share my recent experience with version 4.2.1 of your mobile app. Overall, I am really pleased with the performance improvements and the new night mode feature, as they have made using the app much more enjoyable. I also noticed that the app launches faster than before, which is a huge plus. One suggestion I have is to consider adding more customization options for notifications, as sometimes I receive alerts I don\u2019t need. But in general, I\u2019m very happy with the changes in this latest update and look forward to more improvements. I\u2019d classify my feedback as positive.",
+        "After using your desktop software, version 10.0, for about two weeks, I\u2019d like to offer some feedback. The main issue I\u2019m encountering is that the export function keeps crashing, especially when exporting large files. Additionally, there is a noticeable lag when switching between tool panels, which interrupts my workflow quite a bit. On the plus side, I appreciate the new UI design\u2014it\u2019s cleaner and easier to navigate. Please use this negative feedback to help identify key areas for improvement.",
+        "I recently downloaded your web browser, version 3.5, and overall my experience has been pretty neutral. The startup time is acceptable, and the basic browsing features work as expected. However, I didn't notice much difference between this update and the previous version, apart from some minor design tweaks. There are no major problems, but nothing particularly excites me either. Could you analyze my feedback and extract the main points for product development purposes?",
+        "Here is my feedback regarding the latest release of your project management tool, version 7.1.2. I genuinely enjoy the enhanced team chat functionality, which makes it much easier to coordinate with colleagues. However, I am disappointed with the new calendar integration\u2014it seems buggy and sometimes misses scheduled events. Also, importing tasks from external sources is not as seamless as advertised. Overall, my impression is mixed, so I would categorize my feedback as neutral. Please help identify and summarize the key points and issues from my review.",
+        "I am extremely satisfied with version 2.0 of your fitness tracking app! The addition of personalized workout plans has been a game-changer for me, and the interface improvements make everything so much easier to use. I also love how the app now syncs seamlessly with my smartwatch, allowing real-time updates on my progress. There\u2019s honestly nothing negative I can say about this update. My feedback is definitely positive, and I hope you continue to build on these enhancements in future versions."
+      ]
+    },
+    {
+      "args": {
+        "N": 2,
+        "comparison_option": "at most"
+      },
+      "case_id": "extract_entities_from_article__param_article_content__fmt_SentenceCountChecker",
+      "checker": "SentenceCountChecker",
+      "chosen_param": "article_content",
+      "description": "The argument value must have at most 2 sentences. Each sentence should be properly punctuated.",
+      "fn_schema": {
+        "description": "Extracts named entities from a news article, such as people, organizations, and locations.",
+        "name": "extract_entities_from_article",
+        "parameters": {
+          "properties": {
+            "article_content": {
+              "description": "The full text of the news article from which entities need to be extracted. The argument value must have at most 2 sentences, and each sentence should be properly punctuated.",
+              "type": "string"
+            },
+            "entity_types": {
+              "description": "List of entity types to extract from the article.",
+              "items": {
+                "description": "A type of named entity, such as person, organization, or location.",
+                "enum": [
+                  "person",
+                  "organization",
+                  "location",
+                  "date",
+                  "event"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "include_context": {
+              "description": "Whether to provide context sentences for each entity. Defaults to false.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "article_content",
+            "entity_types",
+            "include_context"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "extract_entities_from_article",
+      "group": "LENGTH CONSTRAINTS",
+      "user_queries": [
+        "I'm doing some research on recent political events and I need your help to extract specific information from a news article. Here is the full text of the article: 'President Jane Doe addressed the nation on Tuesday from the White House, accompanied by several cabinet members. During her speech, she emphasized the importance of the upcoming Climate Summit scheduled for October 15th in Geneva. Representatives from the United Nations and the European Council were present, along with delegates from eco-friendly organizations. The event drew thousands of protesters who gathered outside the venue demanding urgent action on environmental policies.' Could you pull out the names of all people, organizations, locations, and events mentioned? Also, please provide context sentences for each of these entities.",
+        "Hi, I just read a very informative article and I want to analyze its entities for my project. The article text is: 'Tesla, Inc. announced on February 28, 2023, that it will be constructing a new gigafactory near Austin, Texas. Elon Musk revealed this decision in a press conference held at the company's headquarters. The announcement was attended by Texas Governor Greg Abbott, local officials, and media outlets. This event has been deemed significant for the state's economy and technological growth.' I\u2019d like you to extract all person, organization, location, and date entities from it and include the context for where each was mentioned within the article.",
+        "Could you assist me in breaking down the following news article by identifying important entities? Here\u2019s the article: 'On December 1st, 2022, the FIFA World Cup kicked off in Doha, Qatar. Teams from countries around the globe arrived, including Argentina, led by Lionel Messi, and France, managed by Didier Deschamps. Spectators packed the Lusail Stadium for the opening ceremony event, which was attended by representatives of FIFA and major sponsors like Coca-Cola and Adidas.' I need the full list of people, organizations, locations, dates, and events found within the article, with a snippet of the surrounding sentence for each entity, please.",
+        "I have the text of a news article and I\u2019m interested in doing some entity analysis. Here\u2019s the article content: 'Apple revealed the long-anticipated iPhone 15 during its September 12, 2023 launch event in Cupertino, California. CEO Tim Cook presented innovative features at the Steve Jobs Theater to reporters from the Wall Street Journal, Reuters, and CNN. Tech enthusiasts praised the event, highlighting the company's commitment to sustainability. Pre-orders opened the following Friday.' From this article, could you extract all the relevant people, organizations, locations, dates, and events, and for each, give me the context in which they appear?",
+        "Please help me identify key entities from the complete news article below. Article text: 'Hundreds of students gathered at Central Park in New York City on March 14th, 2024 to participate in a climate awareness march. The event, organized by EarthAction and supported by the City University of New York, featured speeches from climate activist Greta Thunberg and Mayor Eric Adams. Media outlets such as NBC and The New York Times covered the event extensively.' I would like you to extract every person, organization, location, date, and event mentioned in this article, and include the sentences surrounding the mentions for additional context."
+      ]
+    },
+    {
+      "args": {
+        "N": 8,
+        "comparison_option": "at least"
+      },
+      "case_id": "extract_ingredient_list__param_recipe_text__fmt_SentenceCountChecker",
+      "checker": "SentenceCountChecker",
+      "chosen_param": "recipe_text",
+      "description": "The argument value must have at least 8 sentences. Each sentence should be properly punctuated.",
+      "fn_schema": {
+        "description": "Extracts a list of ingredients from a given recipe text.",
+        "name": "extract_ingredient_list",
+        "parameters": {
+          "properties": {
+            "format": {
+              "description": "The format for the output list of ingredients.",
+              "enum": [
+                "list",
+                "csv"
+              ],
+              "type": "string"
+            },
+            "include_quantities": {
+              "description": "Include the quantities of each ingredient in the list. Defaults to true.",
+              "type": "boolean"
+            },
+            "recipe_text": {
+              "description": "The complete recipe text from which ingredients need to be extracted. The argument value must contain at least 8 sentences, and each sentence should be properly punctuated.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "recipe_text",
+            "include_quantities",
+            "format"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "extract_ingredient_list",
+      "group": "LENGTH CONSTRAINTS",
+      "user_queries": [
+        "Hi, I found this recipe online that I want to try out, but it's embedded in a long article and hard to separate the ingredients. Could you please help me by going through the following recipe and listing all the ingredients, including the quantities, in a comma-separated values (csv) format? Here is the complete recipe text: 'To make the ultimate chocolate cake, preheat your oven to 350\u00b0F (175\u00b0C). Grease and flour two 9-inch round cake pans. In a large bowl, combine 2 cups all-purpose flour, 2 cups granulated sugar, 3/4 cup unsweetened cocoa powder, 2 teaspoons baking powder, 1 1/2 teaspoons baking soda, 1 teaspoon salt, and 1 cup milk. Add 1/2 cup vegetable oil, 2 eggs, and 2 teaspoons vanilla extract. Beat on medium speed for 2 minutes. Finally, stir in 1 cup boiling water. Pour the batter evenly into prepared pans and bake for 30-35 minutes. Let cool before frosting.' Thank you!",
+        "I have this pasta recipe my family loves, but I'd like to get a clean, easy-to-read list of the ingredients only, without the amounts, so I can customize it. Could you extract just the ingredient names from this text and present them in a regular list format (not csv)? Here is the recipe: 'Cook 12 ounces of spaghetti in salted water until al dente. While pasta cooks, heat 2 tablespoons olive oil in a skillet, then add 3 minced garlic cloves and cook until fragrant. Add 1/2 teaspoon red pepper flakes and 1 pound peeled shrimp, cook until pink. Toss shrimp with drained pasta, add 1/4 cup chopped parsley, the juice of 1 lemon, and top with grated parmesan as desired. Serve immediately.'",
+        "Could you please read this recipe and give me a detailed CSV list of every ingredient used, making sure to include the specific quantities each time? I want to make sure I get the shopping right. Here is the entire recipe: 'For the classic beef stew, start by cutting 2 pounds of beef chuck into cubes. Season with salt and pepper and brown in 3 tablespoons of olive oil. Remove beef and saut\u00e9 1 large chopped onion, 2 diced carrots, and 3 minced garlic cloves until soft. Return beef to pot, add 3 tablespoons tomato paste, 4 cups beef broth, 1 cup red wine, 3 sprigs of thyme, and 2 bay leaves. Simmer for 2 hours. Add 3 diced potatoes and cook until tender. Discard herbs and serve hot.' Thanks a lot!",
+        "I'm putting together a shopping list and have this detailed recipe for homemade vegetable lasagna, but it's a bit complicated and I keep missing ingredients. Could you go through the recipe below and list all the ingredients (just the names, don't worry about the quantities this time), and put them in a csv format so I can paste it easily? Here is the recipe: 'Preheat oven to 375\u00b0F. In a large saucepan, heat 2 tablespoons olive oil and cook 1 diced onion, 2 cloves garlic, and 1 chopped bell pepper until soft. Add 3 cups spinach and cook until wilted. In a bowl, combine 15 ounces ricotta cheese, 1 egg, and 1/4 cup grated parmesan. Layer cooked lasagna noodles, ricotta mixture, saut\u00e9ed vegetables, and 2 cups marinara sauce in a baking dish. Top with 2 cups shredded mozzarella cheese. Bake for 45 minutes.'",
+        "I have this old family recipe that I want to share with my friends, but it's written out in paragraph form and the ingredients are mixed in with the steps. Can you please help me extract every ingredient from the text, including the amounts specified, and give me the list in a simple bullet point format? Here is the recipe: 'To bake the banana bread, start by preheating oven to 350\u00b0F. Mash 3 ripe bananas in a large bowl, then mix in 1/3 cup melted butter. Stir in 1/2 cup sugar, 1 beaten egg, and 1 teaspoon vanilla extract. Add 1 teaspoon baking soda, a pinch of salt, and 1 1/2 cups flour. Pour batter into a greased loaf pan and bake for 50-60 minutes. Cool before serving.'"
+      ]
+    },
+    {
+      "args": {
+        "N": 7
+      },
+      "case_id": "evaluate_learning_progress__param_user_feedback__fmt_SpacesInBetweenChecker",
+      "checker": "SpacesInBetweenChecker",
+      "chosen_param": "user_feedback",
+      "description": "The argument value must use exactly 7 consecutive spaces between every pair of words. Only 7 spaces in a row are allowed in the string.",
+      "fn_schema": {
+        "description": "Evaluates the user's progress in their learning journey and suggests areas for improvement.",
+        "name": "evaluate_learning_progress",
+        "parameters": {
+          "properties": {
+            "completed_modules": {
+              "description": "Number of learning modules or units the user has completed.",
+              "type": "integer"
+            },
+            "time_spent_learning": {
+              "description": "Total time in hours that the user has spent on learning activities.",
+              "type": "number"
+            },
+            "user_feedback": {
+              "description": "User's personal feedback on their learning experience and challenges faced. The argument value must use exactly 7 consecutive spaces between every pair of words, and only 7 spaces in a row are permitted in the string.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "user_feedback",
+            "completed_modules",
+            "time_spent_learning"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "evaluate_learning_progress",
+      "group": "DETECTABLE FORMAT",
+      "user_queries": [
+        "I've been working hard on my learning program and wanted to get an evaluation of how I'm doing so far. To give you some context, I've completed 10 modules up to this point. Altogether, I've devoted about 14.5 hours to studying, which I mostly spread over evenings and weekends. My biggest challenge has been staying motivated when the content gets difficult, and sometimes I feel like I'm not retaining everything as well as I'd like. I'd appreciate some feedback on my progress and suggestions on areas I might focus on next.",
+        "Could you please review my learning progress based on my recent efforts? I have finished 7 entire modules in the curriculum, and I've spent a total of 9 hours working through the materials, quizzes, and assignments. My own feeling is that I'm understanding most concepts, but I struggle with time management and sometimes fall behind on assignments. I notice that I tend to get stuck on more complex topics without realizing when to ask for help. I'd like to know how I'm doing and what I should work on to improve further.",
+        "I'm hoping you can assess how my learning is going and tell me what I can do to improve from here. So far, I've completed 15 modules in my course over the past few weeks. I've dedicated 22 hours in total to my learning, trying to stay consistent. Reflecting on my experience, I've found that I learn best through hands-on exercises, but still find theoretical topics a bit overwhelming. My challenge is finding the best way to review and remember key information. What advice do you have for me, and where should I be focusing my efforts next?",
+        "I'd like some insight on my educational journey. Up to now, I've made it through 5 modules and have invested 6 hours working through all the content, including interactive lessons and readings. In terms of feedback, I've noticed it's easy for me to understand practical applications, but I'm not as confident about the foundational theories. Sometimes I get distracted and fall behind, making it tough to catch up. Please evaluate my progress and let me know which areas I should work on or if you have strategies to help me improve.",
+        "Can you help me understand how I\u2019m progressing with my studies and guide me on what to focus on next to improve? I\u2019ve completed 12 modules so far, and I have tracked a cumulative 18.75 hours of active learning time, including reviewing notes and taking quizzes. Personally, I feel that my comprehension has improved, but I often get discouraged when I score low on assessments and get confused by some of the advanced concepts. My main challenge has been maintaining confidence and balancing my study schedule. Please analyze my progress and recommend which skills or modules I should prioritize."
+      ]
+    },
+    {
+      "args": {
+        "N": 10
+      },
+      "case_id": "suggest_gift_for_occasion__param_occasion_description__fmt_SpacesInBetweenChecker",
+      "checker": "SpacesInBetweenChecker",
+      "chosen_param": "occasion_description",
+      "description": "The argument value must use exactly 10 consecutive spaces between every pair of words. Only 10 spaces in a row are allowed in the string.",
+      "fn_schema": {
+        "description": "Provides gift suggestions based on the occasion, recipient's age, and gender.",
+        "name": "suggest_gift_for_occasion",
+        "parameters": {
+          "properties": {
+            "occasion_description": {
+              "description": "A detailed description of the occasion for which the gift is needed. The value must use exactly 10 consecutive spaces between every pair of words, with only 10 spaces in a row allowed in the string.",
+              "type": "string"
+            },
+            "recipient_age": {
+              "description": "The age of the recipient.",
+              "type": "integer"
+            },
+            "recipient_gender": {
+              "description": "The gender of the recipient.",
+              "enum": [
+                "male",
+                "female",
+                "non-binary",
+                "prefer not to say"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "occasion_description",
+            "recipient_age",
+            "recipient_gender"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "suggest_gift_for_occasion",
+      "group": "DETECTABLE FORMAT",
+      "user_queries": [
+        "I'm having a really tough time deciding what to get for my best friend, who is turning 30 this weekend. The occasion is her milestone birthday celebration, and she's planning a big dinner party with friends and family at her favorite restaurant. She's always been into creative hobbies like painting and DIY crafts, but she also loves trying out new fitness classes and reading mystery novels. She's female. Could you suggest some thoughtful and unique gift ideas that would be suitable for a 30-year-old woman celebrating her birthday in this way?",
+        "My nephew is about to graduate from high school next month, and the whole family is coming together to throw a huge graduation party for him. This is a significant milestone for our family, and I want to get him something meaningful that will help him as he transitions to college life. He is a 17-year-old male who enjoys soccer, video games, and technology. Could you recommend some creative and practical gifts for a 17-year-old boy celebrating his high school graduation at a big family gathering?",
+        "I'm looking for a gift idea for my non-binary coworker, who is turning 25 soon. Our team is organizing a small surprise celebration at the office to mark their birthday, and I want to find something special that acknowledges their love of art, photography, travel, and gourmet food. They typically prefer experiences or unique handcrafted items rather than mainstream commercial gifts. What would you suggest as the perfect present for a 25-year-old non-binary person for this birthday office party?",
+        "My grandmother is celebrating her 80th birthday with a big garden party attended by family and close friends. She's always been the matriarch of our family, loves gardening, baking for her grandchildren, and reading historical novels. As a female turning 80, I want to choose a meaningful and practical gift that shows our appreciation for her and fits this joyous celebration. Can you give me some thoughtful and age-appropriate gift recommendations for an 80-year-old woman celebrating her birthday in this style?",
+        "My partner, who prefers not to disclose their gender, is about to celebrate our fifth anniversary together, and I really want to surprise them with a special gift. The occasion is quite meaningful to us, and we'll be spending the day exploring the city, having a romantic dinner, and reminiscing about our years together. They are 35 years old and enjoy music, hiking, cooking, and trying new things. Could you recommend some unique, heartfelt gift ideas that would be perfect for a 35-year-old person who prefers not to say their gender on our fifth anniversary?"
+      ]
+    },
+    {
+      "args": {},
+      "case_id": "fn17__0__get_stock_data__param_symbol__fmt_TitleFormatChecker",
+      "checker": "TitleFormatChecker",
+      "chosen_param": "symbol",
+      "description": "The argument value must contain a title wrapped in double angle brackets, such as <<poem of joy>> (everything except for the title is allowed).",
+      "fn_schema": {
+        "description": "Retrieve the most recent trading day's closing price and volume for a specified stock.",
+        "name": "fn17__0__get_stock_data",
+        "parameters": {
+          "description": "",
+          "properties": {
+            "data_points": {
+              "items": {
+                "description": "The type of data you want to retrieve for the stock. This can include closing price, opening price, volume, etc.",
+                "enum": [
+                  "price",
+                  "volume"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "symbol": {
+              "description": "The stock symbol of the company. The value must contain a title wrapped in double angle brackets, such as <<poem of joy>> (everything except for the title is allowed).",
+              "type": "string"
+            }
+          },
+          "required": [
+            "symbol",
+            "data_points"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "fn17__0__get_stock_data",
+      "group": "DETECTABLE FORMAT",
+      "user_queries": [
+        "Hi, I'm interested in finding out how the stock market performed recently, specifically for Tesla. Could you provide me with the most up-to-date information you have regarding Tesla's trading? In particular, I'm looking for the latest closing price as well as the trading volume for the past trading day. The stock symbol for Tesla is TSLA. I'd appreciate the details so I can analyze how the stock is trending and decide whether it might be a good time to invest or not.",
+        "Could you please look up the most recent trading day's information for Apple Inc.? I'm really keen to know both the closing price and the volume of shares traded for Apple, whose ticker symbol is AAPL. I am tracking their performance closely for my portfolio review, so the specific data I need is yesterday\u2019s closing price along with the trading volume. Please give me these details for the AAPL stock symbol as soon as possible.",
+        "I would like to get the latest financial trading data for Microsoft Corporation, specifically with a focus on two key data points: the most recent closing price and the volume of shares traded. The symbol for Microsoft is MSFT. Please retrieve these two values so I can update my financial models and better understand how the MSFT stock is currently performing based on the most recent market activity.",
+        "Can you help me retrieve some current market information for Alphabet, the parent company of Google? I'm particularly interested in viewing the closing price from the last trading session along with the total volume of trades that occurred. I'm aware the stock ticker for Alphabet is GOOGL. Please provide me with both the closing price and volume for GOOGL from the latest trading day for my investment analysis.",
+        "I'm compiling a report on several tech stocks and I need the latest key trading data for Amazon. Could you give me the information for the AMZN stock symbol, focusing specifically on the closing price and the total volume traded during the most recent market session? Both these data points are important for my research, so please provide the most updated figures possible for Amazon (AMZN)."
+      ]
+    },
+    {
+      "args": {},
+      "case_id": "fn204__0__Weather_1_GetWeather__param_city__fmt_TitleFormatChecker",
+      "checker": "TitleFormatChecker",
+      "chosen_param": "city",
+      "description": "The argument value must contain a title wrapped in double angle brackets, such as <<poem of joy>> (everything except for the title is allowed).",
+      "fn_schema": {
+        "description": "Retrieves the weather forecast for a specified city on a particular date.",
+        "name": "fn204__0__Weather_1_GetWeather",
+        "parameters": {
+          "description": "",
+          "properties": {
+            "city": {
+              "description": "The name of the city for which weather information is requested. The argument value must contain a title wrapped in double angle brackets, such as <<poem of joy>> (everything except for the title is allowed).",
+              "type": "string"
+            },
+            "date": {
+              "description": "The date for which weather information is requested, in the format of 'YYYY-MM-DD'. If not provided, the current date is used.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "city"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "fn204__0__Weather_1_GetWeather",
+      "group": "DETECTABLE FORMAT",
+      "user_queries": [
+        "Hi, I'm planning a trip to Paris soon and would really appreciate it if you could provide me with the detailed weather forecast for Paris on 2024-07-21. I want to know the temperature, chance of rain, and any other relevant weather details for that particular day, as I need to pack suitable clothing and plan some outdoor activities. Could you give me all the information you have about the weather in Paris for that specific date?",
+        "I'm organizing an outdoor charity event in New York City for August 14th, 2024, and I want to make sure we're prepared for any type of weather. Can you tell me what the weather forecast looks like for New York City on 2024-08-14? Please include as much information as possible, such as expected temperatures, precipitation, humidity, and anything else that might affect the event. Thank you!",
+        "Could you please pull up the weather forecast for Tokyo for tomorrow, which is 2024-06-25? I'm particularly interested in knowing whether there will be any rain and what the temperature range will be, as I have an early morning meeting in the city. Please include any additional weather warnings or advisories if available!",
+        "I have a hiking trip planned in Cape Town, and I'm a bit concerned about the weather conditions there. Could you provide the forecast for Cape Town on 2024-09-10? I\u2019d love to know if there\u2019s any chance of rain, the anticipated temperature, wind speed, and any other weather factors that could impact my hike on that day.",
+        "For my upcoming business trip, I'll be in Sydney, and I need to know what to expect weather-wise. Can you give me a comprehensive weather forecast for Sydney on 2024-10-05? Specifically, I\u2019m interested in details like maximum and minimum temperatures, likelihood of showers, humidity levels, and any unusual weather phenomena that might occur on that date."
+      ]
+    },
+    {
+      "args": {
+        "N": 2,
+        "comparison_option": "at most"
+      },
+      "case_id": "assess_stress_levels__param_stress_description__fmt_WordCountChecker",
+      "checker": "WordCountChecker",
+      "chosen_param": "stress_description",
+      "description": "The argument value must have at most 2 words. Longer responses are not allowed.",
+      "fn_schema": {
+        "description": "Assesses the user's stress levels based on various factors and provides a summary.",
+        "name": "assess_stress_levels",
+        "parameters": {
+          "properties": {
+            "frequency_of_stress": {
+              "description": "Number of times per week the user feels stressed.",
+              "type": "number"
+            },
+            "physical_symptoms": {
+              "description": "List of physical symptoms experienced due to stress.",
+              "items": {
+                "description": "Individual physical symptom.",
+                "enum": [
+                  "headache",
+                  "fatigue",
+                  "insomnia",
+                  "muscle tension",
+                  "nausea"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "stress_description": {
+              "description": "Description of experiences or situations that are contributing to the user's stress. The response must be concise, using at most 2 words; longer responses are not allowed.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "stress_description",
+            "frequency_of_stress",
+            "physical_symptoms"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "assess_stress_levels",
+      "group": "LENGTH CONSTRAINTS",
+      "user_queries": [
+        "Lately, I've been feeling extremely overwhelmed at work due to tight deadlines and my manager constantly assigning me new tasks even when I haven't finished the previous ones. On top of that, my personal life has been hectic because I'm juggling taking care of my parents and my kids, which is leaving me with almost no free time. As a result, I typically feel stressed about five times a week. Physically, I frequently experience headaches, persistent fatigue, trouble sleeping at night (insomnia), and sometimes muscle tension in my neck and shoulders. Can you analyze my current stress levels and let me know your thoughts?",
+        "I need help understanding just how stressed I might be right now. For the past month, my main source of stress is trying to balance attending university classes, studying for exams, and working a part-time job to cover expenses. These combined pressures are making it very hard for me to relax. I would say that I feel this kind of stress about seven times each week, sometimes even more. When I'm stressed, I often develop headaches, struggle with insomnia, and end up feeling fatigued. Occasionally, I'll feel nauseous too. Could you evaluate my stress level and offer some feedback?",
+        "My stress has been mounting due to ongoing financial problems, escalating arguments with my spouse, and worry about my child's health issues, which have all been hitting me at the same time. It's been extremely tough to cope these last several weeks. In a given week, I notice myself feeling stressed around six times, maybe even more depending on what's happening. When I get this way, I often deal with headaches, muscle tension in my shoulders and back, and sometimes insomnia makes it really tough for me to get a full night's sleep. Can you help assess my current level of stress based on this?",
+        "I would like to get an assessment of my stress because these past two months have been particularly tough due to moving to a new city, starting a new job, and trying to make new friends. All these major life changes are piling up. I experience stress about four times each week. When I am stressed, I notice physical symptoms such as nausea, headaches, and a general feeling of fatigue that often lingers the next day. Can you provide me with an evaluation of my stress levels, given these experiences?",
+        "Could you please analyze my stress level? Recently, the primary contributors have been my heavy academic workload, combined with preparing for an important sports competition. This has resulted in frequent late nights and constant pressure to perform well in both areas. Typically, I feel stressed six times per week. When the stress hits, I mostly experience fatigue, insomnia that prevents me from getting enough rest, and sometimes muscle tension in my shoulders and neck. Let me know what you think about my current stress situation based on all this."
+      ]
+    },
+    {
+      "args": {
+        "N": 4,
+        "comparison_option": "exactly"
+      },
+      "case_id": "provide_dietary_advice__param_dietary_preferences__fmt_WordCountChecker",
+      "checker": "WordCountChecker",
+      "chosen_param": "dietary_preferences",
+      "description": "The argument value must have exactly 4 words. No less, no more.",
+      "fn_schema": {
+        "description": "Offers dietary advice based on user input, considering dietary restrictions and health goals.",
+        "name": "provide_dietary_advice",
+        "parameters": {
+          "properties": {
+            "current_health_conditions": {
+              "description": "List of current health conditions affecting dietary choices.",
+              "items": {
+                "description": "Specific health condition affecting the diet.",
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "dietary_preferences": {
+              "description": "Description of dietary preferences, restrictions, or goals such as vegan, gluten-free, or weight loss. The argument value must contain exactly 4 words\u2014no more, no less.",
+              "type": "string"
+            },
+            "include_recipe_suggestions": {
+              "description": "Whether to include recipe suggestions in the dietary advice. Defaults to False.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "dietary_preferences",
+            "current_health_conditions",
+            "include_recipe_suggestions"
+          ],
+          "type": "object"
+        }
+      },
+      "function": "provide_dietary_advice",
+      "group": "LENGTH CONSTRAINTS",
+      "user_queries": [
+        "I've recently been trying to transition to a vegetarian diet, but I also have some health conditions that I need to keep in mind, namely type 2 diabetes and high cholesterol. I'm not entirely sure which foods to focus on or avoid, and I would love some practical guidance about how to structure my meals to help manage these health issues while sticking to vegetarian options. Additionally, I love cooking, so please include recipe suggestions as part of your advice to make this new lifestyle enjoyable and sustainable.",
+        "Can you help me out with some dietary advice? I am aiming for weight loss, and I want to focus on a high-protein, low-carb diet. I have a few health conditions that impact my dietary needs: hypothyroidism and a mild gluten intolerance. Could you provide some specific tips about what foods to choose or avoid based on these factors? Also, I would really appreciate it if you could give me detailed recipe suggestions as well, since I\u2019m always looking for new meal ideas to add to my weekly rotation.",
+        "My doctor recently told me to reduce my sodium intake due to having hypertension, and I am trying to follow a Mediterranean-style diet. I also suffer from irritable bowel syndrome, which complicates things because certain foods can trigger my symptoms. With those concerns in mind, can you offer tailored dietary advice for balancing Mediterranean eating with my health issues? Please include recipe suggestions that are both low in sodium and suitable for someone with IBS, as I need practical examples to get started.",
+        "I'm looking for help organizing my diet because I was recently diagnosed with celiac disease and rheumatoid arthritis. I want to eat gluten-free and focus on anti-inflammatory foods that might help manage my arthritis symptoms. I'm interested in cruelty-free eating, so a vegan diet is appealing as well. Could you provide detailed dietary advice that considers my gluten-free, anti-inflammatory, and vegan preferences along with my health conditions? Please do not include recipe suggestions for now; I would prefer just the dietary advice.",
+        "My goal is to build muscle while following a pescatarian diet, but I struggle since I\u2019m also lactose intolerant and have a family history of high blood pressure. Could you give me comprehensive dietary recommendations taking all of this into account? My main priorities are making sure I get enough protein from allowable sources without compromising my health. Also, I\u2019d like to get recipe suggestions to help me plan my meals for the week, so please include those in your advice."
+      ]
+    }
+  ],
+  "checker_stats": {
+    "CyrillicGreekChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "HighlightedSectionsCountChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "JsonFormatChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "KeywordFrequencyChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "KeywordsPresenceChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "LetterFrequencyChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "NAllCapitalWordsChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "NCommasChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "PlaceholderCountChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "PythonListFormatChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "QuotationChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "SentenceCountChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "SpacesInBetweenChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "TitleFormatChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "WordCountChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    }
+  },
+  "checkers": [
+    "CyrillicGreekChecker",
+    "HighlightedSectionsCountChecker",
+    "JsonFormatChecker",
+    "KeywordFrequencyChecker",
+    "KeywordsPresenceChecker",
+    "LetterFrequencyChecker",
+    "NAllCapitalWordsChecker",
+    "NCommasChecker",
+    "PlaceholderCountChecker",
+    "PythonListFormatChecker",
+    "QuotationChecker",
+    "SentenceCountChecker",
+    "SpacesInBetweenChecker",
+    "TitleFormatChecker",
+    "WordCountChecker"
+  ],
+  "dataset": "NikolaiSkripko/IFEval-FC",
+  "dataset_revision": "60d76045cee8f885174e3433c93919035a70c88d",
+  "distinct_functions": 29,
+  "entry_count": 30,
+  "excluded_cases": {},
+  "functions_per_checker": 2,
+  "run_params": {
+    "max_tokens": 4096,
+    "queries_per_function": 5,
+    "tool_protocol": "single-tool, native tool calling"
+  },
+  "schema": "llm-bench.ifeval-fc.subset",
+  "seed": 20260918,
+  "upstream_checkers_commit": "12e1b773405edd2ce7769cb499cc5374fdddee05",
+  "version": 1
+}
