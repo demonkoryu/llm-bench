@@ -34,6 +34,32 @@ mkdirSync(join(here, 'src', 'data'), { recursive: true });
 writeFileSync(join(here, 'src', 'data', 'swe-subset.json'), readFileSync(MANIFEST_PATH, 'utf8'));
 console.error(`[copy-lib] pinned subset (${basename(MANIFEST_PATH)}) → dashboard/src/data/swe-subset.json`);
 
+// The IFEval-FC pin, same rule: the PATH comes from the bench so a version bump cannot leave the
+// page describing one case list beside numbers measured on another. Only the metadata is copied --
+// the `cases` array carries a full JSON schema per entry and is ~1 MB, none of which the page reads.
+const { MANIFEST_PATH: IFEVAL_FC_MANIFEST } = await import(join(here, '..', 'benches', 'ifeval_fc.mjs'));
+const ifevalFc = JSON.parse(readFileSync(IFEVAL_FC_MANIFEST, 'utf8'));
+writeFileSync(
+   join(here, 'src', 'data', 'ifeval-fc-subset.json'),
+   JSON.stringify(
+      {
+         ...ifevalFc,
+         // Replaced by the slim projection the page actually uses.
+         cases: ifevalFc.cases.map((c) => ({
+            case_id: c.case_id,
+            function: c.function,
+            checker: c.checker,
+            group: c.group,
+            description: c.description,
+            chosen_param: c.chosen_param,
+         })),
+      },
+      null,
+      2,
+   ),
+);
+console.error(`[copy-lib] IFEval-FC pin (${basename(IFEVAL_FC_MANIFEST)}) → dashboard/src/data/ifeval-fc-subset.json`);
+
 // Drop the cached data-loader output before every dev/build.
 //
 // Framework's build passes useStale:true to the loader, and that path returns the CACHED file

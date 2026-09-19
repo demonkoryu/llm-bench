@@ -8,3 +8,4 @@ src/lib/
 # Copied in from benchmarks/ by copy-lib.mjs on every build, same as src/lib/ — one source of
 # truth for the pinned subset, so the committed copy would only ever be a stale duplicate.
 src/data/swe-subset.json
+src/data/ifeval-fc-subset.json

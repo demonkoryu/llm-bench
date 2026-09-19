@@ -42,6 +42,7 @@ export default {
       { name: 'Compromise', path: '/compromise' },
       { name: 'Pivot', path: '/pivot' },
       { name: 'SWE-bench-Live', path: '/swe-bench-live' },
+      { name: 'IFEval-FC', path: '/ifeval-fc' },
       { name: 'Coverage', path: '/coverage' },
    ],
    // The measurement snapshot is one build-time JSON; no client-side search index needed.
