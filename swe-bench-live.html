@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="generator" content="Observable Framework v1.13.4">
+<title>SWE-bench-Live | llm-bench</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&amp;display=swap" crossorigin>
+<link rel="preload" as="style" href="./_observablehq/theme-near-midnight,near-midnight.07766c04.css">
+<link rel="preload" as="style" href="./_observablehq/stdlib/inputs.f7bf0e12.css">
+<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&amp;display=swap" crossorigin>
+<link rel="stylesheet" type="text/css" href="./_observablehq/theme-near-midnight,near-midnight.07766c04.css">
+<link rel="stylesheet" type="text/css" href="./_observablehq/stdlib/inputs.f7bf0e12.css">
+<link rel="modulepreload" href="./_observablehq/client.23a0febe.js">
+<link rel="modulepreload" href="./_observablehq/runtime.607a8173.js">
+<link rel="modulepreload" href="./_observablehq/stdlib.eed70da6.js">
+<link rel="modulepreload" href="./_npm/@observablehq/plot@0.6.17/93ce672e.js">
+<link rel="modulepreload" href="./_import/lib/score.1a17e7ec.js">
+<link rel="modulepreload" href="./_import/components/board.7c169cc5.js">
+<link rel="modulepreload" href="./_import/components/metric-help.f3b54d5a.js">
+<link rel="modulepreload" href="./_npm/htl@1.0.0/11521f02.js">
+<link rel="modulepreload" href="./_observablehq/stdlib/inputs.e003f924.js">
+<link rel="modulepreload" href="./_import/lib/scoring-config.870a9220.js">
+<link rel="modulepreload" href="./_npm/isoformat@0.2.1/604cb63b.js">
+<link rel="modulepreload" href="./_npm/d3@7.9.0/080cf928.js">
+<link rel="modulepreload" href="./_npm/interval-tree-1d@1.0.4/f53f17b2.js">
+<link rel="modulepreload" href="./_npm/d3-array@3.2.4/b8e751b6.js">
+<link rel="modulepreload" href="./_npm/d3-axis@3.0.0/c662ea05.js">
+<link rel="modulepreload" href="./_npm/d3-brush@3.0.0/d162d8c6.js">
+<link rel="modulepreload" href="./_npm/d3-chord@3.0.1/5cedd0be.js">
+<link rel="modulepreload" href="./_npm/d3-color@3.1.0/65d51007.js">
+<link rel="modulepreload" href="./_npm/d3-contour@4.0.2/c576a91a.js">
+<link rel="modulepreload" href="./_npm/d3-delaunay@6.0.4/8b43826d.js">
+<link rel="modulepreload" href="./_npm/d3-dispatch@3.0.1/3fb06f14.js">
+<link rel="modulepreload" href="./_npm/d3-drag@3.0.0/20b76948.js">
+<link rel="modulepreload" href="./_npm/d3-dsv@3.0.1/097745a2.js">
+<link rel="modulepreload" href="./_npm/d3-ease@3.0.1/8683b012.js">
+<link rel="modulepreload" href="./_npm/d3-fetch@3.0.1/5c319046.js">
+<link rel="modulepreload" href="./_npm/d3-force@3.0.0/33924f3e.js">
+<link rel="modulepreload" href="./_npm/d3-format@3.1.2/8d67a1ae.js">
+<link rel="modulepreload" href="./_npm/d3-geo@3.1.1/8037bd0b.js">
+<link rel="modulepreload" href="./_npm/d3-hierarchy@3.1.2/a9ba0229.js">
+<link rel="modulepreload" href="./_npm/d3-interpolate@3.0.1/e0a47f97.js">
+<link rel="modulepreload" href="./_npm/d3-path@3.1.0/f9e9e0ab.js">
+<link rel="modulepreload" href="./_npm/d3-polygon@3.0.1/2da8eb3b.js">
+<link rel="modulepreload" href="./_npm/d3-quadtree@3.0.1/09002e01.js">
+<link rel="modulepreload" href="./_npm/d3-random@3.0.1/5108797c.js">
+<link rel="modulepreload" href="./_npm/d3-scale@4.0.2/c9f2571b.js">
+<link rel="modulepreload" href="./_npm/d3-scale-chromatic@3.1.0/f3c78e0d.js">
+<link rel="modulepreload" href="./_npm/d3-selection@3.0.0/28717d05.js">
+<link rel="modulepreload" href="./_npm/d3-shape@3.2.0/7c6e2a50.js">
+<link rel="modulepreload" href="./_npm/d3-time@3.1.0/3d1d57c6.js">
+<link rel="modulepreload" href="./_npm/d3-time-format@4.1.0/643581a8.js">
+<link rel="modulepreload" href="./_npm/d3-timer@3.0.1/e99232db.js">
+<link rel="modulepreload" href="./_npm/d3-transition@3.0.1/bd07fd9a.js">
+<link rel="modulepreload" href="./_npm/d3-zoom@3.0.0/d09f7cc9.js">
+<link rel="modulepreload" href="./_npm/binary-search-bounds@2.0.5/5f640032.js">
+<link rel="modulepreload" href="./_npm/internmap@2.0.3/af036d7e.js">
+<link rel="modulepreload" href="./_npm/delaunator@5.1.0/7b06abe7.js">
+<link rel="modulepreload" href="./_npm/robust-predicates@3.0.3/b42f30a7.js">
+<style>:root{--observablehq-max-width:2000px}#observablehq-center{margin-left:1rem;margin-right:1rem}.scroll-x{overflow-x:auto}.scroll-x svg{max-width:none;height:auto}.metric-help{margin:.6rem 0;font-size:13px;border-left:2px solid var(--theme-foreground-faint,#3a3a3a);padding-left:.7rem}.metric-help-title{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--theme-foreground-muted)}.metric-help dl{margin:.4rem 0 0;display:block}.metric-help dt{font-family:var(--monospace,ui-monospace,monospace);color:var(--theme-foreground);margin:.55rem 0 .1rem}.metric-help dt:first-of-type{margin-top:0}.metric-help dd{margin:0;max-width:74ch;line-height:1.5;color:var(--theme-foreground-muted)}</style>
+<script type="module">
+
+import {define} from "./_observablehq/client.23a0febe.js";
+import {registerFile} from "./_observablehq/stdlib.eed70da6.js";
+
+registerFile("./data/measurements.json", {"name":"./data/measurements.json","mimeType":"application/json","path":"./_file/data/measurements.80f72be5.json","lastModified":1789810899757,"size":2032324});
+registerFile("./data/model-labels.json", {"name":"./data/model-labels.json","mimeType":"application/json","path":"./_file/data/model-labels.44baa042.json","lastModified":1789810902817,"size":2188});
+registerFile("./data/swe-subset.json", {"name":"./data/swe-subset.json","mimeType":"application/json","path":"./_file/data/swe-subset.07294920.json","lastModified":1789810894544,"size":19701});
+
+define({id: "164959d9", inputs: ["FileAttachment"], outputs: ["Plot","wilson","modelName","metricHelp","rows","modelLabels","subset"], body: async (FileAttachment) => {
+const [Plot, {wilson}, {modelName}, {metricHelp}] = await Promise.all([import("./_npm/@observablehq/plot@0.6.17/93ce672e.js"), import("./_import/lib/score.1a17e7ec.js"), import("./_import/components/board.7c169cc5.js"), import("./_import/components/metric-help.f3b54d5a.js")]);
+
+const rows = await FileAttachment("./data/measurements.json").json();
+const modelLabels = await FileAttachment("./data/model-labels.json").json();
+const subset = await FileAttachment("./data/swe-subset.json").json();
+return {Plot,wilson,modelName,metricHelp,rows,modelLabels,subset};
+}});
+
+define({id: "b6df1721", inputs: ["rows","subset","wilson","modelName","modelLabels"], outputs: ["swe","byEntity","LANGS","perLangCount","perLangGroups","perLangPhrase","perLangNote","worstLangStep","board","nInst","nScored","perInstancePoints"], body: (rows,subset,wilson,modelName,modelLabels) => {
+// One entity per (artifact × spec_decode) — the axes the leaderboard separates on, so a row here
+// lines up with a row there. Metrics are gathered by name: a config that banked no swe_live rows
+// must be ABSENT, not silently zero.
+const swe = rows.filter((r) => r.bench === "swe_live");
+const byEntity = new Map();
+for (const r of swe) {
+  const k = `${r.gguf_file}␟${r.spec_decode ?? ""}`;
+  if (!byEntity.has(k)) byEntity.set(k, { gguf_file: r.gguf_file, spec_decode: r.spec_decode, m: {} });
+  byEntity.get(k).m[r.metric] = r.metric_value;
+}
+
+const LANGS = subset.languages;
+// `per_language` is a MAP from v6 on (cpp contributes 3 where the others contribute 5) and was a
+// bare int in v1-v5. Those older files stay checked in and can legitimately be the active pin, so
+// both shapes are normalised here rather than assumed away. Interpolating an object straight into
+// the prose below rendered "[object Object] instances" and "NaN points", which is how a schema
+// change shows up on a page: not as an error, as a sentence that has stopped meaning anything.
+const perLangCount = Object.fromEntries(
+  LANGS.map((l) => [l, typeof subset.per_language === "number" ? subset.per_language : subset.per_language[l]]),
+);
+// Languages grouped by their instance count, so the prose can say "5 each for go/java/ts/rust, 3 for
+// cpp" instead of one number that is wrong for at least one language.
+const perLangGroups = [...new Set(Object.values(perLangCount))]
+  .sort((a, b) => b - a)
+  .map((n) => ({ n, langs: LANGS.filter((l) => perLangCount[l] === n) }));
+const perLangPhrase = perLangGroups.map((g) => `${g.n} × ${g.langs.join("/")}`).join(", ");
+// Explain an uneven pin only WHEN it is uneven. v6 capped cpp at 3 on evaluation cost and the page
+// said so; v7 restored it to 5, at which point that sentence became a confident falsehood. A note
+// derived from the data cannot outlive the condition it describes.
+const perLangNote =
+  perLangGroups.length > 1
+    ? " The counts differ because some languages have fewer instances whose evaluation fits the pin's cost bar, and evaluation cost is paid once per configuration benchmarked, forever."
+    : "";
+// The COARSEST step, i.e. the least precise language, because that is the figure a reader needs in
+// order not to over-read the smallest one.
+const worstLangStep = Math.max(...Object.values(perLangCount).map((n) => 100 / n));
+const board = [...byEntity.values()]
+  .map((e) => {
+    const k = e.m.swe_resolved ?? 0;
+    const n = e.m.swe_total ?? 0;
+    const ci = wilson(k, n) ?? { p: 0, lo: 0, hi: 0 };
+    return {
+      // Short label: the y axis is the scarcest space on a phone.
+      model: modelName(e.gguf_file, modelLabels).replace(/\.gguf$/, "").replace(/-MTP-UD|-UD/, ""),
+      resolved: k,
+      total: n,
+      // Percentages as plain 0-100 numbers. Plot's `percent: true` expresses the same thing but
+      // interacts with an explicit domain in ways that render an empty frame — and an empty frame
+      // looks identical to "no data", which is how the first version of this page lost its points.
+      pct: n ? (100 * k) / n : 0,
+      lo: 100 * ci.lo,
+      hi: 100 * ci.hi,
+      noPatch: e.m.swe_no_patch ?? 0,
+      timeouts: e.m.swe_timeouts ?? 0,
+      rolloutMin: e.m.swe_rollout_s != null ? Math.round(e.m.swe_rollout_s / 60) : null,
+      evalMin: e.m.swe_eval_s != null ? Math.round(e.m.swe_eval_s / 60) : null,
+      ctxMedian: e.m.swe_ctx_median ?? null,
+      ctxMax: e.m.swe_ctx_max ?? null,
+      calls: e.m.swe_calls ?? null,
+      sPerCall: e.m.swe_s_per_call ?? null,
+      genTokS: e.m.swe_gen_tok_s ?? null,
+      gpuHPerResolve: e.m.swe_gpu_h_per_resolve ?? null,
+      ctxPerResolve: e.m.swe_ctx_per_resolve ?? null,
+      langs: Object.fromEntries(LANGS.map((l) => [l, e.m[`swe_lang_${l}`] ?? null])),
+    };
+  })
+  .sort((a, b) => b.pct - a.pct || a.model.localeCompare(b.model));
+
+const nInst = subset.instance_count;
+// TWO counts, and conflating them is a live bug rather than a nicety. `nInst` is how many instances
+// the pin NAMES; `nScored` is how many a rate is actually over -- the gold-validated set, i.e. those
+// that pass here with the benchmark's own reference patch. They are equal whenever every pinned
+// instance validates, which is the normal case and why this went unnoticed. The moment one does not,
+// `swe_total` (gold-validated) drops below `instance_count` (pinned) for EVERY configuration, and the
+// stale-pin filter below would flag all of them as measured against an older pin, permanently.
+const nScored = subset.gold_validated?.resolvable?.length ?? nInst;
+const perInstancePoints = nScored ? 100 / nScored : 0;
+return {swe,byEntity,LANGS,perLangCount,perLangGroups,perLangPhrase,perLangNote,worstLangStep,board,nInst,nScored,perInstancePoints};
+}});
+
+define({id: "f8620d87", inputs: ["perInstancePoints","nInst"], outputs: ["SWE_HELP"], body: (perInstancePoints,nInst) => {
+// Page-local glossary, rendered with the shared metric-help component so it looks like the rest of
+// the dashboard. Local rather than added to analysis/query-engine.mjs's METRIC_HELP because these
+// columns are not in the dashboard's metric catalog — no other view can show them, and the shared
+// map is what the pivot and leaderboard select from.
+const SWE_HELP = {
+  // outcome
+  resolved: "Instances whose patch made every FAIL_TO_PASS test pass without breaking any PASS_TO_PASS test. All-or-nothing per instance; there is no partial credit.",
+  total: "Instances scored — the gold-validated set, i.e. those that pass here with the benchmark's own reference patch. Instances that fail with the reference patch are excluded, since no model could resolve them.",
+  rate: `resolved ÷ total. At this sample size one instance is worth about ${perInstancePoints.toFixed(0)} points, so read it together with the interval.`,
+  "95% lo": "Lower bound of the 95% Wilson confidence interval for the rate. Wilson rather than the normal approximation because the latter misbehaves near 0 and 1 — where a small-sample result most often lands.",
+  "95% hi": "Upper bound of the same interval. If two configurations' [lo, hi] ranges overlap, the ordering between them is not supported by this data.",
+  "no patch": "Rollouts that ended without producing any diff at all — the model never reached an edit it was willing to submit. Scored as unresolved, but a different failure from submitting a wrong patch.",
+  timeouts: "Rollouts stopped at the pinned wall clock with work still in progress. Also scored as unresolved: under a fixed budget, running out of time is the result. Counts the agent's own clean stop at its wall clock as well as a rollout killed from outside — before 2026-09-17 only the latter was counted, which published a flat zero here for every configuration.",
+
+  // cost and context
+  "ctx median": "Median context the agent accumulated over a rollout, in tokens, across all scored instances. The agent's history is linear — every command and its output stays in the prompt — so this grows monotonically within a rollout and is what the server must actually hold.",
+  "ctx peak": "Largest context any single rollout reached. This, not the median, is what decides whether a served window is adequate: exceed it and the longest trajectories are truncated, and those are the ones still making progress when they run long.",
+  "agent steps": "Total model calls across all scored instances — one per think-act cycle. Divided by the instance count it gives the steps a model averaged before finishing or running out of budget.",
+  "s / step": "Wall clock per agent step, including the time the container spends executing the command. It is NOT decode time: much of a step is the repository's own tooling running, which is why this varies far less between models than their token rates do.",
+  "gen tok/s": "Generated tokens per second of rollout wall clock — throughput for the whole agent loop, not a decode-rate measurement. A model that thinks at length shows a high figure here without necessarily finishing sooner.",
+  "rollout min": "Total wall clock spent generating patches for this configuration, GPU-bound.",
+  "GPU-h / resolve": `GPU-hours of rollout per issue actually resolved — resolve rate and speed in one figure. Stated as a COST rather than a rate because the numerator would otherwise be a ${nInst}-instance proportion, whose noise would be hidden inside what looks like a precise number; as a cost the noisy term sits in the denominator, where with 4 resolves one instance moves the figure by 25%. Blank when nothing resolved: the cost of a resolution is then undefined, not infinite.`,
+  "ctx tok / resolve": "Context tokens processed across all rollouts per issue resolved — resolve rate against context appetite. A model that succeeds often on short trajectories scores far better here than one that succeeds as often only after exhausting its window. Same caveat and same blank-when-zero rule as GPU-h / resolve.",
+  "eval min": "Total wall clock spent running the repositories' own test suites to judge those patches. CPU-bound and independent of the model, so it is a property of the pinned instances rather than of the configuration.",
+};
+return {SWE_HELP};
+}});
+
+define({id: "0a389e78", mode: "inline", inputs: ["nInst","display"], body: async (nInst,display) => {
+display(await(
+nInst
+))
+}});
+
+define({id: "07798e9b", mode: "inline", inputs: ["perInstancePoints","display"], body: async (perInstancePoints,display) => {
+display(await(
+perInstancePoints.toFixed(0)
+))
+}});
+
+define({id: "ad13a4f1", inputs: ["board","nScored","display","html"], outputs: ["understated"], body: (board,nScored,display,html) => {
+// A configuration measured against FEWER instances than the pin currently holds is called out
+// rather than quietly plotted beside the others. Its rate is over a different denominator, so the
+// bar is honest about itself while the comparison between bars is not. This is what the state looks
+// like between a pin bump and the sweep that fills it in, and an unlabelled chart in that window
+// would put a 12-instance rate and a 16-instance rate on one axis with nothing to say so.
+const understated = board.filter((d) => d.total > 0 && d.total < nScored);
+display(
+  understated.length === 0
+    ? html``
+    : html`<div class="warning"><b>Measured against an older, smaller pin.</b> ${understated
+        .map((d) => `${d.model} (${d.total} of ${nScored})`)
+        .join(", ")} — the rate is over a different denominator, so it is not comparable with the rest
+        until those instances are rolled out.</div>`,
+);
+return {understated};
+}});
+
+define({id: "6f4f1116", inputs: ["board","display","html","Plot","width"], outputs: ["labelChars","marginLeft"], body: (board,display,html,Plot,width) => {
+// House pattern: fill the page on desktop, keep a readable minimum and scroll inside the card on a
+// phone. marginLeft is sized to the longest label — y tick labels are right-anchored and extend
+// leftward, so a fixed margin clips names at the SVG edge on a narrow screen.
+const labelChars = board.length ? Math.max(...board.map((d) => d.model.length)) : 0;
+const marginLeft = Math.min(300, Math.max(120, Math.round(labelChars * 6.4) + 12));
+display(
+  board.length === 0
+    ? html`<div class="muted">No configuration has SWE-bench-Live results yet.</div>`
+    : html`<div class="scroll-x">${Plot.plot({
+        marginLeft,
+        marginRight: 52,
+        width: Math.max(marginLeft + 300, width),
+        height: Math.max(150, board.length * 32 + 52),
+        x: { label: "resolved (%) →", domain: [0, 100], grid: true, ticks: 5 },
+        y: { label: null, domain: board.map((d) => d.model) },
+        marks: [
+          Plot.ruleX([0]),
+          // Interval first, so the point draws on top of it.
+          Plot.ruleY(board, { y: "model", x1: "lo", x2: "hi", stroke: "currentColor", strokeOpacity: 0.3, strokeWidth: 7 }),
+          Plot.dot(board, {
+            y: "model", x: "pct", r: 5, fill: "currentColor",
+            title: (d) => `${d.resolved}/${d.total} resolved\n95% CI ${d.lo.toFixed(0)}–${d.hi.toFixed(0)}%`,
+          }),
+          Plot.text(board, {
+            y: "model", x: "pct", text: (d) => `${d.resolved}/${d.total}`,
+            dx: 14, textAnchor: "start", fill: "currentColor", fillOpacity: 0.75, fontSize: 11,
+          }),
+        ],
+      })}</div>`,
+);
+return {labelChars,marginLeft};
+}});
+
+define({id: "6562c5de", inputs: ["display","Inputs","board"], body: (display,Inputs,board) => {
+display(
+  Inputs.table(board, {
+    columns: ["model", "resolved", "total", "pct", "lo", "hi", "noPatch", "timeouts", "rolloutMin", "evalMin"],
+    header: {
+      model: "config", pct: "rate", lo: "95% lo", hi: "95% hi",
+      noPatch: "no patch", rolloutMin: "rollout min", evalMin: "eval min",
+    },
+    format: {
+      pct: (v) => `${v.toFixed(0)}%`,
+      lo: (v) => `${v.toFixed(0)}%`,
+      hi: (v) => `${v.toFixed(0)}%`,
+    },
+    width: { model: 240 },
+  }),
+);
+}});
+
+define({id: "dc9303d4", inputs: ["display","metricHelp","SWE_HELP"], body: (display,metricHelp,SWE_HELP) => {
+display(metricHelp(SWE_HELP, ["resolved", "total", "rate", "95% lo", "95% hi", "no patch", "timeouts"], { title: "column meanings" }));
+}});
+
+define({id: "60a80551", inputs: ["subset","board"], outputs: ["ctxLimit","haveCost"], body: (subset,board) => {
+const ctxLimit = subset.run_params.ctx;
+const haveCost = board.filter((d) => d.ctxMax != null);
+return {ctxLimit,haveCost};
+}});
+
+define({id: "10c35747", inputs: ["board","display","haveCost","html","Plot","width","ctxLimit"], outputs: ["mgC"], body: (board,display,haveCost,html,Plot,width,ctxLimit) => {
+const mgC = Math.min(300, Math.max(120, Math.round((board.length ? Math.max(...board.map((d) => d.model.length)) : 0) * 6.4) + 12));
+display(
+  haveCost.length === 0
+    ? html`<div class="muted">No context/speed data recorded yet.</div>`
+    : html`<div class="scroll-x">${Plot.plot({
+        marginLeft: mgC,
+        marginRight: 30,
+        width: Math.max(mgC + 320, width),
+        height: Math.max(150, haveCost.length * 32 + 56),
+        x: { label: "context used (tokens) \u2192", domain: [0, Math.max(ctxLimit, ...haveCost.map((d) => d.ctxMax)) * 1.02], grid: true },
+        y: { label: null, domain: [...haveCost].sort((a, b) => b.ctxMax - a.ctxMax).map((d) => d.model) },
+        marks: [
+          Plot.ruleX([0]),
+          // The served window, so "how close did we come" is readable without arithmetic.
+          Plot.ruleX([ctxLimit], { stroke: "currentColor", strokeOpacity: 0.55, strokeDasharray: "4 3" }),
+          Plot.text([{ x: ctxLimit }], { x: "x", frameAnchor: "top", dy: -6, dx: -4, textAnchor: "end", text: () => `served ${(ctxLimit / 1024).toFixed(0)}k`, fill: "currentColor", fillOpacity: 0.7, fontSize: 11 }),
+          Plot.ruleY(haveCost, { y: "model", x1: "ctxMedian", x2: "ctxMax", stroke: "currentColor", strokeOpacity: 0.3, strokeWidth: 7 }),
+          Plot.dot(haveCost, { y: "model", x: "ctxMedian", r: 4, fill: "currentColor", title: (d) => `median ${d.ctxMedian.toLocaleString()} tokens` }),
+          Plot.dot(haveCost, { y: "model", x: "ctxMax", r: 4.5, fill: "currentColor", fillOpacity: 0.55, symbol: "diamond", title: (d) => `peak ${d.ctxMax.toLocaleString()} tokens` }),
+        ],
+      })}</div>`,
+);
+return {mgC};
+}});
+
+define({id: "8d2e9020", inputs: ["display","Inputs","board"], body: (display,Inputs,board) => {
+display(
+  Inputs.table(
+    [...board].sort((a, b) => (b.ctxMax ?? 0) - (a.ctxMax ?? 0)),
+    {
+      columns: ["model", "ctxMedian", "ctxMax", "calls", "sPerCall", "genTokS", "gpuHPerResolve", "ctxPerResolve", "rolloutMin", "evalMin"],
+      header: {
+        model: "config", ctxMedian: "ctx median", ctxMax: "ctx peak", calls: "agent steps",
+        sPerCall: "s / step", genTokS: "gen tok/s", gpuHPerResolve: "GPU-h / resolve",
+        ctxPerResolve: "ctx tok / resolve", rolloutMin: "rollout min", evalMin: "eval min",
+      },
+      format: {
+        ctxMedian: (v) => (v == null ? "—" : v.toLocaleString()),
+        ctxMax: (v) => (v == null ? "—" : v.toLocaleString()),
+        sPerCall: (v) => (v == null ? "—" : v.toFixed(1)),
+        genTokS: (v) => (v == null ? "—" : v.toFixed(1)),
+        gpuHPerResolve: (v) => (v == null ? "—" : v.toFixed(2)),
+        ctxPerResolve: (v) => (v == null ? "—" : v.toLocaleString()),
+      },
+      width: { model: 240 },
+    },
+  ),
+);
+}});
+
+define({id: "5932ed3f", inputs: ["display","metricHelp","SWE_HELP"], body: (display,metricHelp,SWE_HELP) => {
+display(metricHelp(SWE_HELP, ["ctx median", "ctx peak", "agent steps", "s / step", "gen tok/s", "GPU-h / resolve", "ctx tok / resolve", "rollout min", "eval min"], { title: "column meanings" }));
+}});
+
+define({id: "5ef89954", inputs: ["board"], outputs: ["eff"], body: (board) => {
+const eff = board.filter((d) => d.gpuHPerResolve != null && d.ctxPerResolve != null);
+return {eff};
+}});
+
+define({id: "3989df20", inputs: ["eff"], outputs: ["effRanked"], body: (eff) => {
+// Colour + legend rather than text labels next to each point. Two configurations sit at
+// (0.18, 39,952) and (0.20, 41,453) — closer together than their own labels are wide — so NO text
+// placement separates them; the first version overplotted them into an unreadable smear. Colour
+// carries identity, the legend carries the names, and a short index on each dot keeps the mapping
+// readable in a screenshot where hovering is not possible.
+const effRanked = [...eff].sort((a, b) => a.gpuHPerResolve - b.gpuHPerResolve).map((d, i) => ({ ...d, idx: i + 1 }));
+return {effRanked};
+}});
+
+define({id: "ce8c4c08", inputs: ["display","effRanked","html","Plot","width"], body: (display,effRanked,html,Plot,width) => {
+display(
+  effRanked.length === 0
+    ? html`<div class="muted">No configuration resolved an instance, so cost per resolve is undefined.</div>`
+    : html`<div class="scroll-x">${Plot.plot({
+        marginLeft: 62,
+        marginBottom: 44,
+        marginRight: 18,
+        marginTop: 10,
+        width: Math.max(420, Math.min(width, 720)),
+        height: 330,
+        x: { label: "GPU-hours per resolved issue \u2192", domain: [0, Math.max(...effRanked.map((d) => d.gpuHPerResolve)) * 1.15], grid: true },
+        y: { label: "\u2191 context tokens per resolved issue", domain: [0, Math.max(...effRanked.map((d) => d.ctxPerResolve)) * 1.15], grid: true, tickFormat: (v) => `${(v / 1000).toFixed(0)}k` },
+        color: { legend: true, domain: effRanked.map((d) => `${d.idx}. ${d.model}`), scheme: "tableau10" },
+        marks: [
+          Plot.ruleX([0]),
+          Plot.ruleY([0]),
+          // Area carries the resolve rate, so a configuration that is cheap only because it rarely
+          // succeeds cannot sit near the origin looking good.
+          Plot.dot(effRanked, {
+            x: "gpuHPerResolve", y: "ctxPerResolve",
+            r: (d) => 6 + d.pct / 8,
+            fill: (d) => `${d.idx}. ${d.model}`,
+            fillOpacity: 0.85, stroke: "currentColor", strokeOpacity: 0.35,
+            title: (d) => `${d.model}\n${d.resolved}/${d.total} resolved (${d.pct.toFixed(0)}%)\n${d.gpuHPerResolve.toFixed(2)} GPU-h per resolve\n${d.ctxPerResolve.toLocaleString()} ctx tokens per resolve`,
+          }),
+          // The index sits INSIDE the dot, so it cannot collide with a neighbour's label.
+          Plot.text(effRanked, { x: "gpuHPerResolve", y: "ctxPerResolve", text: "idx", fill: "black", fillOpacity: 0.8, fontSize: 10, fontWeight: "bold" }),
+        ],
+      })}</div>`,
+);
+}});
+
+define({id: "3919904c", inputs: ["display","Inputs","effRanked"], body: (display,Inputs,effRanked) => {
+display(
+  Inputs.table(effRanked, {
+    columns: ["idx", "model", "resolved", "pct", "gpuHPerResolve", "ctxPerResolve"],
+    header: { idx: "#", model: "config", pct: "rate", gpuHPerResolve: "GPU-h / resolve", ctxPerResolve: "ctx tok / resolve" },
+    format: {
+      pct: (v) => `${v.toFixed(0)}%`,
+      gpuHPerResolve: (v) => v.toFixed(2),
+      ctxPerResolve: (v) => v.toLocaleString(),
+    },
+    width: { model: 240 },
+    sort: "idx",
+  }),
+);
+}});
+
+define({id: "ccdbeda5", inputs: ["board","LANGS"], outputs: ["langRows","mgL"], body: (board,LANGS) => {
+const langRows = board.flatMap((d) =>
+  LANGS.filter((l) => d.langs[l] != null).map((l) => ({ model: d.model, lang: l, pct: 100 * d.langs[l] })),
+);
+const mgL = Math.min(300, Math.max(120, Math.round((board.length ? Math.max(...board.map((d) => d.model.length)) : 0) * 6.4) + 12));
+return {langRows,mgL};
+}});
+
+define({id: "5f2f5043", inputs: ["display","langRows","html","Plot","mgL","width","board","LANGS"], body: (display,langRows,html,Plot,mgL,width,board,LANGS) => {
+display(
+  langRows.length === 0
+    ? html`<div class="muted">No per-language results yet.</div>`
+    : html`<div class="scroll-x">${Plot.plot({
+        marginLeft: mgL,
+        marginRight: 20,
+        width: Math.max(mgL + 320, width),
+        height: Math.max(170, board.length * 38 + 70),
+        x: { label: "resolved (%) →", domain: [0, 100], grid: true, ticks: 5 },
+        y: { label: null, domain: board.map((d) => d.model) },
+        color: { legend: true, domain: LANGS, scheme: "tableau10" },
+        marks: [
+          Plot.ruleX([0]),
+          // Offset within the y band: with a handful of instances per language the rates collapse
+          // onto a few values, so exact overlap is the common case and one visible dot would stand
+          // for four. A slightly untidy row beats a hidden one.
+          Plot.dot(langRows, {
+            y: "model", x: "pct", fill: "lang", r: 4.5,
+            dy: (d) => (LANGS.indexOf(d.lang) - (LANGS.length - 1) / 2) * 6,
+            title: (d) => `${d.lang}: ${d.pct.toFixed(0)}%`,
+          }),
+        ],
+      })}</div>`,
+);
+}});
+
+define({id: "a316fb70", mode: "inline", inputs: ["perLangPhrase","display"], body: async (perLangPhrase,display) => {
+display(await(
+perLangPhrase
+))
+}});
+
+define({id: "0f2c9265", mode: "inline", inputs: ["worstLangStep","display"], body: async (worstLangStep,display) => {
+display(await(
+worstLangStep.toFixed(0)
+))
+}});
+
+define({id: "69942fb7", mode: "inline", inputs: ["perLangNote","display"], body: async (perLangNote,display) => {
+display(await(
+perLangNote
+))
+}});
+
+define({id: "d9f02327", inputs: ["display","Inputs","subset"], body: (display,Inputs,subset) => {
+display(
+  Inputs.table(subset.instances, {
+    columns: ["language", "instance_id", "repo", "fail_to_pass", "pass_to_pass"],
+    header: { instance_id: "instance", fail_to_pass: "F2P", pass_to_pass: "P2P" },
+    width: { instance_id: 250, repo: 200 },
+  }),
+);
+}});
+
+define({id: "5bbfe596", inputs: ["subset","display","html","perLangPhrase"], outputs: ["rp"], body: (subset,display,html,perLangPhrase) => {
+// Built with html`` rather than written as a markdown block: interpolation does NOT happen inside
+// inline code spans, so the earlier version of this panel shipped literal ${...} to the page for
+// every value it wrapped in backticks.
+const rp = subset.run_params;
+display(html`<div class="tip">
+  <b>dataset</b> ${subset.dataset} at revision <code>${subset.dataset_revision}</code><br>
+  <b>selection</b> seed ${subset.seed}, ${perLangPhrase}, one instance per
+  repository, F2P ≤ ${subset.filters.fail_to_pass_max}, P2P ≤ ${subset.filters.pass_to_pass_max}<br>
+  <b>budget</b> ${rp.rollout_timeout_s}s and ${rp.step_limit} steps per instance at ctx
+  ${rp.ctx.toLocaleString()}<br>
+  <b>agent</b> ${rp.agent}${rp.agent_overlay ? `, ${rp.agent_overlay}` : ""}
+</div>`);
+return {rp};
+}});
+
+define({id: "901b037d", inputs: ["subset","display","html"], outputs: ["excludedRepos"], body: (subset,display,html) => {
+const excludedRepos = Object.entries(subset.excluded_repos ?? {});
+display(
+  excludedRepos.length === 0
+    ? html``
+    : html`<div class="muted"><b>Excluded repositories</b>${excludedRepos.map(
+        ([r, why]) => html`<div><code>${r}</code> — ${why}</div>`,
+      )}</div>`,
+);
+return {excludedRepos};
+}});
+
+</script>
+</head>
+<body>
+<input id="observablehq-sidebar-toggle" type="checkbox" title="Toggle sidebar">
+<label id="observablehq-sidebar-backdrop" for="observablehq-sidebar-toggle"></label>
+<nav id="observablehq-sidebar">
+  <ol>
+    <label id="observablehq-sidebar-close" for="observablehq-sidebar-toggle"></label>
+    <li class="observablehq-link"><a href="./">llm-bench</a></li>
+  </ol>
+  <ol>
+    <li class="observablehq-link"><a href="./">Leaderboard</a></li>
+    <li class="observablehq-link"><a href="./pareto.html">Pareto frontier</a></li>
+    <li class="observablehq-link"><a href="./compromise.html">Compromise</a></li>
+    <li class="observablehq-link"><a href="./pivot.html">Pivot</a></li>
+    <li class="observablehq-link observablehq-link-active"><a href="./swe-bench-live.html">SWE-bench-Live</a></li>
+    <li class="observablehq-link"><a href="./ifeval-fc.html">IFEval-FC</a></li>
+    <li class="observablehq-link"><a href="./coverage.html">Coverage</a></li>
+  </ol>
+</nav>
+<script>{const e=document.querySelector("#observablehq-sidebar"),o=document.querySelector("#observablehq-sidebar-toggle"),r=sessionStorage.getItem("observablehq-sidebar");r?o.checked=r==="true":o.indeterminate=!0;for(const t of document.querySelectorAll("#observablehq-sidebar summary")){const s=t.parentElement;switch(sessionStorage.getItem(`observablehq-sidebar:${t.textContent}`)){case"true":s.open=!0;break;case"false":s.classList.contains("observablehq-section-active")||(s.open=!1);break}}addEventListener("beforeunload",()=>sessionStorage.setItem("observablehq-sidebar-scrolly",`${e.scrollTop}`));const a=sessionStorage.getItem("observablehq-sidebar-scrolly");a!=null&&(e.style.cssText="overflow: hidden;",e.scrollTop=+a,e.style.cssText="");}</script>
+<div id="observablehq-center">
+<main id="observablehq-main" class="observablehq">
+<h1 id="swe-bench-live" tabindex="-1"><a class="observablehq-header-anchor" href="#swe-bench-live">SWE-bench-Live</a></h1>
+<p>Real GitHub issues, resolved (or not) in the repository's own container. An instance counts as
+<strong>resolved</strong> only when the model's patch makes every <code>FAIL_TO_PASS</code> test pass without breaking any
+<code>PASS_TO_PASS</code> test. There is no partial credit.</p>
+<div class="observablehq observablehq--block"><!--:164959d9:--></div>
+<div class="observablehq observablehq--block"><!--:b6df1721:--></div>
+<div class="observablehq observablehq--block"><!--:f8620d87:--></div>
+<div class="warning">
+<p><strong>Read the interval, not the rank.</strong> <observablehq-loading></observablehq-loading><!--:0a389e78:--> pinned instances, so one instance moves a rate by
+<observablehq-loading></observablehq-loading><!--:07798e9b:--> points. The bars are 95% Wilson intervals — where two overlap, the
+ordering between those two models is not evidence. These results are reported <strong>here only</strong>: they do
+not feed the leaderboard, the Pareto view, or any composite score.</p>
+</div>
+<h2 id="resolve-rate" tabindex="-1"><a class="observablehq-header-anchor" href="#resolve-rate">Resolve rate</a></h2>
+<div class="observablehq observablehq--block"><!--:ad13a4f1:--></div>
+<div class="observablehq observablehq--block"><!--:6f4f1116:--></div>
+<h2 id="per-model" tabindex="-1"><a class="observablehq-header-anchor" href="#per-model">Per model</a></h2>
+<div class="observablehq observablehq--block"><!--:6562c5de:--></div>
+<div class="observablehq observablehq--block"><!--:dc9303d4:--></div>
+<p><strong><code>no patch</code></strong> counts rollouts that ended without producing a diff at all; <strong><code>timeouts</code></strong> counts
+those stopped at the pinned wall clock. Both score as unresolved — under a fixed budget, running out
+is the result — but they separate "tried and was wrong" from "never got as far as an edit", which
+the rate alone hides.</p>
+<h2 id="context-and-speed" tabindex="-1"><a class="observablehq-header-anchor" href="#context-and-speed">Context and speed</a></h2>
+<p>How much context an agentic rollout actually consumes, and what a step costs. These answer the two
+questions the resolve rate cannot: whether the served window is adequate rather than merely
+generous, and whether a low score means slow or means incapable.</p>
+<div class="observablehq observablehq--block"><!--:60a80551:--></div>
+<div class="observablehq observablehq--block"><!--:10c35747:--></div>
+<p>Filled circle is the median rollout, hollow diamond the peak; the dashed line is the served window.</p>
+<div class="observablehq observablehq--block"><!--:8d2e9020:--></div>
+<div class="observablehq observablehq--block"><!--:5932ed3f:--></div>
+<div class="note">
+<p>Peak context is the reason the served window is pinned where it is. The longest rollout here reached
+a substantial fraction of it, so a smaller window would truncate the long trajectories — which are
+the ones with a chance of finishing — rather than merely inconveniencing them.</p>
+</div>
+<h3 id="cost-per-resolved-issue" tabindex="-1"><a class="observablehq-header-anchor" href="#cost-per-resolved-issue">Cost per resolved issue</a></h3>
+<div class="observablehq observablehq--block"><!--:5ef89954:--></div>
+<div class="observablehq observablehq--block"><!--:3989df20:--></div>
+<div class="observablehq observablehq--block"><!--:ce8c4c08:--></div>
+<div class="observablehq observablehq--block"><!--:3919904c:--></div>
+<p>Toward the origin is cheaper on both axes, and dot area grows with resolve rate — so a
+configuration that is cheap only because it rarely succeeds stays visibly small. Numbers match the
+table above, ordered by GPU-hours per resolve. A configuration that resolved nothing is absent
+rather than plotted at zero, because both costs are undefined for it.</p>
+<h2 id="per-language" tabindex="-1"><a class="observablehq-header-anchor" href="#per-language">Per language</a></h2>
+<div class="observablehq observablehq--block"><!--:ccdbeda5:--></div>
+<div class="observablehq observablehq--block"><!--:5f2f5043:--></div>
+<div class="caution">
+<p>Each language is only a handful of instances — <observablehq-loading></observablehq-loading><!--:a316fb70:--> — so a per-language rate moves in
+steps of up to <observablehq-loading></observablehq-loading><!--:0f2c9265:--> points and is at best directional. It is shown to expose
+gross asymmetries — a model that solves nothing in one language and most of another — not to rank
+languages against each other.<observablehq-loading></observablehq-loading><!--:69942fb7:--></p>
+</div>
+<h2 id="what-is-pinned" tabindex="-1"><a class="observablehq-header-anchor" href="#what-is-pinned">What is pinned</a></h2>
+<div class="observablehq observablehq--block"><!--:d9f02327:--></div>
+<p>The set is fixed so a model benchmarked later is comparable to one benchmarked today. Changing the
+instances, the languages, or the run parameters means a new subset version — not a re-run of this
+one.</p>
+<div class="observablehq observablehq--block"><!--:5bbfe596:--></div>
+<div class="observablehq observablehq--block"><!--:901b037d:--></div>
+<p>The denominator is the <strong>gold-validated</strong> subset: the benchmark's own reference patch is run first,
+and any instance failing with it is excluded. Tests rot and Docker does not isolate perfectly, so an
+instance can become unresolvable by anyone — scoring models against one of those would not be
+conservative, it would be wrong. Configurations that cannot serve the pinned context are absent
+entirely rather than recorded as failures; both K2-Horizon rows are missing for that reason.</p>
+</main>
+<footer id="observablehq-footer">
+<nav><a rel="prev" href="./pivot.html"><span>Pivot</span></a><a rel="next" href="./ifeval-fc.html"><span>IFEval-FC</span></a></nav>
+<div>llm-bench · reads central-db (llmbench.measurements) at build time</div>
+</footer>
+</div>
+</body>
+</html>

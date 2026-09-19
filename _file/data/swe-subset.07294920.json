@@ -1,0 +1,532 @@
+{
+  "dataset": "SWE-bench-Live/MultiLang",
+  "dataset_revision": "22091f6ce331c5c60c241d76512d4be7ee1a555b",
+  "excluded_instances": {
+    "OpenRCT2__OpenRCT2-26315": "gold-invalid (2026-09-18 v6 cpp pass; 67s, resolved=False with the reference patch)",
+    "TryGhost__Ghost-24345": "gold-invalid (2026-09-18 v9 js pass; 300s, resolved=False with the reference patch)",
+    "actor-framework__actor-framework-2300": "gold-invalid (2026-09-18 v6 cpp pass; 29s, resolved=False with the reference patch)"
+  },
+  "excluded_repos": {
+    "DynamoRIO/dynamorio": "evaluation cost: still building at 3148s (52.5 min) when stopped, no verdict (2026-09-18 v8 C gold pass)",
+    "NVIDIA/OpenShell": "gold-invalid twice (OpenShell-695 and -810 both fail with the reference patch here)",
+    "ProvableHQ/leo": "evaluation cost: 1611s for one instance (2026-09-17 gold pass); the cost is the Rust build, not the issue",
+    "WasmEdge/WasmEdge": "evaluation cost: 752s for WasmEdge-4772 (2026-09-18 v6 cpp gold pass); gold-valid, excluded on cost",
+    "cilium/tetragon": "evaluation cost: still building at 500s when capped, no verdict (2026-09-18 v8 C gold pass)",
+    "duckdb/ducklake": "evaluation cost: 609s for ducklake-1340 (2026-09-18 v6 cpp gold pass); gold-valid, excluded on cost",
+    "fluent/fluent-bit": "evaluation cost: still building at 604s when capped, no verdict (2026-09-18 v8 C gold pass)",
+    "ghostfolio/ghostfolio": "evaluation cost: >20 min for one instance (2026-09-16 gold pass); the cost is the build, not the issue",
+    "gwtproject/gwt": "evaluation cost: >20 min for one instance (2026-09-16 gold pass); the cost is the build, not the issue",
+    "kvcache-ai/Mooncake": "evaluation cost: 951s for Mooncake-2892 (2026-09-18 v6 cpp gold pass); gold-valid, excluded on cost",
+    "stephenberry/glaze": "evaluation cost: 590s for glaze-2611 (2026-09-18 v6 cpp gold pass); gold-valid, excluded on cost",
+    "varnishcache/varnish-cache": "evaluation cost: still building at 1201s when capped, no verdict (2026-09-18 v8 C gold pass)",
+    "zmkfirmware/zmk": "evaluation cost: 30.8 GB image (largest in the pool), still building at 355s when stopped (2026-09-18 v8 C gold pass)"
+  },
+  "filters": {
+    "fail_to_pass_max": 50,
+    "max_one_instance_per_repo": true,
+    "pass_to_pass_max": 2000,
+    "problem_statement_chars": [
+      200,
+      8000
+    ]
+  },
+  "gold_validated": {
+    "eval_seconds": {
+      "BYVoid__OpenCC-1310": 29,
+      "FastLED__FastLED-2691": 111,
+      "GothenburgBitFactory__taskwarrior-3911": 100,
+      "NVlabs__cuda-oxide-381": 111,
+      "antvis__G2-7076": 444,
+      "apache__inlong-11947": 132,
+      "aralroca__next-translate-1259": 50,
+      "bpg__terraform-provider-proxmox-2122": 36,
+      "btraceio__btrace-897": 192,
+      "c-ares__c-ares-1189": 120,
+      "colbymchenry__codegraph-1051": 62,
+      "danielmiessler__Fabric-2098": 61,
+      "ether__etherpad-7445": 47,
+      "excalidraw__excalidraw-9760": 164,
+      "floci-io__floci-57": 65,
+      "gitlab4j__gitlab4j-api-1266": 40,
+      "gpbl__react-day-picker-2816": 76,
+      "grommet__grommet-7712": 190,
+      "h4ckf0r0day__obscura-414": 65,
+      "iflytek__skillhub-253": 110,
+      "immunant__c2rust-1322": 79,
+      "jsonata-js__jsonata-809": 40,
+      "kubernetes__kops-17519": 252,
+      "kumahq__kuma-15918": 443,
+      "less__less.js-4349": 40,
+      "modelcontextprotocol__rust-sdk-1021": 77,
+      "musescore__MuseScore-33064": 55,
+      "nearai__ironclaw-6712": 70,
+      "open-telemetry__opentelemetry-go-8133": 37,
+      "playcanvas__engine-9000": 60,
+      "rizinorg__rizin-6079": 100,
+      "rsyslog__rsyslog-6047": 322,
+      "rui314__mold-1546": 83,
+      "withastro__starlight-3293": 71,
+      "xroche__httrack-482": 143
+    },
+    "eval_seconds_total": 4077,
+    "harness_commit": "9a27349",
+    "host": "rose (62 GB RAM, 32 CPU)",
+    "note": "Every pinned instance passes with the reference patch on this machine, so the scored denominator is the full pin. The js adds cost 380s between them (40 + 40 + 50 + 60 + 190) and took six candidates: only TryGhost__Ghost-24345 was rejected, gold-invalid at 300s, and that is an INSTANCE exclusion since 300s is inside the cost bar and the repository may have usable instances. ZERO js candidates were excluded on cost. That is the cleanest language pass so far and the sharpest contrast available with c, which needed ten candidates and five cost exclusions for the same five slots: on a managed runtime the test suite dominates evaluation, while in c and cpp the build does. grommet is the useful proof -- 20 FAIL_TO_PASS and 1658 PASS_TO_PASS tests, and still only 190s.",
+    "resolvable": [
+      "bpg__terraform-provider-proxmox-2122",
+      "kubernetes__kops-17519",
+      "kumahq__kuma-15918",
+      "btraceio__btrace-897",
+      "gitlab4j__gitlab4j-api-1266",
+      "iflytek__skillhub-253",
+      "NVlabs__cuda-oxide-381",
+      "h4ckf0r0day__obscura-414",
+      "nearai__ironclaw-6712",
+      "antvis__G2-7076",
+      "excalidraw__excalidraw-9760",
+      "withastro__starlight-3293",
+      "danielmiessler__Fabric-2098",
+      "floci-io__floci-57",
+      "immunant__c2rust-1322",
+      "ether__etherpad-7445",
+      "open-telemetry__opentelemetry-go-8133",
+      "apache__inlong-11947",
+      "gpbl__react-day-picker-2816",
+      "modelcontextprotocol__rust-sdk-1021",
+      "BYVoid__OpenCC-1310",
+      "musescore__MuseScore-33064",
+      "FastLED__FastLED-2691",
+      "GothenburgBitFactory__taskwarrior-3911",
+      "rui314__mold-1546",
+      "colbymchenry__codegraph-1051",
+      "rizinorg__rizin-6079",
+      "xroche__httrack-482",
+      "rsyslog__rsyslog-6047",
+      "c-ares__c-ares-1189",
+      "jsonata-js__jsonata-809",
+      "less__less.js-4349",
+      "playcanvas__engine-9000",
+      "grommet__grommet-7712",
+      "aralroca__next-translate-1259"
+    ],
+    "validated_at": "2026-09-16 (v1) / 2026-09-17 (the v2 and v3 adds) / 2026-09-18 (the three cpp adds) / 2026-09-18 (the two cpp restorations) / 2026-09-18 (the five C adds) / 2026-09-18 (the five js adds)"
+  },
+  "instance_count": 35,
+  "instances": [
+    {
+      "base_commit": "9fb88588590127f5c069d3f299b9c2aa570f9225",
+      "docker_image": "starryzhang/sweb.eval.x86_64.c-ares_1776_c-ares-1189",
+      "fail_to_pass": 1,
+      "instance_id": "c-ares__c-ares-1189",
+      "language": "c",
+      "pass_to_pass": 1181,
+      "problem_statement_chars": 1279,
+      "repo": "c-ares/c-ares"
+    },
+    {
+      "base_commit": "0da2dcec8ec07b1cf729f369c399963b71f1615b",
+      "docker_image": "starryzhang/sweb.eval.x86_64.colbymchenry_1776_codegraph-1051",
+      "fail_to_pass": 2,
+      "instance_id": "colbymchenry__codegraph-1051",
+      "language": "c",
+      "pass_to_pass": 1826,
+      "problem_statement_chars": 1937,
+      "repo": "colbymchenry/codegraph"
+    },
+    {
+      "base_commit": "c6d566a44ae31f396d2ee5f603479c6e4529c9b4",
+      "docker_image": "starryzhang/sweb.eval.x86_64.rizinorg_1776_rizin-6079",
+      "fail_to_pass": 4,
+      "instance_id": "rizinorg__rizin-6079",
+      "language": "c",
+      "pass_to_pass": 1300,
+      "problem_statement_chars": 4023,
+      "repo": "rizinorg/rizin"
+    },
+    {
+      "base_commit": "4b3ce60b76362c16f0bece97bafc57fe4aaa3922",
+      "docker_image": "starryzhang/sweb.eval.x86_64.rsyslog_1776_rsyslog-6047",
+      "fail_to_pass": 1,
+      "instance_id": "rsyslog__rsyslog-6047",
+      "language": "c",
+      "pass_to_pass": 418,
+      "problem_statement_chars": 691,
+      "repo": "rsyslog/rsyslog"
+    },
+    {
+      "base_commit": "a3f04bde722bb2185923d775873a334b357ddd07",
+      "docker_image": "starryzhang/sweb.eval.x86_64.xroche_1776_httrack-482",
+      "fail_to_pass": 1,
+      "instance_id": "xroche__httrack-482",
+      "language": "c",
+      "pass_to_pass": 65,
+      "problem_statement_chars": 1586,
+      "repo": "xroche/httrack"
+    },
+    {
+      "base_commit": "f1e3d25c9f0b265c58f0631105b5a3a9f4e9ef9a",
+      "docker_image": "starryzhang/sweb.eval.x86_64.byvoid_1776_opencc-1310",
+      "fail_to_pass": 1,
+      "instance_id": "BYVoid__OpenCC-1310",
+      "language": "cpp",
+      "pass_to_pass": 141,
+      "problem_statement_chars": 1083,
+      "repo": "BYVoid/OpenCC"
+    },
+    {
+      "base_commit": "9e3b9eb2183fd8111926ac28e6798e7a0c6afa93",
+      "docker_image": "starryzhang/sweb.eval.x86_64.fastled_1776_fastled-2691",
+      "fail_to_pass": 2,
+      "instance_id": "FastLED__FastLED-2691",
+      "language": "cpp",
+      "pass_to_pass": 485,
+      "problem_statement_chars": 2559,
+      "repo": "FastLED/FastLED"
+    },
+    {
+      "base_commit": "236b57f321374f3556aeaf8baf9f231388497fc3",
+      "docker_image": "starryzhang/sweb.eval.x86_64.gothenburgbitfactory_1776_taskwarrior-3911",
+      "fail_to_pass": 1,
+      "instance_id": "GothenburgBitFactory__taskwarrior-3911",
+      "language": "cpp",
+      "pass_to_pass": 172,
+      "problem_statement_chars": 479,
+      "repo": "GothenburgBitFactory/taskwarrior"
+    },
+    {
+      "base_commit": "b669ca8efc40e6baefb0d3ff1ba4dea0155f02d8",
+      "docker_image": "starryzhang/sweb.eval.x86_64.musescore_1776_musescore-33064",
+      "fail_to_pass": 4,
+      "instance_id": "musescore__MuseScore-33064",
+      "language": "cpp",
+      "pass_to_pass": 1949,
+      "problem_statement_chars": 369,
+      "repo": "musescore/MuseScore"
+    },
+    {
+      "base_commit": "f8da34575f0579e1712e7f17b5ace89d3722b47c",
+      "docker_image": "starryzhang/sweb.eval.x86_64.rui314_1776_mold-1546",
+      "fail_to_pass": 1,
+      "instance_id": "rui314__mold-1546",
+      "language": "cpp",
+      "pass_to_pass": 414,
+      "problem_statement_chars": 2311,
+      "repo": "rui314/mold"
+    },
+    {
+      "base_commit": "9d179dde724604d3b2f297fd805c7c2cb8f723b4",
+      "docker_image": "starryzhang/sweb.eval.x86_64.bpg_1776_terraform-provider-proxmox-2122",
+      "fail_to_pass": 5,
+      "instance_id": "bpg__terraform-provider-proxmox-2122",
+      "language": "go",
+      "pass_to_pass": 381,
+      "problem_statement_chars": 1417,
+      "repo": "bpg/terraform-provider-proxmox"
+    },
+    {
+      "base_commit": "99dcff0f365ad8fe0a7e14fe10e232ef6f3f90ad",
+      "docker_image": "starryzhang/sweb.eval.x86_64.danielmiessler_1776_fabric-2098",
+      "fail_to_pass": 1,
+      "instance_id": "danielmiessler__Fabric-2098",
+      "language": "go",
+      "pass_to_pass": 841,
+      "problem_statement_chars": 3675,
+      "repo": "danielmiessler/Fabric"
+    },
+    {
+      "base_commit": "5f564fe1abc5526e4554845a5518f14443cae5e7",
+      "docker_image": "starryzhang/sweb.eval.x86_64.kubernetes_1776_kops-17519",
+      "fail_to_pass": 1,
+      "instance_id": "kubernetes__kops-17519",
+      "language": "go",
+      "pass_to_pass": 1249,
+      "problem_statement_chars": 851,
+      "repo": "kubernetes/kops"
+    },
+    {
+      "base_commit": "06fed354e554d643612c46de3b1a090ff8ac8188",
+      "docker_image": "starryzhang/sweb.eval.x86_64.kumahq_1776_kuma-15918",
+      "fail_to_pass": 2,
+      "instance_id": "kumahq__kuma-15918",
+      "language": "go",
+      "pass_to_pass": 265,
+      "problem_statement_chars": 764,
+      "repo": "kumahq/kuma"
+    },
+    {
+      "base_commit": "5e9a80b3cedc3aa0536bcadfbace4e2eadca6bd3",
+      "docker_image": "starryzhang/sweb.eval.x86_64.open-telemetry_1776_opentelemetry-go-8133",
+      "fail_to_pass": 1,
+      "instance_id": "open-telemetry__opentelemetry-go-8133",
+      "language": "go",
+      "pass_to_pass": 577,
+      "problem_statement_chars": 499,
+      "repo": "open-telemetry/opentelemetry-go"
+    },
+    {
+      "base_commit": "a5a2a7014dd0de11b208f8d2a628228559626aea",
+      "docker_image": "starryzhang/sweb.eval.x86_64.apache_1776_inlong-11947",
+      "fail_to_pass": 1,
+      "instance_id": "apache__inlong-11947",
+      "language": "java",
+      "pass_to_pass": 222,
+      "problem_statement_chars": 409,
+      "repo": "apache/inlong"
+    },
+    {
+      "base_commit": "eb177a6d893b3126ef520ac76ee314148c9486e2",
+      "docker_image": "starryzhang/sweb.eval.x86_64.btraceio_1776_btrace-897",
+      "fail_to_pass": 1,
+      "instance_id": "btraceio__btrace-897",
+      "language": "java",
+      "pass_to_pass": 1321,
+      "problem_statement_chars": 1339,
+      "repo": "btraceio/btrace"
+    },
+    {
+      "base_commit": "a1c488994fb89d18f2907eb329b17fff0622c7bb",
+      "docker_image": "starryzhang/sweb.eval.x86_64.floci-io_1776_floci-57",
+      "fail_to_pass": 5,
+      "instance_id": "floci-io__floci-57",
+      "language": "java",
+      "pass_to_pass": 920,
+      "problem_statement_chars": 2611,
+      "repo": "floci-io/floci"
+    },
+    {
+      "base_commit": "39cbdc75efaf441e8f4430677749673fd3a3090f",
+      "docker_image": "starryzhang/sweb.eval.x86_64.gitlab4j_1776_gitlab4j-api-1266",
+      "fail_to_pass": 1,
+      "instance_id": "gitlab4j__gitlab4j-api-1266",
+      "language": "java",
+      "pass_to_pass": 229,
+      "problem_statement_chars": 278,
+      "repo": "gitlab4j/gitlab4j-api"
+    },
+    {
+      "base_commit": "010c1a4e4658139890bf9c34121300a120b3539d",
+      "docker_image": "starryzhang/sweb.eval.x86_64.iflytek_1776_skillhub-253",
+      "fail_to_pass": 4,
+      "instance_id": "iflytek__skillhub-253",
+      "language": "java",
+      "pass_to_pass": 852,
+      "problem_statement_chars": 2672,
+      "repo": "iflytek/skillhub"
+    },
+    {
+      "base_commit": "f1fbf473b42cf795ae8eb996003222625bfc58ac",
+      "docker_image": "starryzhang/sweb.eval.x86_64.aralroca_1776_next-translate-1259",
+      "fail_to_pass": 1,
+      "instance_id": "aralroca__next-translate-1259",
+      "language": "js",
+      "pass_to_pass": 146,
+      "problem_statement_chars": 2222,
+      "repo": "aralroca/next-translate"
+    },
+    {
+      "base_commit": "e1688a3b920b8ad28677b20051f1f79564fb7a6d",
+      "docker_image": "starryzhang/sweb.eval.x86_64.grommet_1776_grommet-7712",
+      "fail_to_pass": 20,
+      "instance_id": "grommet__grommet-7712",
+      "language": "js",
+      "pass_to_pass": 1658,
+      "problem_statement_chars": 479,
+      "repo": "grommet/grommet"
+    },
+    {
+      "base_commit": "ac3c447f2eb1911513bab34f8dae9a92ec3704dd",
+      "docker_image": "starryzhang/sweb.eval.x86_64.jsonata-js_1776_jsonata-809",
+      "fail_to_pass": 1,
+      "instance_id": "jsonata-js__jsonata-809",
+      "language": "js",
+      "pass_to_pass": 1781,
+      "problem_statement_chars": 929,
+      "repo": "jsonata-js/jsonata"
+    },
+    {
+      "base_commit": "033e3b356f3f5b829689d615653ba935f3b40cac",
+      "docker_image": "starryzhang/sweb.eval.x86_64.less_1776_less.js-4349",
+      "fail_to_pass": 1,
+      "instance_id": "less__less.js-4349",
+      "language": "js",
+      "pass_to_pass": 214,
+      "problem_statement_chars": 1794,
+      "repo": "less/less.js"
+    },
+    {
+      "base_commit": "e2ae683b5e00e812bea15b4e231674606c6c08b4",
+      "docker_image": "starryzhang/sweb.eval.x86_64.playcanvas_1776_engine-9000",
+      "fail_to_pass": 2,
+      "instance_id": "playcanvas__engine-9000",
+      "language": "js",
+      "pass_to_pass": 1959,
+      "problem_statement_chars": 2281,
+      "repo": "playcanvas/engine"
+    },
+    {
+      "base_commit": "2b1269964beaeab789a1512d0089fe42d9336e14",
+      "docker_image": "starryzhang/sweb.eval.x86_64.nvlabs_1776_cuda-oxide-381",
+      "fail_to_pass": 1,
+      "instance_id": "NVlabs__cuda-oxide-381",
+      "language": "rust",
+      "pass_to_pass": 1595,
+      "problem_statement_chars": 1974,
+      "repo": "NVlabs/cuda-oxide"
+    },
+    {
+      "base_commit": "99ece0e12dd2cace768b5caa76fcbe1b5233f0f6",
+      "docker_image": "starryzhang/sweb.eval.x86_64.h4ckf0r0day_1776_obscura-414",
+      "fail_to_pass": 1,
+      "instance_id": "h4ckf0r0day__obscura-414",
+      "language": "rust",
+      "pass_to_pass": 329,
+      "problem_statement_chars": 2655,
+      "repo": "h4ckf0r0day/obscura"
+    },
+    {
+      "base_commit": "290e366477454399f773c2e66ad6bceea4ca5160",
+      "docker_image": "starryzhang/sweb.eval.x86_64.immunant_1776_c2rust-1322",
+      "fail_to_pass": 7,
+      "instance_id": "immunant__c2rust-1322",
+      "language": "rust",
+      "pass_to_pass": 100,
+      "problem_statement_chars": 1840,
+      "repo": "immunant/c2rust"
+    },
+    {
+      "base_commit": "4e36fd9531f20ab33cabd562ff19355db7426496",
+      "docker_image": "starryzhang/sweb.eval.x86_64.modelcontextprotocol_1776_rust-sdk-1021",
+      "fail_to_pass": 9,
+      "instance_id": "modelcontextprotocol__rust-sdk-1021",
+      "language": "rust",
+      "pass_to_pass": 654,
+      "problem_statement_chars": 3859,
+      "repo": "modelcontextprotocol/rust-sdk"
+    },
+    {
+      "base_commit": "6f930f2bc039f93a2d79c269a48eec8e5296240b",
+      "docker_image": "starryzhang/sweb.eval.x86_64.nearai_1776_ironclaw-6712",
+      "fail_to_pass": 1,
+      "instance_id": "nearai__ironclaw-6712",
+      "language": "rust",
+      "pass_to_pass": 591,
+      "problem_statement_chars": 968,
+      "repo": "nearai/ironclaw"
+    },
+    {
+      "base_commit": "7c2b94e40e7508af316ed7da2f48a33df9f24f1a",
+      "docker_image": "starryzhang/sweb.eval.x86_64.antvis_1776_g2-7076",
+      "fail_to_pass": 1,
+      "instance_id": "antvis__G2-7076",
+      "language": "ts",
+      "pass_to_pass": 804,
+      "problem_statement_chars": 762,
+      "repo": "antvis/G2"
+    },
+    {
+      "base_commit": "5199319ceaa3466113f8793cf891d1c0756a9929",
+      "docker_image": "starryzhang/sweb.eval.x86_64.ether_1776_etherpad-7445",
+      "fail_to_pass": 2,
+      "instance_id": "ether__etherpad-7445",
+      "language": "ts",
+      "pass_to_pass": 1092,
+      "problem_statement_chars": 3115,
+      "repo": "ether/etherpad"
+    },
+    {
+      "base_commit": "8492b144b05b56634fa020ec278adc7936fbfc4e",
+      "docker_image": "starryzhang/sweb.eval.x86_64.excalidraw_1776_excalidraw-9760",
+      "fail_to_pass": 6,
+      "instance_id": "excalidraw__excalidraw-9760",
+      "language": "ts",
+      "pass_to_pass": 310,
+      "problem_statement_chars": 1649,
+      "repo": "excalidraw/excalidraw"
+    },
+    {
+      "base_commit": "9c7b2c6c5190f3cc2ba7bd02207a1cd427a93856",
+      "docker_image": "starryzhang/sweb.eval.x86_64.gpbl_1776_react-day-picker-2816",
+      "fail_to_pass": 3,
+      "instance_id": "gpbl__react-day-picker-2816",
+      "language": "ts",
+      "pass_to_pass": 569,
+      "problem_statement_chars": 715,
+      "repo": "gpbl/react-day-picker"
+    },
+    {
+      "base_commit": "c07478ba8480b24c4c967dd660a39b844f3900fc",
+      "docker_image": "starryzhang/sweb.eval.x86_64.withastro_1776_starlight-3293",
+      "fail_to_pass": 1,
+      "instance_id": "withastro__starlight-3293",
+      "language": "ts",
+      "pass_to_pass": 472,
+      "problem_statement_chars": 706,
+      "repo": "withastro/starlight"
+    }
+  ],
+  "language_stats": {
+    "c": {
+      "carried": 5,
+      "eligible": 60,
+      "new": 0
+    },
+    "cpp": {
+      "carried": 5,
+      "eligible": 38,
+      "new": 0
+    },
+    "go": {
+      "carried": 5,
+      "eligible": 50,
+      "new": 0
+    },
+    "java": {
+      "carried": 5,
+      "eligible": 39,
+      "new": 0
+    },
+    "js": {
+      "carried": 4,
+      "eligible": 40,
+      "new": 1
+    },
+    "rust": {
+      "carried": 5,
+      "eligible": 45,
+      "new": 0
+    },
+    "ts": {
+      "carried": 5,
+      "eligible": 48,
+      "new": 0
+    }
+  },
+  "languages": [
+    "go",
+    "java",
+    "ts",
+    "rust",
+    "cpp",
+    "c",
+    "js"
+  ],
+  "per_language": {
+    "c": 5,
+    "cpp": 5,
+    "go": 5,
+    "java": 5,
+    "js": 5,
+    "rust": 5,
+    "ts": 5
+  },
+  "run_params": {
+    "agent": "mini-swe-agent==2.4.6",
+    "agent_overlay": null,
+    "ctx": 131072,
+    "rollout_timeout_s": 900,
+    "step_limit": 1000
+  },
+  "schema": "llm-bench.swe-bench-live.subset",
+  "seed": 20260916,
+  "version": 9
+}

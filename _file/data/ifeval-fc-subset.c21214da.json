@@ -1,0 +1,354 @@
+{
+  "case_count": 150,
+  "cases": [
+    {
+      "case_id": "generate_content_summary__param_content_text__fmt_CyrillicGreekChecker",
+      "function": "generate_content_summary",
+      "checker": "CyrillicGreekChecker",
+      "group": "LANGUAGE",
+      "description": "The argument value must be written entirely in Greek letters. No letters from other scripts are allowed.",
+      "chosen_param": "content_text"
+    },
+    {
+      "case_id": "summarize_news_article__param_article_text__fmt_CyrillicGreekChecker",
+      "function": "summarize_news_article",
+      "checker": "CyrillicGreekChecker",
+      "group": "LANGUAGE",
+      "description": "The argument value must be written entirely in Cyrillic letters. No letters from other scripts are allowed.",
+      "chosen_param": "article_text"
+    },
+    {
+      "case_id": "find_best_travel_deals__param_search_criteria__fmt_HighlightedSectionsCountChecker",
+      "function": "find_best_travel_deals",
+      "checker": "HighlightedSectionsCountChecker",
+      "group": "DETECTABLE FORMAT",
+      "description": "The argument value must contain at most 1 section highlighted using markdown syntax (e.g., *highlighted section* or **highlighted section**). Each section must not be empty.",
+      "chosen_param": "search_criteria"
+    },
+    {
+      "case_id": "schedule_weekly_activities__param_activities_description__fmt_HighlightedSectionsCountChecker",
+      "function": "schedule_weekly_activities",
+      "checker": "HighlightedSectionsCountChecker",
+      "group": "DETECTABLE FORMAT",
+      "description": "The argument value must contain exactly 7 sections highlighted using markdown syntax (e.g., *highlighted section* or **highlighted section**). Each section must not be empty.",
+      "chosen_param": "activities_description"
+    },
+    {
+      "case_id": "fn39__0__museum_info_get_info__param_location__fmt_JsonFormatChecker",
+      "function": "fn39__0__museum_info_get_info",
+      "checker": "JsonFormatChecker",
+      "group": "DETECTABLE FORMAT",
+      "description": "The argument value must be a valid JSON object. The JSON must be syntactically correct and parseable.",
+      "chosen_param": "location"
+    },
+    {
+      "case_id": "fn59__1__lawyer_finder__param_location__fmt_JsonFormatChecker",
+      "function": "fn59__1__lawyer_finder",
+      "checker": "JsonFormatChecker",
+      "group": "DETECTABLE FORMAT",
+      "description": "The argument value must be a valid JSON object. The JSON must be syntactically correct and parseable.",
+      "chosen_param": "location"
+    },
+    {
+      "case_id": "fn151__0__geometry_area_triangle__param_unit__fmt_KeywordFrequencyChecker",
+      "function": "fn151__0__geometry_area_triangle",
+      "checker": "KeywordFrequencyChecker",
+      "group": "KEYWORDS",
+      "description": "The argument value must contain the word 'universal' exactly 1 time. The occurrences may be anywhere in the string. Case does not matter.",
+      "chosen_param": "unit"
+    },
+    {
+      "case_id": "fn210__0__Movies_3_FindMovies__param_directed_by__fmt_KeywordFrequencyChecker",
+      "function": "fn210__0__Movies_3_FindMovies",
+      "checker": "KeywordFrequencyChecker",
+      "group": "KEYWORDS",
+      "description": "The argument value must contain the word 'universal' exactly 1 time. The occurrences may be anywhere in the string. Case does not matter.",
+      "chosen_param": "directed_by"
+    },
+    {
+      "case_id": "fn44__0__unit_conversion_convert__param_from_unit__fmt_KeywordsPresenceChecker",
+      "function": "fn44__0__unit_conversion_convert",
+      "checker": "KeywordsPresenceChecker",
+      "group": "KEYWORDS",
+      "description": "The argument value must include the keywords: ['separate', 'odd', 'bad', 'usual', 'sudden']. Each keyword must appear at least once, in any order. Case does not matter.",
+      "chosen_param": "from_unit"
+    },
+    {
+      "case_id": "provide_dietary_advice__param_dietary_preferences__fmt_KeywordsPresenceChecker",
+      "function": "provide_dietary_advice",
+      "checker": "KeywordsPresenceChecker",
+      "group": "KEYWORDS",
+      "description": "The argument value must not include the keywords: ['subtle', 'permanent', 'specific', 'unstable', 'deep']. None of these words should appear anywhere in the value. Case does not matter.",
+      "chosen_param": "dietary_preferences"
+    },
+    {
+      "case_id": "fn15__0__get_current_weather__param_location__fmt_LetterFrequencyChecker",
+      "function": "fn15__0__get_current_weather",
+      "checker": "LetterFrequencyChecker",
+      "group": "KEYWORDS",
+      "description": "The argument value must contain the letter 'n' exactly 7 times. Case does not matter.",
+      "chosen_param": "location"
+    },
+    {
+      "case_id": "fn224__0__Movies_3_FindMovies__param_directed_by__fmt_LetterFrequencyChecker",
+      "function": "fn224__0__Movies_3_FindMovies",
+      "checker": "LetterFrequencyChecker",
+      "group": "KEYWORDS",
+      "description": "The argument value must contain the letter 'n' exactly 7 times. Case does not matter.",
+      "chosen_param": "directed_by"
+    },
+    {
+      "case_id": "compose_custom_poem__param_theme_description__fmt_NAllCapitalWordsChecker",
+      "function": "compose_custom_poem",
+      "checker": "NAllCapitalWordsChecker",
+      "group": "CASE",
+      "description": "The argument value must contain exactly 7 words written entirely in capital (uppercase) letters.",
+      "chosen_param": "theme_description"
+    },
+    {
+      "case_id": "craft_job_application__param_user_details__fmt_NAllCapitalWordsChecker",
+      "function": "craft_job_application",
+      "checker": "NAllCapitalWordsChecker",
+      "group": "CASE",
+      "description": "The argument value must contain at most 1 word written entirely in capital (uppercase) letters.",
+      "chosen_param": "user_details"
+    },
+    {
+      "case_id": "evaluate_energy_efficiency__param_current_setup__fmt_NCommasChecker",
+      "function": "evaluate_energy_efficiency",
+      "checker": "NCommasChecker",
+      "group": "PUNCTUATION",
+      "description": "The argument value must contain at most 3 commas. The commas may appear anywhere in the value.",
+      "chosen_param": "current_setup"
+    },
+    {
+      "case_id": "extract_product_information__param_product_description__fmt_NCommasChecker",
+      "function": "extract_product_information",
+      "checker": "NCommasChecker",
+      "group": "PUNCTUATION",
+      "description": "The argument value must contain at least 4 commas. The commas may appear anywhere in the value.",
+      "chosen_param": "product_description"
+    },
+    {
+      "case_id": "process_customer_complaint__param_extracted_complaint__fmt_PlaceholderCountChecker",
+      "function": "process_customer_complaint",
+      "checker": "PlaceholderCountChecker",
+      "group": "DETECTABLE CONTENT",
+      "description": "The argument value must contain exactly 6 placeholders, each enclosed in square brackets (e.g., [address]).",
+      "chosen_param": "extracted_complaint"
+    },
+    {
+      "case_id": "review_and_assess_task__param_task_description__fmt_PlaceholderCountChecker",
+      "function": "review_and_assess_task",
+      "checker": "PlaceholderCountChecker",
+      "group": "DETECTABLE CONTENT",
+      "description": "The argument value must contain exactly 3 placeholders, each enclosed in square brackets (e.g., [address]).",
+      "chosen_param": "task_description"
+    },
+    {
+      "case_id": "fn156__0__generate_architecture_plan__param_style__fmt_PythonListFormatChecker",
+      "function": "fn156__0__generate_architecture_plan",
+      "checker": "PythonListFormatChecker",
+      "group": "DETECTABLE FORMAT",
+      "description": "The argument value must be a valid python list of strings. The list must be syntactically correct and parseable with ast.literal_eval().",
+      "chosen_param": "style"
+    },
+    {
+      "case_id": "fn22__2__sports_data_basketball_most_points_single_game__param_league__fmt_PythonListFormatChecker",
+      "function": "fn22__2__sports_data_basketball_most_points_single_game",
+      "checker": "PythonListFormatChecker",
+      "group": "DETECTABLE FORMAT",
+      "description": "The argument value must be a valid python list of strings. The list must be syntactically correct and parseable with ast.literal_eval().",
+      "chosen_param": "league"
+    },
+    {
+      "case_id": "diagnose_technical_issue__param_extracted_user_problem__fmt_QuotationChecker",
+      "function": "diagnose_technical_issue",
+      "checker": "QuotationChecker",
+      "group": "START_END",
+      "description": "The argument value must be wrapped in double quotation marks.\n No additional characters should appear outside the quotes.",
+      "chosen_param": "extracted_user_problem"
+    },
+    {
+      "case_id": "extract_key_points_from_feedback__param_summarized_text__fmt_QuotationChecker",
+      "function": "extract_key_points_from_feedback",
+      "checker": "QuotationChecker",
+      "group": "START_END",
+      "description": "The argument value must be wrapped in single quotation marks.\n No additional characters should appear outside the quotes.",
+      "chosen_param": "summarized_text"
+    },
+    {
+      "case_id": "extract_entities_from_article__param_article_content__fmt_SentenceCountChecker",
+      "function": "extract_entities_from_article",
+      "checker": "SentenceCountChecker",
+      "group": "LENGTH CONSTRAINTS",
+      "description": "The argument value must have at most 2 sentences. Each sentence should be properly punctuated.",
+      "chosen_param": "article_content"
+    },
+    {
+      "case_id": "extract_ingredient_list__param_recipe_text__fmt_SentenceCountChecker",
+      "function": "extract_ingredient_list",
+      "checker": "SentenceCountChecker",
+      "group": "LENGTH CONSTRAINTS",
+      "description": "The argument value must have at least 8 sentences. Each sentence should be properly punctuated.",
+      "chosen_param": "recipe_text"
+    },
+    {
+      "case_id": "evaluate_learning_progress__param_user_feedback__fmt_SpacesInBetweenChecker",
+      "function": "evaluate_learning_progress",
+      "checker": "SpacesInBetweenChecker",
+      "group": "DETECTABLE FORMAT",
+      "description": "The argument value must use exactly 7 consecutive spaces between every pair of words. Only 7 spaces in a row are allowed in the string.",
+      "chosen_param": "user_feedback"
+    },
+    {
+      "case_id": "suggest_gift_for_occasion__param_occasion_description__fmt_SpacesInBetweenChecker",
+      "function": "suggest_gift_for_occasion",
+      "checker": "SpacesInBetweenChecker",
+      "group": "DETECTABLE FORMAT",
+      "description": "The argument value must use exactly 10 consecutive spaces between every pair of words. Only 10 spaces in a row are allowed in the string.",
+      "chosen_param": "occasion_description"
+    },
+    {
+      "case_id": "fn17__0__get_stock_data__param_symbol__fmt_TitleFormatChecker",
+      "function": "fn17__0__get_stock_data",
+      "checker": "TitleFormatChecker",
+      "group": "DETECTABLE FORMAT",
+      "description": "The argument value must contain a title wrapped in double angle brackets, such as <<poem of joy>> (everything except for the title is allowed).",
+      "chosen_param": "symbol"
+    },
+    {
+      "case_id": "fn204__0__Weather_1_GetWeather__param_city__fmt_TitleFormatChecker",
+      "function": "fn204__0__Weather_1_GetWeather",
+      "checker": "TitleFormatChecker",
+      "group": "DETECTABLE FORMAT",
+      "description": "The argument value must contain a title wrapped in double angle brackets, such as <<poem of joy>> (everything except for the title is allowed).",
+      "chosen_param": "city"
+    },
+    {
+      "case_id": "assess_stress_levels__param_stress_description__fmt_WordCountChecker",
+      "function": "assess_stress_levels",
+      "checker": "WordCountChecker",
+      "group": "LENGTH CONSTRAINTS",
+      "description": "The argument value must have at most 2 words. Longer responses are not allowed.",
+      "chosen_param": "stress_description"
+    },
+    {
+      "case_id": "provide_dietary_advice__param_dietary_preferences__fmt_WordCountChecker",
+      "function": "provide_dietary_advice",
+      "checker": "WordCountChecker",
+      "group": "LENGTH CONSTRAINTS",
+      "description": "The argument value must have exactly 4 words. No less, no more.",
+      "chosen_param": "dietary_preferences"
+    }
+  ],
+  "checker_stats": {
+    "CyrillicGreekChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "HighlightedSectionsCountChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "JsonFormatChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "KeywordFrequencyChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "KeywordsPresenceChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "LetterFrequencyChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "NAllCapitalWordsChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "NCommasChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "PlaceholderCountChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "PythonListFormatChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "QuotationChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "SentenceCountChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "SpacesInBetweenChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "TitleFormatChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    },
+    "WordCountChecker": {
+      "carried": 2,
+      "eligible": 10,
+      "new": 0
+    }
+  },
+  "checkers": [
+    "CyrillicGreekChecker",
+    "HighlightedSectionsCountChecker",
+    "JsonFormatChecker",
+    "KeywordFrequencyChecker",
+    "KeywordsPresenceChecker",
+    "LetterFrequencyChecker",
+    "NAllCapitalWordsChecker",
+    "NCommasChecker",
+    "PlaceholderCountChecker",
+    "PythonListFormatChecker",
+    "QuotationChecker",
+    "SentenceCountChecker",
+    "SpacesInBetweenChecker",
+    "TitleFormatChecker",
+    "WordCountChecker"
+  ],
+  "dataset": "NikolaiSkripko/IFEval-FC",
+  "dataset_revision": "60d76045cee8f885174e3433c93919035a70c88d",
+  "distinct_functions": 29,
+  "entry_count": 30,
+  "excluded_cases": {},
+  "functions_per_checker": 2,
+  "run_params": {
+    "max_tokens": 4096,
+    "queries_per_function": 5,
+    "tool_protocol": "single-tool, native tool calling"
+  },
+  "schema": "llm-bench.ifeval-fc.subset",
+  "seed": 20260918,
+  "upstream_checkers_commit": "12e1b773405edd2ce7769cb499cc5374fdddee05",
+  "version": 1
+}
